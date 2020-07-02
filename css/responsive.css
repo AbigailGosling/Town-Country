@@ -1,0 +1,10 @@
+@media all and (max-width: 828px) {	
+	#menu_wrap{
+		flex-wrap:wrap !important;
+		column-count:1 !important;
+	}
+	
+	#menu_wrap .col h1{ margin-top:50px; }
+	
+	main{ padding-top:0px !important; }
+}

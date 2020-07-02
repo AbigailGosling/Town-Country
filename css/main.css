@@ -1,0 +1,28 @@
+ 	.formbtn{
+		border:0px;
+		width:240px;
+		height:40px;
+		font-weight:bold;
+		color:#3faddd;
+		background:#fff;
+		cursor:pointer;
+		
+	}
+	
+	.formElement{
+		padding-bottom:20px;
+	}
+	
+	.formElement input, .formElement select{
+		width:450px;
+		height:35px;
+		padding-left: 20px;
+		box-sizing: border-box;
+	}
+	
+
+	.formElement label{
+		display:block;
+		padding-bottom:5px;
+		color:#fff;
+	}
