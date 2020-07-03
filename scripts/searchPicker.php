@@ -35,6 +35,7 @@
 	<th align="left">RRP</th>
 	<th align="left"></th> 
 <?php
+    $time1 = microtime(true);
 	require('../functions.php');
 	
 	$cutgroup_id = $_GET['cutgroup_id'];
@@ -53,7 +54,7 @@
 
     if($species_id != '' && $cutgroup_id != ''){ # if these two are posted then they've used the species and cutgroup dropdown
         // ??: and here #2
-        $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
+        // $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
         $ids = implode(',', $ARRAY_CUTS);
 
         if(count($ARRAY_CUTS) > 0){ # seems to still get here if i dont do this if??
@@ -73,7 +74,7 @@
     }
 
     // array_push($whereArray, "product.status='0'");
-    // array_push($whereArray, "product.cost != '0.00'");
+    array_push($whereArray, "product.cost != '0.00'");
 
     
     foreach($whereArray as $where){
@@ -394,3 +395,8 @@ margin-bottom:5px;
 background:#cacaca;
 }
 </style>
+
+<?php 
+$time2 = microtime(true);
+echo 'script execution time: ' . ($time2 - $time1);
+?>

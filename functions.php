@@ -263,10 +263,10 @@
 		
 		return $weight;
 	}
-
+	
 	function weightSoldFromProductID($productID){
 		global $conn;
-		
+		// ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
 		$x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = $productID";
 		//$x = "SELECT * FROM `weights` WHERE product_id = $productID";
 		$y = mysqli_query($conn, $x);
@@ -411,7 +411,7 @@
 	function getCut($id){
 		global $conn;
 		// ??: Why get everything if we only want the name?
-		$x = "SELECT * FROM cuts WHERE id = '$id'";
+		$x = "SELECT name FROM cuts WHERE id = '$id'";
 		$y = mysqli_query($conn, $x);
 		
 		$row = mysqli_fetch_array($y);
@@ -758,6 +758,33 @@
 		return null;
 	}
 
+	# Get brand name from id
+	$brands = [];
+	function getBrand($id){
+		global $conn;
+		global $brands;
+
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		$x = "SELECT * FROM brands";
+		$y = mysqli_query($conn, $x);
+		
+		$brands = mysqli_fetch_all($y, MYSQLI_ASSOC);
+		
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+		return null; 
+	}
+
 	function searchInNestedArray($array, $field, $value)
 	{
 		$result = null;
@@ -847,18 +874,6 @@
 		return $row['businessname']; 
 	}
 	
-	
-	# Get brand name from id
-	function getBrand($id){
-		global $conn;
-		
-		$x = "SELECT * FROM brands WHERE id = '$id'";
-		$y = mysqli_query($conn, $x);
-		
-		$row = mysqli_fetch_array($y);
-		
-		return $row['name']; 
-	}
 	
 	# Get Intake - expects 1 param, intake_id
 	function getIntake($id){
