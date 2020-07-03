@@ -45,11 +45,14 @@
     
      
     $ARRAY_CUTS = array();
+
+    // ??: Gets the same cuts twice here #1
     $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id);
 
     $whereArray = [];
 
     if($species_id != '' && $cutgroup_id != ''){ # if these two are posted then they've used the species and cutgroup dropdown
+        // ??: and here #2
         $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
         $ids = implode(',', $ARRAY_CUTS);
 
@@ -100,6 +103,7 @@
         $ubbb = $productsRow['ubbb'];
         $smallestDate = $productsRow['range_from'];
         $largestDate = $productsRow['range_to'];
+        // ??: Don't we already have the intake_id from the query?
         $intake_id = intakeIDfromPalletID($pallet_id);
         $nationality_id = $productsRow['nationality_id'];
         $cut = getCut($productsRow['cut_id']);
@@ -161,8 +165,16 @@
             </td>
             <td colspan="1"  onclick=""></td>
             <td colspan="1"><?php echo $quantityTotal; ?></td>
+            <!---
+            // ??: No need to call the database on every loop.
+            // ??: The temperatures are just a few entries.
+            // ??: Better to get all the entries in the beginning
+            -->
             <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
             <td colspan="1"><?php echo $cut; ?></td>
+            <!--
+            // ??: Same as with temperatures - get all entries in the beginning
+            -->
 			<td colspan="1"><?php echo getNationality($productsRow['nationality_id']); ?></td>
 			<td colspan="1">
 				<form method="post">

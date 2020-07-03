@@ -202,7 +202,7 @@
 	
 	function intakeIDfromPalletID($id){
 		global $conn;
-		
+		// ??: Why get everything if all we need is the intake_id?
 		$x = "SELECT * FROM `pallet` WHERE id='$id'";
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
@@ -410,7 +410,7 @@
 	# Get Cut name from id
 	function getCut($id){
 		global $conn;
-		
+		// ??: Why get everything if we only want the name?
 		$x = "SELECT * FROM cuts WHERE id = '$id'";
 		$y = mysqli_query($conn, $x);
 		
@@ -702,17 +702,72 @@
 		
 		return $name;
 	}
-
+	
+	// ??: Should be renamed or return full nationality entry
 	# Get nationality name from id
+	// cache the results
+	$nationalities = [];
 	function getNationality($id){
 		global $conn;
+		global $nationalities;
+
+		$result = searchInNestedArray($nationalities, "id", $id);
 		
-		$x = "SELECT * FROM nationality WHERE id = '$id'";
+		if($result)
+		{
+			return $result['name'];
+		}
+		
+		$x = "SELECT * FROM nationality";
 		$y = mysqli_query($conn, $x);
+		$nationalities = mysqli_fetch_all($y, MYSQLI_ASSOC);
 		
-		$row = mysqli_fetch_array($y);
+		$result = searchInNestedArray($nationalities, "id", $id);
 		
-		return $row['name']; 
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		return null; 
+	}
+
+	# Get Temp - returns temp text for specific tempid
+	$temperatures = [];
+	function getTemp($tempid){
+		global $conn;
+		global $temperatures;
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		
+		$x = "SELECT * FROM temperature";
+		$y = mysqli_query($conn, $x);
+		$temperatures = mysqli_fetch_all($y, MYSQLI_ASSOC);
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		return null;
+	}
+
+	function searchInNestedArray($array, $field, $value)
+	{
+		$result = null;
+
+		foreach ($array as $key => $val) {
+			if ($val[$field] === $value) {
+				$result = $val;
+				return $result;
+			}
+		}
 	}
 	
 	# weight of product
@@ -870,16 +925,6 @@
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
 		return $row;
-	}
-	
-	# Get Temp - returns temp text for specific tempid
-	function getTemp($tempid){
-		global $conn;
-		
-		$x = "SELECT * FROM temperature WHERE id = '$tempid'";
-		$y = mysqli_query($conn, $x);
-		$row = mysqli_fetch_array($y);
-		return $row['temperature'];
 	}
 	
 	# Get Username - returns username for specific userid
