@@ -71,9 +71,7 @@
                     ?>
                     <tr style="background:#d9d9d9;" class="subrow <?php echo $class; ?>">
                     <td></td>
-                    <td colspan="1">
-                        <?php echo $numInPicking; ?>
-                    <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
+                    <td colspan="1"><a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
                     <td colspan="1">
                         <form method="post">
                             <input type="text" name="location" class="location" value="<?php echo $productsRow['storage_location']; ?>" placeholder="location" style="width:90px;">

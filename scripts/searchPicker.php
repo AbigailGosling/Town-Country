@@ -69,8 +69,8 @@
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
 
-    // array_push($whereArray, "product.status='0'");
-    // array_push($whereArray, "product.cost != '0.00'");
+    array_push($whereArray, "product.status='0'");
+    array_push($whereArray, "product.cost != '0.00'");
 
     
     foreach($whereArray as $where){

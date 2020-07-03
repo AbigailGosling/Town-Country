@@ -516,25 +516,11 @@
         $y = mysqli_query($conn, $x);
         $row = mysqli_fetch_array($y);
     
-        $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.status = '0' && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
+        $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
         $y1 = mysqli_query($conn, $x1);
         $numInPicking = mysqli_num_rows($y1);
 
-
-    //     $yProducts = mysqli_query($conn, "SELECT id from `product` WHERE pallet_id IN ($palletIDS)");
-        
-    //     $productIDS = array();
-
-    //     while($product = mysqli_fetch_array($yProducts)){
-    //         array_push($productIDS, $product['id']);
-    //     }
-    //     $productIDS = implode(',', $productIDS);
-
-    //    $yItems = mysqli_query($conn, "SELECT id from `pickerItems` WHERE product_id IN ($productIDS)");
-
-    //     $count = mysqli_num_rows($yItems);
-
-        return $row['num'] - $numInPicking;
+        return $row['num'];
     }
 
     function totalWeightOfAdvisedKGProduct($intake_id){
