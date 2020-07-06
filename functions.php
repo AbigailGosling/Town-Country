@@ -202,7 +202,7 @@
 	
 	function intakeIDfromPalletID($id){
 		global $conn;
-		
+		// ??: Why get everything if all we need is the intake_id?
 		$x = "SELECT * FROM `pallet` WHERE id='$id'";
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
@@ -263,10 +263,10 @@
 		
 		return $weight;
 	}
-
+	
 	function weightSoldFromProductID($productID){
 		global $conn;
-		
+		// ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
 		$x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = $productID";
 		//$x = "SELECT * FROM `weights` WHERE product_id = $productID";
 		$y = mysqli_query($conn, $x);
@@ -410,8 +410,8 @@
 	# Get Cut name from id
 	function getCut($id){
 		global $conn;
-		
-		$x = "SELECT * FROM cuts WHERE id = '$id'";
+		// ??: Why get everything if we only want the name?
+		$x = "SELECT name FROM cuts WHERE id = '$id'";
 		$y = mysqli_query($conn, $x);
 		
 		$row = mysqli_fetch_array($y);
@@ -702,17 +702,99 @@
 		
 		return $name;
 	}
-
+	
+	// ??: Should be renamed or return full nationality entry
 	# Get nationality name from id
+	// cache the results
+	$nationalities = [];
 	function getNationality($id){
 		global $conn;
+		global $nationalities;
+
+		$result = searchInNestedArray($nationalities, "id", $id);
 		
-		$x = "SELECT * FROM nationality WHERE id = '$id'";
+		if($result)
+		{
+			return $result['name'];
+		}
+		
+		$x = "SELECT * FROM nationality";
+		$y = mysqli_query($conn, $x);
+		$nationalities = mysqli_fetch_all($y, MYSQLI_ASSOC);
+		
+		$result = searchInNestedArray($nationalities, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		return null; 
+	}
+
+	# Get Temp - returns temp text for specific tempid
+	$temperatures = [];
+	function getTemp($tempid){
+		global $conn;
+		global $temperatures;
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		
+		$x = "SELECT * FROM temperature";
+		$y = mysqli_query($conn, $x);
+		$temperatures = mysqli_fetch_all($y, MYSQLI_ASSOC);
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		return null;
+	}
+
+	# Get brand name from id
+	$brands = [];
+	function getBrand($id){
+		global $conn;
+		global $brands;
+
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		$x = "SELECT * FROM brands";
 		$y = mysqli_query($conn, $x);
 		
-		$row = mysqli_fetch_array($y);
+		$brands = mysqli_fetch_all($y, MYSQLI_ASSOC);
 		
-		return $row['name']; 
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+		return null; 
+	}
+
+	function searchInNestedArray($array, $field, $value)
+	{
+		$result = null;
+
+		foreach ($array as $key => $val) {
+			if ($val[$field] === $value) {
+				$result = $val;
+				return $result;
+			}
+		}
 	}
 	
 	# weight of product
@@ -793,18 +875,6 @@
 	}
 	
 	
-	# Get brand name from id
-	function getBrand($id){
-		global $conn;
-		
-		$x = "SELECT * FROM brands WHERE id = '$id'";
-		$y = mysqli_query($conn, $x);
-		
-		$row = mysqli_fetch_array($y);
-		
-		return $row['name']; 
-	}
-	
 	# Get Intake - expects 1 param, intake_id
 	function getIntake($id){
 		global $conn;
@@ -870,16 +940,6 @@
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
 		return $row;
-	}
-	
-	# Get Temp - returns temp text for specific tempid
-	function getTemp($tempid){
-		global $conn;
-		
-		$x = "SELECT * FROM temperature WHERE id = '$tempid'";
-		$y = mysqli_query($conn, $x);
-		$row = mysqli_fetch_array($y);
-		return $row['temperature'];
 	}
 	
 	# Get Username - returns username for specific userid
