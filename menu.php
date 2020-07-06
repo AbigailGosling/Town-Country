@@ -15,7 +15,7 @@
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
 <main>
-	<h1 class="int">Town &amp; Country 3</h1>	
+	<h1 class="int">Town &amp; Country</h1>	
 	<div id="menu_wrap">
 		
 		<?php if($user['type'] == 1 || $user['type'] == 3 || $user['type'] == 4){ ?>
