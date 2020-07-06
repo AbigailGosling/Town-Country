@@ -19,7 +19,7 @@
 </head>
 <body>
 <main>
-	<h1>Town &amp; Country test</h1>
+	<h1>Town &amp; Country</h1>
 	<div id="login">
 		<h2>Welcome</h2>
 		<form method="post" action="script_login.php">
