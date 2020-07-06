@@ -2,17 +2,16 @@
  
 	
 	session_start();
-	ini_set('session.gc_maxlifetime', 3600);
+	//ini_set('session.gc_maxlifetime', 3600);
     ini_set('post_max_size', '64M');
     ini_set('upload_max_filesize', '64M');
-    
-    $conn = mysqli_connect('localhost','tandcphe_user','trickydicky','tandcphe_live');
-	// $conn = mysqli_connect('localhost','phenixdigital','szcUgQ93Zw72Qyz2dfsW','tandc');
+	
+	require('config.php');
+
+	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
 
 
 	error_reporting(0);
-	
-	$domain = '//tandc.phenixdevelopment.co.uk/';
  
 	$userid = $_SESSION['USER'];
 	
