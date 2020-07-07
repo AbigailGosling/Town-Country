@@ -76,7 +76,7 @@
 				<td colspan="1"><?php echo $productsRow2['pallet_id']; ?></td>
 				<td colspan="1">
 					<?php
-                    	$numOfWeights = countNumProductsForCutOnPallet($productsRow2['pallet_id'], $productsRow2['cut_id']);
+						$numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
 					?>
 					<select class="quantitybox" id="quantity-<?php echo $productsRow2['productid']; ?>-<?php echo $productsRow2['pallet_id']; ?>">
 						<?php for($i=1;$i<$numOfWeights+1;$i++){?>

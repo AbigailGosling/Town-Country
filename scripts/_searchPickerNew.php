@@ -61,7 +61,7 @@
  		if($products2Count > 0){
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
 
-                $numOfWeights = countNumProductsForCutOnPalletArrays([$productsRow2['pallet_id']], [$productsRow2['cut_id']]);
+                $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = $productsRow2['range_from'];
