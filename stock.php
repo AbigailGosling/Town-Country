@@ -169,7 +169,7 @@
             <th align="left"></th>
             
            <?php 
-                ?><div class="gifContainer"><center><img src="https://zippy.gfycat.com/SkinnySeveralAsianlion.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
+                ?><div class="gifContainer"><center><img src="/img/loading.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
                 
                 $cutgroup_id = $_POST['cutgroup_id'];
                 $species_id = $_POST['species'];
@@ -279,9 +279,9 @@
                         },
                     $products2);
                     
-                    // $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
+                    $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
 
-                    $quantityTotal = keztesting($product2_palletids, $product2_cutids);
+                    // $quantityTotal = keztesting($product2_palletids, $product2_cutids);
 
                     ###
                     $totalW = 0;
