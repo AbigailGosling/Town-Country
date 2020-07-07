@@ -86,6 +86,7 @@
     $productsX = "SELECT *, product.comments as productcomments, product.id as productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     WHERE $whereString
     GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
      
@@ -296,6 +297,7 @@ $('.weightVal').text(newWeight);
 }
 
 $(document).ready(function(){
+ 
 $.each(document.cookie.split(/; */), function()  {
   var splitCookie = this.split('=');
 
@@ -320,27 +322,8 @@ $.each(document.cookie.split(/; */), function()  {
     }
 });
 
-$('#saveLocation').click(function(){
-    var location = $(this).parent().find('.location').val();
-    var pallet = $(this).parent().find('.pallet').val();
-    
-    $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
-        // console.log(data);
-    });
-});
-
-$('.location').each(function(){
-    $(this).on('keypress',function(e) {
-        if(e.which == 13) {
-            var location = $(this).parent().find('.location').val();
-            var pallet = $(this).parent().find('.pallet').val();
-            
-            $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
-                // console.log(data);
-            });
-        }
-    });
-});
+ 
+ 
 
 $('.overviewcomment').each(function(){
     $(this).on('keypress', function(e){
