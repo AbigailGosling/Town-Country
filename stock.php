@@ -145,9 +145,9 @@
             ?>
         </select>
         &nbsp;&nbsp;&nbsp;
-        <input type="number" name="intake_id" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
-        <input type="number" name="pallet_id" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
-        <input type="submit" value="Search" style="height: 39px;width: 80px;">
+        <input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
+        <input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
+        <input type="button" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;">
     </form>
 	<div id="loadResults" class="resultsContainer">
         <?php if($_POST['cutgroup_id'] || $_POST['pallet_id'] || $_POST['intake_id']){ ?>        
@@ -407,6 +407,20 @@
     });
 
 
+    function doSearch(){
+ 
+  		var species = $('#SearchSpecies').val();
+		var cutgroup_id = $('#SearchCutgroups').val();
+  		var intakeID = $('#IntakeID').val();
+ 		var palletID = $('#PalletID').val();
+		
+		if(cutgroup_id != '' && species != '' || intakeID != '' || palletID != ''){
+            $('#searchForm').submit();
+        }else{
+			alert('Please fill out the form before searching');
+		}
+
+    }
 
 
     $('.overviewcomment').each(function(){

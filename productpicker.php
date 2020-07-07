@@ -347,7 +347,6 @@ if(date != ''){
 
  
 	function doSearch(){
-		
 		console.log('Searching..');
 		var cut = $('#SearchCut').val();
 		var palletID = $('#SearchPallet').val();
@@ -357,19 +356,21 @@ if(date != ''){
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
 		
-		$('#loadResults').html('<center><img src="http://tandc.phenixdevelopment.co.uk/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
-		
-		$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID, function(data, status){
-			$('#loadResults').html(data);
-            
-		});
+		if(cutgroup_id != '' && species != '' || intakeID != '' || palletID != ''){
+			$('#loadResults').html('<center><img src="http://tandc.phenixdevelopment.co.uk/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
+			
+			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID, function(data, status){
+				$('#loadResults').html(data);
+				
+			});
 
-		$('#SearchSpecies').prop('selectedIndex',0);
-		$('#SearchCutgroups').prop('selectedIndex',0);
-		$('#IntakeID').val('');
-		$('#PalletID').val('');
-		
-		// }
+			$('#SearchSpecies').prop('selectedIndex',0);
+			$('#SearchCutgroups').prop('selectedIndex',0);
+			$('#IntakeID').val('');
+			$('#PalletID').val('');
+		}else{
+			alert('Please fill out the form before searching');
+		}
 	}
 	
 	function ShowWeights(pallet_id,species_id, cut_id){
