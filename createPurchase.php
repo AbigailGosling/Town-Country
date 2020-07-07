@@ -184,10 +184,10 @@
 					if($edit){
 						 
 
-						$species = explode(',', $purchase['species']);
-						$cuts = explode(',', $purchase['cut']);
-						$units = explode(',', $purchase['units']);
-						$prices = explode(',', $purchase['price']);
+						$species = explode('|', $purchase['species']);
+						$cuts = explode('|', $purchase['cut']);
+						$units = explode('|', $purchase['units']);
+						$prices = explode('|', $purchase['price']);
 						
 						$size = sizeof($species);
 						
