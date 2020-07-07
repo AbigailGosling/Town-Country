@@ -134,7 +134,13 @@
 				<option value="C">Catch Weights</option>
 				<option value="S">Standard Weight</option>
 				<option value="D">Dolav/Cases</option>
+				<option value="AKG">Advised kg</option>
 			</select>
+			</div>
+
+			<div id="akgDiv" style="display:none;">
+				<label>Net Weight</label>
+				<input type="number" name="akg" id="akg">
 			</div>
 
 			<div id="SingleWeightDiv" style="display:none;">
@@ -530,25 +536,37 @@
 		
 		if($('#individualweights').val() == 'C'){
 			if($('#unit').val() != 'PPC'){
-			console.log('Individual Weights...' + $('#individualweights').val());
-			
-			var amount = $('.quantityWeight').val();
-			
-			generateWeightBoxes(amount);
-			hideSingleWeight();
-			
-			$('#grossWeightDiv').hide();
-			$('#tearWeightDiv').hide();
+				console.log('Individual Weights...' + $('#individualweights').val());
+				
+				var amount = $('.quantityWeight').val();
+				
+				generateWeightBoxes(amount);
+				hideSingleWeight();
+				
+				$('#grossWeightDiv').hide();
+				$('#tearWeightDiv').hide();
+				$('#akgDiv').fadeOut();
 			}
 			
-		}else if($('#individualweights').val() == 'D'){
+		}else if($('#individualweights').val() == 'AKG'){
+			hideSingleWeight();
+			 
+			$('#grossWeightDiv').fadeOut();
+			$('#tearWeightDiv').fadeOut();
+			$('#akgDiv').fadeIn();
+			 
+			$('.multiweight').val(0);
+			 
+		 }else if($('#individualweights').val() == 'D'){
 			$('#grossWeightDiv').show();
 			$('#tearWeightDiv').show();
+			$('#akgDiv').fadeOut();
 		}else{
 			showSingleWeight();
 			removeWeightBoxes();
 			
 			$('#grossWeightDiv').hide();
+			$('#akgDiv').fadeOut();
 			$('#tearWeightDiv').hide();
 			 
 		}
