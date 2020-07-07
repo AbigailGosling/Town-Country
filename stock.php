@@ -190,7 +190,7 @@
                 }
 
                 if($intake_id != ''){ # if this is posted then theyve entered a intake id
-                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup 
+                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id);
                     $ids = implode(',', $ARRAY_PALLET_IDS);
 
                     array_push($whereArray, 'pallet.id IN ('.$ids.')');
@@ -238,6 +238,9 @@
                     $nationality_id = $productsRow['nationality_id'];
                     $cut = getCut($productsRow['cut_id']);
                     
+                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id);
+
+
                     if($ubbb == 0){
                         $ubtext = 'UB';
                     }else if($ubbb == 1){
@@ -335,7 +338,7 @@
                             <td colspan="1">
                             &nbsp;		 
                             </td>
-                            <td colspan="1"><?php echo $pallet_id; ?></td>
+                            <td colspan="1"></td>
                             <td colspan="1"><?php echo $quantityTotal; ?></td>
                             <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
                             <td colspan="1"><?php echo $cut; ?></td>
