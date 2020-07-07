@@ -34,16 +34,6 @@
 
 		$( "#datepicker" ).datepicker();
 
-        $('#supname').on('keyup',function(){
-
-            var array = $(this).val().match(/[A-Za-z&-\s()\.]/g);
-            
-            var string = '';
-            for(i=0;i<array.length;i++){
-                string += array[i];
-            }
-            $(this).val(string);
-        });
 	});
 
 	   
