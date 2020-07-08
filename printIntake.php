@@ -33,7 +33,7 @@
 		</div>
 		
 		<div class="overview_block">
-			<label>Date Recieved</label>
+			<label>Date Received</label>
 			<?php 
 				$date_received2 = str_replace('/', '-', $intake['date_received']);
 				$date_received2 = date('d/m/Y', strtotime($date_received2));
@@ -233,18 +233,27 @@
 				<div class="overview" style="display:block;">
 					<?php
 						$cutResult = getCuts();
+						$cuts = mysqli_fetch_all($cutResult, MYSQLI_ASSOC);
+						$cutIDsForSearch = "";
+
+						foreach($cuts as $cut)
+						{
+							$cutIDsForSearch .= $cut['id'].",";
+						}
+						$cutIDsForSearch = substr($cutIDsForSearch, 0, -1);
+
+	
+						$xG = "SELECT * FROM `product` WHERE pallet_id='$pallet_id' && cut_id in ($cutIDsForSearch)";
+						$yG = mysqli_query($conn, $xG);
+						$products = mysqli_fetch_all($yG, MYSQLI_ASSOC);
 						
-						while($cuts = mysqli_fetch_array($cutResult)){
-							$cut_id = $cuts['id'];
-							
-							$xG = "SELECT * FROM `product` WHERE pallet_id='$pallet_id' && cut_id ='$cut_id'";
-							$yG = mysqli_query($conn, $xG);
-							
-							while($product = mysqli_fetch_array($yG)){
-								$product_id = $product['id'];
-								$cut_id = $product['cut_id'];
-								$species_id = getSpeciesFromCut($cut_id);
-								$weightthing = weightFromProductID($product_id);
+						if(!count($products)){continue;}
+
+						foreach($products as $product){
+							$product_id = $product['id'];
+							$cut_id = $product['cut_id'];
+							$species_id = getSpeciesFromCut($cut_id);
+							$weightthing = weightFromProductID($product_id);
 							?>
 							<input type="text" class="aWeight" value="<?php echo $weightthing; ?>" style="display:none;">
 							
@@ -322,8 +331,6 @@
 								</div>
 							</div>
 							<?php
-							}
-						
 						}
 					?>
 				</div>
