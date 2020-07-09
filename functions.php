@@ -240,7 +240,44 @@
 		return $row['product_id'];
 	}
 	
+	# returns count of weight entries for the products past in []
+	function countFromProductIDArray($PRODUCT_IDS){
+		global $conn;
+
+		$PRODUCT_IDS = implode($PRODUCT_IDS, ',');
+
+		$y = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id IN ($PRODUCT_IDS)");
+		$count = mysqli_num_rows($y);
+
+		return $count;
+	}
+
+	# returns total weight of products past in []
+	function weightFromProductIDArray($PRODUCT_IDS){
+		global $conn;
+
+		$PRODUCT_IDS = implode($PRODUCT_IDS, ',');
+
+		$y = mysqli_query($conn, "SELECT * FROM `weights` WHERE product_id IN ($PRODUCT_IDS)");
+
+			
+		$weight = 0;
+		
+		while($row = mysqli_fetch_array($y)){
+			if($row['weight_tear'] == $row['weight_gross']){
+				$w = $row['weight_gross'];
+			}else{
+				$w = $row['weight_gross'] - $row['weight_tear'];
+			}
+			
+			$weight = $weight + $w;
+		}
+		
+		return $weight;
+	}
 	
+
+	# should swap all uses of this function to the one above
 	function weightFromProductID($productID){
 		global $conn;
 		
