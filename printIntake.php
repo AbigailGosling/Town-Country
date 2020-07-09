@@ -33,7 +33,7 @@
 		</div>
 		
 		<div class="overview_block">
-			<label>Date Recieved</label>
+			<label>Date Received</label>
 			<?php 
 				$date_received2 = str_replace('/', '-', $intake['date_received']);
 				$date_received2 = date('d/m/Y', strtotime($date_received2));
