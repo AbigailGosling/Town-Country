@@ -233,22 +233,27 @@
 		
 		updateForm();
 		
+		<?php
+			$start = date('Y', strtotime('-5 year'));
+			$end = date('Y', strtotime('+5 year'));
+		?>
+
 		$( "#best_by2" ).datepicker({
 			dateFormat: 'dd/mm/yy',
 			changeYear: true,
-			yearRange: "2017:2021"
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
 		
 		$( "#best_by_range_from" ).datepicker({
 			dateFormat: 'dd/mm/yy',
 			changeYear: true,
-			yearRange: "2017:2021"
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
 		
 		$( "#best_by_range_to" ).datepicker({
 			dateFormat: 'dd/mm/yy',
 			changeYear: true,
-			yearRange: "2017:2021"
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
 		
 		$('#cut_search').keyup(function(){
