@@ -380,6 +380,6 @@ background:#cacaca;
 </style>
 
 <?php 
-$time2 = microtime(true);
-echo 'script execution time: ' . ($time2 - $time1);
+//$time2 = microtime(true);
+//echo 'script execution time: ' . ($time2 - $time1);
 ?>
