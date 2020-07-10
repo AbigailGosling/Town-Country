@@ -7,8 +7,8 @@
 
         toggleRow(classs,ele, productid);
     }
-    function toggleRow(classs, ele,intake_id, cut_id){
-        $.get( "/scripts/_searchStockNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs, function( data ) {
+    function toggleRow(classs, ele,intake_id, cut_id, nationality_id){
+        $.get( "/scripts/_searchStockNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id="+nationality_id, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -254,6 +254,7 @@
                     ON product.pallet_id=pallet.id 
                     WHERE pallet.intake_id='$intake_id' 
                     && product.cut_id = '$cut_id'
+                    && product.nationality_id = '$nationality_id'
                     ORDER BY product.cut_id DESC";
                     
                     $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
@@ -280,7 +281,7 @@
                         },
                     $products2);
                     
-                    $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
+                    $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id], $nationality_id);
 
 
                     ###
@@ -325,7 +326,7 @@
                                 }
                             ?>
                         <tr class="searchAccordTitle" style="<?php if($products2Count == 1){ } ?>">
-                            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
+                            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
                             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
                             <td colspan="1">
                                 <a href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
