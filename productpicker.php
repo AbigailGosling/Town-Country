@@ -364,6 +364,7 @@ if(date != ''){
 				
 			});
 
+
 			$('#SearchSpecies').prop('selectedIndex',0);
 			$('#SearchCutgroups').prop('selectedIndex',0);
 			$('#IntakeID').val('');
