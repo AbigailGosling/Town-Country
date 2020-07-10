@@ -550,7 +550,7 @@
 		$y = mysqli_query($conn, $x);
         $row = mysqli_fetch_array($y);
     
-        $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
+        $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.status = '0' && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
         $y1 = mysqli_query($conn, $x1);
 		$numInPicking = mysqli_num_rows($y1);
 		

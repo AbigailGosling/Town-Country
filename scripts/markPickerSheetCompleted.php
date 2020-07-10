@@ -45,7 +45,11 @@
  		foreach($weightIDArray as $weightID){
 			$x1 = "SELECT * FROM `weights` WHERE id='$weightID'";
 			$y1 = mysqli_query($conn, $x1);
-			
+            
+                    
+            $x2 = "UPDATE `weights` SET status = '1' WHERE id='$weightID'";
+            $y2 = mysqli_query($conn, $x2);
+            
 			$weight = mysqli_fetch_array($y1);
 			// echo '<br/>';
 			// echo $weight['weight_gross'];
@@ -53,7 +57,10 @@
 		}
 		
 	}
-	
+	$x2 = "UPDATE `pickerItems` SET `status` = '1' WHERE pickersheet_id='$pickersheet_id'";
+	$y2 = mysqli_query($conn, $x2);
+    
+    
 	// $x2 = "SELECT * FROM `pickerItems` WHERE picksheet_id='$pickersheet_id'";
 	// $y2 = mysqli_query($conn, $x2);
 	
