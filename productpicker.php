@@ -357,7 +357,7 @@ if(date != ''){
  		var palletID = $('#PalletID').val();
 		
 		if(cutgroup_id != '' && species != '' || intakeID != '' || palletID != ''){
-			$('#loadResults').html('<center><img src="http://tandc.phenixdevelopment.co.uk/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
+			$('#loadResults').html('<center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			
 			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID, function(data, status){
 				$('#loadResults').html(data);
