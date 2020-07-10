@@ -549,7 +549,13 @@
         $x = "SELECT COUNT(weights.id) as num FROM `weights` INNER JOIN `product` ON weights.product_id=product.id WHERE product.cut_id IN ($cutIDS) && product.pallet_id IN ($palletIDS) && weights.status_id != 1";
 		$y = mysqli_query($conn, $x);
         $row = mysqli_fetch_array($y);
-    
+	
+
+		if($row["num"] == 0)
+		{
+			return 0;
+		}
+
         $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.status = '0' && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
         $y1 = mysqli_query($conn, $x1);
 		$numInPicking = mysqli_num_rows($y1);

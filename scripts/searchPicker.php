@@ -93,10 +93,9 @@
      
     $totalW = 0;
     
+    $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     
-    
-    while($productsRow = mysqli_fetch_array($productsY)){
-
+    foreach($products as $productsRow){
 
         $thisclass = 'thisclass'.rand(1,999999);
         $class = 'KIS'.rand(1,999999);
@@ -145,14 +144,14 @@
         
         $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]]);
         
+        if($quantityTotal < 1){continue;}
         ###
-        
+       
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
-    ?>
-    
-    <?php if($quantityTotal >= 1){ ?>
+       
+        ?>
         <tr class="searchAccordTitle">
            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
@@ -199,7 +198,7 @@
 			<td><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
 			<td><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
         </tr>
-    <?php } ?>
+    <?php  ?>
 
     <?php 
     }
@@ -381,6 +380,12 @@ background:#cacaca;
 </style>
 
 <?php 
-//$time2 = microtime(true);
-//echo 'script execution time: ' . ($time2 - $time1);
+function perfcheck()
+{
+    global $time1;
+    $time2 = microtime(true);
+    echo '<br>script execution time: ' . ($time2 - $time1);
+}
+// perfcheck();
+
 ?>
