@@ -194,7 +194,6 @@
 
                     array_push($whereArray, 'pallet.id IN ('.$ids.')');
                 }
-                // array_push($whereArray, "product.cost != '0.00'");
 
                 foreach($whereArray as $where){
                     $whereString .= $where . ' && ';
@@ -283,7 +282,6 @@
                     
                     $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
 
-                    // $quantityTotal = keztesting($product2_palletids, $product2_cutids);
 
                     ###
                     $totalW = 0;
