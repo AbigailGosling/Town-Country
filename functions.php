@@ -1,8 +1,6 @@
 <?php
- 
-	
-	session_start();
 	ini_set('session.gc_maxlifetime', 3600);
+	session_start();
     ini_set('post_max_size', '64M');
     ini_set('upload_max_filesize', '64M');
 	
