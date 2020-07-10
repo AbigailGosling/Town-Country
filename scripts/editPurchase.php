@@ -25,19 +25,19 @@
 	$priceString = '';
 	
 	foreach($_POST['species'] as $species){
-		$speciesString .= $species.',';
+		$speciesString .= $species.'|';
 	}
 	
 	foreach($_POST['cuts'] as $cuts){
-		$cutString .= $cuts.',';
+		$cutString .= $cuts.'|';
 	}
 	
 	foreach($_POST['units'] as $units){
-		$unitsString .= $units.',';
+		$unitsString .= $units.'|';
 	}
 
 	foreach($_POST['prices'] as $price){
-		$priceString .= $price.',';
+		$priceString .= $price.'|';
 	}
 	
 	
@@ -57,10 +57,10 @@
 	$priceString = substr($priceString,0,strlen($priceString)-1); 
     
     
-    $speciesString = rtrim($speciesString, ',');
-    $cutString = rtrim($cutString, ',');
-    $unitsString = rtrim($unitsString, ',');
-    $priceString = rtrim($priceString, ',');
+    $speciesString = rtrim($speciesString, '|');
+    $cutString = rtrim($cutString, '|');
+    $unitsString = rtrim($unitsString, '|');
+    $priceString = rtrim($priceString, '|');
 
 
 	updatePurchase($id,$transportation,$supplier_id,$speciesString,$cutString,$unitsString,$priceString,$date_purchased,$purchased_by,$date_due,$comments,$file_name,$booking_ref_number, $haulier, $direct_drop);
