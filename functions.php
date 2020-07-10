@@ -1,18 +1,15 @@
 <?php
- 
-	
-	session_start();
 	ini_set('session.gc_maxlifetime', 3600);
+	session_start();
     ini_set('post_max_size', '64M');
     ini_set('upload_max_filesize', '64M');
-    
-    $conn = mysqli_connect('localhost','tandcphe_user','trickydicky','tandcphe_live');
-	// $conn = mysqli_connect('localhost','phenixdigital','szcUgQ93Zw72Qyz2dfsW','tandc');
+	
+	require('config.php');
+
+	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
 
 
 	error_reporting(0);
-	
-	$domain = '//tandc.phenixdevelopment.co.uk/';
  
 	$userid = $_SESSION['USER'];
 	
@@ -152,7 +149,7 @@
 		return $row;
 	}
 	
-	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$unitsString, $priceString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop){
+	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop){
 		global $conn;
 		
 		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop) 
@@ -202,7 +199,7 @@
 	
 	function intakeIDfromPalletID($id){
 		global $conn;
-		
+		// ??: Why get everything if all we need is the intake_id?
 		$x = "SELECT * FROM `pallet` WHERE id='$id'";
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
@@ -241,7 +238,44 @@
 		return $row['product_id'];
 	}
 	
+	# returns count of weight entries for the products past in []
+	function countFromProductIDArray($PRODUCT_IDS){
+		global $conn;
+
+		$PRODUCT_IDS = implode($PRODUCT_IDS, ',');
+
+		$y = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id IN ($PRODUCT_IDS)");
+		$count = mysqli_num_rows($y);
+
+		return $count;
+	}
+
+	# returns total weight of products past in []
+	function weightFromProductIDArray($PRODUCT_IDS){
+		global $conn;
+
+		$PRODUCT_IDS = implode($PRODUCT_IDS, ',');
+
+		$y = mysqli_query($conn, "SELECT * FROM `weights` WHERE product_id IN ($PRODUCT_IDS)");
+
+			
+		$weight = 0;
+		
+		while($row = mysqli_fetch_array($y)){
+			if($row['weight_tear'] == $row['weight_gross']){
+				$w = $row['weight_gross'];
+			}else{
+				$w = $row['weight_gross'] - $row['weight_tear'];
+			}
+			
+			$weight = $weight + $w;
+		}
+		
+		return $weight;
+	}
 	
+
+	# should swap all uses of this function to the one above
 	function weightFromProductID($productID){
 		global $conn;
 		
@@ -263,10 +297,10 @@
 		
 		return $weight;
 	}
-
+	
 	function weightSoldFromProductID($productID){
 		global $conn;
-		
+		// ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
 		$x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = $productID";
 		//$x = "SELECT * FROM `weights` WHERE product_id = $productID";
 		$y = mysqli_query($conn, $x);
@@ -410,8 +444,8 @@
 	# Get Cut name from id
 	function getCut($id){
 		global $conn;
-		
-		$x = "SELECT * FROM cuts WHERE id = '$id'";
+		// ??: Why get everything if we only want the name?
+		$x = "SELECT name FROM cuts WHERE id = '$id'";
 		$y = mysqli_query($conn, $x);
 		
 		$row = mysqli_fetch_array($y);
@@ -513,15 +547,31 @@
         $cutIDS = implode(',', $cutIDS);
 
         $x = "SELECT COUNT(weights.id) as num FROM `weights` INNER JOIN `product` ON weights.product_id=product.id WHERE product.cut_id IN ($cutIDS) && product.pallet_id IN ($palletIDS) && weights.status_id != 1";
-        $y = mysqli_query($conn, $x);
+		$y = mysqli_query($conn, $x);
         $row = mysqli_fetch_array($y);
     
         $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
         $y1 = mysqli_query($conn, $x1);
-        $numInPicking = mysqli_num_rows($y1);
-
-        return $row['num'];
+		$numInPicking = mysqli_num_rows($y1);
+		
+        return $row['num'] - $numInPicking;
     }
+
+	function numWeightsAvailableFromProductID($product_id){
+		global $conn;
+
+
+        $x = "SELECT COUNT(weights.id) as num FROM `weights` INNER JOIN `product` ON weights.product_id=product.id WHERE product.id = $product_id && weights.status_id != 1";
+		$y = mysqli_query($conn, $x);
+		$row = mysqli_fetch_array($y);
+
+		$x1 = "SELECT id FROM `pickerItems` WHERE product_id='$product_id' && status = '0'";
+		$y1 = mysqli_query($conn, $x1);
+		$numInPicking = mysqli_num_rows($y1);
+		
+		return $row['num'] - $numInPicking;
+	}
+
 
     function totalWeightOfAdvisedKGProduct($intake_id){
         global $conn;
@@ -688,17 +738,99 @@
 		
 		return $name;
 	}
-
+	
+	// ??: Should be renamed or return full nationality entry
 	# Get nationality name from id
+	// cache the results
+	$nationalities = [];
 	function getNationality($id){
 		global $conn;
+		global $nationalities;
+
+		$result = searchInNestedArray($nationalities, "id", $id);
 		
-		$x = "SELECT * FROM nationality WHERE id = '$id'";
+		if($result)
+		{
+			return $result['name'];
+		}
+		
+		$x = "SELECT * FROM nationality";
+		$y = mysqli_query($conn, $x);
+		$nationalities = mysqli_fetch_all($y, MYSQLI_ASSOC);
+		
+		$result = searchInNestedArray($nationalities, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		return null; 
+	}
+
+	# Get Temp - returns temp text for specific tempid
+	$temperatures = [];
+	function getTemp($tempid){
+		global $conn;
+		global $temperatures;
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		
+		$x = "SELECT * FROM temperature";
+		$y = mysqli_query($conn, $x);
+		$temperatures = mysqli_fetch_all($y, MYSQLI_ASSOC);
+
+		$result = searchInNestedArray($temperatures, "id", $tempid);
+		
+		if($result)
+		{
+			return $result['temperature'];
+		}
+		return null;
+	}
+
+	# Get brand name from id
+	$brands = [];
+	function getBrand($id){
+		global $conn;
+		global $brands;
+
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+
+		$x = "SELECT * FROM brands";
 		$y = mysqli_query($conn, $x);
 		
-		$row = mysqli_fetch_array($y);
+		$brands = mysqli_fetch_all($y, MYSQLI_ASSOC);
 		
-		return $row['name']; 
+		$result = searchInNestedArray($brands, "id", $id);
+		
+		if($result)
+		{
+			return $result['name'];
+		}
+		return null; 
+	}
+
+	function searchInNestedArray($array, $field, $value)
+	{
+		$result = null;
+
+		foreach ($array as $key => $val) {
+			if ($val[$field] === $value) {
+				$result = $val;
+				return $result;
+			}
+		}
 	}
 	
 	# weight of product
@@ -779,18 +911,6 @@
 	}
 	
 	
-	# Get brand name from id
-	function getBrand($id){
-		global $conn;
-		
-		$x = "SELECT * FROM brands WHERE id = '$id'";
-		$y = mysqli_query($conn, $x);
-		
-		$row = mysqli_fetch_array($y);
-		
-		return $row['name']; 
-	}
-	
 	# Get Intake - expects 1 param, intake_id
 	function getIntake($id){
 		global $conn;
@@ -856,16 +976,6 @@
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
 		return $row;
-	}
-	
-	# Get Temp - returns temp text for specific tempid
-	function getTemp($tempid){
-		global $conn;
-		
-		$x = "SELECT * FROM temperature WHERE id = '$tempid'";
-		$y = mysqli_query($conn, $x);
-		$row = mysqli_fetch_array($y);
-		return $row['temperature'];
 	}
 	
 	# Get Username - returns username for specific userid

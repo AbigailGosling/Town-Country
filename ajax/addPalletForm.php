@@ -444,24 +444,23 @@
 				},
 				success: function(data)
 				{	
-					// console.log(data);
-					// alert('Duplicate pallet added successfully!');
-					 
-					$('#ubbb').prop('selectedIndex',0);
-					$('#unit').prop('selectedIndex',0);
-					$('#individualweights').prop('selectedIndex',0);
 					
-					$('#best_by').val('');
-					$('#best_by_range_from').val('');
-					$('#best_by_range_to').val('');
-					$('#quantityWeight').val('');
+					// $('#ubbb').prop('selectedIndex',0);
+					// $('#unit').prop('selectedIndex',0);
+					// $('#individualweights').prop('selectedIndex',0);
+					
+					// $('#best_by').val('');
+					// $('#best_by_range_from').val('');
+					// $('#best_by_range_to').val('');
+					// $('#quantityWeight').val('');
 					
 					$('#tear_weight_val').val('');
 					$('#gross_weight_val').val('');
 					$('#single_weight_val').val('');
+					$('#akg').val('');
 					
 					
-					$('#MultiWeightDiv').html(''); 
+					// $('#MultiWeightDiv').html(''); 
 					
 					$('.palletidpopup').html(data);
 					$('.palletnotepopup').fadeIn();

@@ -41,7 +41,7 @@
 		<form method="POST" enctype="multipart/form-data" id="mainForm" action="/scripts/<?php if($edit){ echo 'editPurchase.php'; } else { echo 'newPurchase.php'; } ?>" autocomplete="off">
 		<input autocomplete="off" name="hidden" type="text" style="display:none;">
         <div id="product_options" style="display:flex;flex-wrap:wrap;width:190px;">
-            <a href="javascript:myprint();" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Print Purchase</a>
+			<?php if($edit){ ?><a href="javascript:myprint();" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Print Purchase</a><?php } ?>
 			<input type="submit" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Purchase" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
 			
 			<?php
@@ -184,10 +184,10 @@
 					if($edit){
 						 
 
-						$species = explode(',', $purchase['species']);
-						$cuts = explode(',', $purchase['cut']);
-						$units = explode(',', $purchase['units']);
-						$prices = explode(',', $purchase['price']);
+						$species = explode('|', $purchase['species']);
+						$cuts = explode('|', $purchase['cut']);
+						$units = explode('|', $purchase['units']);
+						$prices = explode('|', $purchase['price']);
 						
 						$size = sizeof($species);
 						

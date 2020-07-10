@@ -69,14 +69,14 @@
 				<td colspan="1"><a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
 				<td colspan="1">
 					<form method="post">
-						<input type="text" name="location" class="location" value="<?php echo $productsRow['storage_location']; ?>" placeholder="location" style="width:90px;">
-						<input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow['pallet_id']; ?>" style="display:none;">
+						<input type="text" name="location" class="location" value="<?php echo $productsRow2['storage_location']; ?>" placeholder="location" style="width:90px;">
+						<input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
 					</form>
 				</td>
 				<td colspan="1"><?php echo $productsRow2['pallet_id']; ?></td>
 				<td colspan="1">
 					<?php
-                    	$numOfWeights = countNumProductsForCutOnPallet($productsRow2['pallet_id'], $productsRow2['cut_id']);
+						$numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
 					?>
 					<select class="quantitybox" id="quantity-<?php echo $productsRow2['productid']; ?>-<?php echo $productsRow2['pallet_id']; ?>">
 						<?php for($i=1;$i<$numOfWeights+1;$i++){?>
@@ -106,3 +106,22 @@
             }
 		}
  ?>
+  <script>
+ 
+ $(document).ready(function(){
+	 $('.location').each(function(){
+		 $(this).on('keypress',function(e) {
+			 if(e.which == 13) {
+				 
+				var location = $(this).parent().find('.location').val();
+				var pallet = $(this).parent().find('.pallet').val();
+				
+				$.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
+					console.log(data);
+				});
+			 }
+		 });
+	 });
+ });
+
+</script>

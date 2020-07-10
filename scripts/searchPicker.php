@@ -35,6 +35,7 @@
 	<th align="left">RRP</th>
 	<th align="left"></th> 
 <?php
+    $time1 = microtime(true);
 	require('../functions.php');
 	
 	$cutgroup_id = $_GET['cutgroup_id'];
@@ -45,12 +46,15 @@
     
      
     $ARRAY_CUTS = array();
+
+    // ??: Gets the same cuts twice here #1
     $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id);
 
     $whereArray = [];
 
     if($species_id != '' && $cutgroup_id != ''){ # if these two are posted then they've used the species and cutgroup dropdown
-        $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
+        // ??: and here #2
+        // $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
         $ids = implode(',', $ARRAY_CUTS);
 
         if(count($ARRAY_CUTS) > 0){ # seems to still get here if i dont do this if??
@@ -69,7 +73,8 @@
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
 
-    array_push($whereArray, "product.status='0'");
+    // array_push($whereArray, "product.status='0'");
+
     array_push($whereArray, "product.cost != '0.00'");
 
     
@@ -82,6 +87,7 @@
     $productsX = "SELECT *, product.comments as productcomments, product.id as productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     WHERE $whereString
     GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
      
@@ -100,6 +106,7 @@
         $ubbb = $productsRow['ubbb'];
         $smallestDate = $productsRow['range_from'];
         $largestDate = $productsRow['range_to'];
+        // ??: Don't we already have the intake_id from the query?
         $intake_id = intakeIDfromPalletID($pallet_id);
         $nationality_id = $productsRow['nationality_id'];
         $cut = getCut($productsRow['cut_id']);
@@ -161,8 +168,16 @@
             </td>
             <td colspan="1"  onclick=""></td>
             <td colspan="1"><?php echo $quantityTotal; ?></td>
+            <!---
+            // ??: No need to call the database on every loop.
+            // ??: The temperatures are just a few entries.
+            // ??: Better to get all the entries in the beginning
+            -->
             <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
             <td colspan="1"><?php echo $cut; ?></td>
+            <!--
+            // ??: Same as with temperatures - get all entries in the beginning
+            -->
 			<td colspan="1"><?php echo getNationality($productsRow['nationality_id']); ?></td>
 			<td colspan="1">
 				<form method="post">
@@ -283,6 +298,7 @@ $('.weightVal').text(newWeight);
 }
 
 $(document).ready(function(){
+ 
 $.each(document.cookie.split(/; */), function()  {
   var splitCookie = this.split('=');
 
@@ -307,27 +323,8 @@ $.each(document.cookie.split(/; */), function()  {
     }
 });
 
-$('#saveLocation').click(function(){
-    var location = $(this).parent().find('.location').val();
-    var pallet = $(this).parent().find('.pallet').val();
-    
-    $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
-        // console.log(data);
-    });
-});
-
-$('.location').each(function(){
-    $(this).on('keypress',function(e) {
-        if(e.which == 13) {
-            var location = $(this).parent().find('.location').val();
-            var pallet = $(this).parent().find('.pallet').val();
-            
-            $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
-                // console.log(data);
-            });
-        }
-    });
-});
+ 
+ 
 
 $('.overviewcomment').each(function(){
     $(this).on('keypress', function(e){
@@ -382,3 +379,8 @@ margin-bottom:5px;
 background:#cacaca;
 }
 </style>
+
+<?php 
+//$time2 = microtime(true);
+//echo 'script execution time: ' . ($time2 - $time1);
+?>

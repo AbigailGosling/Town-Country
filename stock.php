@@ -1,5 +1,4 @@
 <?php
-    ini_set('memory_limit','16M');
     include('includes/frontHeader.php');
 ?>
 <script>
@@ -145,9 +144,9 @@
             ?>
         </select>
         &nbsp;&nbsp;&nbsp;
-        <input type="number" name="intake_id" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
-        <input type="number" name="pallet_id" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
-        <input type="submit" value="Search" style="height: 39px;width: 80px;">
+        <input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
+        <input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
+        <input type="button" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;">
     </form>
 	<div id="loadResults" class="resultsContainer">
         <?php if($_POST['cutgroup_id'] || $_POST['pallet_id'] || $_POST['intake_id']){ ?>        
@@ -169,7 +168,7 @@
             <th align="left"></th>
             
            <?php 
-                ?><div class="gifContainer"><center><img src="https://zippy.gfycat.com/SkinnySeveralAsianlion.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
+                ?><div class="gifContainer"><center><img src="/img/loading.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
                 
                 $cutgroup_id = $_POST['cutgroup_id'];
                 $species_id = $_POST['species'];
@@ -190,12 +189,11 @@
                 }
 
                 if($intake_id != ''){ # if this is posted then theyve entered a intake id
-                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup 
+                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id);
                     $ids = implode(',', $ARRAY_PALLET_IDS);
 
                     array_push($whereArray, 'pallet.id IN ('.$ids.')');
                 }
-                array_push($whereArray, "product.cost != '0.00'");
 
                 foreach($whereArray as $where){
                     $whereString .= $where . ' && ';
@@ -238,6 +236,9 @@
                     $nationality_id = $productsRow['nationality_id'];
                     $cut = getCut($productsRow['cut_id']);
                     
+                    $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id);
+
+
                     if($ubbb == 0){
                         $ubtext = 'UB';
                     }else if($ubbb == 1){
@@ -279,9 +280,8 @@
                         },
                     $products2);
                     
-                    // $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
+                    $quantityTotal = countNumProductsForCutOnPalletArrays($ARRAY_PALLET_IDS, [$cut_id]);
 
-                    $quantityTotal = keztesting($product2_palletids, $product2_cutids);
 
                     ###
                     $totalW = 0;
@@ -335,7 +335,7 @@
                             <td colspan="1">
                             &nbsp;		 
                             </td>
-                            <td colspan="1"><?php echo $pallet_id; ?></td>
+                            <td colspan="1"></td>
                             <td colspan="1"><?php echo $quantityTotal; ?></td>
                             <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
                             <td colspan="1"><?php echo $cut; ?></td>
@@ -407,6 +407,20 @@
     });
 
 
+    function doSearch(){
+ 
+  		var species = $('#SearchSpecies').val();
+		var cutgroup_id = $('#SearchCutgroups').val();
+  		var intakeID = $('#IntakeID').val();
+ 		var palletID = $('#PalletID').val();
+		
+		if(cutgroup_id != '' && species != '' || intakeID != '' || palletID != ''){
+            $('#searchForm').submit();
+        }else{
+			alert('Please fill out the form before searching');
+		}
+
+    }
 
 
     $('.overviewcomment').each(function(){

@@ -27,11 +27,13 @@
 	$number_of_cartons = mysqli_real_escape_string($conn, $_POST['number_of_cartons']);
 	
 	
+	$akg = mysqli_real_escape_string($conn, $_POST['akg']);
+
 	
 	$_POST['quantity']++; # Fix the loop from starting at 0
 	
 	
-	$x = "INSERT INTO `product` (pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit) VALUES ('$pallet_id','$cut_id','$brand_id','$nationality_id','$temperature_id','$range_from','$range_to','$ubbb','$unit')";
+	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit) VALUES ('$akg','$pallet_id','$cut_id','$brand_id','$nationality_id','$temperature_id','$range_from','$range_to','$ubbb','$unit')";
 	$y = mysqli_query($conn, $x);
 			
 	$product_id = mysqli_insert_id($conn); 
@@ -39,53 +41,45 @@
 	
 	// echo '<br/><br/>';
 	
-	for($a = 1; $a < $_POST['quantity']; $a++){
-		// echo 'WEIGHT / ';
-		$individualweights = $_POST['individualweights'];
-		
-		if($individualweights == 'C'){
-			# Catch Weights
-			$weight = $_POST['weights' . $a];
+	if($akg != ''){
+		$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES ('$product_id','$status_id','$akg','$akg')";
+		$y = mysqli_query($conn, $x);	
+	}else{
+		for($a = 1; $a < $_POST['quantity']; $a++){
+ 			$individualweights = $_POST['individualweights'];
 			
-			// $x = "INSERT INTO `product` (pallet_id,cut_id,brand_id,nationality_id,cooling_id) VALUES ('$pallet_id','$cut_id','$brand_id','$nationality_id','$temperature_id')";
-			// $y = mysqli_query($conn, $x);
+			if($individualweights == 'C'){
+				# Catch Weights
+				$weight = $_POST['weights' . $a];
+				
+				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES ('$product_id','$status_id','$weight','$weight')";
+				$y = mysqli_query($conn, $x);
+				
+			}else if($individualweights == 'D'){
+				# Dolav Weights
+				
+				$weight = $gross_weight_val - $tear_weight_val;
 			
-			// $product_id = mysqli_insert_id($conn); 
+				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear,pallet_tare,tare_per_carton,number_of_cartons)
+				VALUES ('$product_id','$status_id','$gross_weight_val','$tear_weight_val','$pallet_tare','$tare_per_carton','$number_of_cartons')";
+				$y = mysqli_query($conn, $x);
+				
+			}else{
+				# Single Weight Value
+				$weight = $_POST['single_weight_val'];
+				
+				
+				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES ('$product_id','$status_id','$weight','$weight')";
+				$y = mysqli_query($conn, $x);
+			}
 			
-			$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES ('$product_id','$status_id','$weight','$weight')";
-			$y = mysqli_query($conn, $x);
-			
-			// echo "<br/><br/>";
-		}else if($individualweights == 'D'){
-			# Dolav Weights
-			
-			$weight = $gross_weight_val - $tear_weight_val;
-			
-			// $x = "INSERT INTO `product` (pallet_id,cut_id,brand_id,nationality_id,cooling_id) VALUES ('$pallet_id','$cut_id','$brand_id','$nationality_id','$temperature_id')";
-			// $y = mysqli_query($conn, $x);
-			
-			// $product_id = mysqli_insert_id($conn); 
-			
-			$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear,pallet_tare,tare_per_carton,number_of_cartons)
-			VALUES ('$product_id','$status_id','$gross_weight_val','$tear_weight_val','$pallet_tare','$tare_per_carton','$number_of_cartons')";
-			$y = mysqli_query($conn, $x);
-			
-			// echo "<br/><br/>";
-			
-		}else{
-			# Single Weight Value
-			$weight = $_POST['single_weight_val'];
-			
-			
-			$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES ('$product_id','$status_id','$weight','$weight')";
-			$y = mysqli_query($conn, $x);
-			// echo "<br/><br/>";
-		}
-		  
-	}	
+		}	
+	}
 ?>
 
-<div style="displaY:none;">
+<div style="display:none;">
+	akg: <?php echo $akg; ?><br/>
+	product_id: <?php echo $product_id; ?><br/>
 	unit: <?php echo $unit; ?><br/>
 	intake_id: <?php echo $intake_id; ?><br/>
 	pallet_id: <?php echo $pallet_id; ?><br/>
