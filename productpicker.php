@@ -331,6 +331,11 @@ if(date != ''){
         var thisval = $(this).val();
         $('#SearchCutgroups option.allsoption').hide();
         $('#SearchCutgroups option.s'+thisval).show();
+
+		// iOS fix - display:none doesn't work on select options
+		$('#SearchCutgroups option.allsoption').unwrap('span');
+        $('#SearchCutgroups option.allsoption').wrap('<span/>');
+        $('#SearchCutgroups option.s'+thisval).unwrap();
         //$('#SearchCutgroups').val($('#SearchCutgroups option.s'+thisval).first().attr('sid'));
 
 

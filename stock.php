@@ -397,6 +397,12 @@
         $('#SearchCutgroups option.header').show();
         $('#SearchCutgroups option.s'+thisval).show();
         $('#SearchCutgroups').val($('#SearchCutgroups option.header').first().attr('sid'));
+       
+        // iOS fix - display:none doesn't work on select options
+		$('#SearchCutgroups option.allsoption').unwrap('span');
+        $('#SearchCutgroups option.allsoption').wrap('<span/>');
+        $('#SearchCutgroups option.s'+thisval).unwrap();
+       
         //$('#SearchCutgroups').val($('#SearchCutgroups option.s'+thisval).first().attr('sid'));
         var id = $(this).val();
     });
