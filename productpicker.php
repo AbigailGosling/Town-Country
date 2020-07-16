@@ -189,10 +189,7 @@
 		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
-	}
-	
-	.leftPanel{
-		/* background:#f2f2f2; */
+		float: left;
 	}
 	
 	.clearfix{
