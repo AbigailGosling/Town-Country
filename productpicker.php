@@ -120,18 +120,10 @@
 
 				document.getElementById('menu').addEventListener('click', function(e) {
 					if (formHasChanged && !submitted) {
-						e.preventDefault()
-						var alert = confirm('Are you sure you want to leave?')
-
-						if (alert === true) {
-							window.location.href = "/menu.php"
-						}
+						e.preventDefault()	
+						changePage('menu')
 					}
 				})
-
-				function alertFunction() {
-					alert('hello')
-				}
         
         $(document).on('change', 'form #customer', function (e) {
             formHasChanged  = true;
@@ -140,6 +132,25 @@
         $("#pickerForm").submit(function() {
             submitted = true;
         });
+
+				$(document).on('click', '.intakeLink', function(e) {
+					if (formHasChanged && !submitted) {
+						e.preventDefault()	
+						changePage($(this).attr('id'))
+					}
+				})
+
+				function changePage(prop) {					
+					var alert = confirm('Are you sure you want to leave?')
+
+					if (alert === true) {
+						if (prop == 'menu') {
+							window.location.href = "/menu.php"
+						} else {
+							window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
+						}
+					}
+				}
 
     });
 

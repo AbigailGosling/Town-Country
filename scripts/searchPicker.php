@@ -160,7 +160,7 @@
             
             
             <td colspan="1">
-                <a href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
+                <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
 					<b><?php echo $intake_id; ?></b>
 				</a>
 			</td>
