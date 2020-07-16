@@ -223,7 +223,7 @@ $(this).next('.searchRContent').toggle();
 });
 
 var firstExecution = 0
-var interval = 5000
+var interval = 1000
 
 function addToSheet(product_id, pallet_id, cut_id, theClass){
 
