@@ -118,11 +118,20 @@
         var formHasChanged = false;
         var submitted = false;
 
-        window.onbeforeunload = function(){
-            if (formHasChanged && !submitted) {
-                return 'Are you sure you want to leave?';
-            }
-        };
+				document.getElementById('menu').addEventListener('click', function(e) {
+					if (formHasChanged && !submitted) {
+						e.preventDefault()
+						var alert = confirm('Are you sure you want to leave?')
+
+						if (alert === true) {
+							window.location.href = "/menu.php"
+						}
+					}
+				})
+
+				function alertFunction() {
+					alert('hello')
+				}
         
         $(document).on('change', 'form #customer', function (e) {
             formHasChanged  = true;
@@ -217,20 +226,26 @@
 	.searchRContent {
 		border-collapse: collapse;
 		text-align: center;
-		font-size: 12px;
+		font-size: 14px;
 	}
 
 	.searchRContent__head {
 		border-bottom: 1px solid #d9d9d9;
+		font-size: 14px;
 	}
 
 	.searchRContent__head th {
 		padding-bottom: 10px;
 	}
 
-	.searchRContent .bold {
+	.searchRContent__icon {
 		font-size: 14px;
+	}
+
+	.searchRContent .bold {
+		font-size: 16px;
 		font-weight: bold;
+		padding: 0 10px;
 	}
 
 	.searchAccordTitle:nth-child(odd) {
@@ -243,7 +258,23 @@
 
 	.searchAccordTitle td {
 		border: 0;
-		padding: 0 10px;
+		padding: 0;
+	}
+
+	@media only screen
+	and (min-device-width : 768px) 
+	and (max-device-width : 1024px)  {
+		.searchRContent {
+			font-size: 10px
+		}
+
+		.searchRContent__head {
+			font-size: 12px;
+		}
+
+		.searchRContent .bold {
+			font-size: 14px;
+		}
 	}
 
 </style>

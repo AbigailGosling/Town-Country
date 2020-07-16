@@ -26,10 +26,10 @@
 	        <th>Plt ID</th>
             <th></th>
 	        <th>Unit</th>
-	        <th>Chilled/Frozen</th>
+	        <th>Chill/Frz</th>
 	        <th>Product</th>
 	        <th>Nationality</th>
-	        <th width="20%">Comments</th>
+	        <th>Comments</th>
 	        <th>Brand</th>
 	        <th>Date Range</th>
 	        <th>Volume</th>
@@ -168,8 +168,8 @@
              &nbsp;		 
             </td>
             <td colspan="1"  onclick=""></td>
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
-            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <!---
             // ??: No need to call the database on every loop.
