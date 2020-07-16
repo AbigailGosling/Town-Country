@@ -177,9 +177,7 @@
     
 
 	.rightPanel{
-		width:calc(100% - 103px);
-	
-		float:left;
+
 		padding:50px;
 		position:relative;
 		margin-top:40px;
@@ -189,7 +187,6 @@
 		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
-		float: left;
 	}
 	
 	.clearfix{
