@@ -222,9 +222,16 @@ $('.searchRHeading').click(function(){
 $(this).next('.searchRContent').toggle();
 });
 
+var firstExecution = 0
+var interval = 5000
+
 function addToSheet(product_id, pallet_id, cut_id, theClass){
 
-var q = $('#quantity-' + product_id + '-' + pallet_id).val();
+    var date = new Date()
+    var milliseconds = date.getTime()
+
+    if ((milliseconds - firstExecution) > interval) {
+        var q = $('#quantity-' + product_id + '-' + pallet_id).val();
 var comment = $('#comment-' + product_id + '-' + pallet_id).val();
 
 
@@ -268,9 +275,11 @@ $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id +
 $.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
     $('.basketTable').append(data);
 });
+        firstExecution = milliseconds
+    } else {
+        console.log('too early')
+    }
 
-//$('#loadResults').html('');
-// $('#KIS428319').toggle();
 }
  
 function toggleWeight(weightdiv){
