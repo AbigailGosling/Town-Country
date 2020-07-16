@@ -165,16 +165,14 @@
 		margin-top:40px;
 	}
 	.leftPanel{
-		width:calc(100% - 103px);
 		height:100%;
-		float:left;
-		padding:50px;
+		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
 	}
 	
 	.leftPanel{
-		background:#f2f2f2;
+		/* background:#f2f2f2; */
 	}
 	
 	.clearfix{
@@ -209,13 +207,45 @@
 	}
 	
 	.resultsContainer{
-		width: calc(100% - 40px);
 		min-height: 400px;
 		border: 2px dashed #cacaca;
 		padding: 0px;
 		margin-top: 20px;
 		padding-top: 14px;
 	}
+
+	.searchRContent {
+		border-collapse: collapse;
+		text-align: center;
+		font-size: 12px;
+	}
+
+	.searchRContent__head {
+		border-bottom: 1px solid #d9d9d9;
+	}
+
+	.searchRContent__head th {
+		padding-bottom: 10px;
+	}
+
+	.searchRContent .bold {
+		font-size: 14px;
+		font-weight: bold;
+	}
+
+	.searchAccordTitle:nth-child(odd) {
+		background: #f2f2f2;
+	}
+
+	.searchAccordTitle:nth-child(event) .overviewcomment {
+		border: 1px solid #f2f2f2;
+	}
+
+	.searchAccordTitle td {
+		border: 0;
+		padding: 0 10px;
+	}
+
 </style>
 <script type="text/javascript">
     

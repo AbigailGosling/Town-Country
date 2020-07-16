@@ -19,21 +19,25 @@
     }
 </script>
 <table width="100%" class="slim searchRContent"   style="display:table;">
-	<th align="left"></th>
-	<th align="left">Intake ID</th>
-	<th align="left">Location</th>
-	<th align="left">Plt ID</th>
-	<th align="left">Unit</th>
-	<th align="left">Chilled/Frozen</th>
-	<th align="left">Product</th>
-	<th align="left">Nationality</th>
-	<th align="left" width="20%">Comments</th>
-	<th align="left">Brand</th>
-	<th align="left">Date Range</th>
-	<th align="left">Volume</th>
-	<th align="left">Cost</th>
-	<th align="left">RRP</th>
-	<th align="left"></th> 
+    <thead>
+        <tr class="searchRContent__head">
+	        <th>Intake ID</th>
+	        <th>Location</th>
+	        <th>Plt ID</th>
+            <th></th>
+	        <th>Unit</th>
+	        <th>Chilled/Frozen</th>
+	        <th>Product</th>
+	        <th>Nationality</th>
+	        <th width="20%">Comments</th>
+	        <th>Brand</th>
+	        <th>Date Range</th>
+	        <th>Volume</th>
+	        <th>Cost</th>
+	        <th>RRP</th>
+	        <th></th> 
+        </tr>
+    </thead>
 <?php
     $time1 = microtime(true);
 	require('../functions.php');
@@ -153,8 +157,6 @@
        
         ?>
         <tr class="searchAccordTitle">
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
-            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
             
             
             <td colspan="1">
@@ -166,14 +168,16 @@
              &nbsp;		 
             </td>
             <td colspan="1"  onclick=""></td>
-            <td colspan="1"><?php echo $quantityTotal; ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
+            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
+            <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <!---
             // ??: No need to call the database on every loop.
             // ??: The temperatures are just a few entries.
             // ??: Better to get all the entries in the beginning
             -->
-            <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
-            <td colspan="1"><?php echo $cut; ?></td>
+            <td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+            <td class="bold" colspan="1"><?php echo $cut; ?></td>
             <!--
             // ??: Same as with temperatures - get all entries in the beginning
             -->
@@ -184,9 +188,9 @@
 					<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 				</form>
 			</td>
-			<td align="left"><?php echo getBrand($productsRow['brand_id']); ?></td>
+			<td><?php echo getBrand($productsRow['brand_id']); ?></td>
 			<td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
-            <td><?php 
+            <td class="bold"><?php 
                 
                 if($productsRow['akg'] != ''){
                    echo totalWeightOfAdvisedKGProduct($intake_id);
@@ -195,8 +199,8 @@
                 }
 
  				?>kg</td>
-			<td><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-			<td><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+			<td class="bold"><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
+			<td class="bold"><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
         </tr>
     <?php  ?>
 
@@ -252,7 +256,7 @@ if(howManyBefore > q){
 }else{
     for(i=0; i < q; i++){
         $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
-        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.3');
+        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.6');
         $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('pointer-events','none');
     }
 }

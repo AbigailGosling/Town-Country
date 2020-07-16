@@ -70,7 +70,6 @@
                     $product_id = $productsRow2['productid'];
                     ?>
                     <tr style="background:#d9d9d9;" class="subrow <?php echo $class; ?>">
-                    <td></td>
                     <td colspan="1">
                         <?php echo $numInPicking; ?>
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
@@ -81,6 +80,7 @@
                         </form>
                     </td>
                     <td colspan="1"><?php echo $productsRow2['pallet_id']; ?></td>
+                    <td></td>
                     <td colspan="1">
                         <select class="quantitybox" id="quantity-<?php echo $productsRow2['productid']; ?>-<?php echo $productsRow2['pallet_id']; ?>">
                             <?php for($i=1;$i<$numOfWeights+1;$i++){?>
@@ -88,14 +88,14 @@
                             <?php } ?>
                         </select>
                     </td>
-                    <td align="left" <?php if($temp_id == 1){ echo 'style="background:#a02f24;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
-                    <td colspan="1"><?php echo getCut($productsRow2['cut_id']); ?></td>
+                    <td <?php if($temp_id == 1){ echo 'style="background:#a02f24;color:#fff;"'; }else { echo 'style="background:#2980b9;color:#fff;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+                    <td class="bold" colspan="1"><?php echo getCut($productsRow2['cut_id']); ?></td>
                     <td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
                     <td colspan="1"></td>
-                    <td align="left"><?php echo getBrand($productsRow2['brand_id']); ?></td>
+                    <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
                     <td><?php echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; ?></td>
                     
-                    <td><?php 
+                    <td class="bold"><?php 
                     
                     if($productsRow['akg'] != ''){
                         echo totalWeightOfAdvisedKGProduct($intake_id);
