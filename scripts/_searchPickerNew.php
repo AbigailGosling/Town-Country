@@ -69,7 +69,7 @@
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
                     ?>
-                    <tr style="background:#d9d9d9;" class="subrow <?php echo $class; ?>">
+                    <tr style="background:rgb(164, 164, 164);" class="subrow <?php echo $class; ?>">
                     <td colspan="1">
                         <?php echo $numInPicking; ?>
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
