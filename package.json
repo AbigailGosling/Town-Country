@@ -1,0 +1,35 @@
+{
+  "name": "town_and_country",
+  "version": "4.0.0",
+  "scripts": {
+    "scss": "node-sass --watch -r --output-style compressed -o dist/css styles",
+    "build": "cd angular/Frontend && npm run buildProject && cd ../Admin; npm run buildProject && cd ../../; gulp build"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "gulp-concat": "^2.6.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.26.7",
+    "glob": "^7.1.6",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^6.1.0",
+    "gulp-clean-css": "^4.2.0",
+    "gulp-plumber": "^1.2.1",
+    "gulp-purgecss": "^1.2.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5"
+  },
+  "browserslist": [
+    "last 1 major version",
+    ">= 1%",
+    "Chrome >= 45",
+    "Firefox >= 38",
+    "Edge >= 12",
+    "Explorer >= 11",
+    "iOS >= 9",
+    "Safari >= 9",
+    "Android >= 4.4",
+    "Opera >= 30"
+  ]
+}
