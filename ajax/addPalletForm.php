@@ -720,36 +720,63 @@
 			$('#SingleWeightDiv').fadeIn();
 			$('.indiweights').fadeOut();
 		}else if($("#unit").val() == 'PPC'){
-			$('#SingleWeightDiv').fadeIn();
 			$('.indiweights').fadeOut();
 			$('#MultiWeightDiv').fadeOut();
-			console.log('testing..');
-		}else{
-			$('.indiweights').fadeIn();
-			$('#SingleWeightDiv').fadeOut();
-		}
-		
-		if($('#unit').val() == 'P'){
+			$('#SingleWeightDiv').fadeIn();
+			
+			$('.howManyUnitsDiv').text('HOW MANY CASES');
+			$('.indiweights').fadeOut();
+ 			
+			$('#grossWeightDiv').fadeOut();
+			$('#tearWeightDiv').fadeOut();
+
+			$('#individualweights').val('S');
+
+		}else if($('#unit').val() == 'P'){
 			$("#individualweights option[value=C]").hide();
 			$("#individualweights option[value=S]").hide();
 			// $('#individualweights').val('D');
 			// alert('doiung it?');
-		}else{
-			$("#individualweights option[value=C]").show();
-			$("#individualweights option[value=S]").show();
-		}
-		
-		
-		if($('#unit').val() == 'DS'){
+		}else if($('#unit').val() == 'DS'){
 			$('#directtostore').fadeIn();
 			$('.indiweights').fadeOut();
 			$('#individualweights').prop('selectedIndex',1);
 			$('#quantityWeight').val(1);
 			$('.quantityWeightContainer').fadeOut();
 			$('#SingleWeightDiv').fadeOut();
+		}else if($('#individualweights').val() == 'D'){
+			$('#grossWeightDiv').fadeIn();
+			$('#tearWeightDiv').fadeIn();
+			$('#akgDiv').fadeOut();
+		}else if($('#unit').val() == 'PP'){ // if packet
+			
+			$('.howManyUnitsDiv').text('HOW MANY PACKETS PER CASE');
+			$('.individualweights').val('S');
+			$('#individualweights > option').eq(2).attr('selected','selected');
+			
+			if($('#individualweights').val() == 'S'){
+				$('.standardcatchtext').text('PACKETS PER CASE');
+			}else{
+				$('.standardcatchtext').text('STANDARD OR CATCH WEIGHTS?');
+			}				
+			
+			var quantityVal = $('.quantityWeight').val();
+			
+			$('#single_weight_val').val(quantityVal);
+			$('.hideIfPacket').hide();
+			
 		}else{
+			$("#individualweights option[value=C]").show();
+			$("#individualweights option[value=S]").show();
+
 			$('#directtostore').fadeOut();
 			$('.quantityWeightContainer').fadeIn();
+			$('.indiweights').fadeIn();
+			$('#SingleWeightDiv').fadeOut();
+
+			$('.hideIfPacket').show();
+			$('.howManyUnitsDiv').text('HOW MANY UNITS');
+			$('.standardcatchtext').text('STANDARD OR CATCH WEIGHTS?');
  		}
 		
 		
@@ -781,11 +808,7 @@
 			
 			$('.multiweight').val(0);
 			
-		}else if($('#individualweights').val() == 'D'){
-			$('#grossWeightDiv').fadeIn();
-			$('#tearWeightDiv').fadeIn();
-			$('#akgDiv').fadeOut();
-		}else{
+		} else{
 			showSingleWeight();
 			removeWeightBoxes();
 			
@@ -795,38 +818,7 @@
 			 
 		}
 		
-		
-		if($('#unit').val() == 'PP'){ // if packet
-			
-			$('.howManyUnitsDiv').text('HOW MANY PACKETS PER CASE');
-			$('.individualweights').val('S');
-			$('#individualweights > option').eq(2).attr('selected','selected');
-			
-			if($('#individualweights').val() == 'S'){
-				$('.standardcatchtext').text('PACKETS PER CASE');
-			}else{
-				$('.standardcatchtext').text('STANDARD OR CATCH WEIGHTS?');
-			}				
-			
-			var quantityVal = $('.quantityWeight').val();
-			
-			$('#single_weight_val').val(quantityVal);
-			$('.hideIfPacket').hide();
-			
-		}else if($("#unit").val() == 'PPC'){
- 
-			$('.howManyUnitsDiv').text('HOW MANY CASES');
-			$('.indiweights').fadeOut();
-			$('#SingleWeightDiv').fadeOut();
-			
-			$('#grossWeightDiv').fadeOut();
-			$('#tearWeightDiv').fadeOut();
-			
-		}else{
-			$('.hideIfPacket').show();
-			$('.howManyUnitsDiv').text('HOW MANY UNITS');
-			$('.standardcatchtext').text('STANDARD OR CATCH WEIGHTS?');
-		}
+	  
 		
 	}
 	 
