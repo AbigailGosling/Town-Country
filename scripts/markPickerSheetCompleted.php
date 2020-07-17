@@ -24,8 +24,9 @@
 	$y = mysqli_query($conn, $x);
 	# END update customer price
 	
-	
-	$date_completed = date('Y/m/d');
+	date_default_timezone_set("Europe/London");
+
+	$date_completed = date('Y/m/d H:i:s');
     
     $session_USERID = $_SESSION['USER'];
 

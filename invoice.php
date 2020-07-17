@@ -75,10 +75,11 @@
 			<div class="deliverydate">Delivery Date: <span class="date"><?php echo $pickSheetRow['estimated_delivery_date']; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
 			<?php
-				$date = str_replace('/', '-', $pickSheetRow['date_completed']);
-				$assemblydate = date('d/m/Y', strtotime($date));
+				$date_completed = str_replace('/', '-', $pickSheetRow['date_completed']);
+				$date_completed2 = date('d/m/Y', strtotime($date_completed));
+				$assemblydate = date('d/m/Y G:i A', strtotime($date_completed));
 				
-				$date = DateTime::createFromFormat('d/m/Y', ''.$assemblydate);
+				$date = DateTime::createFromFormat('d/m/Y', ''.$date_completed2);
 				
 				$paydayDelay = $customerRow['credit_terms'];
 				
