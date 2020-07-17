@@ -579,6 +579,13 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 		});
 
 	}
+
+	function printCompleted() {
+		$('#top').show();
+		$('.formBackButton').show();
+		$('.backbtn').show();
+		$('main').removeAttr("style")
+	}
 	
 	// printContent(1);
 	
