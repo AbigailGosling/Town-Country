@@ -25,7 +25,7 @@
 <a href="<?php echo $domain; ?>invoiceList.php"class="backbtn"  onclick="goBack()">< Back</a>
 <main class="int int--extra-padding">	
 	<div class="formBackButton formBackButton--invoice" style="float:right;font-size:22px;">
-		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|
+		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a> |
  		<a href="javascript:;" onclick="printStuff()">Print</a>
 	</div>
 	<div id="print">
