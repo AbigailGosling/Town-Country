@@ -22,39 +22,21 @@
 
 </script>
 <style type="text/css">
-    .weightbox{
-        padding:10px;
-        border:2px solid #cacaca;
-        display:inline-block;
-        cursor:pointer;
-        margin-bottom:5px; 
-    }
-    .activeWeight { background:#3faddd !important; color:#fff !important}
-    .weightbox:hover{
-        background:#cacaca;
-    }
-            
+<style type="text/css">
+     
+    
     
 
-	.rightPanel{
-		width:calc(100% - 103px);
-	
-		float:left;
+	.rightPanel {
 		padding:50px;
 		position:relative;
 		margin-top:40px;
 	}
 	.leftPanel{
-		width:calc(100% - 103px);
 		height:100%;
-		float:left;
-		padding:50px;
+		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
-	}
-	
-	.leftPanel{
-		background:#f2f2f2;
 	}
 	
 	.clearfix{
@@ -89,22 +71,123 @@
 	}
 	
 	.resultsContainer{
-		width: calc(100% - 40px);
-		min-height: 100px;
+		min-height: 400px;
 		border: 2px dashed #cacaca;
 		padding: 0px;
 		margin-top: 20px;
-        padding-top: 14px;
-        position:relative;
-        padding-bottom:80px;
-    }
-    
-    .gifContainer{
-        position: absolute;
-        bottom: -20px;
-        width: 100%;
-        text-align: center;
-    }
+		padding-top: 14px;
+	}
+
+	.searchRContent {
+		border-collapse: collapse;
+		text-align: center;
+		font-size: 14px;
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	.searchRContent__head {
+		border-bottom: 1px solid #d9d9d9;
+		font-size: 14px;
+	}
+
+	.searchRContent__head th {
+		padding-bottom: 10px;
+	}
+
+	.searchRContent__icon {
+		font-size: 14px;
+	}
+
+	.searchRContent .bold {
+		font-size: 16px;
+		font-weight: bold;
+		padding: 0 5px;
+	}
+
+	.searchAccordTitle:nth-child(odd) {
+		background: #f2f2f2;
+	}
+
+	.searchAccordTitle:nth-child(event) .overviewcomment {
+		border: 1px solid #f2f2f2;
+	}
+
+	.searchAccordTitle td {
+		border: 0;
+		padding: 0;
+	}
+
+	.location-input {
+		width: 80px;
+	}
+
+	.searchRContent__plus {
+		width: 28px;
+	}
+
+	.searchRContent__product {
+		width: 180px;
+	}
+
+	@media only screen
+	and (min-device-width : 768px) 
+	and (max-device-width : 1024px)  {
+		.searchRContent {
+			font-size: 10px
+		}
+
+		.searchRContent__head {
+			font-size: 12px;
+		}
+
+		.searchRContent .bold {
+			font-size: 14px;
+		}
+
+			.searchRContent__id {
+		width: 48px;
+		}
+		.searchRContent__location {
+			width: 60px;
+		}
+
+		.searchRContent__dropdown {
+			width: 20px;
+		}
+
+		.searchRContent__unit {
+			width: 55px;
+		}
+
+		.searchRContent__chill {
+			width: 40px;
+		}
+
+		.searchRContent__product {
+			width: 140px;
+		}
+
+		.searchRContent__date-range {
+			width: 70px;
+		}
+
+		.location-input {
+			width: 50px;
+		}
+	}
+
+	.subrow {
+		height: 58px;
+		background:#d9d9d9;
+	}
+
+	.subrow:hover {
+		background: #979797;
+		border: 1px solid #000;
+	}
+
+</style>
 </style>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -151,21 +234,20 @@
 	<div id="loadResults" class="resultsContainer">
         <?php if($_POST['cutgroup_id'] || $_POST['pallet_id'] || $_POST['intake_id']){ ?>        
             <table width="100%" class="slim searchRContent"   style="display:table;">
-            <th align="left"></th>
-            <th align="left">Intake ID</th>
-            <th align="left">Location</th>
-            <th align="left">Plt ID</th>
-            <th align="left">Unit</th>
-            <th align="left">Chilled/Frozen</th>
-            <th align="left">Product</th>
-            <th align="left">Nationality</th>
-            <th align="left" width="20%">Comments</th>
-            <th align="left">Brand</th>
-            <th align="left">Date Range</th>
-            <th align="left">Volume</th>
-            <th align="left">Cost</th>
-            <th align="left">RRP</th>
-            <th align="left"></th>
+	        <th class="searchRContent__id">Intake ID</th>
+	        <th class="searchRContent__location">Location</th>
+	        <th class="searchRContent__id">Plt ID</th>
+            <th class="searchRContent__dropdown"></th>
+	        <th class="searchRContent__unit">Unit</th>
+	        <th class="searchRContent__chill">Chill/Frz</th>
+	        <th class="searchRContent__product">Product</th>
+	        <th>Nationality</th>
+	        <th>Comments</th>
+	        <th>Brand</th>
+	        <th class="searchRContent__date-range">Date Range</th>
+	        <th>Volume</th>
+	        <th>Cost</th>
+	        <th>RRP</th>
             
            <?php 
                 ?><div class="gifContainer"><center><img src="/img/loading.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
@@ -326,8 +408,6 @@
                                 }
                             ?>
                         <tr class="searchAccordTitle" style="<?php if($products2Count == 1){ } ?>">
-                            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
-                            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
                             <td colspan="1">
                                 <a href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
                                     <b><?php echo $intake_id; ?></b>
@@ -337,8 +417,10 @@
                             &nbsp;		 
                             </td>
                             <td colspan="1"></td>
+                            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
+                            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
                             <td colspan="1"><?php echo $quantityTotal; ?></td>
-                            <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+                            <td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
                             <td colspan="1"><?php echo $cut; ?></td>
                             <td colspan="1"><?php echo getNationality($productsRow['nationality_id']); ?></td>
                             <td colspan="1">
@@ -347,7 +429,7 @@
                                     <input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
                                 </form>
                             </td>
-                            <td align="left"><?php echo getBrand($productsRow['brand_id']); ?></td>
+                            <td><?php echo getBrand($productsRow['brand_id']); ?></td>
                             <td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
                             <td><?php 
                              

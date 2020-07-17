@@ -66,9 +66,12 @@
 				$pallet_id = $productsRow2['pallet_id'];
 				$product_id = $productsRow2['productid'];
 			    ?>
-			    <tr style="background:#d9d9d9;" class="subrow <?php echo $class; ?>">
-				<td></td>
-				<td colspan="1"><a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
+			    <tr class="subrow <?php echo $class; ?>">
+				<td colspan="1">
+					<a class="intakeLink" href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
+						<b><?php echo intakeIDfromPalletID($pallet_id); ?></b>
+					</a>
+				</td>
 				<td colspan="1">
 					<form method="post">
 						<input type="text" name="location" class="location" value="<?php echo $productsRow2['storage_location']; ?>" placeholder="location" style="width:90px;">
@@ -76,6 +79,7 @@
 					</form>
 				</td>
 				<td colspan="1"><?php echo $productsRow2['pallet_id']; ?></td>
+				<td></td>
 				<td colspan="1">
 					<?php
 						$numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
@@ -86,11 +90,11 @@
 						<?php } ?>
 					</select>
 				</td>
-				<td align="left" <?php if($temp_id == 1){ echo 'style="background:#a02f24;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+				<td <?php if($temp_id == 1){ echo 'style="background:#a02f24;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
 				<td colspan="1"><?php echo getCut($productsRow2['cut_id']); ?></td>
 				<td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
 				<td colspan="1"></td>
-				<td align="left"><?php echo getBrand($productsRow2['brand_id']); ?></td>
+				<td><?php echo getBrand($productsRow2['brand_id']); ?></td>
 				<td><?php echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; ?></td>
 				
 				<td><?php 
