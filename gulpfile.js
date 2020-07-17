@@ -18,13 +18,13 @@ function pageReload() {
  */
 task('frontStyles', () => {
 
-    return src("./styles/style.scss")
+    return src("./styles/grid.scss")
         .pipe(plumber())
         .pipe(sourcemaps.init()) // Creates sourcemaps
         .pipe(sass()) // Converts Sass to CSS with gulp-sass
         .pipe(autoprefixer({ grid: 'no-autoplace' })) // Autoprefixes to the last 2 browser versions
         .pipe(sourcemaps.write('.')) // Writes the sourcemaps
-        .pipe(dest("./css/dist"))
+        .pipe(dest("./css"))
         .pipe(browserSync.stream());
 })
 
@@ -32,7 +32,7 @@ task('frontStyles', () => {
  * Watches for file changes and reloads the window
  */
 task('watch', () => {
-    // watch(['./styles/*/**/*.scss'], parallel('frontStyles'))
+    watch(['./styles/*/**/*.scss'], parallel('frontStyles'))
 
     browserSync.init({
         proxy: "townandcountry",

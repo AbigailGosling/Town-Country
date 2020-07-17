@@ -13,21 +13,24 @@
 	
 ?>
 
-<div style="position:absolute;left:92px;top:240px;">
+<div class="col">
+	<div class="row">
+	<div class="col">
 	
 
-	<input type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
+	<input class="form-control" type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
 	
 	<div>
 		<label>Contact Number</label><br/>
-		<input type="text" class="inputbox" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
+		<input class="form-control" type="text" class="input class="form-control"box" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
 	</div>
 
 	<div>
 		<label>Billing Address</label><br/>
-		<textarea name="billingaddress" style="width:300px;height:80px;padding:10px;resize:none;"disabled><?php echo $row['accounts_address_1']; ?>,&#13;<?php echo $row['accounts_address_2']; ?>,&#13;<?php echo $row['accounts_address_3']; ?><?php if($row['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $row['accounts_address_4']; ?></textarea>
+		<textarea class="form-control" name="billingaddress" style="height:80px;padding:10px;resize:none;"disabled><?php echo $row['accounts_address_1']; ?>,&#13;<?php echo $row['accounts_address_2']; ?>,&#13;<?php echo $row['accounts_address_3']; ?><?php if($row['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $row['accounts_address_4']; ?></textarea class="form-control">
 	</div>
 </div>
+
 
 <?php
 	 if($address_id != ''){
@@ -88,21 +91,24 @@
 	
 ?>
 
-<div style="">
-	<div style="display:block;padding-top:10px;">
+
+	<div class="col">
+	<div>
 	<label>Delivery Contact Number</label><br/>
-	<input type="text" class="inputbox" name="deliverynumber" value="<?php echo $addressNumber; ?>">
+	<input class="form-control" type="text" class="input class="form-control"box" name="deliverynumber" value="<?php echo $addressNumber; ?>">
 	</div>
-	<div style="display:block;padding-top:10px;">
+	<div>
 		<label>Delivery Address</label> <a href="#changeAddress" data-lity>[Other]</a><br/>
-		<textarea name="deliveryaddress" style="width:300px;height:80px;padding:10px;resize:none;"><?php echo $address; ?></textarea>
+		<textarea class="form-control" name="deliveryaddress" style="height:80px;padding:10px;resize:none;"><?php echo $address; ?></textarea class="form-control">
 	</div>
 </div>
-<div style="">
+</div>
+<div class="row">
+	<div class="col" style="">
 		
-	<div style="display:block;padding-top:10px;">
+	<div>
 		<label>Comments</label><br/>
-		<textarea name="comments" style="width:300px;height:142px;padding:10px;resize:none;"></textarea>
+		<textarea class="form-control" name="comments" style="height:142px;padding:10px;resize:none;"></textarea class="form-control">
 		
  		<?php
 			if($_GET['empty'] != 'true'){
@@ -155,7 +161,9 @@
  		 
  	</div>
 </div>
-<div id="changeAddress" class="lity-hide">
+<div class="col"></div>
+</div>
+<div id="changeAddress" class="row lity-hide">
 	<h2><?php echo $row['businessname']; ?>'s Address List</h2>
 	<?php 
 		$address1 = $row['address1_1'];
@@ -199,4 +207,5 @@
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 2)"><?php echo $address2; ?></div>
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 3)"><?php echo $address3; ?></div>
 		
+</div>
 </div>

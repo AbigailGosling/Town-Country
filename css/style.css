@@ -792,12 +792,12 @@ a i.fa-pencil{
 }
 
 
-#address{
+/* #address{
     padding: 30px;
     display: flex;
     width: 100%;
     justify-content: space-around;
-}
+} */
 
 a#delete_intake {
     margin: 0;
@@ -1879,3 +1879,24 @@ td span.chilled{
     margin: 10mm 10mm 10mm 10mm;  
 } 
 
+.form-control {
+  width: 100%;
+  margin: 0;
+  margin-bottom: 15px;
+  padding: 0 5px;
+  display: block;
+  clear: both;
+  appearance: none;
+  box-sizing: border-box;
+  background: #f9f9f9;
+  font-size: 16px;
+  line-height: 27px;
+  color: #4a4a4a;
+  font-family: 'OpenSans_Regular';
+  border: 1px #bfbfbf solid;
+  border-radius: 5px;
+}
+
+textarea {
+  height: 110px;
+}

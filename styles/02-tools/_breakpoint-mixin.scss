@@ -1,0 +1,117 @@
+// Breakpoint Mixin
+// Can take a min and/or max value or a string
+// I.e xs, sm ,md, lg, xl
+// Example
+// .body {
+//   @include breakpoint-min(md) {
+//     float: right;
+//     width: 350px;
+//   }
+//   @include breakpoint(480px) {
+//     display: none;
+//   }
+//   @include breakpoint($min: 640px, $max: 767px) {
+//     text-align: center;
+//     font-style: italic;
+//   }
+//   @include breakpoint-max(lg) {
+//     text-align: left;
+//     font-style: bold;
+//   }
+// }
+//
+
+@mixin breakpoint ($min: 0, $max: 0) {
+  $type: type-of($min);
+
+  @if $type == number {
+    // Allow for custom parameters for min and max size
+    $query: 'all' !default;
+    @if      $min != 0 and $max != 0 { $query: '(min-width: #{$min}) and (max-width: #{$max})'; } // set both min and max
+    @else if $min != 0 and $max == 0 { $query: '(min-width: #{$min})'; } // set just min
+    @else if $min == 0 and $max != 0 { $query: '(max-width: #{$max})'; } // set just max
+    @media #{$query} { @content; }
+  }
+}
+
+@mixin breakpoint-min ($min: 0) {
+  $type: type-of($min);
+
+  @if $type == string {
+
+    @if $min == xs {
+      @media(min-width: 414px) {
+        @content;
+      }
+    }
+
+    @else if $min == sm {
+      @media(min-width: 567px) {
+        @content;
+      }
+    }
+
+    @else if $min == md {
+      @media(min-width: 768px) {
+        @content;
+      }
+    }
+
+    @else if $min == lg {
+      @media(min-width: 992px) {
+        @content;
+      }
+    }
+
+    @else if $min == xl {
+      @media(min-width: 1200px) {
+        @content;
+      }
+    }
+
+    @else if $min == xxl {
+      @media(min-width: 1440px) {
+        @content;
+      }
+    }
+
+    @else {
+      @warn 'The breakpoint mixin supports the following attributes: sm, md, lg, xl';
+    }
+  }
+}
+
+@mixin breakpoint-max ($max: 0) {
+  $type: type-of($max);
+
+  @if $type == string {
+
+    @if $max == xs {
+      @media(max-width: 566px) {
+        @content;
+      }
+    }
+
+    @else if $max == sm {
+      @media(max-width: 767px) {
+        @content;
+      }
+    }
+
+    @else if $max == md {
+      @media(max-width: 991px) {
+        @content;
+      }
+    }
+
+    @else if $max == lg {
+      @media(max-width: 1199px) {
+        @content;
+      }
+    }
+
+    @else {
+      @warn 'The breakpoint mixin supports the following attributes: xs, sm, md, lg';
+    }
+  }
+}

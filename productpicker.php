@@ -10,26 +10,29 @@
 <form id="pickerForm" method="POST" action="/scripts/buildPicker.php" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
-<div class="topBox">
-	<div style="padding:40px;">
-		<div>
+<div class="container container--pt">
+	<div class="row">
+		<div class="col">
 			<label>Customer</label><br/>
-			<input type="text" id="customer" class="inputbox" required>
+			<input class="form-control" type="text" id="customer" class="inputbox" required>
 			<div id="customer_search_results" style="position:relative;z-index:99999;"></div>
 		</div>
-		<div>
+		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
 		</div>
 	  
 	</div>
 	
-	<span id="address"></span>
+	<div class="row" id="address"></div>
 	 
 	
-	<div style="display:block;padding-top:10px;position:absolute;left:505px;top:300px;">
-		<label>	Order Reference Number</label><br/>
-		<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
+	<div class="row">
+		<div class="col">
+			<label>	Order Reference Number</label><br/>
+			<input class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
+		</div>
+		<div class="col"></div>
 	</div>
 </div>
 
