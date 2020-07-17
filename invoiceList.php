@@ -8,7 +8,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Town &amp; Country</title>
 	<link href="css/style.css" rel="stylesheet" type="text/css">
-	<link href="css/grid.css" rel="stylesheet" type="text/css">
 
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -52,23 +51,23 @@
 					$row2 = mysqli_fetch_array($y2);
 					
 				?>
-				<div class="row table-data">
-					<a href="invoice.php?id=<?php echo $row['id']; ?>" class="col">
-						<span class="row">
-							<span class="col-3">
-								ID: 0000<?php echo $row['id']; ?>
-							</span>
-							<span class="col text-center">
-								<?php echo $row2['businessname']; ?>
-							</span>
-						</span>
-					</a>
-					<div class="col-2 text-right">
-						<div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['invoicesent'] == 0){ echo 'style="display:none;"'; }?>>
-              <i class="fa fa-check table-data__delete" aria-hidden="true"></i>
-            </div>
-					</div>
-				</div>
+				<tr><td align="center" class="pos">
+				<a href="invoice.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
+					<table width="100%" border="0">
+						<tr>
+							<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
+							<td align="center" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
+							<td width="100" align="right"><?php echo $row['estimated_delivery_date']; ?></td>
+						</tr>
+					</table>
+				</a>
+
+                <div class="sendcontainer sendcontainer--invoice-list">
+                    <div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['invoicesent'] == 0){ echo 'style="display:none;"'; }?>>
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                    </div>
+                </div>
+				</td></tr>
 				<?php
 				}
 			?>

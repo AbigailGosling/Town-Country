@@ -1845,8 +1845,8 @@ td span.chilled{
     width: 40px;
     cursor: pointer;
 }
-.sendcontainer .active{
-     
+.sendcontainer--invoice-list {
+     right: -42px;
 }
 
 .sendcontainer .active.sel{
