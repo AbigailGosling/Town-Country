@@ -22,10 +22,10 @@
 <script type="text/javascript">
 
 </script>
-<main class="int">	
-	<a href="<?php echo $domain; ?>invoiceList.php"class="backbtn"  onclick="goBack()">< Back</a>
-	<div class="formBackButton" style="float:right;font-size:22px;">
-		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|
+<a href="<?php echo $domain; ?>invoiceList.php"class="backbtn"  onclick="goBack()">< Back</a>
+<main class="int int--extra-padding">	
+	<div class="formBackButton formBackButton--invoice" style="float:right;font-size:22px;">
+		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a> |
  		<a href="javascript:;" onclick="printStuff()">Print</a>
 	</div>
 	<div id="print">
@@ -75,10 +75,11 @@
 			<div class="deliverydate">Delivery Date: <span class="date"><?php echo $pickSheetRow['estimated_delivery_date']; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
 			<?php
-				$date = str_replace('/', '-', $pickSheetRow['date_completed']);
-				$assemblydate = date('d/m/Y', strtotime($date));
+				$date_completed = str_replace('/', '-', $pickSheetRow['date_completed']);
+				$date_completed2 = date('d/m/Y', strtotime($date_completed));
+				$assemblydate = date('d/m/Y G:i A', strtotime($date_completed));
 				
-				$date = DateTime::createFromFormat('d/m/Y', ''.$assemblydate);
+				$date = DateTime::createFromFormat('d/m/Y', ''.$date_completed2);
 				
 				$paydayDelay = $customerRow['credit_terms'];
 				
@@ -577,6 +578,13 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 			window.print();
 		});
 
+	}
+
+	function printCompleted() {
+		$('#top').show();
+		$('.formBackButton').show();
+		$('.backbtn').show();
+		$('main').removeAttr("style")
 	}
 	
 	// printContent(1);

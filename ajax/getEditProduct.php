@@ -152,14 +152,14 @@
 		<select name="unit" id="unit">
 			<option value="--">--</option>
 			<option value="C" <?php if($productRow['unit'] == 'C'){ echo 'selected'; } ?>>Case</option>
-			<option value="P" <?php if($productRow['unit'] == 'P'){ echo 'selected'; } ?>>Pallet</option>
-			<option value="PP" <?php if($productRow['unit'] == 'PP'){ echo 'selected'; } ?>>Packet</option>
-			<option value="KG" <?php if($productRow['unit'] == 'KG'){ echo 'selected'; } ?>>Kilo</option>
+			<option value="PPC" <?php if($productRow['unit'] == 'PPC'){ echo 'selected'; } ?>>Purchase Per Case</option>
+			<option value="P" <?php if($productRow['unit'] == 'P'){ echo 'selected'; } ?>>Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
+ 			<option value="DS" <?php if($productRow['unit'] == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
 		</select>
 	
 		<?php if($weightCount == 1){ ?>
 		<div id="SingleWeightDiv">
-			<label>Weight</label>
+			<label>Weight <?php if($productRow['akg'] != ''){ echo ' ['. $productRow['quantity'] . '  Cases Advised KG] ';  } ?> </label>
 			<input type="number" name="single_weight_val" value="<?php echo $weightRow['weight_gross']; ?>" id="single_weight_val">
 		</div>
 		<?php } ?>
@@ -191,12 +191,13 @@
 	
 	<div class="btnContainer">
 		<input value="Update Product" onclick="updatePallet();" type="button">
-		<input value="Mark as sold" id="marksoldbtn" type="button" style="width:300px;background:#d02f2f;color: white;">
+		<input value="Set all as sold" id="marksoldbtn" type="button" style="width:300px;background:#d02f2f;color: white;">
 	</div>
 </form>
 
 <form method="POST" action="<?php echo $domain; ?>scripts/markWeightAsSold.php" id="markWeightForm">
-	<input type="text" name="weightid" id="weightToDelete" style="display:none;">
+	<input type="hidden" name="weightid" id="weightToMark">
+	<input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
 	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 </form>
 
@@ -205,16 +206,10 @@
 	$(document).ready(function(){
 		
 		$('#marksoldbtn').click(function(){
-			
-			if($('#weightToDelete').val() != ''){
-				$('#markWeightForm').submit();
-			}else{
-				alert('You havent selected a weight');
-			}
+			$('#markWeightForm').submit();
 		});
 		
 		$('.weightEditWhiteBox').click(function(){
-			//$('.weightEditWhiteBox').removeClass('sel');
 			
             $(this).toggleClass('sel');
             
@@ -225,10 +220,13 @@
                 str += $(this).attr('id') + ',';
             });
 			
-			$('#weightToDelete').val(str);
+			$('#weightToMark').val(str);
 			
-			console.log($(this).attr('id'));
-			
+			if($('#weightToMark').val() != ''){
+				$('#marksoldbtn').val('Set as sold');
+			}else{
+				$('#marksoldbtn').val('Set all as sold');
+			}
 		});
 		
 		updateForm();

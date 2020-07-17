@@ -10,26 +10,29 @@
 <form id="pickerForm" method="POST" action="/scripts/buildPicker.php" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
-<div class="topBox">
-	<div style="padding:40px;">
-		<div>
+<div class="container container--pt">
+	<div class="row">
+		<div class="col">
 			<label>Customer</label><br/>
-			<input type="text" id="customer" class="inputbox" required>
+			<input class="form-control" type="text" id="customer" class="inputbox" required>
 			<div id="customer_search_results" style="position:relative;z-index:99999;"></div>
 		</div>
-		<div>
+		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
 		</div>
 	  
 	</div>
 	
-	<span id="address"></span>
+	<div class="row" id="address"></div>
 	 
 	
-	<div style="display:block;padding-top:10px;position:absolute;left:505px;top:300px;">
-		<label>	Order Reference Number</label><br/>
-		<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
+	<div class="row">
+		<div class="col">
+			<label>	Order Reference Number</label><br/>
+			<input class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
+		</div>
+		<div class="col"></div>
 	</div>
 </div>
 
@@ -48,7 +51,7 @@
 		</tr>
 	</table>
 	
-	<div style="float:right;">
+	<div>
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
@@ -118,11 +121,12 @@
         var formHasChanged = false;
         var submitted = false;
 
-        window.onbeforeunload = function(){
-            if (formHasChanged && !submitted) {
-                return 'Are you sure you want to leave?';
-            }
-        };
+				document.getElementById('menu').addEventListener('click', function(e) {
+					if (formHasChanged && !submitted) {
+						e.preventDefault()	
+						changePage('menu')
+					}
+				})
         
         $(document).on('change', 'form #customer', function (e) {
             formHasChanged  = true;
@@ -131,6 +135,25 @@
         $("#pickerForm").submit(function() {
             submitted = true;
         });
+
+				$(document).on('click', '.intakeLink', function(e) {
+					if (formHasChanged && !submitted) {
+						e.preventDefault()	
+						changePage($(this).attr('id'))
+					}
+				})
+
+				function changePage(prop) {					
+					var alert = confirm('Are you sure you want to leave?')
+
+					if (alert === true) {
+						if (prop == 'menu') {
+							window.location.href = "/menu.php"
+						} else {
+							window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
+						}
+					}
+				}
 
     });
 
@@ -156,25 +179,16 @@
     
     
 
-	.rightPanel{
-		width:calc(100% - 103px);
-	
-		float:left;
+	.rightPanel {
 		padding:50px;
 		position:relative;
 		margin-top:40px;
 	}
 	.leftPanel{
-		width:calc(100% - 103px);
 		height:100%;
-		float:left;
-		padding:50px;
+		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
-	}
-	
-	.leftPanel{
-		background:#f2f2f2;
 	}
 	
 	.clearfix{
@@ -209,13 +223,122 @@
 	}
 	
 	.resultsContainer{
-		width: calc(100% - 40px);
 		min-height: 400px;
 		border: 2px dashed #cacaca;
 		padding: 0px;
 		margin-top: 20px;
 		padding-top: 14px;
 	}
+
+	.searchRContent {
+		border-collapse: collapse;
+		text-align: center;
+		font-size: 14px;
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	.searchRContent__head {
+		border-bottom: 1px solid #d9d9d9;
+		font-size: 14px;
+	}
+
+	.searchRContent__head th {
+		padding-bottom: 10px;
+	}
+
+	.searchRContent__icon {
+		font-size: 14px;
+	}
+
+	.searchRContent .bold {
+		font-size: 16px;
+		font-weight: bold;
+		padding: 0 5px;
+	}
+
+	.searchAccordTitle:nth-child(odd) {
+		background: #f2f2f2;
+	}
+
+	.searchAccordTitle:nth-child(event) .overviewcomment {
+		border: 1px solid #f2f2f2;
+	}
+
+	.searchAccordTitle td {
+		border: 0;
+		padding: 0;
+	}
+
+	.location-input {
+		width: 80px;
+	}
+
+	.searchRContent__plus {
+		width: 28px;
+	}
+
+	.searchRContent__product {
+		width: 180px;
+	}
+
+	@media only screen
+	and (min-device-width : 768px) 
+	and (max-device-width : 1024px)  {
+		.searchRContent {
+			font-size: 10px
+		}
+
+		.searchRContent__head {
+			font-size: 12px;
+		}
+
+		.searchRContent .bold {
+			font-size: 14px;
+		}
+
+			.searchRContent__id {
+		width: 48px;
+		}
+		.searchRContent__location {
+			width: 60px;
+		}
+
+		.searchRContent__dropdown {
+			width: 20px;
+		}
+
+		.searchRContent__unit {
+			width: 55px;
+		}
+
+		.searchRContent__chill {
+			width: 40px;
+		}
+
+		.searchRContent__product {
+			width: 140px;
+		}
+
+		.searchRContent__date-range {
+			width: 70px;
+		}
+
+		.location-input {
+			width: 50px;
+		}
+	}
+
+	.subrow {
+		height: 58px;
+		background:#d9d9d9;
+	}
+
+	.subrow:hover {
+		background: #979797;
+		border: 1px solid #000;
+	}
+
 </style>
 <script type="text/javascript">
     
@@ -331,6 +454,11 @@ if(date != ''){
         var thisval = $(this).val();
         $('#SearchCutgroups option.allsoption').hide();
         $('#SearchCutgroups option.s'+thisval).show();
+
+		// iOS fix - display:none doesn't work on select options
+		$('#SearchCutgroups option.allsoption').unwrap('span');
+        $('#SearchCutgroups option.allsoption').wrap('<span/>');
+        $('#SearchCutgroups option.s'+thisval).unwrap();
         //$('#SearchCutgroups').val($('#SearchCutgroups option.s'+thisval).first().attr('sid'));
 
 

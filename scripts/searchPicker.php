@@ -6,8 +6,8 @@
         toggleRow(classs,ele, productid);
     }
 
-    function toggleRow(classs, ele,intake_id,cut_id){
-        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs, function( data ) {
+    function toggleRow(classs, ele,intake_id,cut_id,nationality_id){
+        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -19,21 +19,25 @@
     }
 </script>
 <table width="100%" class="slim searchRContent"   style="display:table;">
-	<th align="left"></th>
-	<th align="left">Intake ID</th>
-	<th align="left">Location</th>
-	<th align="left">Plt ID</th>
-	<th align="left">Unit</th>
-	<th align="left">Chilled/Frozen</th>
-	<th align="left">Product</th>
-	<th align="left">Nationality</th>
-	<th align="left" width="20%">Comments</th>
-	<th align="left">Brand</th>
-	<th align="left">Date Range</th>
-	<th align="left">Volume</th>
-	<th align="left">Cost</th>
-	<th align="left">RRP</th>
-	<th align="left"></th> 
+    <thead>
+        <tr class="searchRContent__head">
+	        <th class="searchRContent__id">Intake ID</th>
+	        <th class="searchRContent__location">Location</th>
+	        <th class="searchRContent__id">Plt ID</th>
+            <th class="searchRContent__dropdown"></th>
+	        <th class="searchRContent__unit">Unit</th>
+	        <th class="searchRContent__chill">Chill/Frz</th>
+	        <th class="searchRContent__product">Product</th>
+	        <th>Nationality</th>
+	        <th>Comments</th>
+	        <th>Brand</th>
+	        <th class="searchRContent__date-range">Date Range</th>
+	        <th>Volume</th>
+	        <th>Cost</th>
+	        <th>RRP</th>
+	        <th class="searchRContent__plus"></th> 
+        </tr>
+    </thead>
 <?php
     $time1 = microtime(true);
 	require('../functions.php');
@@ -142,7 +146,7 @@
             },
         $products2);
         
-        $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]]);
+        $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
         if($quantityTotal < 1){continue;}
         ###
@@ -153,12 +157,10 @@
        
         ?>
         <tr class="searchAccordTitle">
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
-            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
             
             
             <td colspan="1">
-                <a href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
+                <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
 					<b><?php echo $intake_id; ?></b>
 				</a>
 			</td>
@@ -166,14 +168,16 @@
              &nbsp;		 
             </td>
             <td colspan="1"  onclick=""></td>
-            <td colspan="1"><?php echo $quantityTotal; ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+            <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+            <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <!---
             // ??: No need to call the database on every loop.
             // ??: The temperatures are just a few entries.
             // ??: Better to get all the entries in the beginning
             -->
-            <td align="left" <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
-            <td colspan="1"><?php echo $cut; ?></td>
+            <td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+            <td class="bold" colspan="1"><?php echo $cut; ?></td>
             <!--
             // ??: Same as with temperatures - get all entries in the beginning
             -->
@@ -184,9 +188,9 @@
 					<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 				</form>
 			</td>
-			<td align="left"><?php echo getBrand($productsRow['brand_id']); ?></td>
+			<td><?php echo getBrand($productsRow['brand_id']); ?></td>
 			<td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
-            <td><?php 
+            <td class="bold"><?php 
                 
                 if($productsRow['akg'] != ''){
                    echo totalWeightOfAdvisedKGProduct($intake_id);
@@ -195,8 +199,9 @@
                 }
 
  				?>kg</td>
-			<td><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-			<td><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+			<td class="bold"><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
+			<td class="bold"><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+            <td></td>
         </tr>
     <?php  ?>
 
@@ -218,9 +223,16 @@ $('.searchRHeading').click(function(){
 $(this).next('.searchRContent').toggle();
 });
 
-function addToSheet(product_id, pallet_id, cut_id, theClass){
+var firstExecution = 0
+var interval = 1000
 
-var q = $('#quantity-' + product_id + '-' + pallet_id).val();
+function addToSheet(product_id, pallet_id, cut_id, theClass, event){
+    console.log(event)
+    var date = new Date()
+    var milliseconds = date.getTime()
+
+    if ((milliseconds - firstExecution) > interval) {
+        var q = $('#quantity-' + product_id + '-' + pallet_id).val();
 var comment = $('#comment-' + product_id + '-' + pallet_id).val();
 
 
@@ -252,7 +264,7 @@ if(howManyBefore > q){
 }else{
     for(i=0; i < q; i++){
         $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
-        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.3');
+        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.6');
         $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('pointer-events','none');
     }
 }
@@ -264,9 +276,11 @@ $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id +
 $.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
     $('.basketTable').append(data);
 });
+        firstExecution = milliseconds
+    } else {
+        console.log('too early')
+    }
 
-//$('#loadResults').html('');
-// $('#KIS428319').toggle();
 }
  
 function toggleWeight(weightdiv){
@@ -297,6 +311,16 @@ $('.weightVal').text(newWeight);
 }
 
 $(document).ready(function(){
+
+    $('.overviewcomment').focus(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height($(this)[0].scrollHeight)
+    })
+
+    $('.overviewcomment').blur(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height(47)
+    })
  
 $.each(document.cookie.split(/; */), function()  {
   var splitCookie = this.split('=');

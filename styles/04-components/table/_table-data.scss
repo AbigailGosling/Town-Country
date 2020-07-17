@@ -1,0 +1,33 @@
+.table-data {
+  background: #fff;
+  padding: 10px 0;
+  margin-bottom: 5px;
+  text-decoration: none;
+  color: #000;
+  transition: 250ms ease-in-out;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: transparent;
+    color: #fff;
+    border-color: #fff;
+    font-weight: bold;
+  }
+
+  &__delete {
+    color: #f00;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
+
+.printed-label {
+  display: inline-block;
+  font-size: 12px;
+  background: #cacaca;
+  color: #000;
+  padding: 5px 20px;
+}

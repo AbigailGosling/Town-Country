@@ -10,6 +10,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Town &amp; Country</title>
 		<link href="css/style.css" rel="stylesheet" type="text/css">
+		<link href="css/grid.css" rel="stylesheet" type="text/css">
 		<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="css/toastr.css">
 		<link href="css/lity.css" rel="stylesheet" type="text/css">

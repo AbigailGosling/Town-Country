@@ -62,7 +62,7 @@
 					</table>
 				</a>
 
-                <div class="sendcontainer">
+                <div class="sendcontainer sendcontainer--invoice-list">
                     <div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['invoicesent'] == 0){ echo 'style="display:none;"'; }?>>
                         <i class="fa fa-check" aria-hidden="true"></i>
                     </div>
