@@ -48,7 +48,7 @@
 		</tr>
 	</table>
 	
-	<div style="float:right;">
+	<div>
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
@@ -176,8 +176,7 @@
     
     
 
-	.rightPanel{
-
+	.rightPanel {
 		padding:50px;
 		position:relative;
 		margin-top:40px;
@@ -232,6 +231,8 @@
 		border-collapse: collapse;
 		text-align: center;
 		font-size: 14px;
+		table-layout: fixed;
+		width: 100%;
 	}
 
 	.searchRContent__head {
@@ -250,7 +251,7 @@
 	.searchRContent .bold {
 		font-size: 16px;
 		font-weight: bold;
-		padding: 0 10px;
+		padding: 0 5px;
 	}
 
 	.searchAccordTitle:nth-child(odd) {
@@ -280,6 +281,41 @@
 		.searchRContent .bold {
 			font-size: 14px;
 		}
+
+			.searchRContent__id {
+		width: 48px;
+	}
+	.searchRContent__location {
+		width: 60px;
+	}
+
+	.searchRContent__dropdown {
+		width: 20px;
+	}
+
+	.searchRContent__unit {
+		width: 55px;
+	}
+
+	.searchRContent__chill {
+		width: 40px;
+	}
+
+	.searchRContent__product {
+		width: 140px;
+	}
+
+	.searchRContent__date-range {
+		width: 70px;
+	}
+
+	.searchRContent__plus {
+		width: 28px;
+	}
+	}
+
+	.subrow {
+		height: 58px;
 	}
 
 </style>

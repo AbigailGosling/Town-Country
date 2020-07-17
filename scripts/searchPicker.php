@@ -21,21 +21,21 @@
 <table width="100%" class="slim searchRContent"   style="display:table;">
     <thead>
         <tr class="searchRContent__head">
-	        <th>Intake ID</th>
-	        <th>Location</th>
-	        <th>Plt ID</th>
-            <th></th>
-	        <th>Unit</th>
-	        <th>Chill/Frz</th>
-	        <th>Product</th>
+	        <th class="searchRContent__id">Intake ID</th>
+	        <th class="searchRContent__location">Location</th>
+	        <th class="searchRContent__id">Plt ID</th>
+            <th class="searchRContent__dropdown"></th>
+	        <th class="searchRContent__unit">Unit</th>
+	        <th class="searchRContent__chill">Chill/Frz</th>
+	        <th class="searchRContent__product">Product</th>
 	        <th>Nationality</th>
 	        <th>Comments</th>
 	        <th>Brand</th>
-	        <th>Date Range</th>
+	        <th class="searchRContent__date-range">Date Range</th>
 	        <th>Volume</th>
 	        <th>Cost</th>
 	        <th>RRP</th>
-	        <th></th> 
+	        <th class="searchRContent__plus"></th> 
         </tr>
     </thead>
 <?php
@@ -201,6 +201,7 @@
  				?>kg</td>
 			<td class="bold"><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
 			<td class="bold"><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+            <td></td>
         </tr>
     <?php  ?>
 
@@ -225,8 +226,8 @@ $(this).next('.searchRContent').toggle();
 var firstExecution = 0
 var interval = 1000
 
-function addToSheet(product_id, pallet_id, cut_id, theClass){
-
+function addToSheet(product_id, pallet_id, cut_id, theClass, event){
+    console.log(event)
     var date = new Date()
     var milliseconds = date.getTime()
 
