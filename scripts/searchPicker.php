@@ -311,6 +311,16 @@ $('.weightVal').text(newWeight);
 }
 
 $(document).ready(function(){
+
+    $('.overviewcomment').focus(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height($(this)[0].scrollHeight)
+    })
+
+    $('.overviewcomment').blur(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height(47)
+    })
  
 $.each(document.cookie.split(/; */), function()  {
   var splitCookie = this.split('=');
