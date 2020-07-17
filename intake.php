@@ -283,15 +283,15 @@
 		<ul style="padding-left:20px;">
 		<?php
 			
-			$species = explode(',', $row['species']);
-			$cuts = explode(',', $row['cut']);
+			$species = explode('|', $row['species']);
+			$cuts = explode('|', $row['cut']);
 			$units = explode(',', $row['units']);
 			
 			$size = sizeof($species);
 			
 			for($i=0;$i<$size;$i++){
 			?>
-			<li><?php echo ucfirst(strtolower($species[$i] . ' ' . $cuts[$i])); ?></li>
+			<li><?php echo ucfirst(strtolower($species[$i] . ': ' . $cuts[$i])); ?></li>
 			<?php
 			}
 		?>
