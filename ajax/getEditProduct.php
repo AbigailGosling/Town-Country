@@ -152,14 +152,14 @@
 		<select name="unit" id="unit">
 			<option value="--">--</option>
 			<option value="C" <?php if($productRow['unit'] == 'C'){ echo 'selected'; } ?>>Case</option>
-			<option value="P" <?php if($productRow['unit'] == 'P'){ echo 'selected'; } ?>>Pallet</option>
-			<option value="PP" <?php if($productRow['unit'] == 'PP'){ echo 'selected'; } ?>>Packet</option>
-			<option value="KG" <?php if($productRow['unit'] == 'KG'){ echo 'selected'; } ?>>Kilo</option>
+			<option value="PPC" <?php if($productRow['unit'] == 'PPC'){ echo 'selected'; } ?>>Purchase Per Case</option>
+			<option value="P" <?php if($productRow['unit'] == 'P'){ echo 'selected'; } ?>>Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
+ 			<option value="DS" <?php if($productRow['unit'] == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
 		</select>
 	
 		<?php if($weightCount == 1){ ?>
 		<div id="SingleWeightDiv">
-			<label>Weight</label>
+			<label>Weight <?php if($productRow['akg'] != ''){ echo ' ['. $productRow['quantity'] . '  Cases Advised KG] ';  } ?> </label>
 			<input type="number" name="single_weight_val" value="<?php echo $weightRow['weight_gross']; ?>" id="single_weight_val">
 		</div>
 		<?php } ?>
