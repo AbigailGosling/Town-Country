@@ -27,6 +27,11 @@ main {
 }
 main.int {padding: 50px 30px 50px 30px;}
 
+main.int--extra-padding {
+	padding-top: 100px;
+	position: relative;
+}
+
 main h1 {
 	margin: 0;
 	padding: 0;
@@ -1137,6 +1142,10 @@ span.add-on{
 .formBackButton{
 	position:absolute;
 	top:80px;
+}
+.formBackButton--invoice {
+	position:absolute;
+	top:50px;
 }
 
 
