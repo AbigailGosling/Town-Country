@@ -1,7 +1,7 @@
 <?php
 	include('includes/frontHeader.php');
-    ini_set('memory_limit','15M');
-	$id = $_GET['id'];
+    ini_set('memory_limit','15M'); //this might kill the process - keep in mind
+	$id = _GET['id'];
 	$intake_id = $_GET['id'];	
 	
 	$intake = getIntake($id);
@@ -285,7 +285,7 @@
 			
 			$species = explode('|', $row['species']);
 			$cuts = explode('|', $row['cut']);
-			$units = explode(',', $row['units']);
+			$units = explode('|', $row['units']);
 			
 			$size = sizeof($species);
 			
