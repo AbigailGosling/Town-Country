@@ -465,6 +465,16 @@
 ?>
   
 <script type="text/javascript">
+
+    $('.overviewcomment').focus(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height($(this)[0].scrollHeight)
+    })
+
+    $('.overviewcomment').blur(function() {
+        console.log($(this)[0].scrollHeight)
+        $(this).height(47)
+    })
     
     $('.gifContainer').hide();
     $('.resultsContainer').css('padding-bottom','30px');
