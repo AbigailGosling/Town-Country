@@ -297,9 +297,9 @@
                 $products);
         
                 // print_r($productIDs);
-                $q = "SELECT * from `weights` WHERE status_id != '1' AND product_id IN(" . implode(",", $productIDs) . ")";
-                $q = mysqli_query($conn, $q);
-                $weights = mysqli_fetch_all($q, MYSQLI_ASSOC);
+                // $q = "SELECT * from `weights` WHERE status_id != '1' AND product_id IN(" . implode(",", $productIDs) . ")";
+                // $q = mysqli_query($conn, $q);
+                // $weights = mysqli_fetch_all($q, MYSQLI_ASSOC);
                     
                
                  
@@ -369,18 +369,13 @@
                     ###
                     $totalW = 0;
                     
-                    $relatedWeights = [];
-                    
-                    array_map(function($weight) use ($productsRow, &$relatedWeights){
-                        
-                        if($weight["product_id"] == $productsRow["productid"])
-                        {
-                            $relatedWeights[] = $weight; 
-                        }
 
-                    },$weights);
+                    // This finds the weights of all products and not just the 
+                    // few products that the GROUP BY got
+                    $q = "SELECT * from `weights` WHERE status_id != '1' AND product_id IN(" . implode(",", $product2_productids) . ")";
+                    $q = mysqli_query($conn, $q);
+                    $relatedWeights = mysqli_fetch_all($q, MYSQLI_ASSOC);
                     
-        
                     array_map(function($weight) use (&$totalW, $productsRow){
                     
                     
