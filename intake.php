@@ -24,23 +24,23 @@
 	}
 	
 	if($_GET['savePrices'] == 'true'){
-		$productid = $_POST['productid'];
+		$productids = $_POST['productid'];
 		$price = $_POST['price'];
 		$cost = $_POST['cost'];
 		
-		$size = sizeof($productid);
+		$size = sizeof($productids);
 		
 		$intakeid = $_POST['intakeid'];
 		
 		for($i=0;$i<$size;$i++){
-			$product_id = $_POST['productid'][$i]; 
+			$product_id = "(" . $productids[$i] . ")"; 
 			$cost = sprintf('%0.2f', $_POST['cost'][$i]);
 			$price = sprintf('%0.2f', $_POST['price'][$i]);
 			
 			$weightnote = $_POST['weightnote'][$i];
 			
 			if($product_id != ''){
-				$x = "UPDATE `product` SET cost='$cost', price='$price', weightnote='$weightnote' WHERE id='$product_id'";
+				$x = "UPDATE `product` SET cost='$cost', price='$price', weightnote='$weightnote' WHERE id IN $product_id";
  				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 			}
 		}
@@ -362,15 +362,22 @@
 					
 					if($countPallets >= 1){
 						$x2 = "SELECT id FROM product WHERE (" . $qPallets . ") AND cut_id='$rowcutid'";
-					}else{ $x2 = "SELECT id FROM product WHERE id = 0"; }
+					}else{
+						// ??: What does this do? 
+						$x2 = "SELECT id FROM product WHERE id = 0"; 
+					}
 				
 					$y2 = mysqli_query($conn, $x2);
 					
 					 
 					$weightthing = 0;
+
+					// used as a reference for updating the costs
+					$productIDs = [];
+
 					while($row2 = mysqli_fetch_array($y2)){
-						
 						$rowid = $row2['id'];
+						$productIDs[] = $rowid;
 						$weightthing += weightFromProductID($rowid);
 						$totalWeight += weightFromProductID($rowid);
 						$qAppend2 .= " product_id = '$rowid' OR";
@@ -449,7 +456,7 @@
 					?>
 					</td>
 					<td>
-						<input type="text" name="productid[]" value="<?php echo $product_id; ?>" style="display:none;">
+						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 						<input type="text" name="cost[]" value="<?php echo number_format((float)$row['cost'], 2, '.', ''); ?>">
 					</td>
 					<td>

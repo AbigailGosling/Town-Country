@@ -193,7 +193,7 @@
             <td class="bold"><?php 
                 
                 if($productsRow['akg'] != ''){
-                   echo totalWeightOfAdvisedKGProduct($intake_id);
+                   echo totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
                 }else{
                     echo $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
                 }
