@@ -5,6 +5,7 @@
 	$intake_id = $_GET['intake_id'];
 	$cut_id = $_GET['cut_id'];
 	$class = $_GET['class'];
+	$nationality_id = $_GET['nationality_id'];
   
   
     $totalW = 0;
@@ -25,6 +26,7 @@
         ON product.pallet_id=pallet.id 
         WHERE pallet.intake_id='$intake_id' 
         && product.cut_id = '$cut_id'
+		&& product.nationality_id='$nationality_id'
         ORDER BY product.cut_id DESC";
         
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));

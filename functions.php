@@ -579,7 +579,7 @@
 	}
 
 
-    function totalWeightOfAdvisedKGProduct($intake_id){
+    function totalWeightOfAdvisedKGProduct($intake_id, $nationalityID){
         global $conn;
         
         $x = "SELECT id FROM `pallet` WHERE intake_id='$intake_id'";
@@ -598,8 +598,8 @@
         
         
         $t_count = 0;
-        
-        $countQuery = mysqli_query($conn, "SELECT * FROM product WHERE " . $qPallets);
+        $q = "SELECT * FROM product WHERE nationality_id=$nationalityID AND (" . $qPallets . ")";
+        $countQuery = mysqli_query($conn, $q);
 
         while($countRow = mysqli_fetch_array($countQuery)){
             $t_count += $countRow['akg'];
