@@ -19,7 +19,7 @@
 <script type="text/javascript">
 </script>
 
-<main class="int">
+<main class="int container">
 	
 	<a href="<?php echo $domain; ?>pickSheetList.php" class="backbtn">< Back</a>
 	
