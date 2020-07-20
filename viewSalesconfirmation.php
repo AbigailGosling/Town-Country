@@ -66,59 +66,46 @@
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
 
-<div style="padding:50px;padding-bottom:0px;"><h2>Sales Confirmation</h2></div>
+<div class="container container--pt"><h2>Sales Confirmation</h2></div>
 <form method="POST" autocomplete="off">
 
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
-<div class="topBox">
-	<div style="padding:10px;">
-		<div>
+<div class="container">
+<div class="row">
+	<div class="col">
 			<label>Customer</label><br/>
 			<input type="text" id="customer" value="<?php echo $customer['businessname']; ?>" class="inputbox" disabled>
-		</div>
-		<div>
-			<label>Delivery Date</label><br/>
-			<input type="text" class="inputbox" value="<?php echo $picksheet['estimated_delivery_date']; ?>" disabled>
-		</div>
-	  
 	</div>
-	
-	<span id="address">
-	 
-	<div style="position:absolute;left:60px;top:320px;">
-		
-
-		<input type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
-		
-		<div>
+	<div class="col">
 			<label>Contact Number</label><br/>
 			<input type="text" class="inputbox" name="contactnumber" value="<?php echo $customer['contactnumber']; ?>" disabled>
-		</div>
-
-		<div>
-			<label>Billing Address</label><br/>
-			<textarea name="billingaddress" style="width:300px;height:80px;padding:10px;resize:none;"disabled><?php echo $customer['accounts_address_1']; ?>,&#13;<?php echo $customer['accounts_address_2']; ?>,&#13;<?php echo $customer['accounts_address_3']; ?><?php if($customer['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $customer['accounts_address_4']; ?></textarea>
-		</div>
 	</div>
- 
-	<div style="">
-		<div style="display:block;padding-top:10px;">
+</div>
+<div class="row">
+	<div class="col">
+			<label>Delivery Date</label><br/>
+			<input type="text" class="inputbox" value="<?php echo $picksheet['estimated_delivery_date']; ?>" disabled>
+	</div>
+	<div class="col">
 		<label>Delivery Contact Number</label><br/>
 		<input type="text" class="inputbox" name="deliverynumber" value="<?php echo $addressNumber; ?>">
-		</div>
-		<div style="display:block;padding-top:10px;">
+	</div>
+</div>
+
+	
+	<span class="row" id="address">
+		<input type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
+
+		<span class="col">
+			<label>Billing Address</label><br/>
+			<textarea name="billingaddress" style="width:300px;height:80px;padding:10px;resize:none;"disabled><?php echo $customer['accounts_address_1']; ?>,&#13;<?php echo $customer['accounts_address_2']; ?>,&#13;<?php echo $customer['accounts_address_3']; ?><?php if($customer['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $customer['accounts_address_4']; ?></textarea>
+		</span>
+
+		<span class="col">
 			<label>Delivery Address</label><br/>
 			<textarea name="deliveryaddress" style="width:300px;height:80px;padding:10px;resize:none;"><?php echo $address; ?></textarea>
-		</div>
-	</div>
-	<div style="">
-			
-		<div style="display:block;padding-top:10px;">
-			<label>Comments</label><br/>
-			<textarea name="comments" style="width:300px;height:142px;padding:10px;resize:none;"><?php echo $picksheet['comments']; ?></textarea>	 
-		</div>
-		
-	</div>
+		</span>
+
 	<div id="changeAddress" class="lity-hide">
 		<h2><?php echo $row['businessname']; ?>'s Address List</h2>
 		<?php 
@@ -165,11 +152,17 @@
 			
 	</div>
 	</span>
-	 
-	
-	<div style="display:block;padding-top:10px;position:absolute;left:461px;top:420px;">
-		<label>	Order Reference Number</label><br/>
-		<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
+
+	<div class="row">
+		<div class="col">
+			<label>Comments</label><br/>
+			<textarea name="comments" style="width:300px;height:142px;padding:10px;resize:none;"><?php echo $picksheet['comments']; ?></textarea>	 
+		</div>
+
+		<div class="col">
+			<label>	Order Reference Number</label><br/>
+			<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
+		</div>
 	</div>
 </div>
 
