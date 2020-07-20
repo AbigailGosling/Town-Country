@@ -192,13 +192,19 @@
 			<td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
             <td class="bold"><?php 
                 
-                if($productsRow['akg'] != ''){
-                   echo totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
+                if($productsRow['unit'] == 'PPC'){
+                    ?><b>PPC</b><?php
                 }else{
-                    echo $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
+                    if($productsRow['akg'] != ''){
+                        echo totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
+                    }else{
+                        echo $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
+                    }
+
+                    echo 'kg';
                 }
 
- 				?>kg</td>
+ 				?></td>
 			<td class="bold"><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
 			<td class="bold"><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
             <td></td>
