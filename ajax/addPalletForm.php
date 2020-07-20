@@ -722,7 +722,6 @@
 		}else if($("#unit").val() == 'PPC'){
 			$('.indiweights').fadeOut();
 			$('#MultiWeightDiv').fadeOut();
-			$('#SingleWeightDiv').fadeIn();
 			
 			$('.howManyUnitsDiv').text('HOW MANY CASES');
 			$('.indiweights').fadeOut();
@@ -730,7 +729,8 @@
 			$('#grossWeightDiv').fadeOut();
 			$('#tearWeightDiv').fadeOut();
 
-			$('#individualweights').val('S');
+			$('#individualweights').val('C');
+			$('#SingleWeightDiv').fadeOut();
 
 		}else if($('#unit').val() == 'P'){
 			$("#individualweights option[value=C]").hide();
