@@ -99,12 +99,18 @@
                     
                     <td class="bold"><?php 
                     
-                    if($productsRow['akg'] != ''){
-                        echo totalWeightOfAdvisedKGProduct($intake_id);
+                    if($productsRow2['unit'] == 'PPC'){
+                        ?><b>PPC</b><?php
                     }else{
-                        echo weightSoldFromProductID($product_id);
+                        if($productsRow2['akg'] != ''){
+                            echo totalWeightOfAdvisedKGProduct($intake_id);
+                        }else{
+                            echo weightSoldFromProductID($product_id);
+                        }
+
+                        echo 'kg';
                     }
-                    ?>kg</td>
+                    ?></td>
                     <td></td>
                     <td></td>
                     <td><a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a></td>
