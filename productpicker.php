@@ -366,8 +366,13 @@
  			$('#customer').css('border','1px solid red');
 		}
 		
-		 
-		
+if(date != ''){
+			ready = 1;
+		}else{
+			ready = 0;
+ 			$('#estimated_delivery_date').css('border','1px solid red');
+		}
+
 		$('.price').each(function(){
  			var value = $(this).val();
 			
@@ -375,16 +380,13 @@
 				ready = 0;
 				
 				$(this).css('border','1px solid red');
+			} else {
+								ready = 1;
+				
+				$(this).css('border-color', '#f2f2f2');
 			}
 			
 		});
-		
-if(date != ''){
-			ready = 1;
-		}else{
-			ready = 0;
- 			$('#estimated_delivery_date').css('border','1px solid red');
-		}
 
 		if(ready == 1){
 			$('#sendreal').trigger('click');
