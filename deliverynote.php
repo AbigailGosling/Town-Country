@@ -22,7 +22,7 @@
 <script type="text/javascript">
 
 </script>
-	<a href="<?php echo $domain; ?>deliverynoteList.php"class="backbtn"  onclick="goBack()">< Back</a>
+	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
 <main class="int int--extra-padding">	
 	<div class="formBackButton" style="float:right;font-size:22px;">
 		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|

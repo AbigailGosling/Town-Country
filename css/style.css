@@ -1195,7 +1195,8 @@ span.add-on{
     background: none;
     border: 0px;
     outline: none;
-	cursor:pointer;
+		cursor:pointer;
+		z-index: 1;
 }
 
 .picksheet_controls{
