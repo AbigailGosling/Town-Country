@@ -351,44 +351,39 @@
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
 		
-		 
+		customerEntered = false;
+		dateEntered = false;
+		priceEntered = false;
 		
-		ready = 1;
-		
-		
-		 
-		
-		
-		if(customer != ''){
-			ready = 1;
-		}else{
-			ready = 0;
+		if (customer != '') {
+			customerEntered = true;
+			$('#customer').css('border-color', '#f2f2f2');
+		} else{
+			customerEntered = false;
  			$('#customer').css('border','1px solid red');
 		}
 		
-if(date != ''){
-			ready = 1;
-		}else{
-			ready = 0;
+		if (date != '') {
+			dateEntered = true;
+			$('#estimated_delivery_date').css('border-color', '#f2f2f2');
+		} else{
+			dateEntered = false;
  			$('#estimated_delivery_date').css('border','1px solid red');
 		}
 
 		$('.price').each(function(){
  			var value = $(this).val();
 			
-			if(value == ''){
-				ready = 0;
-				
+			if (value == ''){
+				priceEntered = false;
 				$(this).css('border','1px solid red');
 			} else {
-								ready = 1;
-				
+				priceEntered = true;
 				$(this).css('border-color', '#f2f2f2');
 			}
-			
 		});
 
-		if(ready == 1){
+		if(customerEntered && dateEntered && priceEntered){
 			$('#sendreal').trigger('click');
 		}else{
 			alert('Please complete the missing fields');
