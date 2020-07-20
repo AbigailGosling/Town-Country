@@ -143,7 +143,7 @@
 
 	<div id="product_list">
  			<?php
-				$y_pallets = mysqli_query($conn, "SELECT id FROM `pallet` WHERE intake_id='$intake_id'");
+				$y_pallets = mysqli_query($conn, "SELECT id FROM `pallet` WHERE intake_id='$intake_id' ORDER BY id ASC");
 				while($pallet = mysqli_fetch_array($y_pallets)){
 			?>
 				<div class="product" style="padding-bottom:0px;">

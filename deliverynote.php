@@ -22,8 +22,8 @@
 <script type="text/javascript">
 
 </script>
-<main class="int">	
-	<a href="<?php echo $domain; ?>deliverynoteList.php"class="backbtn"  onclick="goBack()">< Back</a>
+	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
+<main class="int int--extra-padding">	
 	<div class="formBackButton" style="float:right;font-size:22px;">
 		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|
 		<a href="javascript:;" onclick="printStuff()">Print &nbsp;</a>|
@@ -585,6 +585,14 @@
 		});
 
 	}
+
+	function printCompleted() {
+		$('#top').show();
+		$('.formBackButton').show();
+		$('.backbtn').show();
+		$('main').removeAttr("style")
+	}
+
 	
 	function generatePDF(){
 		$.get("<?php echo $domain; ?>ajax/generatePDFdeliveryNote.php?id=<?php echo $_GET['id']; ?>", function(data, status){

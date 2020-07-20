@@ -76,7 +76,7 @@
 
 		?>
 
-		<form method="POST" action="<?php if($_GET['id'] != ''){ echo '/scripts/updateCut.php'; } else { echo '/scripts/addCut.php'; } ?>">
+		<form class="container" method="POST" action="<?php if($_GET['id'] != ''){ echo '/scripts/updateCut.php'; } else { echo '/scripts/addCut.php'; } ?>">
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
@@ -272,6 +272,12 @@
         $('#SearchCutgroups option.header').show();
         $('#SearchCutgroups option.s'+thisval).show();
         $('#SearchCutgroups').val($('#SearchCutgroups option.header').first().attr('sid'));
+
+				// iOS fix - display:none doesn't work on select options
+				$('#SearchCutgroups option.allsoption').unwrap('span');
+        $('#SearchCutgroups option.allsoption').wrap('<span/>');
+        $('#SearchCutgroups option.s'+thisval).unwrap();
+				
         var id = $(this).val();
     });
 

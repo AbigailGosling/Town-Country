@@ -19,7 +19,7 @@
 <script type="text/javascript">
 </script>
 
-<main class="int">
+<main class="int container">
 	
 	<a href="<?php echo $domain; ?>pickSheetList.php" class="backbtn">< Back</a>
 	
@@ -315,7 +315,9 @@
 
                             $k = $k + $w;
                         }
-                        ?><div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?> [<?php echo $k . $ext; $k = 0; ?>]</div><?php
+                        ?><div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
+							<?php if($product['unit'] != 'PPC'){ ?>[<?php echo $k . $ext; $k = 0; ?>]</div> <?php } ?>
+						<?php
                     }
                 }
             ?>
