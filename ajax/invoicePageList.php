@@ -4,7 +4,7 @@
 	
 	$term = $_POST['searchterm'];
     
-    $x = "SELECT * FROM `customers` WHERE businessname LIKE '%$term%'";
+    $x = "SELECT * FROM `customers` WHERE businessname LIKE '$term%'";
     $y = mysqli_query($conn, $x);
     
     $customerids = '';

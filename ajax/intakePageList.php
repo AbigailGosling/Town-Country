@@ -7,7 +7,7 @@
 	if($term != ''){ ?>
 		<?php
 		
-		$x = "SELECT * FROM `supplier` WHERE name LIKE '%$term%'";
+		$x = "SELECT * FROM `supplier` WHERE name LIKE '$term%'";
 		$y = mysqli_query($conn, $x);
 		
 		$supplierids = '';
@@ -43,7 +43,7 @@
 			$x = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC";
 			 
 		}else{
-			$x = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '%$term%' OR id LIKE '%$term%' OR delivery_note_number LIKE '%$term%' $supplierids $palletids ORDER BY date_received DESC";
+			$x = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '$term%' OR id LIKE '%$term%' OR delivery_note_number LIKE '$term%' $supplierids $palletids ORDER BY date_received DESC";
 		}
 		
 		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
