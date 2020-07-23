@@ -330,7 +330,7 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
                         </div>
                         <div>
                             <div class="bankcircle">
-                                UK<br/>WNU82<br/>EC
+                                UK<br/>WNO82<br/>EC
                             </div>
                             <span style="font-size:12px;padding-top:5px;display:block;">Unit 23</span>
                         </div>

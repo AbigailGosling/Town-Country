@@ -21,11 +21,24 @@
 			<?php echo $intake['id']; ?>
 		</div>
 		
+		 
+
+		<?php if($intake['returned'] == 1){ ?>
 		<div class="overview_block">
-			<label>Supplier ID</label>
-			<?php echo $intake['supplier_id']; ?>
-			<?php echo supplierName($intake['supplier_id']); ?>
+			<label>Customer</label>
+			<?php
+				$customer = getCustomer($intake['supplier_id']);
+			?>
+			<?php echo $customer['businessname']; ?>
 		</div>
+		<?php }else{ ?>
+			<div class="overview_block">
+				<label>Supplier</label>
+				<?php echo $intake['supplier_id']; ?>
+				<?php echo supplierName($intake['supplier_id']); ?>
+			</div>
+		<?php } ?>
+
 		
 		<div class="overview_block">
 			<label>Vehicle Registration</label>
