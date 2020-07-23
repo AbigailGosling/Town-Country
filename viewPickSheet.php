@@ -290,6 +290,8 @@
                         
                         ?>
                         <script>
+							$('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>').val(<?php echo $count; ?>);
+
 							var howManyWeGot = '<?php echo ${"globalProductCount" . $product['id']}; ?>';
 							var target = $('#topform<?php echo $product['id']; ?>').attr('targetamount');
 							console.log('How many we have: ' + howManyWeGot + ' ||||  target: ' + target + '  ('+ howManyWeGot +'/'+ target +')');
@@ -409,12 +411,37 @@
 
 	globalReady++;
 	$('#completeFormBtn').click(function(){
-		 
-		if(parseInt(globalReady) >= parseInt(globalNeed)){
+		var totalNeeded = 0;
+		var totalGot = 0;
+
+		$('.productGroup').each(function(){
+			totalNeeded += parseInt($(this).attr('targetamount'));
+		});
+
+		console.log('Total Needed: ' + totalNeeded);
+
+		$('.counter').each(function(){
+			totalGot += parseInt($(this).val());
+		});
+
+		console.log('Total Got: ' + totalGot);
+
+
+		if(totalGot < totalNeeded){
+			swal({
+				title: "Are you sure?",
+				text: "You haven't selected all the required weights",
+				icon: "warning",
+				buttons: true,
+				dangerMode: true,
+			})
+			.then((confirmed) => {
+				if (confirmed) {
+					$('#markCompletedForm').submit();
+				}
+			});
+ 		}else{
 			$('#markCompletedForm').submit();
-			console.log('#completeFormBtn => ready!');
-		}else{
-			console.log('#completeFormBtn => not ready! [' + globalReady +'/' + globalNeed + ']');
  		}
 	});
 	
