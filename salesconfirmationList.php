@@ -80,10 +80,14 @@
 							</table>
 						</a>
 						 
-                        <a href="javascript:;" onclick="deleteRow('<?php echo $row['id'];?>')" id="delete_intake">
+                        <a href="javascript:;" onclick="deleteSheet(<?php echo $row['id']; ?>)" id="delete_intake">
                             <i class="fa fa-times" aria-hidden="true"></i>
                         </a>
-                        <div class="sendcontainer">
+						<form method="POST" action="/scripts/cancelSale.php" autocomplete="off" class="<?php echo $row['id']; ?>_deleteSheetForm">
+							<input type="hidden" name="pickersheet_id" value="<?php echo $row['id']; ?>">
+						</form>
+            
+			            <div class="sendcontainer">
                             <div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['sent'] == 0){ echo 'style="display:none;"'; }?>>
                                 <i class="fa fa-check" aria-hidden="true"></i>
                             </div>
@@ -98,6 +102,13 @@
 </main>
 <div id="btm"></div>
 	<script type="text/javascript">
+	
+		function deleteSheet(id){
+			if (window.confirm("Are you sure you want to delete this sale?")) { 
+				$('.' + id + '_deleteSheetForm').submit();
+			}
+		}
+	
 		$(document).ready(function(){
 
             $('.sendcontainer').click(function(){
