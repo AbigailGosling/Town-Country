@@ -124,9 +124,9 @@
 				<div class="weightcomment"><?php echo $product['weightnote'] . 'kg'; ?></div>
 				<?php } ?>
 			</div>
-		</div>
 		<input type="text" value="0" class="counter" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>" style="display:none">
 		<input type="text" value="<?php echo $numRequired; ?>" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>-max" style="display:none">
+		</div>
 		<div class="pickerSheetType_content" style="position:relative;">
  			<div class="picksheetPalletDetail" style="display:block">
 				<div class="row">
@@ -348,8 +348,6 @@
 	
 	function addBoxIDtoList(id, cut_id, product_id, ele, customWeight, count = 1){
 		
-		// console.log('customWeight: ' + customWeight);
-		
 		if(customWeight == 'true'){
 			$('.customWeightContainer').fadeIn();
 		}
@@ -357,14 +355,11 @@
 		if($(ele).hasClass('activeWeight')){
 			$(ele).removeClass('activeWeight');
 			var ids = $('#weightids').val();
-			
-			
+
 			console.log('id: ' + ids);
 			ids = ids.replace(id + ',','');
 			ids = ids.replace(id + '-' + cut_id + ',', '');
 			console.log('new-ids: ' + ids);
-			
-			
 			
 			$('#weightids').val(ids);
 			
@@ -404,95 +399,14 @@
 	
 	$('#nextPallet').click(function(){
 		$('#functype').val('NEW');
-		
-		var bigValue = '';
-		
-		$('.selectedValue').each(function(){
-			var value = $(this).val();
- 			bigValue += value + ',';
- 		});
-		
-		$('#newweightvals').val(bigValue);
-		
-		
-		$('.productGroup').each(function(){
-			
-			var numRequired = $(this).attr('targetamount');
-			var currentCount = $(this).find('.picksheetType').find('.counter').val();
-			
-			if(currentCount > 0){
-				if(currentCount > 0 && numRequired != currentCount){
-					 swal({
-						title: "Are you sure?",
-						text: "You haven't selected all the required weights",
-						icon: "warning",
-						buttons: true,
-						dangerMode: true,
-					})
-					.then((isConfirm) => {
-						if (isConfirm) {
-							$('#addtoPalletForm').submit();
-						} else {
-							 
-						}
-					});
-
-				}else{
-					$('#addtoPalletForm').submit();
-				}
-			}
-			
- 		});
-		
-		$('#addtoPalletForm').submit();
+		checkSelectedWeightsAndSubmit();
 	});
-
 		
 	$('#addToPallet').click(function(){
 		$('#functype').val('ADD');
-		
-		var bigValue = '';
-		
-		$('.selectedValue').each(function(){
-			var value = $(this).val();
- 			bigValue += value + ',';
- 		});
-		
-		$('#newweightvals').val(bigValue);
-		
-		
-		$('.productGroup').each(function(){
-			
-			var numRequired = $(this).attr('targetamount');
-			var currentCount = $(this).find('.picksheetType').find('.counter').val();
-			
-			if(currentCount > 0){
-				if(currentCount > 0 && numRequired != currentCount){
-					 swal({
-						title: "Are you sure?",
-						text: "You haven't selected all the required weights",
-						icon: "warning",
-						buttons: true,
-						dangerMode: true,
-					})
-					.then((isConfirm) => {
-						if (isConfirm) {
-							$('#addtoPalletForm').submit();
-						} else {
-							 
-						}
-					});
-
-				}else{
-					$('#addtoPalletForm').submit();
-				}
-			}
-			
- 		});
-		
-		$('#addtoPalletForm').submit();
-		
+		checkSelectedWeightsAndSubmit();
 	});
+
 	globalReady++;
 	$('#completeFormBtn').click(function(){
 		 
@@ -517,6 +431,65 @@
 			return 1;
 		};
 	
+	}
+
+	function checkSelectedWeightsAndSubmit()
+	{
+		var bigValue = '';
+		
+		$('.selectedValue').each(function(){
+			var value = $(this).val();
+ 			bigValue += value + ',';
+ 		});
+		
+		$('#newweightvals').val(bigValue);
+		
+		var shouldSubmit = false;
+		var needApprovalBeforeSubmit = false;
+
+		$('.productGroup').each(function(){
+			
+			var numRequired = $(this).attr('targetamount');
+			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());
+			if(selectedWeightsCount)
+			{
+				shouldSubmit = true;
+			}
+
+			if(numRequired != selectedWeightsCount)
+			{
+				needApprovalBeforeSubmit = true;
+			}			
+		 });
+		 
+		 if(!shouldSubmit)
+		 {
+			 return false;
+		 }
+
+		 if(needApprovalBeforeSubmit)
+		 {
+			askForIncompleteSelectionApprovalAndSubmit();
+			return false;
+		 }
+
+		 $('#addtoPalletForm').submit();
+	}
+
+	function askForIncompleteSelectionApprovalAndSubmit()
+	{
+		swal({
+			title: "Are you sure?",
+			text: "You haven't selected all the required weights",
+			icon: "warning",
+			buttons: true,
+			dangerMode: true,
+		})
+		.then((confirmed) => {
+			if (confirmed) {
+				$('#addtoPalletForm').submit();
+			}
+		});
 	}
 
 </script>

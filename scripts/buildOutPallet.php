@@ -31,8 +31,6 @@
                     $weight = mysqli_fetch_array($y1);
                     # END GET WEIGHT ROW
     
-                    echo '<br/><br/>';
-    
                     # START GROSSTARE WEIGHT CALCULATIONS
                     $original_gross = number_format($weight['original_gross'], 2, '.', '');
                     $num_cartons = number_format($weight['number_of_cartons'], 2, '.', '');
@@ -52,13 +50,11 @@
                     
                     
                     # START UPDATE CURRENT WEIGHT INFO
-                    echo $x2 = "UPDATE `weights` SET weight_gross='$weightOne', weight_tear='$weightOne', grosstare='0', status_id='1' WHERE id='$weightID'";
+                    $x2 = "UPDATE `weights` SET weight_gross='$weightOne', weight_tear='$weightOne', grosstare='0', status_id='1' WHERE id='$weightID'";
                     $y2 = mysqli_query($conn, $x2) or die(mysqli_error($conn));
                     # END UPDATE CURRENT WEIGHT INFO
                     
                     array_push($grossTareArray, $weightID);
-    
-                    echo '<br/><br/>';
     
                     # START CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
                     $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id,grosstare) VALUES ('$product_id','$weightTwo','$weightTwo','0',0)";
@@ -116,7 +112,7 @@
 
 
                 # START GET WEIGHT ROW
-                echo $x1 = "SELECT * FROM `weights` WHERE id='$weightID'";
+                $x1 = "SELECT * FROM `weights` WHERE id='$weightID'";
                 $y1 = mysqli_query($conn, $x1);
                 $weight = mysqli_fetch_array($y1);
 				$tare = $weight['weight_gross'];
@@ -128,22 +124,15 @@
                 $weightTwo = (float) $tare - (float) $weightOne;
                 
 				
-				echo $weightOne . '<br/>';
-				echo $weightTwo . '<br/>';
-				echo $tare . '<br/>';
-				
-				
                 # START UPDATE CURRENT WEIGHT INFO
-                echo $x2 = "UPDATE `weights` SET weight_gross='$weightOne', weight_tear='$weightOne', status_id='1' WHERE id='$weightID'";
+                $x2 = "UPDATE `weights` SET weight_gross='$weightOne', weight_tear='$weightOne', status_id='1' WHERE id='$weightID'";
                 $y2 = mysqli_query($conn, $x2) or die(mysqli_error($conn));
                 # END UPDATE CURRENT WEIGHT INFO
                 
                 array_push($grossTareArray, $weightID);
 
-                echo '<br/><br/>';
-
                 # START CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
-                echo $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id) VALUES ('$product_id','$weightTwo','$weightTwo','0')";
+                $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id) VALUES ('$product_id','$weightTwo','$weightTwo','0')";
                 $y3 = mysqli_query($conn, $x3) or die(mysqli_error($conn));
                 # END CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
 
@@ -179,7 +168,7 @@
 
         if(!empty($weightArray)){
             $exploded_weightArray = implode(',', $weightArray);		
-		    echo $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName) VALUES ('$pickersheet_id','$exploded_weightArray','#')";
+		    $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName) VALUES ('$pickersheet_id','$exploded_weightArray','#')";
             $y = mysqli_query($conn, $x) or die(mysqli_error($conn));
         }
         # END NORMAL WEIGHT
