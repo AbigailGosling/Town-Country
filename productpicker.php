@@ -462,7 +462,12 @@
         var id = $(this).val();
 
         //doSearch();
-    });
+	});
+	
+	// hide cuts on load
+	$('#SearchCutgroups option.allsoption').hide();
+	// iOS fix - display:none doesn't work on select options
+	$('#SearchCutgroups option.allsoption').wrap('<span/>');
 
     $('#SearchCutgroups').change(function(){
         var id = $(this).val();

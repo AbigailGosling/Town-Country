@@ -123,11 +123,11 @@
  <script>
  
     $(document).ready(function(){
-        $('.location').each(function(){
+        $('.location-input').each(function(){
             $(this).on('keypress',function(e) {
                 if(e.which == 13) {
                     
-                    var location = $(this).parent().find('.location').val();
+                    var location = $(this).parent().find('.location-input').val();
                     var pallet = $(this).parent().find('.pallet').val();
                     
                     $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){

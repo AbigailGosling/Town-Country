@@ -87,6 +87,8 @@
 					<label>Species</label>
 
 					<select name="species_id" id="SearchSpecies">
+					<option value="" disabled selected>Select species..</option>
+					
                     <?php
                     	$x = "SELECT * FROM species";
                         $y = mysqli_query($conn, $x);
@@ -103,9 +105,8 @@
             <tr>
 				<td>
 					<label>Cut Group</label>
-
 					<select name="cutgroup_id" id="SearchCutgroups">
-                        <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select cut..</option>
+						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>">Select cut..</option>
                         <?php
                             $x = "SELECT * FROM `cutgroups`";
                             $y = mysqli_query($conn, $x);
@@ -266,22 +267,31 @@
 
     $('#SearchCutgroups option.s'+$('#SearchSpecies').first().val()).show();
 
-    $('#SearchSpecies').change(function(){
-        var thisval = $(this).val();
+	function toggleOptions(){
+
+		var thisval = $("#SearchSpecies").val();
         $('#SearchCutgroups option.allsoption').hide();
         $('#SearchCutgroups option.header').show();
         $('#SearchCutgroups option.s'+thisval).show();
         $('#SearchCutgroups').val($('#SearchCutgroups option.header').first().attr('sid'));
 
-				// iOS fix - display:none doesn't work on select options
-				$('#SearchCutgroups option.allsoption').unwrap('span');
-        $('#SearchCutgroups option.allsoption').wrap('<span/>');
-        $('#SearchCutgroups option.s'+thisval).unwrap();
+		// iOS fix - display:none doesn't work on select options
+		$('#SearchCutgroups option.allsoption').each(function(index,el ){
+			if($(el).parent().is('span')){
+				$(el).unwrap('span');
+			}
+		})
+	
+		$('#SearchCutgroups option.allsoption').wrap('<span/>');
+		$('#SearchCutgroups option.s'+thisval).unwrap();
+		$('#SearchCutgroups option.s'+thisval+"[selected]").attr('selected','selected');
 				
-        var id = $(this).val();
-    });
+        var id = $("#SearchSpecies").val();
+	}
+	$('#SearchSpecies').change(toggleOptions);
+	
 
-
+	toggleOptions();
 		
 
 		$('#instantSearch').keydown(function(){
