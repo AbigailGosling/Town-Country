@@ -61,12 +61,20 @@
     }
 # 
 ?>
-<div id="top">
+<div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
 
-<div class="container container--pt"><h2>Sales Confirmation</h2></div>
+<div class="container container--pt flex space-between">
+	<div>
+		<h2>Sales Confirmation</h2>
+	</div>
+	<div align="right">
+		<h3>Invoice No: <?php echo str_pad($picksheet_id, 6, '0', STR_PAD_LEFT); ?></h3>
+		<a href="javascript:;" class="printhide" onclick="printStuff()">Print</a>
+	</div>
+</div>
 
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <div class="container">
@@ -162,6 +170,8 @@
 			<label>	Order Reference Number</label><br/>
 			<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
 		</div>
+
+	 
 	</div>
 </div>
 
@@ -360,6 +370,16 @@
 </style>
 <script type="text/javascript">
 	
+	function printStuff(){
+
+		$('.printhide').hide();
+
+		window.print();
+	}
+
+	function printCompleted(){
+		$('.printhide').show();
+	}
 </script>
 
 <style type="text/css">
