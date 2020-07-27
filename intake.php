@@ -230,11 +230,11 @@
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
 			
 			<label>Document Name</label><br/>
-			<input type="text" name="name">
+			<input type="text" name="name" required>
 			<br/><br/>
 			
 			<label>Image</label><br/>
-			<input type="file" name="dfile" style="border: 1px solid #cacaca;"><br/>
+			<input type="file" name="dfile" style="border: 1px solid #cacaca;" required><br/>
 			
 			<br/><br/>
 			<input type="submit" value="Attach to intake">
