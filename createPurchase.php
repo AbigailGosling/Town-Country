@@ -53,7 +53,7 @@
 				$intake = mysqli_fetch_array($ty);
 
 				if($txcount > 0){
-				?><a href="intake.php?id=<?php echo $intake['id']; ?>" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">View Intake</a><?php
+				?><a href="intake.php?id=<?php echo $intake['id']; ?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">View Intake</a><?php
 				}else{
 				?><a href="newDelivery.php?purchaseid=<?php echo $purchaseid; ?>" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Create Intake</a><?php
 				}
@@ -109,7 +109,7 @@
 				</td>
 				<td>
 					<label>Direct Drop</label>
-					<select name="direct_drop" style="width:192px;height:30px;">
+					<select name="direct_drop" id="direct_drop" style="width:192px;height:30px;">
 						<option value="0" <?php if($purchase['direct_drop'] == 0){ echo 'selected'; } ?>>No</option>
 						<option value="1" <?php if($purchase['direct_drop'] == 1){ echo 'selected'; } ?>>Yes</option>
 					</select>
@@ -246,6 +246,13 @@
 	<?php if(!$edit){ ?> for(i=0;i<5;i++){ newProduct(); } <?php } ?>
 	
 	$(document).ready(function(){
+		$('#direct_drop').change(function(){
+			if($(this).val() == '1'){
+				$('#viewIntake').fadeOut();
+			}else{
+				$('#viewIntake').fadeIn();
+			}
+		});
 		// $( "#date_purchased" ).datepicker({ dateFormat: 'dd/mm/yy' });
 			
 		// $( "#date_due" ).datepicker({ dateFormat: 'dd/mm/yy' });
