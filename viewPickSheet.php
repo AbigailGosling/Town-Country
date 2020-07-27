@@ -169,13 +169,11 @@
                     
                         if($pallet['grosspallet']){
                             
-                            $netWeight = number_format($weights['weight_gross'], 2, '.', '');
+                            //$netWeight = number_format($weights['weight_gross'], 2, '.', '');
                         ?>
-                            
-                            <div style="position:relative;padding:10px;">
-                                <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
-                                <input type="number" name="gross_<?php echo $weights['id']; ?>" value="0" max="<?php echo $netWeight; ?>"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
-                            </div>
+                         	<div class="weightbox" onclick="addStringName('<?php echo $someString; ?>'); addBoxIDtoList(<?php echo $weights['id']; ?>,<?php echo $product['cut_id']; ?>,<?php echo $product['id']; ?>,this,'<?php if($product['weightnote'] != ''){ echo 'true'; }else{ echo 'false'; } ?>');">
+								<?php echo $weights['weight_gross']; ?> [GT]
+							</div>
                             <?php             
                         }else{
                         ?>
@@ -351,7 +349,7 @@
 	function addBoxIDtoList(id, cut_id, product_id, ele, customWeight, count = 1){
 		
 		if(customWeight == 'true'){
-			$('.customWeightContainer').fadeIn();
+			// $('.customWeightContainer').fadeIn();
 		}
 		
 		if($(ele).hasClass('activeWeight')){
