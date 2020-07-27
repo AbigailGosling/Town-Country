@@ -994,6 +994,13 @@
 		return $row['name'];
 	}
 	
+	function deleteProductEntry($product_id){
+		global $conn;
+		
+		$x = "DELETE FROM `product` WHERE id = '$product_id'";
+		$y = mysqli_query($conn, $x);
+	}
+
 	# Delete Boxes for specific product_id
 	function deleteWeightsFor($product_id){
 		global $conn;

@@ -214,7 +214,7 @@
 										<a href="javascript:;" onclick="editWeight('<?php echo $intake_id; ?>','<?php echo $pallet_id; ?>','<?php echo $product_id; ?>','<?php echo $weightID; ?>')">
 											<i class="fa fa-pencil" aria-hidden="true" style="font-size:18px;color:#000;"></i>
 										</a>
-										<a href="/scripts/deleteWeight.php?id=<?php echo $weightID; ?>&intakeid=<?php echo $intake_id; ?>">
+										<a href="/scripts/deleteProduct.php?productid=<?php echo $product_id; ?>&intakeid=<?php echo $intake_id; ?>">
 											<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;"></i>
 										</a>
 									</td>
