@@ -181,7 +181,7 @@
 			}
 			};
 
-			xhttp.open("POST", "/ajax/intakePageListDate.php", true);
+			xhttp.open("POST", "/ajax/salesConfirmationListDate.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send("month=" + month + '&year=' + year);
 
