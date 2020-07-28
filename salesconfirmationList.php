@@ -123,7 +123,6 @@
                 var picksheetid = $(this).find('.active').attr('picksheetid');
                 
                 $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
-                    //alert("Data: " + data + "\nStatus: " + status);
                 });
 
                 $(this).find('.active').toggle();
@@ -141,7 +140,7 @@
 				}
 				};
 
-				xhttp.open("POST", "/ajax/purchasePageList.php", true);
+				xhttp.open("POST", "/ajax/salesConfirmationList.php", true);
 				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				xhttp.send("searchterm=" + val);
 			
