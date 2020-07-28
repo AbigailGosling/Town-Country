@@ -1,4 +1,4 @@
-correct file<?php
+<?php
 
 	require('../functions.php');
 	
@@ -8,11 +8,11 @@ correct file<?php
         
         # Check if any customer names match the search input
         $customerIDs = [0];
-        $customerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE `businessname` LIKE '$searchterm%'");
+        $customerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '$searchterm%'");
         while($customer = mysqli_fetch_array($customerResult)){ array_push($customerIDs, $customer['id']); }
         $customerIDs = implode(',', $customerIDs);
 
-        $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickersheets` WHERE customer_id IN ($customerIDs) || id = '$searchterm' || id LIKE '$searchterm%'");
+        $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickersheets` WHERE customer_id IN ($customerIDs) || id = '$searchterm' || id LIKE '$searchterm%' ORDER BY date DESC");
     }else{
         $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickerSheets` ORDER BY date DESC");
     }
