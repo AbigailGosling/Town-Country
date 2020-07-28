@@ -34,7 +34,7 @@
 			 
 		}else{
 			// echo 'isnot_date';
-			$x = "SELECT * FROM `intake` WHERE returned=1 && id='" . $term . "' OR returned=1 && vehicle_reg LIKE '%$term%' OR returned=1 && id LIKE '%$term%' OR returned=1 && delivery_note_number LIKE '%$term%' $supplierids  ORDER BY date_received DESC";
+			$x = "SELECT * FROM `intake` WHERE returned=1 && (id='" . $term . "' OR returned=1 && vehicle_reg LIKE '%$term%' OR returned=1 && id LIKE '%$term%' OR returned=1 && delivery_note_number LIKE '%$term%' $supplierids) ORDER BY date_received DESC";
 		}
 		
 		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
