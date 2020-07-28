@@ -440,7 +440,7 @@
 					<td>
 						<p>Town and Country Meats<br/>
 						Sort Code: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 40 10 39<br/>
-						Account No: 400057924</p>
+						Account No: 40057924</p>
 					</td>
 					<td align="center">
 						<img src="'. $domain .'images/ecblue.jpg">

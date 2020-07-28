@@ -96,7 +96,7 @@
 
 					<input type="text" name="id" value="<?php echo $data['id']; ?>" style="display:none;">
 
-					<input type="text" id="supname" name="name" value="<?php echo $data['name']; ?>">
+					<input type="text" id="supname" name="name" value="<?php echo $data['name']; ?>" required>
 
 				</td>
 

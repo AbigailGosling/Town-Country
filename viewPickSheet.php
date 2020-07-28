@@ -169,13 +169,11 @@
                     
                         if($pallet['grosspallet']){
                             
-                            $netWeight = number_format($weights['weight_gross'], 2, '.', '');
+                            //$netWeight = number_format($weights['weight_gross'], 2, '.', '');
                         ?>
-                            
-                            <div style="position:relative;padding:10px;">
-                                <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
-                                <input type="number" name="gross_<?php echo $weights['id']; ?>" value="0" max="<?php echo $netWeight; ?>"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
-                            </div>
+                         	<div class="weightbox" onclick="addStringName('<?php echo $someString; ?>'); addBoxIDtoList(<?php echo $weights['id']; ?>,<?php echo $product['cut_id']; ?>,<?php echo $product['id']; ?>,this,'<?php if($product['weightnote'] != ''){ echo 'true'; }else{ echo 'false'; } ?>');">
+								<?php echo $weights['weight_gross']; ?> [GT]
+							</div>
                             <?php             
                         }else{
                         ?>
@@ -290,6 +288,8 @@
                         
                         ?>
                         <script>
+							$('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>').val(<?php echo $count; ?>);
+
 							var howManyWeGot = '<?php echo ${"globalProductCount" . $product['id']}; ?>';
 							var target = $('#topform<?php echo $product['id']; ?>').attr('targetamount');
 							console.log('How many we have: ' + howManyWeGot + ' ||||  target: ' + target + '  ('+ howManyWeGot +'/'+ target +')');
@@ -349,7 +349,7 @@
 	function addBoxIDtoList(id, cut_id, product_id, ele, customWeight, count = 1){
 		
 		if(customWeight == 'true'){
-			$('.customWeightContainer').fadeIn();
+			// $('.customWeightContainer').fadeIn();
 		}
 		
 		if($(ele).hasClass('activeWeight')){
@@ -409,12 +409,37 @@
 
 	globalReady++;
 	$('#completeFormBtn').click(function(){
-		 
-		if(parseInt(globalReady) >= parseInt(globalNeed)){
+		var totalNeeded = 0;
+		var totalGot = 0;
+
+		$('.productGroup').each(function(){
+			totalNeeded += parseInt($(this).attr('targetamount'));
+		});
+
+		console.log('Total Needed: ' + totalNeeded);
+
+		$('.counter').each(function(){
+			totalGot += parseInt($(this).val());
+		});
+
+		console.log('Total Got: ' + totalGot);
+
+
+		if(totalGot < totalNeeded){
+			swal({
+				title: "Are you sure?",
+				text: "You haven't selected all the required weights",
+				icon: "warning",
+				buttons: true,
+				dangerMode: true,
+			})
+			.then((confirmed) => {
+				if (confirmed) {
+					$('#markCompletedForm').submit();
+				}
+			});
+ 		}else{
 			$('#markCompletedForm').submit();
-			console.log('#completeFormBtn => ready!');
-		}else{
-			console.log('#completeFormBtn => not ready! [' + globalReady +'/' + globalNeed + ']');
  		}
 	});
 	

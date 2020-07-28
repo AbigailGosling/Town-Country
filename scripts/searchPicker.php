@@ -122,7 +122,7 @@
         }
 
         
-        $productsX2 = "SELECT product.cut_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
+        $productsX2 = "SELECT product.cut_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
         $products2Count = mysqli_num_rows($productsY2);
         
@@ -133,19 +133,34 @@
         $product2_palletids = array();
         $product2_cutids = array();
         $product2_productids = array();
-        
+        $product2_brands = array();
+        $product2_nationalities = array();
+
         array_map(
             function($product2) {
                 global $product2_palletids;
                 global $product2_cutids;
                 global $product2_productids;
+                global $product2_brands;
+                global $product2_nationalities;
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
+
+                $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
+
+                if($numOfWeights > 0){
+                    array_push($product2_brands, $product2['brand_id']);
+                    array_push($product2_nationalities, $product2['nationality_id']);
+                }
+
             },
         $products2);
         
+        $uniqueBrands = count(array_unique($product2_brands));
+        $uniqueNationalities = count(array_unique($product2_nationalities));
+
         $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
         if($quantityTotal < 1){continue;}
@@ -157,8 +172,6 @@
        
         ?>
         <tr class="searchAccordTitle">
-            
-            
             <td colspan="1">
                 <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
 					<b><?php echo $intake_id; ?></b>
@@ -181,14 +194,30 @@
             <!--
             // ??: Same as with temperatures - get all entries in the beginning
             -->
-			<td colspan="1"><?php echo getNationality($productsRow['nationality_id']); ?></td>
+			<td colspan="1">
+                <?php
+                    if($uniqueNationalities > 1){
+                        echo '--';
+                    }else{
+                        echo getNationality($productsRow['nationality_id']);
+                    }
+                ?>
+            </td>
 			<td colspan="1">
 				<form method="post">
 					<textarea name="comments" class="overviewcomment" productid="<?php echo $productsRow['productid']; ?>"><?php echo $productsRow['weightnote']; ?></textarea>
 					<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 				</form>
 			</td>
-			<td><?php echo getBrand($productsRow['brand_id']); ?></td>
+			<td>
+                <?php
+                    if($uniqueBrands > 1){
+                        echo '--';
+                    }else{
+                        echo getBrand($productsRow['brand_id']);
+                    }
+                ?>
+            </td>
 			<td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
             <td class="bold"><?php 
                 

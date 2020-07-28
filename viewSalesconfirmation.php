@@ -61,13 +61,20 @@
     }
 # 
 ?>
-<div id="top">
+<div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
 
-<div class="container container--pt"><h2>Sales Confirmation</h2></div>
-<form method="POST" autocomplete="off">
+<div class="container container--pt flex space-between">
+	<div>
+		<h2>Sales Confirmation</h2>
+	</div>
+	<div align="right">
+		<h3>Invoice No: <?php echo str_pad($picksheet_id, 6, '0', STR_PAD_LEFT); ?></h3>
+		<a href="javascript:;" class="printhide" onclick="printStuff()">Print</a>
+	</div>
+</div>
 
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <div class="container">
@@ -163,6 +170,8 @@
 			<label>	Order Reference Number</label><br/>
 			<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
 		</div>
+
+	 
 	</div>
 </div>
 
@@ -266,7 +275,6 @@
 		<br/>
   	</div>
 </div>
-</form>
  
 
 
@@ -361,177 +369,17 @@
 	}
 </style>
 <script type="text/javascript">
- 
-	$('#sendfake').click(function(){
-		var customer = $('#customer').val();
-		var date = $('#estimated_delivery_date').val();
-		
-		 
-		
-		ready = 1;
-		
-		
-		if(date != ''){
-			ready = 1;
-		}else{
-			ready = 0;
- 			$('#estimated_delivery_date').css('border','1px solid red');
-		}
-		
-		
-		if(customer != ''){
-			ready = 1;
-		}else{
-			ready = 0;
- 			$('#customer').css('border','1px solid red');
-		}
-		
-		 
-		
-		$('.price').each(function(){
- 			var value = $(this).val();
-			
-			if(value == ''){
-				ready = 0;
-				
-				$(this).css('border','1px solid red');
-			}
-			
-		});
-		
-		if(ready == 1){
-			$('#sendreal').trigger('click');
-		}else{
-			alert('Please complete the missing fields');
-		}
-		
-		
-		console.log(ready);
-		
-	});
 	
- 
-	ready = true;
-	setInterval(function(){
-		ready = true;
-		var totalPrice = 0;
-		
-		$('.price').each(function(){
-			var q = $(this).attr('q');
-			
-			if(this.value != ''){
-				var finalVal = (parseFloat(this.value)) * q;
-				// var finalVal = (parseFloat(this.value));
-				
-				totalPrice += finalVal;
-			}else{
-				ready = false;
-			}
-			
-		});
-		
-		
-		// $('.totalprice').html('Total Price:  £' + Math.round(totalPrice * 100) / 100);
-	}, 300);
-	
-		
-	
-	$(document).ready(function(){  
-		setCustomerDetails(null, 'true');
-		
-		
-		$.each(document.cookie.split(/; */), function(){
-		  var splitCookie = this.split('=');
+	function printStuff(){
 
-			
-			if(splitCookie[0].includes('quantity-')){
-				document.cookie = splitCookie[0] + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';	
-			}
-		});
-	 
-		// $("#SearchCut").keyup(function(){ doSearch();  });
-	 
-	 
-		// $("#SearchPallet").keyup(function(){	 doSearch();	});
-		
-		// $("#temperatureID").change(function(){	 doSearch();	});
-		
-		$( "#estimated_delivery_date" ).datepicker({
-			dateFormat: 'dd/mm/yy'
-		});
-		
-		
-	});
-	 
-	
-	function doSearch(){
-			
-		console.log('Searching..');
-		var cut = $('#SearchCut').val();
-		var palletID = $('#SearchPallet').val();
-		var species = $('#SearchSpecies').val();
-		var temperatureID = $('#temperatureID').val();
-		
-		$('#loadResults').html('<center><img src="https://zippy.gfycat.com/SkinnySeveralAsianlion.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
-		
-		$.get("/scripts/searchPicker.php?cut=" + cut + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID, function(data, status){
-			$('#loadResults').html(data);
-		});
-		
-		// }
-	}
-	
-	function ShowWeights(pallet_id,species_id, cut_id){
-		// $('#weightsContainer').fadeOut();
-		$('.weights' + pallet_id + species_id + cut_id).toggle();
-	}
-	
-	$('#submitCustomerAccount').click(function(){
-		$.ajax({
-			type: 'POST',
-			url: '/scripts/addCustomer.php',
-			data: $('#createCustomerForm').serialize(),
-			success: function () {
-				$('#createCustomerForm')[0].reset();
-				alert('Customer Added - please refresh to see changes!');
-			}
-		});
-	});
-	
-	$('#customer').keyup(function(){
-		var val = $('#customer').val();
-		// $('#test2d').text(val);
-		if(val != ''){
-			// $('#customer_search_results').fadeIn();
-		}else{
-			// $('#customer_search_results').fadeOut();
-		}
-		$('#customer_search_results').fadeIn();
+		$('.printhide').hide();
 
-	 	
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-		  // document.getElementById("demo").innerHTML = this.responseText;
-		  $('#customer_search_results').html(this.responseText);
-		}
-		};
-		xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
-		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhttp.send("searchterm=" + val);
-	
-	});
-		
-		
-		
-	function changeAddress(customer_id, address_id){
-		$.get("/ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
-			$('#address').html(data);
-			$('.lity-close').trigger('click');
-		});
+		window.print();
 	}
-		
-	
+
+	function printCompleted(){
+		$('.printhide').show();
+	}
 </script>
 
 <style type="text/css">
