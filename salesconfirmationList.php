@@ -29,7 +29,7 @@
 		<h1 class="int">Sales Confirmation LIST</h1>
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
 		
-		<a href="purchaseList.php" class="resetBtn">Clear</a>
+		<a href="salesconfirmationList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
 			<select id="month">
