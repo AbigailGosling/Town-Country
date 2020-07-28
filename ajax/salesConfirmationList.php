@@ -12,7 +12,7 @@
         while($customer = mysqli_fetch_array($customerResult)){ array_push($customerIDs, $customer['id']); }
         $customerIDs = implode(',', $customerIDs);
 
-        $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickersheets` WHERE customer_id IN ($customerIDs) || id = '$searchterm' || id LIKE '$searchterm%' ORDER BY date DESC");
+        $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE customer_id IN ($customerIDs) || id = '$searchterm' || id LIKE '$searchterm%' ORDER BY date DESC");
     }else{
         $pickersheetResults = mysqli_query($conn, "SELECT * FROM `pickerSheets` ORDER BY date DESC");
     }
