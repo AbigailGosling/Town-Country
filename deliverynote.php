@@ -322,7 +322,7 @@
 				<div class="col1">
 					<p>Town and Country Meats<br/>
 					Sort Code: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 40 10 39<br/>
-					Account No: 400057924</p>
+					Account No: 40057924</p>
 					
 				</div>
 				<div class="col2" align="center">
@@ -332,7 +332,7 @@
                         </div>
                         <div>
                             <div class="bankcircle">
-                                UK<br/>WNO82<br/>EC
+                                UK<br/>WN082<br/>EC
                             </div>
                             <span style="font-size:12px;padding-top:5px;display:block;">Unit 23</span>
                         </div>
