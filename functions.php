@@ -1282,7 +1282,3 @@
     }
 	
 ?>
-
-<?php if(isset($STAGING)){?>
-	<link href="css/staging-override.css" rel="stylesheet" type="text/css">
-<?php }?>
