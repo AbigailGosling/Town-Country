@@ -41,13 +41,6 @@
                         </tr>
                     </table>
                 </a>
-                 
-                <a href="javascript:;" onclick="deleteSheet(<?php echo $picksheet['id']; ?>)" id="delete_intake">
-                    <i class="fa fa-times" aria-hidden="true"></i>
-                </a>
-                <form method="POST" action="/scripts/cancelSale.php" autocomplete="off" class="<?php echo $picksheet['id']; ?>_deleteSheetForm">
-                    <input type="hidden" name="pickersheet_id" value="<?php echo $picksheet['id']; ?>">
-                </form>
     
                 <div class="sendcontainer">
                     <div class="active" picksheetid="<?php echo $picksheet['id']; ?>" <?php if($picksheet['sent'] == 0){ echo 'style="display:none;"'; }?>>
