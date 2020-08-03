@@ -54,19 +54,19 @@
 			<?php
 				$x = "SELECT * FROM `pickerSheets` ORDER BY date DESC";
 				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-				while($row = mysqli_fetch_array($y)){
+				while($picksheet = mysqli_fetch_array($y)){
 				
-					$date_purchased = date('d/m/Y', strtotime($row['date']));
+					$date_purchased = date('d/m/Y', strtotime($picksheet['date']));
 				?>
 					<tr><td align="center" class="pos">
-						<a href="viewSalesconfirmation.php?id=<?php echo $row['id']; ?>" class="intake">
+						<a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
-									<td width="100" align="left">ID: P-00<?php echo $row['id']; ?> </td>
+									<td width="100" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
 									<td align="center" style="font-size: 14px;left:100px;">
 										<?php
 										
-											$customer_id = $row['customer_id'];
+											$customer_id = $picksheet['customer_id'];
 											$x1 = "SELECT * from `customers` WHERE id='$customer_id'";
 											$y1 = mysqli_query($conn, $x1);
 											
@@ -74,6 +74,8 @@
 										
 										?>
 										<?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
+
+										<?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
 									</td>
 									<td width="200" align="right"> created <?php echo $date_purchased; ?></td>
 								</tr>

@@ -37,6 +37,8 @@
                             
                             ?>
                             <?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
+
+                            <?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
                         </td>
                         <td width="200" align="right"> created <?php echo $date_purchased; ?></td>
                     </tr>
