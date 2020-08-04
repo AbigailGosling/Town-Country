@@ -85,7 +85,7 @@
                      
             
 			            <div class="sendcontainer">
-                            <div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['sent'] == 0){ echo 'style="display:none;"'; }?>>
+                            <div class="active" picksheetid="<?php echo $picksheet['id']; ?>" <?php if($picksheet['sent'] == 0){ echo 'style="display:none;"'; }?>>
                                 <i class="fa fa-check" aria-hidden="true"></i>
                             </div>
                         </div>
