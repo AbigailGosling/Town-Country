@@ -87,7 +87,7 @@
 				$date->modify('+'. $paydayDelay .' day');
 				$payByDate = $date->format('d/m/Y');
    			?>
- 			<div class="po">Assembed: <span><?php echo $assemblydate; ?></span></div>
+ 			<div class="po">Assembled: <span><?php echo $assemblydate; ?></span></div>
 			<b style="color: #8c8c8c;font-size: 12px;">Delivery address</b>
 			<div class="deliverybox">
 				<p>

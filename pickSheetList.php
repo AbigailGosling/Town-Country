@@ -7,11 +7,17 @@
         $delid = mysqli_real_escape_string($conn, $_GET['delid']);
 
 
-        $x = "DELETE FROM `pickerSheets` WHERE id='$delid'";
-        $y = mysqli_query($conn, $x);
+        $picksheetResult = mysqli_query($conn, "UPDATE `pickerSheets` SET deleted=1 WHERE id='$delid'");
 
-        $x = "DELETE FROM `pickerItems` WHERE pickersheet_id='$delid'";
-        $y = mysqli_query($conn, $x);
+        $pickerItemsResult = mysqli_query($conn, "UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
+
+        $palletsOutResult = mysqli_query($conn, "SELECT * FROM `palletsOut` WHERE pickersheet_id='$delid'");
+
+        while($palletOut = mysqli_fetch_array($palletsOutResult)){
+            $weightIDS = $palletOut['weight_ids'];
+
+            $deleteWeightsResult = mysqli_query($conn, "UPDATE `weights` SET status='0' WHERE id IN ($weightIDS)");
+        }
 
         $x = "DELETE FROM `palletsOut` WHERE pickersheet_id='$delid'";
         $y = mysqli_query($conn, $x);
@@ -45,8 +51,7 @@
 			
 			$userid = $_SESSION['USER'];
 			
- 			// $x = "SELECT * FROM `pickerSheets` WHERE completed='0' ORDER BY `date` DESC";
- 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' ORDER BY id DESC";
+ 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY id DESC";
 			$y = mysqli_query($conn, $x);
 			
 			while($row = mysqli_fetch_array($y)){

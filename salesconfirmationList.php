@@ -54,19 +54,19 @@
 			<?php
 				$x = "SELECT * FROM `pickerSheets` ORDER BY date DESC";
 				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-				while($row = mysqli_fetch_array($y)){
+				while($picksheet = mysqli_fetch_array($y)){
 				
-					$date_purchased = date('d/m/Y', strtotime($row['date']));
+					$date_purchased = date('d/m/Y', strtotime($picksheet['date']));
 				?>
 					<tr><td align="center" class="pos">
-						<a href="viewSalesconfirmation.php?id=<?php echo $row['id']; ?>" class="intake">
+						<a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
-									<td width="100" align="left">ID: P-00<?php echo $row['id']; ?> </td>
+									<td width="100" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
 									<td align="center" style="font-size: 14px;left:100px;">
 										<?php
 										
-											$customer_id = $row['customer_id'];
+											$customer_id = $picksheet['customer_id'];
 											$x1 = "SELECT * from `customers` WHERE id='$customer_id'";
 											$y1 = mysqli_query($conn, $x1);
 											
@@ -74,18 +74,15 @@
 										
 										?>
 										<?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
+
+										<?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
 									</td>
 									<td width="200" align="right"> created <?php echo $date_purchased; ?></td>
 								</tr>
 							</table>
 						</a>
 						 
-                        <a href="javascript:;" onclick="deleteSheet(<?php echo $row['id']; ?>)" id="delete_intake">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </a>
-						<form method="POST" action="/scripts/cancelSale.php" autocomplete="off" class="<?php echo $row['id']; ?>_deleteSheetForm">
-							<input type="hidden" name="pickersheet_id" value="<?php echo $row['id']; ?>">
-						</form>
+                     
             
 			            <div class="sendcontainer">
                             <div class="active" picksheetid="<?php echo $row['id']; ?>" <?php if($row['sent'] == 0){ echo 'style="display:none;"'; }?>>
@@ -102,13 +99,7 @@
 </main>
 <div id="btm"></div>
 	<script type="text/javascript">
-	
-		function deleteSheet(id){
-			if (window.confirm("Are you sure you want to delete this sale?")) { 
-				$('.' + id + '_deleteSheetForm').submit();
-			}
-		}
-	
+ 
 		$(document).ready(function(){
 
             $('.sendcontainer').click(function(){
@@ -123,7 +114,6 @@
                 var picksheetid = $(this).find('.active').attr('picksheetid');
                 
                 $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
-                    //alert("Data: " + data + "\nStatus: " + status);
                 });
 
                 $(this).find('.active').toggle();
@@ -141,7 +131,7 @@
 				}
 				};
 
-				xhttp.open("POST", "/ajax/purchasePageList.php", true);
+				xhttp.open("POST", "/ajax/salesConfirmationList.php", true);
 				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 				xhttp.send("searchterm=" + val);
 			
@@ -182,7 +172,7 @@
 			}
 			};
 
-			xhttp.open("POST", "/ajax/intakePageListDate.php", true);
+			xhttp.open("POST", "/ajax/salesConfirmationListDate.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send("month=" + month + '&year=' + year);
 

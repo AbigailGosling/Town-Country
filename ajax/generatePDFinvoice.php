@@ -220,7 +220,7 @@
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td>
-							<div class="assembed">Assembed: <span>'. $assemblydate .'</span></div>
+							<div class="assembed">Assembled: <span>'. $assemblydate .'</span></div>
 						</td>
 					</tr>
 				</table>
