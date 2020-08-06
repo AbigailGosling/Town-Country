@@ -40,7 +40,11 @@
 			 
 			<label>YEAR</label>
 			<select id="year">
-				<?php for($i=2018;$i<2020;$i++){ ?>
+			<?php
+				$y = date('Y');
+				$y1 = $y - 2;
+				$y2 = $y + 1;
+				for($i=$y1;$i<$y2;$i++){ ?>
 					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
 				<?php } ?>
 			</select>
