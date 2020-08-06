@@ -51,8 +51,11 @@
 				<a href="intake.php?id=<?php echo $row['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
-							<td align="center" style="font-size: 18px;"><?php echo supplierName($row['supplier_id']); ?></td>
+							<?php
+								$customer = getCustomer($row['supplier_id']);
+							?>
+							<td width="100" align="left">ID: I-0000<?php echo $row['id']; ?></td>
+							<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
 							<td width="100" align="right"><?php echo $date_received; ?></td>
 						</tr>
 					</table>
@@ -75,8 +78,11 @@
 				<a href="intake.php?id=<?php echo $row['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
-							<td align="center" style="font-size: 18px;"><?php echo supplierName($row['supplier_id']); ?></td>
+							<?php
+								$customer = getCustomer($row['supplier_id']);
+							?>
+							<td width="100" align="left">ID: I-0000<?php echo $row['id']; ?></td>
+							<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
 							<td width="100" align="right"><?php echo $date_received; ?></td>
 						</tr>
 					</table>
