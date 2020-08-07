@@ -7,7 +7,7 @@
 	if($term != ''){ ?>
 		<?php
 		
-		$x = "SELECT * FROM `supplier` WHERE name LIKE '%$term%'";
+		$x = "SELECT * FROM `customers` WHERE `businessname` LIKE '$term%'";
 		$y = mysqli_query($conn, $x);
 		
 		$supplierids = '';
