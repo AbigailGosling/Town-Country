@@ -10,16 +10,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Town &amp; Country</title>
 	<link href="css/style.css" rel="stylesheet" type="text/css">
-
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-	<script>
-	$( function() {
-		$( "#datepicker" ).datepicker();
-	});
-	</script>
+	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
 <body class="menu">
 <div id="top">
@@ -54,37 +49,33 @@
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			<?php
-				$x = "SELECT * FROM `intake` WHERE returned='0' ORDER BY date_received DESC LIMIT $limit";
-				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-				while($row = mysqli_fetch_array($y)){
-				
-				$date_received = date('d/m/Y', strtotime($row['date_received']));
-				?>
-				<tr><td align="center" class="pos">
+				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned='0' ORDER BY date_received DESC LIMIT $limit");
 
-					<a href="intake.php?id=<?php echo $row['id']; ?>" class="intake">
-						<table width="100%" border="0">
-							<tr>
-								<td width="100" align="left">ID: I-0000<?php echo $row['id']; ?></td>
-								<td align="center" style="font-size: 18px;">
-                                    <?php
-                                        echo supplierName($row['supplier_id']);
-                                        $r = intakePriceComplete($row['id']);    
-                                        if($r == 1){
-                                        ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
-                                        }
-                                    ?>
-                                </td>
-								<td width="100" align="right"><?php echo $date_received; ?></td>
-							</tr>
-						</table>
-					</a>
-					
-					 
-					<a href="javascript:;" onclick="deleteRow('<?php echo $row['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+				while($intake = mysqli_fetch_array($queryResult)){
+					$date_received = date('d/m/Y', strtotime($intake['date_received']));
+					?>
+					<tr><td align="center" class="pos">
 
-				</td></tr>
-				<?php
+						<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
+							<table width="100%" border="0">
+								<tr>
+									<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+									<td align="center" style="font-size: 18px;">
+										<?php
+											echo supplierName($intake['supplier_id']);
+											$r = intakePriceComplete($intake['id']);    
+											if($r == 1){
+											?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
+											}
+										?>
+									</td>
+									<td width="100" align="right"><?php echo $date_received; ?></td>
+								</tr>
+							</table>
+						</a>
+						<a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+					</td></tr>
+					<?php
                 }
                 
                 if($limit == 100){
@@ -176,11 +167,19 @@
 			
 		}
 		
-		function deleteRow(intake_id, pallet_id){
-			if(confirm('Are you sure you want to delete this?')){
-				window.location.href = "/scripts/deleteIntake.php?intake_id=" + intake_id;
-				// console.log(intake_id + '  ' + pallet_id);
-			}
+		function deleteRow(intake_id){
+			swal({
+				title: "Are you sure?",
+				text: "Intake #"+ intake_id + " will be deleted",
+				icon: "warning",
+				buttons: true,
+				dangerMode: true,
+			})
+			.then((confirmed) => {
+				if (confirmed) {
+					window.location.href = "/scripts/deleteIntake.php?intake_id=" + intake_id;
+				}
+			});
 		}
 	</script>
 </body>

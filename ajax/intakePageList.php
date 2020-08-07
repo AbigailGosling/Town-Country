@@ -4,67 +4,49 @@
 	
 	$term = $_POST['searchterm'];
 	
-	if($term != ''){ ?>
-		<?php
+	if($term != ''){
 		
-		$x = "SELECT * FROM `supplier` WHERE name LIKE '$term%'";
-		$y = mysqli_query($conn, $x);
+		# Get any suppliers that match the search term
+		$supplierQuery = mysqli_query($conn, "SELECT id FROM `supplier` WHERE `name` LIKE '$term%'");
+		$supplierIDs = array(0);
+		while($supplier = mysqli_fetch_array($supplierQuery)){ array_push($supplierIDs, $supplier['id']); }
+		$supplierIDs = implode(',', $supplierIDs);
+
+		# Get intake_id for any pallets that match the search term
+		$palletQuery = mysqli_query($conn, "SELECT intake_id FROM `pallet` WHERE id LIKE '$term%'");
+		$intakeIDs = array(0);
+		while($pallet = mysqli_fetch_array($palletQuery)){ array_push($intakeIDs, $pallet['intake_id']); }
+		$intakeIDs = implode(',', $intakeIDs);
+
 		
-		$supplierids = '';
-		
-		while($row = mysqli_fetch_array($y)){
-			$rowid = $row['id'];
-			$supplierids .= " OR supplier_id='$rowid'";
-        }
-        
-        $x = "SELECT * FROM `pallet` WHERE id = '$term'";
-		$y = mysqli_query($conn, $x);
-		
-		$palletids = '';
-		
-		while($row = mysqli_fetch_array($y)){
-			$rowid = $row['intake_id'];
-			$palletids .= " OR id='$rowid'";
-		}
-		
-		
-		
-		if (validateDate($term)) {
-			// echo $term;
-			// echo '<br/><br/>';
+		if (validateDate($term)) { # search term is a DATE
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
-			// echo '<br/><br/>';
-			// echo $termDate = date('Y-m-d',$term);
-			// echo		$dateThing = new DateTime($term);
-			// $termDate = $dateThing->format('Y-m-d');
-			// echo 'isdate';
 			
-			$x = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC";
-			 
+			$searchQuery  = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC"; 
 		}else{
-			$x = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '$term%' OR id LIKE '%$term%' OR delivery_note_number LIKE '$term%' $supplierids $palletids ORDER BY date_received DESC";
+			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR returned='0' && supplier_id IN ($supplierIDs) OR returned='0' && id IN ($intakeIDs) ORDER BY date_received DESC";
 		}
 		
-		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-        $count = mysqli_num_rows($y);
+		$searchResults = mysqli_query($conn, $searchQuery) or die(mysqli_error($conn));
+        $countResults = mysqli_num_rows($searchResults);
 	
-        if($count == 0){
+        if($countResults == 0){
             ?><h2 style="color:#fff;font-size:12px;">No intakes found</h2><?php
         }else{
             
-            while($row = mysqli_fetch_array($y)){
-                $date_received = date('d/m/Y', strtotime($row['date_received']));
+            while($intake = mysqli_fetch_array($searchResults)){
+                $date_received = date('d/m/Y', strtotime($intake['date_received']));
             ?>
                 <tr><td align="center" class="pos">
-                    <a href="intake.php?id=<?php echo $row['id']; ?>" class="intake">
+                    <a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
                         <table width="100%" border="0">
                             <tr>
-                                <td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
+                                <td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
                                 <td align="center" style="font-size: 18px;">
                                 <?php
-                                    echo supplierName($row['supplier_id']);
-                                    $r = intakePriceComplete($row['id']);    
+                                    echo supplierName($intake['supplier_id']);
+                                    $r = intakePriceComplete($intake['id']);    
                                     if($r == 1){
                                     ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
                                     }
@@ -74,7 +56,7 @@
                         </table>
                     </a>
                     
-                    <a href="javascript:;" onclick="deleteRow('<?php echo $row['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+                    <a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
                 </td></tr>
             <?php
             }
@@ -82,20 +64,19 @@
     }else{ ?>
 		<?php
 		
-		$x = "SELECT * FROM `intake` ORDER BY date_received DESC";;
-		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-		while($row = mysqli_fetch_array($y)){
-		    $date_received = date('d/m/Y', strtotime($row['date_received']));
+		$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned ='0' ORDER BY date_received DESC");
+		while($intake = mysqli_fetch_array($searchResults)){
+		    $date_received = date('d/m/Y', strtotime($intake['date_received']));
 		?>
 			<tr><td align="center" class="pos">
-				<a href="intake.php?id=<?php echo $row['id']; ?>" class="intake">
+				<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
+							<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
                             <td align="center" style="font-size: 18px;">
                             <?php
-                                echo supplierName($row['supplier_id']);
-                                $r = intakePriceComplete($row['id']);    
+                                echo supplierName($intake['supplier_id']);
+                                $r = intakePriceComplete($intake['id']);    
                                 if($r == 1){
                                 ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
                                 }
@@ -106,7 +87,7 @@
 					</table>
 				</a>
 				
-				<a href="javascript:;" onclick="deleteRow('<?php echo $row['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+				<a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
 			</td></tr>
 		<?php
 		}
@@ -120,8 +101,3 @@
 		return $d && $d->format($format) === $date;
 	}
 ?>
-<script type="text/javascript">
-	$(document).ready(function(){
-		
-	});
-</script>
