@@ -95,8 +95,10 @@
 										$totalWeight2 = $totalWeight2 + $ykRow['weight_gross'];
 										$weightthing = weightFromProductID($product_id);
 										
-										if($unit == 'PP'){ echo '['.$howManyCases . ' Cases]';
-										
+										if($unit == 'PP'){
+											echo '['.$howManyCases . ' Cases]';
+										}else if($unit == 'PPC'){
+											echo ' [PPC]';
 										}else{
 											echo ' [' . number_format($weightthing, 3, '.', '') .'KG]';
 										}
@@ -200,8 +202,9 @@
 										$yR = mysqli_query($conn, $xR) or die(mysqli_error($conn));
 										$boxR= mysqli_fetch_array($yR);
 										
-										
-										if($boxR['weight_gross'] != '' && $boxR['weight_gross'] != $boxR['weight_tear']){
+										if($unit == 'PPC'){
+											?><td>PPC</td><?php
+										}else if($boxR['weight_gross'] != '' && $boxR['weight_gross'] != $boxR['weight_tear']){
 											?>
 											<td><?php echo $boxR['weight_gross']; ?></td>
 											<td><?php echo $boxR['weight_tear']; ?></td>
