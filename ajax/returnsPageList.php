@@ -7,7 +7,7 @@
 	if($term != ''){
 		
 		# Get any customers that match the search term
-		$customerQuery = mysqli_query($conn, "SELECT * FROM `customers` WHERE `businessname` LIKE '$term%'");
+		$customerQuery = mysqli_query($conn, "SELECT id FROM `customers` WHERE `businessname` LIKE '$term%'");
 		$customerIDs = array(0);
 		while($customer = mysqli_fetch_array($customerQuery)){ array_push($customerIDs, $customer['id']); }
 		$customerIDs = implode(',', $customerIDs);
@@ -75,7 +75,6 @@
 		<?php
 		}
 	}
-
 ?>
 <?php
 	function validateDate($date, $format = 'd/m/Y')
@@ -84,8 +83,3 @@
 		return $d && $d->format($format) === $date;
 	}
 ?>
-<script type="text/javascript">
-	$(document).ready(function(){
-		
-	});
-</script>
