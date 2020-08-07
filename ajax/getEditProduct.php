@@ -175,9 +175,12 @@
 			$i = 0;
 			while($row = mysqli_fetch_array($ytest)){
 			$i++;
-			?>	 
-			<div class="weightEditWhiteBox" id="<?php echo $row['id']; ?>" <?php if($row['tampered'] == '1'){ echo 'style="border:4px solid red; color:red;"'; } ?>>
+			?>
+			<div class="weightEditWhiteBox" id="<?php echo $row['id']; ?>" style="position:relative;<?php if($row['tampered'] == '1'){ echo 'border:4px solid red; color:red;'; } ?>">
 				<input type="number" name="weight<?php echo $row['id']; ?>" value="<?php echo $row['weight_gross']; ?>">
+				<a href="javascript:;" onclick="deleteWeight('<?php echo $row['id']; ?>','<?php echo $row['weight_gross']; ?>','<?php echo $intake_id; ?>')">
+					<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;position:absolute;top: 11px;right: -31px;"></i>
+				</a>
 			</div>
 			<?php
 			}
@@ -305,7 +308,22 @@
 		countWeights();	
 	}, 1000);
 
-	
+	function deleteWeight(weight_id, weight_val, intake_id){
+
+		swal({
+			title: "Are you sure?",
+			text: weight_val +"kg will be deleted",
+			icon: "warning",
+			buttons: true,
+			dangerMode: true,
+		})
+		.then((confirmed) => {
+			if (confirmed) {
+				window.location.href = '/scripts/deleteWeight.php?id=' + weight_id + '&intakeid=' + intake_id;	
+			}
+		});
+	}
+
 	function updatePallet(){
 		
 		var best_by = $('#best_by').val();
