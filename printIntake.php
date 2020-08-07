@@ -141,7 +141,17 @@
 				<td><?php echo getSpeciesFromCutID($productGrouped['cut_id']); ?></td>
 				<td><?php echo getCut($productGrouped['cut_id']);?></td>
 				<td><?php echo $totalCountOfCut; ?></td>
-				<td align="right"><?php echo number_format($totalWeightOfCut, 3, '.', ''); ?>kg</td>
+				<td align="right">
+					<?php
+						if($productGrouped['unit'] == 'PP'){
+							echo $totalCountOfCut . ' Cases';
+						}else if($productGrouped['unit'] == 'PPC'){
+							echo 'PPC';
+						}else{
+							echo number_format($totalWeightOfCut, 3, '.', '') . 'kg';
+						}
+					?>
+				</td>
 			</tr>
 			<?php
 			}
@@ -207,8 +217,15 @@
                                     if($product['akg'] != ''){
                                         echo ' ['. $product['quantity'] . '  Cases Advised KG] ';
                                     }else{
-										$weightthing = weightFromProductIDArray([$product['id']]);
-										echo '<b>[' . number_format($weightthing, 3, '.', '') . 'kg]</b>';
+										if($product['unit'] == 'PP'){
+											echo '[' . $totalCountOfCut . ' Cases ]';
+										}else if($product['unit'] == 'PPC'){
+											echo '[PPC]';
+										}else{
+											$weightthing = weightFromProductIDArray([$product['id']]);
+											echo '<b>[' . number_format($weightthing, 3, '.', '') . 'kg]</b>';
+										}
+										 
                                     }
                                     
                                 ?>
