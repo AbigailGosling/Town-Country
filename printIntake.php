@@ -234,6 +234,10 @@
 								<?php echo '[<b>' . $types[$product['ubbb']] .'</b>]'; ?>
 								<?php if($product['range_from']) { echo '<span style="color:grey;">(' . $product['range_from'] . ' - '; ?>
 								<?php echo $product['range_to'] . ')</span>'; } ?>
+
+								<?php if($product['unit'] == 'PPC'){ ?>
+									<br/><Br/>
+								<?php }else{ ?>
 								<div class="picksheetPalletDetail" style="padding:0px;display: flex;flex-wrap: wrap">
 								<?php
 									$weightValue = weightFromProductID($product_id);
@@ -256,6 +260,7 @@
 									}
 								?>
 								</div>
+								<?php } ?>
 							</div>
 								<?php
 							}							
