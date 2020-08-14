@@ -7,10 +7,11 @@
 	$x = "SELECT * FROM `customers` WHERE businessname LIKE '%$name%'";
 	$y = mysqli_query($conn, $x);
 	$count = mysqli_num_rows($y);
-	
+	?> <script>var customerIDs =  [];</script> <?php
 	if($count > 0){
 		while($row = mysqli_fetch_array($y)){
 		?>
+		<script>customerIDs.push(<?php echo $row['id']; ?>);</script>
 		<a href="javascript:;" class="intakeCutDropdown" onclick="setCustomer('<?php echo $row['id']; ?>','<?php echo $row['businessname']; ?>')"><?php echo $row['businessname']; ?><br/> t/a <?php echo $row['tradingas']; ?></a>
 		<?php
 		}
@@ -28,7 +29,6 @@ $(document).ready(function(){
 		console.log(1);
 	});
 });
-
 
 function setCustomer(customer_id, text){
 	console.log('customer_id: ' + customer_id);

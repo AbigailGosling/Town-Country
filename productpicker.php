@@ -341,7 +341,8 @@
 
 </style>
 <script type="text/javascript">
-    
+	var customerID = null;
+
     setTimeout(function(){
         $('.select2-container').css('display', 'none');
         $('.select2-container').first().css('display', 'inline-block');
@@ -354,8 +355,7 @@
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
-		
-		if (customer != '') {
+		if (customer != '' && !isNaN(customerID) && customerIDs.indexOf(parseInt(customerID))!= -1) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
 		} else{
@@ -395,6 +395,7 @@
 	});
 	
 	function setCustomerDetails(customer_id, empty='false'){
+		customerID = customer_id;
 		console.log(' setCustomerDetails()');
 		
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
