@@ -154,13 +154,20 @@
 
 		$productIDS = array();
 
+		# Ash Request - If a pallet is marked as available (0), the tampered status should be reset (0)
+		if($status == 0){
+			$tampered = 0;
+		}else{
+			$tampered = 1;
+		}
+
 		# Get all product IDS for this pallet & store in array
 		$productsResult = mysqli_query($conn, "SELECT id FROM `product` WHERE pallet_id='$pallet_id'");
 		while($product = mysqli_fetch_array($productsResult)){ array_push($productIDS, $product['id']); }
 		$productIDS = implode(',', $productIDS);
 
 
-		$weightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='$status', tampered=1 WHERE product_id IN ($productIDS)");
+		$weightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='$status', tampered=$tampered WHERE product_id IN ($productIDS)");
 	}
 
 	function isPalletSold($pallet_id){
