@@ -144,6 +144,8 @@
          </tr>
          
         <?php
+
+				$numOfRows = 0;
                 $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
                 $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
                 
@@ -165,10 +167,8 @@
 
                         $queryBits .= ' id = ' . $weightid . ' || ';
                     }
- 
                     foreach($productIDArray as $productID){
-
-                        $x1 = "SELECT * FROM `product` WHERE id='$productID'";
+                         $x1 = "SELECT * FROM `product` WHERE id='$productID'";
                         $y1 = mysqli_query($conn, $x1);
                         $product = mysqli_fetch_array($y1);
                          
@@ -202,9 +202,10 @@
                             }
 
                             $k = $k + $w;
-                        }
-                        ?>
+						}
+						?>
                     <tr class="productsRow">
+						<?php $numOfRows++; ?>
                         <td align="left"><span class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
                         <td align="left"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
                         <td align="left"><span class="palletid"><?php echo getNationality($product['nationality_id']); ?></span></td>
@@ -292,7 +293,8 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
                 ?>
  
 		<?php
-		$target = 16 - sizeof($productIDArray);
+
+		$target = 16 - $numOfRows;
 	 
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">

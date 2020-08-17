@@ -430,28 +430,32 @@
 					</td>
  					<td align="right">
 					<?php
-						
-						$palletid = $row['pallet_id'];
-						$yP = mysqli_query($conn, "SELECT id,grosspallet FROM `pallet` WHERE id='$palletid'");
-						$pRow = mysqli_fetch_array($yP);
-						
-						if($pRow['grosspallet'] == 1){
-							echo '[GT] ';
-						}
-						
-						if($row['akg'] != ''){
-                            $t_count = 0;
-                            
-                            $countQuery = mysqli_query($conn, "SELECT * FROM product WHERE " . $qPallets);
 
-                            while($countRow = mysqli_fetch_array($countQuery)){
-                                $t_count += $countRow['akg'];
-                            }
-
-							echo $t_count . ' kg';
+						if($row['unit'] == 'PPC'){
+							echo 'PPC';
 						}else{
-							echo number_format($weightthing, 3, '.', '') . ' kg'; 
-							$weightthing = 0;
+							$palletid = $row['pallet_id'];
+							$yP = mysqli_query($conn, "SELECT id,grosspallet FROM `pallet` WHERE id='$palletid'");
+							$pRow = mysqli_fetch_array($yP);
+							
+							if($pRow['grosspallet'] == 1){
+								echo '[GT] ';
+							}
+							
+							if($row['akg'] != ''){
+								$t_count = 0;
+								
+								$countQuery = mysqli_query($conn, "SELECT * FROM product WHERE " . $qPallets);
+
+								while($countRow = mysqli_fetch_array($countQuery)){
+									$t_count += $countRow['akg'];
+								}
+
+								echo $t_count . ' kg';
+							}else{
+								echo number_format($weightthing, 3, '.', '') . ' kg'; 
+								$weightthing = 0;
+							}
 						}
 					?>
 					</td>
@@ -572,32 +576,37 @@
 					</td>
 					<td align="right">
                     <?php
-                        $productid = $row['id'];
-                        $xX = "select * from `weights` WHERE product_id ='$productid'";
-                        $yY = mysqli_query($conn, $xX);
+						if($row['unit'] == 'PPC'){
+							echo 'PPC';
+						}else{
+							
+							$productid = $row['id'];
+							$xX = "select * from `weights` WHERE product_id ='$productid'";
+							$yY = mysqli_query($conn, $xX);
 
-                        $weightt = mysqli_fetch_array($yY);
+							$weightt = mysqli_fetch_array($yY);
 
-                        $original_gross = number_format($weightt['original_gross'], 2, '.', '');
-                        $num_cartons = number_format($weightt['number_of_cartons'], 2, '.', '');
-                        $pallet_tare = number_format($weightt['pallet_tare'], 2, '.', '');
-                        $tare_per_carton = number_format($weightt['tare_per_carton'], 2, '.', '');
-                        
-                        $carton_tare = $num_cartons * $tare_per_carton;
-                        
-                        $total_tare = $carton_tare + $pallet_tare;
-                        
-                        $tare = $original_gross - $total_tare;
+							$original_gross = number_format($weightt['original_gross'], 2, '.', '');
+							$num_cartons = number_format($weightt['number_of_cartons'], 2, '.', '');
+							$pallet_tare = number_format($weightt['pallet_tare'], 2, '.', '');
+							$tare_per_carton = number_format($weightt['tare_per_carton'], 2, '.', '');
+							
+							$carton_tare = $num_cartons * $tare_per_carton;
+							
+							$total_tare = $carton_tare + $pallet_tare;
+							
+							$tare = $original_gross - $total_tare;
 
-                        if($weightt['grosstare'] == 1){
-                            echo number_format($tare, 3, '.', ''); 
-                            $totalWeight+= $tare;
-                            $tare = 0;
-                        }else{
-                            echo number_format($weightthing, 3, '.', ''); $weightthing = 0;
-                        }
-
-                        ?>kg
+							if($weightt['grosstare'] == 1){
+								echo number_format($tare, 3, '.', ''); 
+								$totalWeight+= $tare;
+								$tare = 0;
+							}else{
+								echo number_format($weightthing, 3, '.', ''); $weightthing = 0;
+							}
+							echo 'kg';
+						}
+                        ?>
 					</td>
 				</tr>
 			<?php } ?>

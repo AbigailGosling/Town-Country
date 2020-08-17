@@ -148,6 +148,55 @@
 		
 		return $row;
 	}
+
+	function markPalletAs($pallet_id, $status){
+		global $conn;
+
+		$productIDS = array();
+
+		# Ash Request - If a pallet is marked as available (0), the tampered status should be reset (0)
+		if($status == 0){
+			$tampered = 0;
+		}else{
+			$tampered = 1;
+		}
+
+		# Get all product IDS for this pallet & store in array
+		$productsResult = mysqli_query($conn, "SELECT id FROM `product` WHERE pallet_id='$pallet_id'");
+		while($product = mysqli_fetch_array($productsResult)){ array_push($productIDS, $product['id']); }
+		$productIDS = implode(',', $productIDS);
+
+
+		$weightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='$status', tampered=$tampered WHERE product_id IN ($productIDS)");
+	}
+
+	function isPalletSold($pallet_id){
+		global $conn;
+
+		$productIDS = array();
+
+		# Get all product IDS for this pallet & store in array
+		$productsResult = mysqli_query($conn, "SELECT id FROM `product` WHERE pallet_id='$pallet_id'");
+		while($product = mysqli_fetch_array($productsResult)){ array_push($productIDS, $product['id']); }
+		$productIDS = implode(',', $productIDS);
+
+		$allProductWeights = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id IN ($productIDS)");
+		$totalWeights = mysqli_num_rows($allProductWeights);
+
+		$soldProductWeights = mysqli_query($conn, "SELECT id FROM `weights` WHERE status_id='1' && product_id IN ($productIDS)");
+		$soldWeights = mysqli_num_rows($soldProductWeights);
+		
+		if($soldWeights == $totalWeights){
+			// entire pallet is sold
+			return 1;
+		}else{
+			// pallet still has some available stock 
+			return 0;
+		}
+
+
+		
+	}
 	
 	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop){
 		global $conn;

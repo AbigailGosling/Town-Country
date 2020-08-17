@@ -16,7 +16,7 @@
         while($palletOut = mysqli_fetch_array($palletsOutResult)){
             $weightIDS = $palletOut['weight_ids'];
 
-            $deleteWeightsResult = mysqli_query($conn, "UPDATE `weights` SET status='0' WHERE id IN ($weightIDS)");
+            $deleteWeightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
         }
 
         $x = "DELETE FROM `palletsOut` WHERE pickersheet_id='$delid'";

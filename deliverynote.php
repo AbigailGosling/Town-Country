@@ -144,6 +144,7 @@
          </tr>
           
          <?php
+		 		$numOfRows = 0;
                 $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
                 $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
                 
@@ -205,6 +206,7 @@
                         }
                         ?>
                         <tr class="productsRow">
+						<?php $numOfRows++; ?>
 					<td align="center"><span class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
 					<td align="center"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
 					<td align="center"><span class="palletid"><?php echo getNationality($product['nationality_id']); ?></span></td>
@@ -296,7 +298,7 @@
 		
 		<?php
 		
-		$target = 16 - sizeof($productIDArray);
+		$target = 16 - $numOfRows;
 	
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">

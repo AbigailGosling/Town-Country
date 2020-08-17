@@ -9,14 +9,13 @@
 	$startDate = $year . '-' . $month . '-01';
 	$endDate = $year . '-' . $month . '-31';
 		
-	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' ORDER BY date_received DESC");
+	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' AND returned=1 ORDER BY date_received DESC");
 	
 	$countResults = mysqli_num_rows($searchResults);
 	
 	if($countResults == 0){
 		?><h2 style="color:#fff;font-size:12px;">No intakes found</h2><?php
 	}else{
-		
 		while($intake = mysqli_fetch_array($searchResults)){
 			$date_received = date('d/m/Y', strtotime($intake['date_received']));
 		?>
@@ -24,10 +23,13 @@
 				<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: 0000<?php echo $intake['id']; ?></td>
+                            <?php
+                                $customer = getCustomer($intake['supplier_id']);
+                            ?>
+							<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
                             <td align="center" style="font-size: 18px;">
                             <?php
-                                echo supplierName($intake['supplier_id']);
+                                echo $customer['businessname'];
                                 $r = intakePriceComplete($intake['id']);    
                                 if($r == 1){
                                 ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php

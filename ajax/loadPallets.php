@@ -34,6 +34,8 @@
 					</div>
 					<div class="buttonsContainer">
 						<i class="fa fa-print printICON" title="print pallet note" onclick="printPallet(<?php echo $intake_id; ?>,<?php echo $pallet_id; ?>);" aria-hidden="true"><span>print pallet note</span></i>
+						<a href="/scripts/markPalletAs.php?intake_id=<?php echo $intake_id; ?>&pallet_id=<?php echo $pallet_id; ?>&status=0">Mark as Available</a> |
+						<a href="/scripts/markPalletAs.php?intake_id=<?php echo $intake_id; ?>&pallet_id=<?php echo $pallet_id; ?>&status=1">Mark as Sold</a>
 						<?php if($pallet['grosspallet'] == 0){ ?><i class="fa fa-plus" style="margin-left:30px;font-size:24px" onclick="openAddtoPallet(<?php echo $intake_id; ?>,<?php echo $pallet_id; ?>);" aria-hidden="true"></i><?php } ?>
 						<a href="javascript:;" onclick="deleteRow(<?php echo $intake_id; ?>,<?php echo $pallet_id; ?>)">
 							<i class="fa fa-trash" aria-hidden="true" style="margin-left:30px;font-size:24px;color:#000;"></i>
@@ -93,8 +95,10 @@
 										$totalWeight2 = $totalWeight2 + $ykRow['weight_gross'];
 										$weightthing = weightFromProductID($product_id);
 										
-										if($unit == 'PP'){ echo '['.$howManyCases . ' Cases]';
-										
+										if($unit == 'PP'){
+											echo '['.$howManyCases . ' Cases]';
+										}else if($unit == 'PPC'){
+											echo ' [PPC]';
 										}else{
 											echo ' [' . number_format($weightthing, 3, '.', '') .'KG]';
 										}
@@ -198,8 +202,9 @@
 										$yR = mysqli_query($conn, $xR) or die(mysqli_error($conn));
 										$boxR= mysqli_fetch_array($yR);
 										
-										
-										if($boxR['weight_gross'] != '' && $boxR['weight_gross'] != $boxR['weight_tear']){
+										if($unit == 'PPC'){
+											?><td>PPC</td><?php
+										}else if($boxR['weight_gross'] != '' && $boxR['weight_gross'] != $boxR['weight_tear']){
 											?>
 											<td><?php echo $boxR['weight_gross']; ?></td>
 											<td><?php echo $boxR['weight_tear']; ?></td>
