@@ -160,7 +160,7 @@
 		$productIDS = implode(',', $productIDS);
 
 
-		$weightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='$status' WHERE product_id IN ($productIDS)");
+		$weightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='$status', tampered=1 WHERE product_id IN ($productIDS)");
 	}
 
 	function isPalletSold($pallet_id){
