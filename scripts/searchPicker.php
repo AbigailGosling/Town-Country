@@ -122,7 +122,7 @@
         }
 
         
-        $productsX2 = "SELECT product.cut_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
+        $productsX2 = "SELECT product.cut_id, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
         $products2Count = mysqli_num_rows($productsY2);
         
@@ -135,6 +135,7 @@
         $product2_productids = array();
         $product2_brands = array();
         $product2_nationalities = array();
+        $product2_temperatures = array();
 
         array_map(
             function($product2) {
@@ -143,6 +144,7 @@
                 global $product2_productids;
                 global $product2_brands;
                 global $product2_nationalities;
+                global $product2_temperatures;
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
@@ -153,6 +155,7 @@
                 if($numOfWeights > 0){
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
+                    array_push($product2_temperatures, $product2['cooling_id']);
                 }
 
             },
@@ -160,6 +163,7 @@
         
         $uniqueBrands = count(array_unique($product2_brands));
         $uniqueNationalities = count(array_unique($product2_nationalities));
+        $uniqueTemperatures = count(array_unique($product2_temperatures));
 
         $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
@@ -189,7 +193,13 @@
             // ??: The temperatures are just a few entries.
             // ??: Better to get all the entries in the beginning
             -->
-            <td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td>
+            <?php
+                if($uniqueTemperatures > 1){
+                    ?><td style="background:grey;color:#fff;padding:5px;">Mixed</td><?php
+                }else{
+                    ?><td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td><?php
+                }
+            ?>
             <td class="bold" colspan="1"><?php echo $cut; ?></td>
             <!--
             // ??: Same as with temperatures - get all entries in the beginning
