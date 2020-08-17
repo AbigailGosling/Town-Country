@@ -199,15 +199,15 @@ function checkStock(){
 
         setTimeout(function(){
 			if(readyToSubmit == 0){
-				swal({
+				Swal.fire({
 					title: "Some of the selected items are already sold",
 					text: "Please search stock again to view available items",
 					icon: "warning",
-					buttons: false,
-					dangerMode: true
+					showCancelButton: false,
+					showConfirmButton: false,
+					dangerMode: true,
+					showCloseButton: true
 				});
-
-				$('#sendfake').prop('disabled', false);
 			}else{
 				$('#sendreal').trigger('click');
 			}

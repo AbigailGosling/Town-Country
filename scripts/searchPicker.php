@@ -295,16 +295,19 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
         if(howManyLeft >= quantitySelected){
             addToSheet(product_id, pallet_id, cut_id, theClass, event);
         }else{
-            swal({
-				title: "This has already been sold",
-				text: "Please search stock again to view available items",
-				icon: "warning",
-				buttons: false,
-				dangerMode: true
-			});
+            Swal.fire({
+                title: "This has already been sold",
+                text: "Please search stock again to view available items",
+                icon: "warning",
+                showCancelButton: false,
+                showConfirmButton: false,
+                dangerMode: true,
+                showCloseButton: true
+            });
         }
     });
 }
+ 
 
 function addToSheet(product_id, pallet_id, cut_id, theClass, event){
 
