@@ -297,7 +297,7 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
         }else{
             swal({
 				title: "This has already been sold",
-				text: "Please research to see available stock",
+				text: "Please search stock again to view available items",
 				icon: "warning",
 				buttons: false,
 				dangerMode: true
