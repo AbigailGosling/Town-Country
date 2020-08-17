@@ -172,6 +172,47 @@
 		console.log('trying to delete cookie ' + COOKIE_NAME);
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
+
+	
+function checkStock(){
+    var readyToSubmit = 1;
+
+    var group = $('input[name="basketRow[]"]');
+	console.log('before any ajax');
+		group.each(function (index) {
+            var value = $(this).val();
+            var bits = value.split('-');
+            var product_id = bits[0];
+            var quantity_wanted = bits[1];
+
+            $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
+                console.log('[ajax response] we wanted ' + quantity_wanted + ' there are ' + num);
+                if(quantity_wanted <= num){
+
+                }else{
+                    $('.product' + product_id).css('background-color','red');
+
+                    readyToSubmit = 0;
+                }
+            });
+        });
+
+        setTimeout(function(){
+			if(readyToSubmit == 0){
+				swal({
+					title: "Some of the selected items are already sold",
+					text: "Please search stock again to view available items",
+					icon: "warning",
+					buttons: false,
+					dangerMode: true
+				});
+
+				$('#sendfake').prop('disabled', false);
+			}else{
+				$('#sendreal').trigger('click');
+			}
+		}, 2000);
+}
 </script>
 
 <style type="text/css">
@@ -349,6 +390,8 @@
     }, 10);
 
 	$('#sendfake').click(function(){
+
+		$(this).prop('disabled', true);
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
 		
@@ -384,9 +427,10 @@
 		});
 
 		if(customerEntered && dateEntered && priceEntered){
-			$('#sendreal').trigger('click');
+			checkStock();
 		}else{
 			alert('Please complete the missing fields');
+			$('#sendfake').prop('disabled', false);
 		}
 		 
 		

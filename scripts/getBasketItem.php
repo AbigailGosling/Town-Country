@@ -50,7 +50,7 @@
 	$yProduct = mysqli_query($conn, $xProduct);
 	$rowProduct = mysqli_fetch_array($yProduct);
 ?>
-<tr class="basketRow-<?php echo $pallet_id . $randID; ?>">
+<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?>">
 	<td><?php echo intakeIDfromPalletID($pallet_id); ?></td>
 	<td><?php echo $pallet_id; ?></td>
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>
