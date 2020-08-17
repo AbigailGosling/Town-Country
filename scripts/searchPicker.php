@@ -122,7 +122,7 @@
         }
 
         
-        $productsX2 = "SELECT product.cut_id, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
+        $productsX2 = "SELECT product.cut_id, product.range_from, product.range_to, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
         $products2Count = mysqli_num_rows($productsY2);
         
@@ -136,6 +136,7 @@
         $product2_brands = array();
         $product2_nationalities = array();
         $product2_temperatures = array();
+        $product2_dateranges = array();
 
         array_map(
             function($product2) {
@@ -145,6 +146,7 @@
                 global $product2_brands;
                 global $product2_nationalities;
                 global $product2_temperatures;
+                global $product2_dateranges;
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
@@ -156,6 +158,7 @@
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
                     array_push($product2_temperatures, $product2['cooling_id']);
+                    array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
                 }
 
             },
@@ -164,6 +167,7 @@
         $uniqueBrands = count(array_unique($product2_brands));
         $uniqueNationalities = count(array_unique($product2_nationalities));
         $uniqueTemperatures = count(array_unique($product2_temperatures));
+        $uniqueDateranges = count(array_unique($product2_dateranges));
 
         $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
@@ -228,7 +232,18 @@
                     }
                 ?>
             </td>
-			<td><?php if($ubbb != 2){ echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; }else { echo $ubtext; } ?></td>
+			<td>
+            <?php
+                if($uniqueDateranges > 1){
+                    echo '--';                    
+                }else{
+                    if($ubbb != 2){
+                        echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; 
+                    }else{
+                        echo $ubtext;
+                    }
+                }
+            ?></td>
             <td class="bold"><?php 
                 
                 if($productsRow['unit'] == 'PPC'){
