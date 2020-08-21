@@ -12,6 +12,12 @@
 	$customerName = customerName($pickerSheet['customer_id']);
 	
 ?>
+<style type="text/css">
+	#addtoPalletForm{
+		margin-bottom: 12vh;
+	}
+</style>
+
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
