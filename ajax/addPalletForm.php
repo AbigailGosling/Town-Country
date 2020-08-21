@@ -444,26 +444,39 @@
 				},
 				success: function(data)
 				{	
+					// units of measurement
+					$('#unit').prop('selectedIndex',0);
+
+					// how many units
+					$('#quantityWeight').val('');
 					
-					// $('#ubbb').prop('selectedIndex',0);
-					// $('#unit').prop('selectedIndex',0);
-					// $('#individualweights').prop('selectedIndex',0);
-					
-					// $('#best_by').val('');
-					// $('#best_by_range_from').val('');
-					// $('#best_by_range_to').val('');
-					// $('#quantityWeight').val('');
-					
+					// Standard or catch weights 
+					$("#individualweights option[value=C]").show();
+					$("#individualweights option[value=S]").show();
+					$('#individualweights').prop('selectedIndex',0);
+
+					// hide weight field
+					$('#SingleWeightDiv').hide();
+
+					// reset weight fields
 					$('#tear_weight_val').val('');
 					$('#gross_weight_val').val('');
 					$('#single_weight_val').val('');
 					$('#akg').val('');
-					
-					
-					// $('#MultiWeightDiv').html(''); 
+					$('#MultiWeightDiv').html(''); 
 					
 					$('.palletidpopup').html(data);
 					$('.palletnotepopup').fadeIn();
+
+
+					// gross tare fields
+					$('#gross_weight_val').val('');
+					$('#pallet_tare').val('');
+					$('#tare_per_carton').val('');
+					$('#number_of_cartons').val('');
+					$('#net_weight').val('');
+					$('#tearWeightDiv').hide();
+					$('#grossWeightDiv').hide();
 				}
 			  });
 		 
