@@ -477,6 +477,9 @@
 					$('#net_weight').val('');
 					$('#tearWeightDiv').hide();
 					$('#grossWeightDiv').hide();
+
+					
+					$('.quantityWeightContainer').show();
 				}
 			  });
 		 
