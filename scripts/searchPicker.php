@@ -211,7 +211,8 @@
 			<td colspan="1">
                 <?php
                     if($uniqueNationalities > 1){
-                        echo '--';
+                        //echo '--';
+                        echo 'Various';
                     }else{
                         echo getNationality($productsRow['nationality_id']);
                     }
@@ -226,7 +227,8 @@
 			<td>
                 <?php
                     if($uniqueBrands > 1){
-                        echo '--';
+                        //echo '--';
+                        echo 'Various';
                     }else{
                         echo getBrand($productsRow['brand_id']);
                     }
