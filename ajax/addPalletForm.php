@@ -427,6 +427,18 @@
 			$('#quantityWeight').css('border','1px solid grey');
 		}
 		
+		if($('#individualweights').val() == 'C'){
+			$('.multiweight').each(function(){
+				if($(this).val() == ''){
+					good = 0;
+					$(this).css('border','2px solid red');
+					msg = "The highlighted fields cannot be blank!";
+				}else{
+					$(this).css('border','1px solid grey');
+				}
+			});
+		}
+
 		$('#msgNotice2').html(msg);
 		
 		if(good == 1){
@@ -644,20 +656,15 @@
 		}
 		
 		if($('#individualweights').val() == 'C'){
-			
-			$('#MultiWeightDiv input[type="number"]').each(function( index ) {
-			  
-			  if($(this).val() > 0){
-					$(this).css('border','1px solid grey');
-				}else{
-					msg = "The highlighted fields cannot be blank!";
+			$('.multiweight').each(function(){
+				if($(this).val() == ''){
+					good = 0;
 					$(this).css('border','2px solid red');
-					// good = 0;
+					msg = "The highlighted fields cannot be blank!";
+				}else{
+					$(this).css('border','1px solid grey');
 				}
-				
-				
 			});
-
 		}
 		
 		$('#msgNotice2').html(msg);
