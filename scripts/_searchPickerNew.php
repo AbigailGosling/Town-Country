@@ -3,10 +3,16 @@
 	require('../functions.php');
 	
 	$intake_id = $_GET['intake_id'];
+    $pallet_id = $_GET['pallet_id'];
 	$cut_id = $_GET['cut_id'];
 	$class = $_GET['class'];
 	$nationality_id = $_GET['nationality_id'];
-  
+    
+    if(!empty($pallet_id)){
+        $palletFilter = 'product.pallet_id = '.$pallet_id;
+    }else{
+        $palletFilter = 'true';
+    }
   
     $totalW = 0;
      
@@ -27,6 +33,7 @@
         WHERE pallet.intake_id='$intake_id' 
         && product.cut_id = '$cut_id'
 		&& product.nationality_id='$nationality_id'
+        && ".$palletFilter."
         ORDER BY product.cut_id DESC";
         
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));

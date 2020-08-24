@@ -6,8 +6,8 @@
         toggleRow(classs,ele, productid);
     }
 
-    function toggleRow(classs, ele,intake_id,cut_id,nationality_id){
-        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id, function( data ) {
+    function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id){
+        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -48,6 +48,7 @@
 	$pallet_id = $_GET['palletID'];
 	$intake_id = $_GET['intakeID'];
     
+    $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
 
@@ -87,12 +88,12 @@
 
         if(!empty($ARRAY_PALLET_IDS)){
             $sold_pallet_count = checkForSoldPallets($ARRAY_PALLET_IDS);
-            
+
             if($sold_pallet_count != 0){
                 array_push($whereArray, "product.status='10'");
             }
         }
-        
+
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
 
@@ -208,7 +209,7 @@
              &nbsp;		 
             </td>
             <td colspan="1"  onclick=""></td>
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <!---
