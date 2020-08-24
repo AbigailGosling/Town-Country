@@ -67,6 +67,17 @@
     }
 
     if($pallet_id != ''){ # if this is posted then theyve entered a pallet id
+
+        $pallet_collection = getPalletCollection($pallet_id);
+
+        if(!empty($pallet_collection)){
+            $sold_pallet_count = checkForSoldPallets($pallet_collection);
+
+            if($sold_pallet_count != 0){
+                array_push($whereArray, "product.status='10'");
+            }
+        }
+
         array_push($whereArray, "pallet.id = '". $pallet_id ."'");
     }
 
@@ -74,6 +85,14 @@
         $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup 
         $ids = implode(',', $ARRAY_PALLET_IDS);
 
+        if(!empty($ARRAY_PALLET_IDS)){
+            $sold_pallet_count = checkForSoldPallets($ARRAY_PALLET_IDS);
+            
+            if($sold_pallet_count != 0){
+                array_push($whereArray, "product.status='10'");
+            }
+        }
+        
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
 

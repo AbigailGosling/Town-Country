@@ -1299,6 +1299,42 @@
     }
 
 
+	function getPalletCollection($pallet_id){
+
+    	global $conn;
+
+        $x = "SELECT intake_id FROM `pallet` WHERE id = '$pallet_id'";
+        $y = mysqli_query($conn, $x);
+
+        $intake_id = null;
+        
+        while($row = mysqli_fetch_array($y)){
+            $intake_id = $row['intake_id'];
+        }
+
+        if(!empty($intake_id)){
+
+        	return palletIDsFromIntakeID($intake_id);
+
+        }else{
+
+        	return null;
+		}
+    }
+
+    function checkForSoldPallets($pallets){
+
+    	$pallet_ids = implode(',', $pallets);
+
+    	global $conn;
+
+        $x = "SELECT * from `product` inner join `weights` on product.id = weights.product_id WHERE product.pallet_id in (".$pallet_ids.") AND weights.status_id = 1";
+        $y = mysqli_query($conn, $x);
+        return $y->num_rows;
+        
+    }
+
+
     function intakePriceComplete($intake_id){
         global $conn;
 
