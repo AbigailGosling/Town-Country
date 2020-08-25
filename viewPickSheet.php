@@ -509,15 +509,15 @@
 
 	function askForIncompleteSelectionApprovalAndSubmit()
 	{
-		swal({
-			title: "Are you sure?",
+		 
+		Swal.fire({
+			title: 'Are you sure?',
 			text: "You haven't selected all the required weights",
-			icon: "warning",
-			buttons: true,
-			dangerMode: true,
-		})
-		.then((confirmed) => {
-			if (confirmed) {
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Continue'
+		}).then((result) => {
+			if (result.value) {
 				$('#addtoPalletForm').submit();
 			}
 		});
