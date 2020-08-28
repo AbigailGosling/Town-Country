@@ -221,7 +221,7 @@
                 if($uniqueTemperatures > 1){
                     ?><td style="background:grey;color:#fff;padding:5px;">Mixed</td><?php
                 }else{
-                    ?><td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($product2_temperatures[0]);//echo getTemp($temp_id);?></td><?php
+                    ?><td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php if(isset($product2_temperatures[0])) echo getTemp($product2_temperatures[0]);//echo getTemp($temp_id);?></td><?php
                 }
             ?>
             <td class="bold" colspan="1"><?php echo $cut; ?></td>
@@ -252,7 +252,7 @@
                         echo 'Various';
                     }else{
                         //echo getBrand($productsRow['brand_id']);
-                        echo getBrand($product2_brands[0]);
+                        if(isset($product2_brands[0])) echo getBrand($product2_brands[0]);
                     }
                 ?>
             </td>
@@ -263,7 +263,7 @@
                 }else{
                     if($ubbb != 2){
                         //echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; 
-                        echo $ubtext . ' ' . $product2_dateranges[0];
+                        if(isset($product2_dateranges[0])) echo $ubtext . ' ' . $product2_dateranges[0];
                     }else{
                         echo $ubtext;
                     }
