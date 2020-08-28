@@ -11,13 +11,13 @@
 		$supplierIDs = array(0);
 		while($supplier = mysqli_fetch_array($supplierQuery)){ array_push($supplierIDs, $supplier['id']); }
 		$supplierIDs = implode(',', $supplierIDs);
-
+		//var_dump($supplierIDs);die;
 		# Get intake_id for any pallets that match the search term
-		$palletQuery = mysqli_query($conn, "SELECT intake_id FROM `pallet` WHERE id LIKE '$term%'");
+		$palletQuery = mysqli_query($conn, "SELECT intake_id FROM `pallet` WHERE id = '$term'");
 		$intakeIDs = array(0);
 		while($pallet = mysqli_fetch_array($palletQuery)){ array_push($intakeIDs, $pallet['intake_id']); }
 		$intakeIDs = implode(',', $intakeIDs);
-
+		//var_dump($intakeIDs);die;
 		
 		if (validateDate($term)) { # search term is a DATE
 			$date = str_replace('/', '-', $term);
@@ -25,7 +25,7 @@
 			
 			$searchQuery  = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC"; 
 		}else{
-			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR returned='0' && supplier_id IN ($supplierIDs) OR returned='0' && id IN ($intakeIDs) ORDER BY date_received DESC";
+			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR (returned='0' && (supplier_id <> '') && supplier_id IN ($supplierIDs)) OR (returned='0' && id IN ($intakeIDs)) ORDER BY date_received DESC";
 		}
 		
 		$searchResults = mysqli_query($conn, $searchQuery) or die(mysqli_error($conn));

@@ -12,6 +12,12 @@
 	$customerName = customerName($pickerSheet['customer_id']);
 	
 ?>
+<style type="text/css">
+	#addtoPalletForm{
+		margin-bottom: 12vh;
+	}
+</style>
+
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
@@ -426,18 +432,18 @@
 
 
 		if(totalGot < totalNeeded){
-			swal({
-				title: "Are you sure?",
+			Swal.fire({
+				title: 'Are you sure?',
 				text: "You haven't selected all the required weights",
-				icon: "warning",
-				buttons: true,
-				dangerMode: true,
-			})
-			.then((confirmed) => {
-				if (confirmed) {
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Continue'
+			}).then((result) => {
+				if (result.value) {
 					$('#markCompletedForm').submit();
 				}
 			});
+
  		}else{
 			$('#markCompletedForm').submit();
  		}
@@ -503,15 +509,15 @@
 
 	function askForIncompleteSelectionApprovalAndSubmit()
 	{
-		swal({
-			title: "Are you sure?",
+		 
+		Swal.fire({
+			title: 'Are you sure?',
 			text: "You haven't selected all the required weights",
-			icon: "warning",
-			buttons: true,
-			dangerMode: true,
-		})
-		.then((confirmed) => {
-			if (confirmed) {
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Continue'
+		}).then((result) => {
+			if (result.value) {
 				$('#addtoPalletForm').submit();
 			}
 		});

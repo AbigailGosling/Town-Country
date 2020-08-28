@@ -6,8 +6,8 @@
         toggleRow(classs,ele, productid);
     }
 
-    function toggleRow(classs, ele,intake_id,cut_id,nationality_id){
-        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id, function( data ) {
+    function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id,ubbb){
+        $.get( "/scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -48,6 +48,7 @@
 	$pallet_id = $_GET['palletID'];
 	$intake_id = $_GET['intakeID'];
     
+    $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
 
@@ -67,12 +68,31 @@
     }
 
     if($pallet_id != ''){ # if this is posted then theyve entered a pallet id
+
+        /*$pallet_collection = getPalletCollection($pallet_id);
+
+        if(!empty($pallet_collection)){
+            $sold_pallet_count = checkForSoldPallets($pallet_collection);
+
+            if($sold_pallet_count != 0){
+                array_push($whereArray, "product.status='10'");
+            }
+        }*/
+
         array_push($whereArray, "pallet.id = '". $pallet_id ."'");
     }
 
     if($intake_id != ''){ # if this is posted then theyve entered a intake id
         $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup 
         $ids = implode(',', $ARRAY_PALLET_IDS);
+
+        // if(!empty($ARRAY_PALLET_IDS)){
+        //     $sold_pallet_count = checkForSoldPallets($ARRAY_PALLET_IDS);
+
+        //     if($sold_pallet_count != 0){
+        //         array_push($whereArray, "product.status='10'");
+        //     }
+        // }
 
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
@@ -189,7 +209,7 @@
              &nbsp;		 
             </td>
             <td colspan="1"  onclick=""></td>
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>','<?php echo $ubbb;?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <!---
@@ -201,7 +221,7 @@
                 if($uniqueTemperatures > 1){
                     ?><td style="background:grey;color:#fff;padding:5px;">Mixed</td><?php
                 }else{
-                    ?><td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php echo getTemp($temp_id); ?></td><?php
+                    ?><td <?php if($temp_id == 1){ echo 'style="background:#c0392b;color:#fff;padding:5px;"'; }else { echo 'style="background:#2980b9;color:#fff;padding:5px;"'; } ?>><?php if(isset($product2_temperatures[0])) echo getTemp($product2_temperatures[0]);//echo getTemp($temp_id);?></td><?php
                 }
             ?>
             <td class="bold" colspan="1"><?php echo $cut; ?></td>
@@ -211,9 +231,11 @@
 			<td colspan="1">
                 <?php
                     if($uniqueNationalities > 1){
-                        echo '--';
+                        //echo '--';
+                        echo 'Various';
                     }else{
                         echo getNationality($productsRow['nationality_id']);
+                        
                     }
                 ?>
             </td>
@@ -226,9 +248,11 @@
 			<td>
                 <?php
                     if($uniqueBrands > 1){
-                        echo '--';
+                        //echo '--';
+                        echo 'Various';
                     }else{
-                        echo getBrand($productsRow['brand_id']);
+                        //echo getBrand($productsRow['brand_id']);
+                        if(isset($product2_brands[0])) echo getBrand($product2_brands[0]);
                     }
                 ?>
             </td>
@@ -238,7 +262,8 @@
                     echo '--';                    
                 }else{
                     if($ubbb != 2){
-                        echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; 
+                        //echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; 
+                        if(isset($product2_dateranges[0])) echo $ubtext . ' ' . $product2_dateranges[0];
                     }else{
                         echo $ubtext;
                     }
@@ -286,56 +311,81 @@ $(this).next('.searchRContent').toggle();
 var firstExecution = 0
 var interval = 1000
 
+function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
+    $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
+
+        var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
+        var howManyLeft = parseInt(num);
+        console.log('Selected: ' + quantitySelected + ' left: ' + howManyLeft);
+        if(howManyLeft >= quantitySelected){
+            addToSheet(product_id, pallet_id, cut_id, theClass, event);
+        }else{
+            Swal.fire({
+                title: "This has already been sold",
+                text: "Please search stock again to view available items",
+                icon: "warning",
+                showCancelButton: false,
+                showConfirmButton: false,
+                dangerMode: true,
+                showCloseButton: true
+            });
+        }
+    });
+}
+ 
+
 function addToSheet(product_id, pallet_id, cut_id, theClass, event){
-    console.log(event)
+
     var date = new Date()
     var milliseconds = date.getTime()
 
     if ((milliseconds - firstExecution) > interval) {
         var q = $('#quantity-' + product_id + '-' + pallet_id).val();
-var comment = $('#comment-' + product_id + '-' + pallet_id).val();
+        var comment = $('#comment-' + product_id + '-' + pallet_id).val();
 
 
-// console.log(comment);
+        // console.log(comment);
 
-var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
-// console.log('Looking for cookie......:' + COOKIE_NAME);
+        var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
+        // console.log('Looking for cookie......:' + COOKIE_NAME);
 
 
-if(getCookie(COOKIE_NAME)){
-    // console.log('we got cookie');
-    
-    var howMany = getCookie(COOKIE_NAME);
-    
-    var x = Number(howMany)+Number(q);
-    document.cookie = COOKIE_NAME + "=" + x;
-    // console.log(howMany);
-    
-}else{
-    // console.log('setting cookie!');
-    document.cookie = COOKIE_NAME + "=" + q;
-}
-     
-var howManyBefore = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
-if(howManyBefore > q){
-    for(i=0; i < q; i++){
-        $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
-    }
-}else{
-    for(i=0; i < q; i++){
-        $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
-        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.6');
-        $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('pointer-events','none');
-    }
-}
+        if(getCookie(COOKIE_NAME)){
+            // console.log('we got cookie');
+            
+            var howMany = getCookie(COOKIE_NAME);
+            
+            var x = Number(howMany)+Number(q);
+            document.cookie = COOKIE_NAME + "=" + x;
+            // console.log(howMany);
+            
+        }else{
+            // console.log('setting cookie!');
+            document.cookie = COOKIE_NAME + "=" + q;
+        }
+            
+        var howManyBefore = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
 
-var howManyAfter = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
+        if(howManyBefore > q){
+            for(i=0; i < q; i++){
+                $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
+            }
+        }else{
+            for(i=0; i < q; i++){
+                $("#quantity-" + product_id + "-" + pallet_id + " option:last").remove();
+                $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('opacity','0.6');
+                $("#quantity-" + product_id + "-" + pallet_id).parent().parent().css('pointer-events','none');
+            }
+        }
 
-$('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
+        var howManyAfter = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
 
-$.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
-    $('.basketTable').append(data);
-});
+        $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
+
+        $.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
+            $('.basketTable').append(data);
+        });
+
         firstExecution = milliseconds
     } else {
         console.log('too early')
