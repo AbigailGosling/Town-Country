@@ -7,6 +7,7 @@
 	$cut_id = $_GET['cut_id'];
 	$class = $_GET['class'];
 	$nationality_id = $_GET['nationality_id'];
+    $ubbb = $_GET['ubbb'];
     
     if(!empty($pallet_id)){
         $palletFilter = 'product.pallet_id = '.$pallet_id;
