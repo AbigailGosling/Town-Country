@@ -5,5 +5,6 @@
 
     $numOfWeights = numWeightsAvailableFromProductID($product_id);
 
-    echo $numOfWeights;
+    echo json_encode($numOfWeights);
+
 ?>

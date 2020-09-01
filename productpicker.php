@@ -178,7 +178,6 @@ function checkStock(){
     var readyToSubmit = 1;
 
     var group = $('input[name="basketRow[]"]');
-	console.log('before any ajax');
 		group.each(function (index) {
             var value = $(this).val();
             var bits = value.split('-');
@@ -186,10 +185,15 @@ function checkStock(){
             var quantity_wanted = bits[1];
 
             $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
-                console.log('[ajax response] we wanted ' + quantity_wanted + ' there are ' + num);
-                if(quantity_wanted <= num){
+ 				console.log('Type Before: ' + typeof num);
+				var product_stock_count = parseInt(num);
+				console.log('Type After: ' + typeof product_stock_count);
 
-                }else{
+				console.log('We wanted ' + quantity_wanted + ' there are ' + product_stock_count);
+				
+                if(quantity_wanted <= product_stock_count){
+ 
+				}else{
                     $('.product' + product_id).css('background-color','red');
 
                     readyToSubmit = 0;
