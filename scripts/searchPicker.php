@@ -108,7 +108,9 @@
     $whereString = substr($whereString, 0, -3);
 
 
-    $productsX = "SELECT *, product.comments as productcomments, product.id as productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.comments as productcomments, product.id as productid, cuts.name as cutname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    JOIN `cuts` ON product.cut_id = cuts.id
+    JOIN `nationality` ON product.nationality_id = nationality.id
     WHERE $whereString
     GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
     
@@ -130,9 +132,12 @@
         $smallestDate = $productsRow['range_from'];
         $largestDate = $productsRow['range_to'];
         // ??: Don't we already have the intake_id from the query?
-        $intake_id = intakeIDfromPalletID($pallet_id);
+        //$intake_id = intakeIDfromPalletID($pallet_id);
+        $intake_id = $productsRow['intake_id'];
         $nationality_id = $productsRow['nationality_id'];
-        $cut = getCut($productsRow['cut_id']);
+        $local = $productsRow['local'];
+        //$cut = getCut($productsRow['cut_id']);
+        $cut = $productsRow['cutname'];
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -234,8 +239,8 @@
                         //echo '--';
                         echo 'Various';
                     }else{
-                        echo getNationality($productsRow['nationality_id']);
-                        
+                        //echo getNationality($productsRow['nationality_id']);
+                        echo $local;
                     }
                 ?>
             </td>
