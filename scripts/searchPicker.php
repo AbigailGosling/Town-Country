@@ -98,9 +98,8 @@
     }
 
     // array_push($whereArray, "product.status='0'");
-
     array_push($whereArray, "product.cost != '0.00'");
-
+    array_push($whereArray, "weights.status_id != 1");
     
     foreach($whereArray as $where){
         $whereString .= $where . ' && ';
@@ -109,6 +108,7 @@
 
 
     $productsX = "SELECT *, product.comments as productcomments, product.id as productid, cuts.name as cutname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `nationality` ON product.nationality_id = nationality.id
     WHERE $whereString
