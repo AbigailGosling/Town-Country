@@ -299,6 +299,7 @@
   select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input{
 	margin:0;
 	margin-bottom:5px !important;
+	margin-right:5px !important;
   }
   </style>
     <script type="text/javascript"
