@@ -212,6 +212,8 @@ function checkStock(){
 					dangerMode: true,
 					showCloseButton: true
 				});
+
+				$('#sendfake').prop('disabled', false);
 			}else{
 				$('#sendreal').trigger('click');
 			}
