@@ -285,12 +285,15 @@
                     </td>
                     <?php if($customerRow['pricedefault'] == 1){ ?>
                         <td align="right" class="price">£<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?></td>
-						<?php if($product['unit'] == 'PPC'){ ?>
+						<?php if($product['unit'] == 'PPC'){
+								$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+							?>
 							<td align="right" class="price">£<?php echo number_format((float)$count * $pickerItem['price'], 2, '.', ''); ?></td>
-						<?php }else{ ?>
+						<?php }else{
+								$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+							?>
 							<td align="right" class="price">£<?php echo number_format((float)$kg * $pickerItem['price'], 2, '.', ''); ?></td>
 						<?php } ?>
-                        <?php $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', ''); ?>
                     <?php } ?>
 				</tr>
                 <?php
