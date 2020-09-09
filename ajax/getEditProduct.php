@@ -178,8 +178,9 @@
 			?>
 			<div class="weightEditWhiteBox" id="<?php echo $row['id']; ?>" style="position:relative;<?php if($row['tampered'] == '1'){ echo 'border:4px solid red; color:red;'; } ?>">
 				<input type="number" name="weight<?php echo $row['id']; ?>" value="<?php echo $row['weight_gross']; ?>">
+				<div class="icon"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></div>
 				<a href="javascript:;" onclick="deleteWeight('<?php echo $row['id']; ?>','<?php echo $row['weight_gross']; ?>','<?php echo $intake_id; ?>')">
-					<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;position:absolute;top: 11px;right: -31px;"></i>
+					<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;position:absolute;top: 11px;right: -41px;"></i>
 				</a>
 			</div>
 			<?php
