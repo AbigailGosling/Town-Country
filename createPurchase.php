@@ -131,7 +131,7 @@
 					<div id="datetimepicker2" class="input-append date">
 					  <label>Date Purchased</label>
 					  <input type="text" name="date_purchased" value="<?php if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" required></input>
-					  <span class="add-on">
+					  <span class="add-on printhide">
 						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
 					  </span>
 					</div>
@@ -152,7 +152,7 @@
 					<div id="datetimepicker" class="input-append date">
 					  <label>Date Due</label>
 					  <input type="text" name="date_due" value="<?php echo $date_due; ?>" required></input>
-					  <span class="add-on">
+					  <span class="add-on printhide">
 						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
 					  </span>
 					</div>
