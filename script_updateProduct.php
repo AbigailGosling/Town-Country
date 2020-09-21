@@ -57,7 +57,7 @@
 		
 		$weightVal = mysqli_real_escape_string($conn, $_POST['weight'.$weightid]);
 		
-		$xxx = "UPDATE `weights` SET product_id='$product_id',weight_gross='$weightVal',weight_tear='$weightVal' WHERE id='$weightid'";
+		$xxx = "UPDATE `weights` SET product_id='$product_id',weight_gross='$single_weight_val',weight_tear='$single_weight_val' WHERE id='$weightid'";
 		
 		$y = mysqli_query($conn, $xxx);
 	}
