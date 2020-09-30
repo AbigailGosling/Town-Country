@@ -1917,3 +1917,7 @@ td span.chilled{
 textarea {
   height: 110px;
 }
+
+.menuItem .text{
+	font-size:15px;
+}
