@@ -35,10 +35,11 @@
 		 
 		 <div class="logocontainer">
 			<img class="logo" src="<?php echo $domain; ?>images/tandclogo.jpg">
-			
+			<h3 class="address-group">Group Ltd.</h3>
 			13-17 Landport Ind. Est. Landport Road<br/>
 			Wolverhampton WV2 2QJ<br/>
 			<span>Vat. No: 701 075 285</span><br/>
+			<span>Company Reg. No. 12192223</span><br/>
 			<b>01902457924</b><br/>
 				
 		</div>
@@ -329,8 +330,9 @@
 			<b style="font-size: 10px;">BANK DETAILS</b>
 			<div class="bankbox">
 				<div class="col1">
-					<p>Town and Country Meats<br/>
-					Sort Code: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 40 10 39<br/>
+					<p>Town and Country Meats Group Ltd.<br/>
+					Bank: HSBC<br/>
+					Sort Code: 40 10 39<br/>
 					Account No: 40057924</p>
 					
 				</div>
@@ -366,7 +368,7 @@
  			</div>
 			
 			<div class="col">
-				<p>All goods remain the property of Town and Country Meats until paid for in full.</p>
+				<p>All goods remain the property of Town and Country Meats Group Ltd until paid for in full.</p>
 				<p>Any claims must be notified within 24 hours of delivery by e-mail to:</p>
 				<p>gemma@townandcountrymeats.co.uk</p>
 				<p>office@townandcountrymeats.co.uk</p>
