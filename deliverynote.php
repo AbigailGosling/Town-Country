@@ -35,7 +35,6 @@
 		 
 		 <div class="logocontainer">
 			<img class="logo" src="<?php echo $domain; ?>images/tandclogo.jpg">
-			<h3 class="address-group">Group Ltd.</h3>
 			13-17 Landport Ind. Est. Landport Road<br/>
 			Wolverhampton WV2 2QJ<br/>
 			<span>Vat. No: 701 075 285</span><br/>
