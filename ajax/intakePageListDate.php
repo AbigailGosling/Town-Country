@@ -32,6 +32,7 @@
                                 if($r == 1){
                                 ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
                                 }
+                                if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
                             ?>
                             </td>
 							<td width="100" align="right"><?php echo $date_received; ?></td>

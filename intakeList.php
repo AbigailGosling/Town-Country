@@ -29,21 +29,34 @@
 		<a href="intakeList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
+			
 			<select id="month">
-				<?php for($i=1;$i<13;$i++){ ?>
-					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-				<?php } ?>
+				
+				<?php for($i=1;$i<13;$i++){
+
+					if(date("n") == $i) { ?>
+
+						<option value="<?php echo $i; ?>" selected><?php echo $i; ?></option>
+
+					<?php }else{ ?>
+
+						<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+
+				<?php 
+					}
+				} 
+				?>
 			</select>
 			 
 			<label>YEAR</label>
 			<select id="year">
 				<?php
 				$y = date('Y');
-				$y1 = $y - 2;
-				$y2 = $y + 1;
-				for($i=$y1;$i<$y2;$i++){ ?>
-					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-				<?php } ?>
+				
+				for($i = 0; $i < 3; $i++){ ?>
+					<option value="<?php echo $y; ?>"><?php echo $y; ?></option>
+				<?php $y--; } ?>
+
 			</select>
 						
 		</div>
