@@ -100,7 +100,7 @@
                         }
 						?>
 						 
-						<div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?> [<?php echo $k . $ext; $k = 0; ?>]</div>
+						<div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?> [<?php echo $k . $ext; $k = 0; ?>] <?php echo '[Plt. ID : '.$product['pallet_id'].']'; ?></div>
 						<?php
 						
 						?>
