@@ -1694,7 +1694,7 @@ span.add-on{
 #print .deliverybox span{
 	font-weight: bold;
     color: #8c8c8c;
-    font-size: 12px;
+    font-size: 22px;
 }
 
 #print .deliverydate{
@@ -1920,4 +1920,11 @@ textarea {
 
 .menuItem .text{
 	font-size:15px;
+
+}
+
+.return-highlight{
+	color: black;
+  font-size: 12px;
+
 }
