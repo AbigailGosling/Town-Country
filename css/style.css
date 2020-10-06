@@ -1920,9 +1920,11 @@ textarea {
 
 .menuItem .text{
 	font-size:15px;
+
 }
 
 .return-highlight{
 	color: black;
-    font-size: 12px;
+  font-size: 12px;
+
 }
