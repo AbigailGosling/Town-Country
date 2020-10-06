@@ -461,10 +461,10 @@
 					</td>
 					<td>
 						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
-						<input type="text" name="cost[]" value="<?php echo number_format((float)$row['cost'], 2, '.', ''); ?>">
+						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((float)$row['cost'], 2, '.', ''); ?>">
 					</td>
 					<td>
-						<input type="text" name="price[]" value="<?php echo number_format((float)$row['price'], 2, '.', ''); ?>">
+						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((float)$row['price'], 2, '.', ''); ?>">
 					</td>
 				</tr>
 			<?php } ?>
