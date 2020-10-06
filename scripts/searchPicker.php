@@ -65,6 +65,10 @@
         if(count($ARRAY_CUTS) > 0){ # seems to still get here if i dont do this if??
             array_push($whereArray, 'product.cut_id IN ('.$ids.')');
         }
+        
+    }else if($species_id != '' && $cutgroup_id == ''){
+
+        array_push($whereArray, "cuts.species_id = ".$species_id);
     }
 
     if($pallet_id != ''){ # if this is posted then theyve entered a pallet id

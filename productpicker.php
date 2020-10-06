@@ -537,7 +537,7 @@ function checkStock(){
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
 		
-		if(cutgroup_id != '' && species != '' || intakeID != '' || palletID != ''){
+		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			
 			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID, function(data, status){
