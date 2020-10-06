@@ -1917,3 +1917,12 @@ td span.chilled{
 textarea {
   height: 110px;
 }
+
+.menuItem .text{
+	font-size:15px;
+}
+
+.return-highlight{
+	color: black;
+    font-size: 12px;
+}
