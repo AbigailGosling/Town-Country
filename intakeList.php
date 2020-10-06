@@ -1,7 +1,7 @@
 <?php
     include('functions.php');
     
-    $limit = $_GET['limit'] ?? '100';
+    $limit = (isset($_GET['limit'])) ? $_GET['limit'] : '100';
 ?>
 <!doctype html>
 <html class="int">
@@ -29,27 +29,40 @@
 		<a href="intakeList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
+			
 			<select id="month">
-				<?php for($i=1;$i<13;$i++){ ?>
-					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-				<?php } ?>
+				
+				<?php for($i=1;$i<13;$i++){
+
+					if(date("n") == $i) { ?>
+
+						<option value="<?php echo $i; ?>" selected><?php echo $i; ?></option>
+
+					<?php }else{ ?>
+
+						<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+
+				<?php 
+					}
+				} 
+				?>
 			</select>
 			 
 			<label>YEAR</label>
 			<select id="year">
 				<?php
 				$y = date('Y');
-				$y1 = $y - 2;
-				$y2 = $y + 1;
-				for($i=$y1;$i<$y2;$i++){ ?>
-					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-				<?php } ?>
+				
+				for($i = 0; $i < 3; $i++){ ?>
+					<option value="<?php echo $y; ?>"><?php echo $y; ?></option>
+				<?php $y--; } ?>
+
 			</select>
 						
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			<?php
-				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned='0' ORDER BY date_received DESC LIMIT $limit");
+				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned='0' OR returned='1' ORDER BY date_received DESC LIMIT $limit");
 
 				while($intake = mysqli_fetch_array($queryResult)){
 					$date_received = date('d/m/Y', strtotime($intake['date_received']));
@@ -59,7 +72,8 @@
 						<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
-									<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+									<td width="100" align="left">
+										ID: I-0000<?php echo $intake['id'];?></td>
 									<td align="center" style="font-size: 18px;">
 										<?php
 											echo supplierName($intake['supplier_id']);
@@ -67,6 +81,7 @@
 											if($r == 1){
 											?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 											}
+											if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 										?>
 									</td>
 									<td width="100" align="right"><?php echo $date_received; ?></td>
