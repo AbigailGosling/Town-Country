@@ -326,14 +326,13 @@
   	 
 		
 		<div class="bankdetails">
-			<b style="font-size: 10px;">BANK DETAILS</b>
+			<b style="font-size: 10px;">Bank Details:</b>
 			<div class="bankbox">
 				<div class="col1">
 					<p>Town and Country Meats Group Ltd.<br/>
 					Bank: HSBC<br/>
-					Sort Code: 40 10 39<br/>
-					Account No: 40057924</p>
-					
+					Sort Code: 40 47 11<br/>
+					Account No: 23951332</p>
 				</div>
 				<div class="col2" align="center">
 					<div class="flex">
