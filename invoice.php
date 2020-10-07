@@ -317,13 +317,13 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
   	 
 		
 		<div class="bankdetails">
-			<b style="font-size: 10px;">BANK DETAILS</b>
+			<b style="font-size: 10px;">Bank Details:</b>
 			<div class="bankbox" style="background-color: #7fabce9e;">
 				<div class="col1">
 					<p>Town and Country Meats Group Ltd.<br/>
 					Bank: HSBC<br/>
-					Sort Code: 40 10 39<br/>
-					Account No: 40057924</p>
+					Sort Code: 40 47 11<br/>
+					Account No: 23951332</p>
 					
 				</div>
 				<div class="col2" align="center">
@@ -355,7 +355,7 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
  			</div>
 			
 			<div class="col">
-				<p>All goods remain the property of Town and Country Meats Ltd until paid for in full.</p>
+				<p>All goods remain the property of Town and Country Meats Group Ltd until paid for in full.</p>
 				<p>Any claims must be notified within 24 hours of delivery by e-mail to:</p>
 				<p>gemma@townandcountrymeats.co.uk</p>
 				<p>office@townandcountrymeats.co.uk</p>
