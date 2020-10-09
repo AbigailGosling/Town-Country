@@ -27,8 +27,10 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
 </head>
 <body>
 <div id="top">
@@ -190,10 +192,15 @@
 	}
 	
 	$(document).ready(function(){
-		$( "#date_received" ).datepicker({
-			dateFormat: 'dd/mm/yy'
-		});
+		// $( "#date_received" ).datepicker({
+		// 	dateFormat: 'dd/mm/yy'
+		// });
 		
+		jQuery('#date_received').datetimepicker({
+			defaultDate: new Date(),
+			defaultTime: '00:00',
+			format:'d/m/Y H:i',
+		});
 		
 		$('#supplier_search').keyup(function(){
 			var val = $('#supplier_search').val();

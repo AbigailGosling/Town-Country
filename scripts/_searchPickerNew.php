@@ -85,7 +85,7 @@
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
                     <td colspan="1">
                         <form method="post">
-                            <input type="text" name="location" class="location-input" value="<?php echo $productsRow2['storage_location']; ?>" placeholder="location">
+                            <input type="text" name="location" class="location-input" value="<?php echo $productsRow2['storage_location']; ?>" >
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
                         </form>
                     </td>
