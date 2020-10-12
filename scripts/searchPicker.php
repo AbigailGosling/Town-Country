@@ -66,8 +66,7 @@
             array_push($whereArray, 'product.cut_id IN ('.$ids.')');
         }
         
-    }else if($species_id != '' && $cutgroup_id == ''){
-
+    }else if(($species_id != 'null' && !empty($species_id)) && empty($cutgroup_id)){
         array_push($whereArray, "cuts.species_id = ".$species_id);
     }
 
