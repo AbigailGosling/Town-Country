@@ -51,7 +51,7 @@
 			
 			$userid = $_SESSION['USER'];
 			
- 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY estimated_delivery_date DESC";
+ 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY estimated_delivery_date ASC";
 			$y = mysqli_query($conn, $x);
 			
 			while($row = mysqli_fetch_array($y)){
