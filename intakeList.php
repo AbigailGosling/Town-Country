@@ -76,7 +76,19 @@
 										ID: I-0000<?php echo $intake['id'];?></td>
 									<td align="center" style="font-size: 18px;">
 										<?php
-											echo supplierName($intake['supplier_id']);
+
+											if($intake['returned'] == '1'){
+												$cusDetails =  getCustomer($intake['supplier_id']);
+												if(!empty($cusDetails) && isset($cusDetails['businessname'])){
+												 	echo $cusDetails['businessname'];
+												}else{
+													echo 'No Customer Data';
+												}
+
+											}else{
+												echo supplierName($intake['supplier_id']);
+											}
+											
 											$r = intakePriceComplete($intake['id']);    
 											if($r == 1){
 											?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
