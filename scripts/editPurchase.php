@@ -78,5 +78,5 @@
 	
 ?>
 <script>
-	window.location = '../purchaseList.php';
+	window.location = '../createPurchase.php?id=<?php echo $id; ?>';
 </script>
