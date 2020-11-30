@@ -117,44 +117,45 @@
 				$flaguplimit = (float) $row['flaguplimit'];
 				$credit_rating = (float) $row['credit_rating'];
 				 
-				
-				if($current_outstanding >= $credit_rating && $row['override'] != 1){
-				?>
-				<div class="status stop" style="width:90%;position:fixed;top:470px;left:5%;">Stop</div>
-				<script>
-					$('.leftPanel').css('pointer-events','none');
-					$('.leftPanel').css('opacity','0.2');
-					
-					$('#sendfake').css('pointer-events','none');
-					$('#sendfake').css('opacity','0.2');
-					
-					
- 				</script>
-				<?php
-				}else if($current_outstanding >= $flaguplimit){
-				?>
-				<div class="status closetolimit" style="width:97%;">Close to limit</div>
-				<script>
-					$('.leftPanel').css('pointer-events','all');
-					$('.leftPanel').css('opacity','1');
+				if(false){ # temp disable credit control requested by Jamie 
+					if($current_outstanding >= $credit_rating && $row['override'] != 1){
+					?>
+					<div class="status stop" style="width:90%;position:fixed;top:470px;left:5%;">Stop</div>
+					<script>
+						$('.leftPanel').css('pointer-events','none');
+						$('.leftPanel').css('opacity','0.2');
+						
+						$('#sendfake').css('pointer-events','none');
+						$('#sendfake').css('opacity','0.2');
+						
+						
+					</script>
+					<?php
+					}else if($current_outstanding >= $flaguplimit){
+					?>
+					<div class="status closetolimit" style="width:97%;">Close to limit</div>
+					<script>
+						$('.leftPanel').css('pointer-events','all');
+						$('.leftPanel').css('opacity','1');
 
-					$('#sendfake').css('pointer-events','all');
-					$('#sendfake').css('opacity','1');
-					
-					
- 				</script>
-				<?php
-				}else{
-				?>
-				<script>
-					$('.leftPanel').css('pointer-events','all');
-					$('.leftPanel').css('opacity','1');
-					
-					
-					$('#sendfake').css('pointer-events','all');
-					$('#sendfake').css('opacity','1');
- 				</script>
-				<?php
+						$('#sendfake').css('pointer-events','all');
+						$('#sendfake').css('opacity','1');
+						
+						
+					</script>
+					<?php
+					}else{
+					?>
+					<script>
+						$('.leftPanel').css('pointer-events','all');
+						$('.leftPanel').css('opacity','1');
+						
+						
+						$('#sendfake').css('pointer-events','all');
+						$('#sendfake').css('opacity','1');
+					</script>
+					<?php
+					}
 				}
 			}
  		?>
