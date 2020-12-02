@@ -72,9 +72,9 @@
 						<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
-									<td width="100" align="left">
+									<td width="30%" align="left">
 										ID: I-0000<?php echo $intake['id'];?></td>
-									<td align="center" style="font-size: 18px;">
+									<td align="left" style="font-size: 18px;">
 										<?php
 
 											if($intake['returned'] == '1'){
@@ -96,7 +96,7 @@
 											if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 										?>
 									</td>
-									<td width="100" align="right"><?php echo $date_received; ?></td>
+									<td width="30%" align="right"><?php echo $date_received; ?></td>
 								</tr>
 							</table>
 						</a>

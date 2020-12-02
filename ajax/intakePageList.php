@@ -42,8 +42,8 @@
                     <a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
                         <table width="100%" border="0">
                             <tr>
-                                <td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
-                                <td align="center" style="font-size: 18px;">
+                                <td width="30%" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+                                <td align="left" style="font-size: 18px;">
                                 <?php
                                     echo supplierName($intake['supplier_id']);
                                     $r = intakePriceComplete($intake['id']);    
@@ -51,7 +51,7 @@
                                     ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
                                     }
                                 ?></td>
-                                <td width="100" align="right"><?php echo $date_received; ?></td>
+                                <td width="30%" align="right"><?php echo $date_received; ?></td>
                             </tr>
                         </table>
                     </a>
@@ -72,8 +72,8 @@
 				<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
-                            <td align="center" style="font-size: 18px;">
+							<td width="30%" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+                            <td align="left" style="font-size: 18px;">
                             <?php
                                 echo supplierName($intake['supplier_id']);
                                 $r = intakePriceComplete($intake['id']);    
@@ -82,7 +82,7 @@
                                 }
                             ?>
                             </td>
-							<td width="100" align="right"><?php echo $date_received; ?></td>
+							<td width="30%" align="right"><?php echo $date_received; ?></td>
 						</tr>
 					</table>
 				</a>
