@@ -27,8 +27,8 @@
             <a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
                 <table width="100%" border="0">
                     <tr>
-                        <td width="100" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
-                        <td align="center" style="font-size: 14px;left:100px;">
+                        <td width="25%" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
+                        <td align="left" style="font-size: 14px;">
                             <?php
                             
                                 $customer_id = $picksheet['customer_id'];
@@ -40,7 +40,7 @@
 
                             <?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
                         </td>
-                        <td width="200" align="right"> created <?php echo $date_purchased; ?></td>
+                        <td width="25%" align="right"> created <?php echo $date_purchased; ?></td>
                     </tr>
                 </table>
             </a>
