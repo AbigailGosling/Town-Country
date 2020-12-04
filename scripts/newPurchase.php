@@ -81,5 +81,6 @@
 ?>
 <script>
 	// window.location = '../intake.php?id=<?php echo $intake_id; ?>';
-	window.location = '../purchaseList.php';
+	window.location = '../createPurchase.php?id=<?php echo $purchase_id; ?>';
+
 </script>

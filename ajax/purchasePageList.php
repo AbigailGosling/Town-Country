@@ -40,9 +40,27 @@
 					<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 						<table width="100%" border="0">
 							<tr>
-								<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
-								<td align="center" style="font-size: 14px;"><?php echo supplierName($row['supplier_id']); ?></td>
-								<td width="150" align="right">Created <?php echo $date_due; ?></td>
+								<td width="35%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+								<td align="left" style="font-size: 16px;">
+									<?php if($row['direct_drop'] == 1){ echo '<span style="font-size:12px;">[direct drop]</span>'; } ?>
+										<?php echo supplierName($row['supplier_id']); ?>
+										<?php if($row['booking_ref_number'] == ''){ ?><span style="color:red;padding-left:5px;font-size:26px;font-weight:700">!</span><?php } ?>
+										
+										<?php
+											$thisid = $row['id'];
+											
+											$x2 = "SELECT * FROM `intake` WHERE purchase_id='$thisid'";
+											$y2 = mysqli_query($conn, $x2);
+											$count22 = mysqli_num_rows($y2);
+											
+											if($intakeCount != 0){
+											?> <div class="printedLabel">Intake Created</div> <?php
+											}else{
+											?>  <?php
+											}
+									?>
+								</td>
+								<td width="35%" align="right">Created <?php echo $date_due; ?></td>
 							</tr>
 						</table>
 					</a>
@@ -64,9 +82,27 @@
 				<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
-							<td align="center" style="font-size: 18px;"><?php echo supplierName($row['supplier_id']); ?></td>
-							<td width="100" align="right"><?php echo $date_due; ?></td>
+							<td width="35%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+							<td align="left" style="font-size: 16px;">
+								<?php if($row['direct_drop'] == 1){ echo '<span style="font-size:12px;">[direct drop]</span>'; } ?>
+									<?php echo supplierName($row['supplier_id']); ?>
+									<?php if($row['booking_ref_number'] == ''){ ?><span style="color:red;padding-left:5px;font-size:26px;font-weight:700">!</span><?php } ?>
+									
+									<?php
+										$thisid = $row['id'];
+										
+										$x2 = "SELECT * FROM `intake` WHERE purchase_id='$thisid'";
+										$y2 = mysqli_query($conn, $x2);
+										$count22 = mysqli_num_rows($y2);
+										
+										if($intakeCount != 0){
+										?> <div class="printedLabel">Intake Created</div> <?php
+										}else{
+										?>  <?php
+										}
+									?>
+							</td>
+							<td width="35%" align="right"><?php echo $date_due; ?></td>
 						</tr>
 					</table>
 				</a>

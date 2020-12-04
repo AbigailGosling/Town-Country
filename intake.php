@@ -96,12 +96,8 @@
 	}
 </style>
 <main class="int">
-	<?php if($_GET['ref'] == 'salesconfirmationsheet'){ ?>
-		<a href="<?php echo $domain; ?>productpicker.php" class="backbtn">< Back</a>
-	<?php }else if($_GET['ref'] == 'searchstock'){ ?>
-		<a href="<?php echo $domain; ?>stock.php" class="backbtn">< Back</a>
-	<?php }?>
 
+	<a href="javascript:;" onclick="window.history.back();" class="backbtn">< Back</a>
 		
 	<form style="float:right;padding-bottom:10px;" method="POST" action="markIntakeAs.php">
 		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
