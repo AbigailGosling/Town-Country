@@ -325,18 +325,32 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
         var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
         var howManyLeft = parseInt(num);
         console.log('Selected: ' + quantitySelected + ' left: ' + howManyLeft);
-        if(howManyLeft >= quantitySelected){
-            addToSheet(product_id, pallet_id, cut_id, theClass, event);
-        }else{
+        
+        var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
+        if(getCookie(COOKIE_NAME)){
             Swal.fire({
-                title: "This has already been sold",
-                text: "Please search stock again to view available items",
+                title: "This has already been added to the sale.",
+                text: "Please remove this from sale to re-add this item.",
                 icon: "warning",
                 showCancelButton: false,
                 showConfirmButton: false,
                 dangerMode: true,
                 showCloseButton: true
-            });
+            });            
+        }else{
+            if(howManyLeft >= quantitySelected){
+                addToSheet(product_id, pallet_id, cut_id, theClass, event);
+            }else{
+                Swal.fire({
+                    title: "This has already been sold",
+                    text: "Please search stock again to view available items",
+                    icon: "warning",
+                    showCancelButton: false,
+                    showConfirmButton: false,
+                    dangerMode: true,
+                    showCloseButton: true
+                });
+            }
         }
     });
 }
