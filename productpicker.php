@@ -422,13 +422,13 @@ function checkStock(){
 
 		$('.price').each(function(){
  			var value = $(this).val();
-			
-			if (value == ''){
-				priceEntered = false;
-				$(this).css('border','1px solid red');
-			} else {
+		
+			if(parseFloat(value) && value > 0){
 				priceEntered = true;
 				$(this).css('border-color', '#f2f2f2');
+			}else{
+				priceEntered = false;
+				$(this).css('border','1px solid red');
 			}
 		});
 
