@@ -18,12 +18,19 @@
     }
 
 
-    
+    $page_limit = 50;
+    $num_of_pages = 1;
+    $entry_count = 0;
     while($picksheet = mysqli_fetch_array($pickersheetResults)){
-				
+        $entry_count++;
+        if($entry_count == $page_limit){
+            $entry_count = 0;
+            $num_of_pages++;
+        }
+
         $date_purchased = date('d/m/Y', strtotime($picksheet['date']));
     ?>
-        <tr><td align="center" class="pos">
+        <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
             <a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
                 <table width="100%" border="0">
                     <tr>
@@ -55,8 +62,30 @@
         </td></tr>
         <?php
     }
-
 ?>
+<tr>
+    <td><br/><br/>
+        <div class="pages_container">
+            <div class="pages_heading">
+                    
+                <a href="javascript:;" class="lowerpage" onclick="loadPage('minus');"> < </a>
+                PAGES
+                <a href="javascript:;" class="higherpage" onclick="loadPage('add');"> > </a>
+                
+            </div>
+            <div class="flex space-evenly">
+                <?php $num_of_pages_temp = $num_of_pages+1; ?>
+                <?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+                    <a href="javascript:;" onclick="loadPage(<?php echo $i; ?>);" class="page_number page_number<?php echo $i; ?>"><?php echo $i; ?></a>
+                <?php } ?>
+            </div>
+        </div>
+    </td>
+</tr>
+
+<script>
+    total_pages = <?php echo $num_of_pages; ?>;
+</script>
 
 <script>
 	$(document).ready(function(){
