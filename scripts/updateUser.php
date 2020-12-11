@@ -3,16 +3,16 @@
 	
 	$name = mysqli_real_escape_string($conn, $_POST['name']);
 	$email = mysqli_real_escape_string($conn, $_POST['email']);
-	$type = mysqli_real_escape_string($conn, $_POST['type']);
 	$password = sha1(mysqli_real_escape_string($conn, $_POST['password']));
 	
-	
+	$pages = implode(',', $_POST['pages']);
+
 	$id = $_POST['id'];
 	
 	if($_POST['password'] != ''){
-		$x = "UPDATE `users` SET name='$name', email='$email', type='$type', password='$password' WHERE id='$id' LIMIT 1";
+		$x = "UPDATE `users` SET name='$name', email='$email', pages='$pages', password='$password' WHERE id='$id' LIMIT 1";
 	}else{
-		$x = "UPDATE `users` SET name='$name', email='$email', type='$type' WHERE id='$id' LIMIT 1";
+		$x = "UPDATE `users` SET name='$name', email='$email', pages='$pages' WHERE id='$id' LIMIT 1";
 	}
 	
 	$y = mysqli_query($conn, $x);

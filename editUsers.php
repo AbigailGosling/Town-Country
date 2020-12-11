@@ -44,6 +44,8 @@
 				$x = "SELECT * FROM users WHERE id = '$id'";
 				$yy = mysqli_query($conn, $x);
 				$data = mysqli_fetch_array($yy);
+
+				$page_ids = explode(',', $data['pages']);
 			}
 		?>
 		<form method="POST" action="<?php if($_GET['id'] != ''){ echo '/scripts/updateUser.php'; } else { echo '/scripts/addUser.php'; } ?>">
@@ -51,29 +53,69 @@
 			
 			<div class="formElement">
 				<label>Name</label>
-				<input type="text" name="name" value="<?php echo $data['name']; ?>">
+				<input type="text" name="name" class="inputtext" value="<?php echo $data['name']; ?>">
 			</div>
 			
 			<div class="formElement">
 				<label>Email Address</label>
-				<input type="text" name="email" value="<?php echo $data['email']; ?>">
-			</div>
-			
-			<div class="formElement">
-				<label>User Type</label>
-				<select name="type">
-					<option value="1" <?php if($data['type'] == 1){ echo 'selected'; } ?>>Sales and purchases</option>
-					<option value="2" <?php if($data['type'] == 2){ echo 'selected'; } ?>>Goods in/out</option>
-					<option value="3" <?php if($data['type'] == 3){ echo 'selected'; } ?>>Admin Tools</option>
-					<option value="4" <?php if($data['type'] == 4){ echo 'selected'; } ?>>Sales & Goods</option>
-				</select>
+				<input type="text" name="email" class="inputtext" value="<?php echo $data['email']; ?>">
 			</div>
 			
 			<div class="formElement">
 				<label>Password</label>
-				<input type="text" name="password">
+				<input type="text" class="inputtext" name="password">
 			</div>
 			
+			<div class="formElement flex">
+				<div style="width:33%;">
+				<h4>Sales & Purchasing</h4>
+				<?php
+					$resultsColumn1 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 1");
+
+					while($page = mysqli_fetch_array($resultsColumn1)){
+					?>
+					<div class="checkbox">
+						<input type="checkbox" id="page<?php echo $page['id']; ?>" name="pages[]" value="<?php echo $page['id']; ?>" <?php if(in_array($page['id'], $page_ids)){ echo 'checked'; } ?>>
+						<label for="page<?php echo $page['id']; ?>"><?php echo ucfirst(strip_tags($page['name'])); ?></label><br>
+					</div>
+					<?php
+					}
+				?>
+				</div>
+
+				<div style="width:33%;">
+				<h4>Goods in/out</h4>
+				<?php
+					$resultsColumn2 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 2");
+
+					while($page = mysqli_fetch_array($resultsColumn2)){
+					?>
+					<div class="checkbox">
+						<input type="checkbox" id="page<?php echo $page['id']; ?>" name="pages[]" value="<?php echo $page['id']; ?>" <?php if(in_array($page['id'], $page_ids)){ echo 'checked'; } ?>>
+						<label for="page<?php echo $page['id']; ?>"><?php echo ucfirst(strip_tags($page['name'])); ?></label><br>
+					</div>
+					<?php
+					}
+				?>
+				</div>
+
+				<div style="width:33%;">
+				<h4>Admin. Tools</h4>
+				<?php
+					$resultsColumn3 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 3");
+
+					while($page = mysqli_fetch_array($resultsColumn3)){
+					?>
+					<div class="checkbox">
+						<input type="checkbox" id="page<?php echo $page['id']; ?>" name="pages[]" value="<?php echo $page['id']; ?>" <?php if(in_array($page['id'], $page_ids)){ echo 'checked'; } ?>>
+						<label for="page<?php echo $page['id']; ?>"><?php echo ucfirst(strip_tags($page['name'])); ?></label><br>
+					</div>
+					<?php
+					}
+				?>
+				</div>
+			</div>
+
 			
 			<?php
 				if($_GET['id'] != ''){
@@ -99,10 +141,6 @@
 			
 			while($row = mysqli_fetch_array($y)){
 				
-				// $date=date_create($date);
-				// $date = date_format($date,"d.m.Y");
-				
- 
             ?>
             <div class="menuItem">
                 <div class="text" style="text-transform: none;"><?php echo $row['name']; ?> [<?php echo $row['email']; ?>]</div>

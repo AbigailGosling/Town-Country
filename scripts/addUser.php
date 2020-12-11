@@ -3,10 +3,13 @@
 	
 	$name = mysqli_real_escape_string($conn, $_POST['name']);
 	$email = mysqli_real_escape_string($conn, $_POST['email']);
-	$type = mysqli_real_escape_string($conn, $_POST['type']);
 	$password = sha1(mysqli_real_escape_string($conn, $_POST['password']));
 	
-	$x = "INSERT into `users` (name,email,type,password) VALUES ('$name','$email','$type','$password')";
+
+	$pages = implode(',', $_POST['pages']);
+
+
+	$x = "INSERT into `users` (name,email,pages,password) VALUES ('$name','$email','$pages','$password')";
 	$y = mysqli_query($conn, $x);
 ?>
 <script>
