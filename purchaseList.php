@@ -52,8 +52,18 @@
 			<?php
 				$x = "SELECT * FROM `purchase_form` ORDER BY date_due DESC";
 				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
+
+				$page_limit = 50;
+				$num_of_pages = 1;
+				$entry_count = 0;
 				while($row = mysqli_fetch_array($y)){
-				
+					$entry_count++;
+
+					if($entry_count == $page_limit){
+						$entry_count = 0;
+						$num_of_pages++;
+					}
+
 				$id = $row['id'];
 				// $ix = "SELECT id from intake WHERE purchase_id='$id'";
 				// $iy = mysqli_query($conn, $ix);
@@ -69,7 +79,7 @@
 						
 					$date_purchased = date('d/m/Y', strtotime($row['date_due']));
 					?>
-					<tr><td align="center" class="pos">
+					<tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
 						<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
@@ -106,12 +116,68 @@
 				// }
 				}
 			?>
+			<tr>
+				<td><br/><br/>
+					<div class="pages_container">
+						<div class="pages_heading">
+							 
+							<a href="javascript:;" class="lowerpage" onclick="loadPage('minus');"> < </a>
+							PAGES
+							<a href="javascript:;" class="higherpage" onclick="loadPage('add');"> > </a>
+							
+						</div>
+						<div class="flex space-evenly">
+							<?php $num_of_pages_temp = $num_of_pages+1; ?>
+							<?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+								<a href="javascript:;" onclick="loadPage(<?php echo $i; ?>);" class="page_number page_number<?php echo $i; ?>"><?php echo $i; ?></a>
+							<?php } ?>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
 		</table>
 	</div>
 </main>
 <div id="btm"></div>
 	<script type="text/javascript">
+
+		var current_page = 0;
+		var total_pages = <?php echo $num_of_pages; ?>;
+
+		function loadPage(val){
+			if(val == 'add'){
+				current_page++;
+				$('.pages').hide();
+				$('.page' + current_page).fadeIn();
+			}else if(val == 'minus'){
+				current_page--;
+				$('.pages').hide();
+				$('.page' + current_page).fadeIn();
+			}else{
+				current_page = val;
+				$('.pages').hide();
+				$('.page' + current_page).fadeIn();
+			}
+
+			$('.page_number').removeClass('selected');
+			$('.page_number' + current_page).addClass('selected');
+			
+			if(current_page == 1){
+				$('.lowerpage').hide();
+			}else{
+				$('.lowerpage').show();
+			}
+
+			if(current_page == total_pages){
+				$('.higherpage').hide();
+			}else{
+				$('.higherpage').show();
+			}
+		}
+
 		$(document).ready(function(){
+			loadPage(1);
 			$('#instantSearch').keyup(function(){
 
 				var val = $('#instantSearch').val();
@@ -120,7 +186,8 @@
 				var xhttp = new XMLHttpRequest();
 				xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-				  $('#intakeAjax').html(this.responseText);
+					$('#intakeAjax').html(this.responseText);
+					loadPage(1);
 				}
 				};
 
