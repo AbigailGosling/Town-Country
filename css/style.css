@@ -12,6 +12,7 @@
 } 
 .flex{ display:flex; } 
 .space-between{ justify-content: space-between; }
+.space-evenly { justify-content: space-evenly; }
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
 body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
@@ -1928,3 +1929,35 @@ textarea {
   font-size: 12px;
 
 }
+
+.pages_container{
+	width:100%;
+	margin:0 auto;
+}
+
+.page_number{
+	font-weight:bold;
+	color:white;
+	text-decoration: none;
+}
+
+.page_number.selected{
+	text-decoration: underline;
+}
+
+.pages_container .pages_heading{
+	display: flex;
+	align-items:center;
+	justify-content: center;
+	color:#fff;
+	font-weight:bold;
+	padding-bottom:10px;
+}
+.pages_container .pages_heading a{
+	color:#fff;
+	font-weight:bold;
+	font-size:22px;
+	text-decoration: none;
+	padding:0px 10px;
+}
+ 

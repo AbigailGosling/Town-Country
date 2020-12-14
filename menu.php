@@ -17,54 +17,49 @@
 <main>
 	<h1 class="int">Town &amp; Country 3</h1>	
 	<div id="menu_wrap">
-		
-		<?php if($user['type'] == 1 || $user['type'] == 3 || $user['type'] == 4){ ?>
-		<div class="col">
-			<h1>Sales & Purchasing</h1>
-			<a href="productpicker.php"><span class="small">create</span> Sale</a>
-			<a href="salesconfirmationList.php">Sales Confirmation</a>
-			<a href="createPurchase.php"><span class="small">create</span> Purchase</a>
- 			<a href="purchaseList.php">Purchases</a>
-			<a href="intakeList.php"><span class="small">edit</span> Intake</a>
-			<a href="calendar.php">Expected Arrivals</a>
-		</div>
-		<?php } ?>
-		
-		<?php if($user['type'] == 2 || $user['type'] == 3|| $user['type'] == 4){ ?>
-		<div class="col">
-			<h1>Goods in/out</h1>
-			<a href="newDelivery.php"><span class="small">create</span>  Intake</a>
-			<a href="newReturn.php"><span class="small">create</span>  Return</a>
-			<a href="calendar.php">Expected Arrivals</a>
-			<a href="pickSheetList.php">Pick Sheets</a>
-			<a href="completedPickerSheets.php">Completed Pick Sheets</a>
-			<a href="deliverynoteList.php"><span class="small">print</span> Delivery Notes</a>
-			<a href="intakeList.php"><span class="small">edit</span> Intake</a>
-		</div>
-		<?php } ?>
-		
-		<?php if($user['type'] == 3){ ?>		
-		<div class="col">
-			<h1>Admin. Tools</h1>
-			<a href="manageCutgroups.php"><span class="small">edit</span>  Cut Groups</a>
-			<a href="manageCuts.php"><span class="small">edit</span>  Cut</a>
- 			<a href="manageNationalities.php"><span class="small">edit</span> Nationality</a>
- 			<a href="manageSuppliers.php"><span class="small">edit</span> Supplier</a>
- 			<a href="manageBrands.php"><span class="small">edit</span> Brand</a>
- 			<a href="manageCustomers.php"><span class="small">edit</span> Customer</a>
-  			<a href="intakeList.php"><span class="small">edit</span> Intake</a>
-  			<a href="stock.php"><span class="small">edit</span> Stock</a>
-  			<a href="returnsList.php"><span class="small">edit</span> Returns</a>
-  			<a href="invoiceList.php"><span class="small">edit</span> Invoices</a>
-  			<a href="editUsers.php"><span class="small">edit</span> Users</a>
-		</div>
-		<?php } ?>
-		
-		<div style="display:none;">
-  		</div>
-		<?php if($userid == 1){ ?>
-			<a href="completedPurchase.php" style="display:none;">Completed purchase</a>
-		<?php } ?>
+		<?php
+			$ids = $user['pages'];
+		?>
+
+		<?php
+			$resultsColumn1 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 1 && `id` IN ($ids)");
+			$count = mysqli_num_rows($resultsColumn1);
+
+			if($count > 0){
+				?><div class="col"><h1>Sales & Purchasing</h1><?php
+				while($page = mysqli_fetch_array($resultsColumn1)){
+					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+				}
+
+				?></div><?php
+			}
+
+ 
+			$resultsColumn2 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 2 && `id` IN ($ids)");
+			$count = mysqli_num_rows($resultsColumn2);
+
+			if($count > 0){
+				?><div class="col"><h1>Goods in/out</h1><?php
+				while($page = mysqli_fetch_array($resultsColumn2)){
+					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+				}
+
+				?></div><?php
+			}
+
+
+			$resultsColumn3 = mysqli_query($conn, "SELECT * FROM `page_permissions` WHERE `column` = 3 && `id` IN ($ids)");
+			$count = mysqli_num_rows($resultsColumn3);
+
+			if($count > 0){
+				?><div class="col"><h1>Admin. Tools</h1><?php
+				while($page = mysqli_fetch_array($resultsColumn3)){
+					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+				}
+
+				?></div><?php
+			}
+		?>
 	</div>
 	
 	<style>

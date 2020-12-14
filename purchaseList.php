@@ -52,8 +52,18 @@
 			<?php
 				$x = "SELECT * FROM `purchase_form` ORDER BY date_due DESC";
 				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
+
+				$page_limit = 50;
+				$num_of_pages = 1;
+				$entry_count = 0;
 				while($row = mysqli_fetch_array($y)){
-				
+					$entry_count++;
+
+					if($entry_count == $page_limit){
+						$entry_count = 0;
+						$num_of_pages++;
+					}
+
 				$id = $row['id'];
 				// $ix = "SELECT id from intake WHERE purchase_id='$id'";
 				// $iy = mysqli_query($conn, $ix);
@@ -69,7 +79,7 @@
 						
 					$date_purchased = date('d/m/Y', strtotime($row['date_due']));
 					?>
-					<tr><td align="center" class="pos">
+					<tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
 						<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 							<table width="100%" border="0">
 								<tr>
@@ -106,12 +116,41 @@
 				// }
 				}
 			?>
+			<tr>
+				<td>
+					<div class="pages_container">
+						<div class="flex" style="align-items:center;justify-content:flex-end;">
+							<p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
+							<?php $num_of_pages_temp = $num_of_pages+1; ?>
+							<select style="width:60px;height:30px;" onchange="changePage(this)">
+								<?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+									<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+								<?php } ?>
+							</select>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
 		</table>
 	</div>
 </main>
 <div id="btm"></div>
 	<script type="text/javascript">
+
+		function changePage(ele){
+			var page = $(ele).val();
+			$('.pages').hide();
+			$('.page' + page).fadeIn();
+		}
+
+		function loadPage(page){
+			$('.pages').hide();
+			$('.page' + page).fadeIn();
+		}
+
 		$(document).ready(function(){
+			loadPage(1);
 			$('#instantSearch').keyup(function(){
 
 				var val = $('#instantSearch').val();
@@ -120,7 +159,8 @@
 				var xhttp = new XMLHttpRequest();
 				xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-				  $('#intakeAjax').html(this.responseText);
+					$('#intakeAjax').html(this.responseText);
+					loadPage(1);
 				}
 				};
 

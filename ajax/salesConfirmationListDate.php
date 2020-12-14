@@ -17,12 +17,20 @@
 	if($count == 0){
 		?><h2 style="color:#fff;font-size:12px;">No sales sheets found</h2><?php
 	}else{
-		
+        
+        $page_limit = 50;
+        $num_of_pages = 1;
+        $entry_count = 0;
         while($picksheet = mysqli_fetch_array($pickersheetResults)){
-				
+            $entry_count++;
+            if($entry_count == $page_limit){
+                $entry_count = 0;
+                $num_of_pages++;
+            }
+
             $date_purchased = date('d/m/Y', strtotime($picksheet['date']));
         ?>
-            <tr><td align="center" class="pos">
+            <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
                 <a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
                     <table width="100%" border="0">
                         <tr>
@@ -55,3 +63,22 @@
         }
 	}
 ?>
+<tr>
+    <td>
+    <div class="pages_container">
+        <div class="flex" style="align-items:center;justify-content:flex-end;">
+            <p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
+            <?php $num_of_pages_temp = $num_of_pages+1; ?>
+            <select style="width:60px;height:30px;" onchange="changePage(this)">
+                <?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+                    <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                <?php } ?>
+            </select>
+        </div>
+    </div>
+    </td>
+</tr>
+
+<script>
+    total_pages = <?php echo $num_of_pages; ?>;
+</script>

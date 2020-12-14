@@ -22,8 +22,17 @@
 	if($count == 0){
 		?><h2 style="color:#fff;font-size:12px;">No invoices found</h2><?php
 	}else{
-		
+        
+        $page_limit = 50;
+        $num_of_pages = 1;
+        $entry_count = 0;
 		while($row = mysqli_fetch_array($y)){
+            $entry_count++;
+            if($entry_count == $page_limit){
+                $entry_count = 0;
+                $num_of_pages++;
+            }
+
             $customer_id = $row['customer_id'];
 					
             $date = $row['estimated_delivery_date'];
@@ -36,7 +45,7 @@
             $row2 = mysqli_fetch_array($y2);
             
         ?>
-        <tr><td align="center" class="pos">
+        <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
         <a href="invoice.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
             <table width="100%" border="0">
                 <tr>
@@ -56,3 +65,22 @@
         }
     }
 ?>
+<tr>
+    <td><br/><br/>
+        <div class="pages_container">
+            <div class="flex" style="align-items:center;justify-content:flex-end;">
+                <p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
+                <?php $num_of_pages_temp = $num_of_pages+1; ?>
+                <select style="width:60px;height:30px;" onchange="changePage(this)">
+                    <?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+        </div>
+    </td>
+</tr>
+
+<script>
+    total_pages = <?php echo $num_of_pages; ?>;
+</script>
