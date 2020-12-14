@@ -64,20 +64,16 @@
     }
 ?>
 <tr>
-    <td><br/><br/>
+    <td>
         <div class="pages_container">
-            <div class="pages_heading">
-                    
-                <a href="javascript:;" class="lowerpage" onclick="loadPage('minus');"> < </a>
-                PAGES
-                <a href="javascript:;" class="higherpage" onclick="loadPage('add');"> > </a>
-                
-            </div>
-            <div class="flex space-evenly">
+            <div class="flex" style="align-items:center;justify-content:flex-end;">
+                <p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
                 <?php $num_of_pages_temp = $num_of_pages+1; ?>
-                <?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
-                    <a href="javascript:;" onclick="loadPage(<?php echo $i; ?>);" class="page_number page_number<?php echo $i; ?>"><?php echo $i; ?></a>
-                <?php } ?>
+                <select style="width:60px;height:30px;" onchange="changePage(this)">
+                    <?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                    <?php } ?>
+                </select>
             </div>
         </div>
     </td>

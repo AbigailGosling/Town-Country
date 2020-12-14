@@ -81,60 +81,33 @@
 				}
 			?>
 				<tr>
-				<td><br/><br/>
-					<div class="pages_container">
-						<div class="pages_heading">
-							 
-							<a href="javascript:;" class="lowerpage" onclick="loadPage('minus');"> < </a>
-							PAGES
-							<a href="javascript:;" class="higherpage" onclick="loadPage('add');"> > </a>
-							
-						</div>
-						<div class="flex space-evenly">
-							<?php $num_of_pages_temp = $num_of_pages+1; ?>
+				<td>
+				<div class="pages_container">
+					<div class="flex" style="align-items:center;justify-content:flex-end;">
+						<p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
+						<?php $num_of_pages_temp = $num_of_pages+1; ?>
+						<select style="width:60px;height:30px;" onchange="changePage(this)">
 							<?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
-								<a href="javascript:;" onclick="loadPage(<?php echo $i; ?>);" class="page_number page_number<?php echo $i; ?>"><?php echo $i; ?></a>
+								<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
 							<?php } ?>
-						</div>
+						</select>
 					</div>
+				</div>
 				</td>
 			</tr>
 		</table>	
     </div>
 	<script type="text/javascript">
 		
-		var current_page = 0;
-		var total_pages = <?php echo $num_of_pages; ?>;
+		function changePage(ele){
+			var page = $(ele).val();
+			$('.pages').hide();
+			$('.page' + page).fadeIn();
+		}
 
-		function loadPage(val){
-			if(val == 'add'){
-				current_page++;
-				$('.pages').hide();
-				$('.page' + current_page).fadeIn();
-			}else if(val == 'minus'){
-				current_page--;
-				$('.pages').hide();
-				$('.page' + current_page).fadeIn();
-			}else{
-				current_page = val;
-				$('.pages').hide();
-				$('.page' + current_page).fadeIn();
-			}
-
-			$('.page_number').removeClass('selected');
-			$('.page_number' + current_page).addClass('selected');
-			
-			if(current_page == 1){
-				$('.lowerpage').hide();
-			}else{
-				$('.lowerpage').show();
-			}
-
-			if(current_page == total_pages){
-				$('.higherpage').hide();
-			}else{
-				$('.higherpage').show();
-			}
+		function loadPage(page){
+			$('.pages').hide();
+			$('.page' + page).fadeIn();
 		}
 
 		$(document).ready(function(){
