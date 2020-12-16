@@ -100,8 +100,6 @@
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
 
-    // array_push($whereArray, "product.status='0'");
-    array_push($whereArray, "product.cost != '0.00'");
     array_push($whereArray, "weights.status_id != 1");
     
     foreach($whereArray as $where){
@@ -205,12 +203,15 @@
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
-       
         ?>
-        <tr class="searchAccordTitle">
+        <tr class="searchAccordTitle <?php if($productsRow['cost'] == '0.00'){ echo 'locked'; } ?>">
             <td colspan="1">
                 <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
-					<b><?php echo $intake_id; ?></b>
+                    <?php if($productsRow['cost'] == '0.00'){ ?>
+                        <i class="fa fa-lock"></i>
+                    <?php } ?>
+
+                    <b><?php echo $intake_id; ?></b>
 				</a>
 			</td>
             <td colspan="1">
