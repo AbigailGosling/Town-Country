@@ -204,10 +204,10 @@
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
         ?>
-        <tr class="searchAccordTitle <?php if($productsRow['cost'] == '0.00'){ echo 'locked'; } ?>">
+        <tr class="searchAccordTitle <?php if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){ echo 'locked'; } ?>">
             <td colspan="1">
                 <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
-                    <?php if($productsRow['cost'] == '0.00'){ ?>
+                    <?php if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){ ?>
                         <i class="fa fa-lock"></i>
                     <?php } ?>
 
