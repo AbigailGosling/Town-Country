@@ -5,9 +5,8 @@
     
 
         $delid = mysqli_real_escape_string($conn, $_GET['delid']);
-
-
-        $picksheetResult = mysqli_query($conn, "UPDATE `pickerSheets` SET deleted=1 WHERE id='$delid'");
+        
+        $picksheetResult = mysqli_query($conn, "UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
 
         $pickerItemsResult = mysqli_query($conn, "UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
 
