@@ -301,7 +301,8 @@
 		$y = mysqli_query($conn, $x);
 		$user = mysqli_fetch_array($y);
 		
-		if($user['type'] == '3'){
+		
+		if($user['view_intake_prices'] == 1){
 	?>
 	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $intake_id; ?>">
 	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">

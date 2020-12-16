@@ -65,6 +65,14 @@
 				<label>Password</label>
 				<input type="text" class="inputtext" name="password">
 			</div>
+
+			<div class="formElement">
+				<label>Show Intake Overview Table Prices</label>
+				<select name="view_intake_prices">
+					<option value="0" <?php if($data['view_intake_prices'] == 0){ echo 'selected'; } ?>>No</option>
+					<option value="1" <?php if($data['view_intake_prices'] == 1){ echo 'selected'; } ?>>Yes</option>
+				</select>
+			</div>
 			
 			<div class="formElement flex">
 				<div style="width:33%;">
