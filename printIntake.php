@@ -13,7 +13,7 @@
 <main>
 	<a style="position:absolute;left:0px;top:20px;" class="printhide" href="intake.php?id=<?php echo $intake_id; ?>">Back</a>
 	
-	<h1 style="font-family: 'OpenSans_Semibold' !important;font-weight: 700;color: #000;padding-bottom:20px;font-size: 26px;text-align: left;">Intake Print Form</h1>
+	<h1 style="font-family: 'OpenSans_Semibold' !important;font-weight: 700;color: #000;padding-bottom:20px;font-size: 26px;text-align: left;"><?php if($intake['returned'] == '1'){ echo 'Returned '; } ?>Intake Print Form </h1>
 	<div class="overview">
 	
 		<div class="overview_block">
