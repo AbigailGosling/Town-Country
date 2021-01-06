@@ -121,13 +121,13 @@
         var formHasChanged = false;
         var submitted = false;
 
-				document.getElementById('menu').addEventListener('click', function(e) {
-					if (formHasChanged && !submitted) {
-						e.preventDefault()	
-						changePage('menu')
-					}
-				})
-        
+		document.getElementById('menu').addEventListener('click', function(e) {
+			if (formHasChanged && !submitted) {
+				e.preventDefault()	
+				changePage('menu')
+			}
+		})
+
         $(document).on('change', 'form #customer', function (e) {
             formHasChanged  = true;
         });
@@ -136,24 +136,24 @@
             submitted = true;
         });
 
-				$(document).on('click', '.intakeLink', function(e) {
-					if (formHasChanged && !submitted) {
-						e.preventDefault()	
-						changePage($(this).attr('id'))
-					}
-				})
+		$(document).on('click', '.intakeLink', function(e) {
+			if (formHasChanged && !submitted) {
+				e.preventDefault()	
+				changePage($(this).attr('id'))
+			}
+		})
 
-				function changePage(prop) {					
-					var alert = confirm('Are you sure you want to leave?')
+		function changePage(prop) {					
+			var alert = confirm('Are you sure you want to leave?')
 
-					if (alert === true) {
-						if (prop == 'menu') {
-							window.location.href = "/menu.php"
-						} else {
-							window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
-						}
-					}
+			if (alert === true) {
+				if (prop == 'menu') {
+					window.location.href = "/menu.php"
+				} else {
+					window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
 				}
+			}
+		}
 
     });
 
@@ -451,6 +451,14 @@ function checkStock(){
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
 			$('.rating').fadeIn();
+			
+			$('#addressline1').prop('disabled', true);
+			$('#addressline2').prop('disabled', true);
+			$('#addressline3').prop('disabled', true);
+			$('#addressline4').prop('disabled', true);
+			$('#addresspostcode').prop('disabled', true);
+			$('#deliverynumber').prop('disabled', true);
+			
 		});
 	}
 	ready = true;
@@ -479,6 +487,7 @@ function checkStock(){
 	$(document).ready(function(){  
 		setCustomerDetails(null, 'true');
 		
+
 		
 		$.each(document.cookie.split(/; */), function(){
 		  var splitCookie = this.split('=');
