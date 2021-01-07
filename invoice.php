@@ -14,7 +14,7 @@
 	
 	$customerRow = mysqli_fetch_array($y2); 
 	
-	if($_GET['deleteInternalDocument'] != ''){
+	if($_GET['deleteInternalDocument'] != '' && $user['user_type'] == 'A'){
 		$internal_doc_id = mysqli_real_escape_string($conn, $_GET['deleteInternalDocument']);
 		$pickersheet_id = mysqli_real_escape_string($conn, $_GET['id']);
 
@@ -139,6 +139,7 @@
 		</div>
 		
 	</div>
+	<?php if($user['user_type'] == 'A'){ ?>
 	<br/>
 	<form class="printhide" method="POST" action="scripts/addInternalDocument.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="INVOICE">
@@ -203,6 +204,7 @@
 		<?php } ?>
  	</form>
 	<br/><br/>
+	<?php } ?>
 	 
 	<table width="100%" border="0">
 		<tr class="productsHeading" style="background-color: #7fabce9e;">
