@@ -14,6 +14,15 @@
 	
 	$customerRow = mysqli_fetch_array($y2); 
 	
+
+	if($_GET['deleteInternalDocument'] != ''){
+		$internal_doc_id = mysqli_real_escape_string($conn, $_GET['deleteInternalDocument']);
+		$pickersheet_id = mysqli_real_escape_string($conn, $_GET['id']);
+
+		mysqli_query($conn, "DELETE FROM `pickersheet_documents` WHERE id=$internal_doc_id LIMIT 1") or die(mysqli_error($conn));
+
+		header('Location: deliverynote.php?id=' . $pickersheet_id);
+	}
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -129,6 +138,71 @@
 			</div>
 		</div>
 	</div>
+	<br/>
+	<form class="printhide" method="POST" action="scripts/addInternalDocument.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
+		<input type="hidden" name="type" value="DELIVERY_NOTE">
+		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
+
+		<table>
+			<tr>
+				<td colspan="4" align="left">
+					<h3 style="margin:0;">Add a document/message</h3>
+					<br/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label>Note</label><br/>
+					<input type="text" name="message">
+				</td>
+				<td style="padding-left:10px;">
+					<label>Document</label><br/>
+					<input type="file" name="dfile">
+				</td>
+				<td><br/>
+					<input type="submit">
+				</td>
+			</tr>
+		</table>
+		<?php
+			$internalDocResult = mysqli_query($conn, "SELECT * FROM `pickersheet_documents` WHERE type='DELIVERY_NOTE' && pickersheet_id='$pickersheet_id' ORDER BY id DESC");
+			$internalDocCount = mysqli_num_rows($internalDocResult);
+
+			if($internalDocCount > 0){
+		?>
+		<br/>
+		<table width="100%" border="0">
+			<tr class="productsHeading">
+				<th align="left">Message</th>
+				<th align="left">User</th>
+				<th align="right">Action</th>
+			</tr>
+			<?php
+				while($internalDoc = mysqli_fetch_array($internalDocResult)){
+				?>
+				<tr style="height:30px;">
+					<td>
+						<?php
+							echo $internalDoc['message'];
+
+							if($internalDoc['dfile'] != ''){
+							?> <a href="/docs/<?php echo $internalDoc['dfile']; ?>" target="_blank">(View Document)</a><?php
+							}
+						?>
+					</td>
+					<td><?php echo getUsername($internalDoc['user_id']); ?></td>
+					<td align="right">
+						<a href="?id=<?php echo $pickersheet_id; ?>&deleteInternalDocument=<?php echo $internalDoc['id']; ?>">Delete</a>
+					</td>
+				</tr>
+				<?php
+				}
+			?>
+		</table>
+		<?php } ?>
+ 	</form>
+	<br/><br/>
+
 	<table width="100%" border="0">
 		<tr class="productsHeading">
 			<th align="left">Intake ID</th>
@@ -586,6 +660,7 @@
 		$.get("<?php echo $domain; ?>ajax/markPickAsPrinted.php?id=<?php echo $_GET['id']; ?>", function(data, status){
 			console.log(data);
 			$('#top').hide();
+			$('.printhide').hide();
 			$('.formBackButton').hide();
 			$('.backbtn').hide();
 			$('main').css('padding','0px')
@@ -597,6 +672,7 @@
 
 	function printCompleted() {
 		$('#top').show();
+		$('.printhide').show();
 		$('.formBackButton').show();
 		$('.backbtn').show();
 		$('main').removeAttr("style")
