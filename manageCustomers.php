@@ -261,7 +261,39 @@
 						<div class="override-enabled"  style="<?php if($data['override'] == 1){ ?>display:block;<?php }?>">Enabled</div>
 					</td>
 				</tr>
-				<tr height="140"><td colspan="2"></td></tr>
+				<tr height="140"><td colspan="2"></td></tr> 
+			</table>
+		</div>
+	</div>
+	<div id="flexContainerTwo">
+		<div class="fullbox controls"></div>
+		<div class="fullbox controls">
+			<h3>Related Users</h3>
+		
+			<?php
+
+				$currentUsers = explode(',', $data['users']);
+				
+				$usersResult = mysqli_query($conn, "SELECT * FROM `users`");
+
+				while($row = mysqli_fetch_array($usersResult)){
+				?>
+				<div class="userRow" style="padding-bottom:5px;">
+					<input type="checkbox" id="user<?php echo $row['id']; ?>" name="users[]" value="<?php echo $row['id']; ?>" <?php if(in_array($row['id'], $currentUsers)){ echo 'checked'; } ?>>
+					<label for="user<?php echo $row['id']; ?>"><?php echo $row['name']; ?></label><br>
+				</div>
+				<?php
+				}
+			?>
+
+		</div>
+	</div>
+	<div id="flexContainerTwo">
+	<div class="fullbox controls"></div>
+
+		<div class="fullbox controls">
+			<table width="100%">
+				 
 				<tr>
 					<td class="label"><label></label></td>
 					<td style="text-align:right;">
@@ -271,10 +303,11 @@
 				</tr>
 			</table>
 		</div>
-	</div>
+		</div>
 	</form>
 	
-	
+	<Br/>
+	<Br/>
 	<div id="intakelist">
  
 		<h1 class="int">CUSTOMER LIST</h1>
