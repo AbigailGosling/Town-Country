@@ -262,19 +262,39 @@
 					</td>
 				</tr>
 				<tr height="140"><td colspan="2"></td></tr>
+				 
+			</table>
+		</div>
+	</div>
+	<div id="flexContainerTwo">
+		<div class="fullbox controls">
+			<table width="100%">
+				<tr>
+					<td>
+						<?php if($_GET['id'] != ''){ ?>
+							<a href="/customer_soa.php?id=<?php echo $data['id']; ?>" class="update" style="color:white;background:orange;">View Statement of account</a>
+						<?php } ?>
+					</td>
+				</tr>			
+			</table>
+		</div>
+
+		<div class="fullbox controls">
+			<table width="100%">
 				<tr>
 					<td class="label"><label></label></td>
 					<td style="text-align:right;">
 						<a href="#" class="update" style="display:none;">Update & Save</a>
 						<input type="submit" class="update" value="Update & Save">
 					</td>
-				</tr>
+				</tr>			
 			</table>
 		</div>
 	</div>
+	
 	</form>
-	
-	
+
+	<Br/><BR/>
 	<div id="intakelist">
  
 		<h1 class="int">CUSTOMER LIST</h1>
