@@ -83,7 +83,7 @@
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="picksheetid" id="picksheetid" value="<?php echo $picksheet_id; ?>">
 <input type="hidden" name="customerid" id="customerid" value="<?php echo $customer_id; ?>">
-<input type="hidden" name="addressid" id="addressid" value="1">
+<input type="hidden" name="addressid" id="addressid" value="<?php echo $picksheet['addressid']; ?>">
 <div class="container container--pt">
 	<div class="row">
 		<div class="col">

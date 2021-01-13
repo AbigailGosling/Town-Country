@@ -20,7 +20,7 @@
    echo 'Updating..';
 
     // update delivery date && addressid
-    $y = mysqli_query($conn, "UPDATE `pickersheets` SET estimated_delivery_date='$estimated_delivery_date', addressid='$addressid' WHERE id='$picksheetid' LIMIT 1");
+    $y = mysqli_query($conn, "UPDATE `pickerSheets` SET estimated_delivery_date='$estimated_delivery_date', addressid='$addressid' WHERE id='$picksheetid' LIMIT 1");
 
 
     if($addressid == 1){
