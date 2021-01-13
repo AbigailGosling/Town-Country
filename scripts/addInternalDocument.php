@@ -22,7 +22,7 @@
 	$result = mysqli_query($conn, "INSERT INTO `pickersheet_documents` (`user_id`,pickersheet_id,`message`,dfile,`type`) VALUES ($user_id,'$pickersheet_id','$message','$file_name','$type')") or die(mysqli_error($conn));
 
     if($type == 'DELIVERY_NOTE'){
-        $file = 'deliveryNote.php';
+        $file = 'deliverynote.php';
     }else if($type == 'INVOICE'){
         $file = 'invoice.php';
     }
