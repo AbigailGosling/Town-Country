@@ -1,10 +1,11 @@
 <?php
 
 	require('../functions.php');
+	
+	$user_id = $_SESSION['USER'];
 
 	$name = $_POST['searchterm'];
-	
-	$x = "SELECT * FROM `customers` WHERE businessname LIKE '%$name%'";
+	$x = "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users) && businessname  LIKE '%$name%'";
 	$y = mysqli_query($conn, $x);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php
