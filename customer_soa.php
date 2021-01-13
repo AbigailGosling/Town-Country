@@ -56,9 +56,9 @@
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
 
-                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickersheets` WHERE completed = 1 && customer_id=$customer_id && date BETWEEN '$date_from' AND '$date_to'");
+                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed = 1 && customer_id=$customer_id && date BETWEEN '$date_from' AND '$date_to'");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickersheets` WHERE completed = 1 && customer_id=$customer_id");
+                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed = 1 && customer_id=$customer_id");
             }
 
             $totalPrice = 0.00;
