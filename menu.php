@@ -31,11 +31,7 @@
 			if($count > 0){
 				?><div class="col"><h1>Sales & Purchasing</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn1)){
-					if($page['file'] == 'exportstock.php'){
-						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
-					}else{
-						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
-					}
+					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 				}
 
 				?></div><?php
@@ -61,7 +57,11 @@
 			if($count > 0){
 				?><div class="col"><h1>Admin. Tools</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn3)){
-					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					if($page['file'] == 'exportstock.php'){
+						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					}else{
+						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					}
 				}
 
 				?></div><?php
