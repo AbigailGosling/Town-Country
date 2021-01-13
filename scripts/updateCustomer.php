@@ -119,6 +119,10 @@
 	
 	$current_outstanding = (float) $current_outstanding - (float) $payment_received;
 	
+
+	$accounts_email = mysqli_real_escape_string($conn, $_POST['accounts_email']);
+	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
+	
 	$currentUsers = implode(',', $_POST['users']);
 
 	
@@ -129,7 +133,7 @@
 	, accounts_address_2='$accounts_address_2', accounts_address_3='$accounts_address_3', accounts_address_4='$accounts_address_4', accounts_contact='$accounts_contact'
 	, tel_number='$tel_number', internal_email='$internal_email', credit_terms='$credit_terms', pricedefault='$pricedefault', credit_rating='$credit_rating', flaguplimit='$flaguplimit'
 	, current_outstanding='$current_outstanding',address1_number='$address1_number',address2_number='$address2_number',address3_number='$address3_number'
-	, users='$currentUsers' WHERE id='$id' LIMIT 1";
+	, users='$currentUsers', accounts_email='$accounts_email', accounts_comments='$accounts_comments' WHERE id='$id' LIMIT 1";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 ?>

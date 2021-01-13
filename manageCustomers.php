@@ -114,7 +114,7 @@
 						<input type="text" class="input" id="address3" name="address3_1" value="<?php echo $data['address3_1']; ?>">
 						<div style="display:none;" id="address3container">
  							<input type="text" class="input" name="address3_2" value="<?php echo $data['address3_2']; ?>"><br/>
-							<input type="text" class="input" name="address	3_3" value="<?php echo $data['address3_3']; ?>"><br/>
+							<input type="text" class="input" name="address3_3" value="<?php echo $data['address3_3']; ?>"><br/>
 							<input type="text" class="input" name="address3_4" value="<?php echo $data['address3_4']; ?>">
 						</div>
 					</td>
@@ -179,6 +179,21 @@
 						<input type="text" class="input" name="accounts_address_4" value="<?php echo $data['accounts_address_4']; ?>">
  					</td>
 				</tr>
+
+				<tr style="vertical-align: top;">
+					<td class="label"><label>Accounts Email</label></td>
+					<td>
+						<input type="email" class="input" name="accounts_email" value="<?php echo $data['accounts_email']; ?>"><br/>
+ 					</td>
+				</tr>
+
+				<tr style="vertical-align: top;">
+					<td class="label"><label>Accounts Comments</label></td>
+					<td>
+						<textarea class="input" name="accounts_comments"><?php echo $data['accounts_comments']; ?></textarea>
+ 					</td>
+				</tr>
+
 				<tr height="40"><td colspan="2"></td></tr>	
 
 				<tr>
