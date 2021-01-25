@@ -75,7 +75,7 @@
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
 				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a></td>
 				<td><?php echo $date; ?></td>
-                <td>Invoice_<?php echo $picksheet['id']; ?>.pdf</td>
+                <td><a href="javascript:;" onclick="generatePDF(<?php echo $picksheet['id']; ?>)">Invoice_<?php echo $picksheet['id']; ?>.pdf</a></td>
                 <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
 			</tr>
 			<?php
@@ -136,3 +136,23 @@
         height:32px;
     }
 </style>
+
+<script>
+    function generatePDF(id){
+		$.get("<?php echo $domain; ?>ajax/generatePDFInvoice.php?id=" + id, function(data, status){
+			
+			var name = data.replace(/\s+/g, '');
+			
+			downloadURI('<?php echo $domain; ?>PDF/' + name, name);
+			
+		});
+	}
+	
+	function downloadURI(uri, name) 
+	{
+		var link = document.createElement("a");
+		link.download = name;
+		link.href = uri;
+		link.click();
+	}
+</script>
