@@ -13,17 +13,18 @@
 		$cutX = "SELECT * FROM `supplier` WHERE name LIKE '%$name%' ORDER BY name ASC";
 		$cutY = mysqli_query($conn, $cutX);
 		
-		while($cutRow = mysqli_fetch_array($cutY)){
+		while($row = mysqli_fetch_array($cutY)){
 		?>
 		<table width="100%">
 			<tr><td align="center" class="pos">
-				<a href="intake.php?id=<?php echo $cutRow['id']; ?>" class="intake" style="margin-top:0px;">
+				<a href="manageSuppliers.php?id=<?php echo $row['id']; ?>" class="intake" style="margin-top:0px;">
 					<table width="100%" border="0">
 						<tr>
-							<td width="100" align="left">ID: <?php echo $cutRow['id']; ?></td>
-							<td align="center" style="font-size: 18px;"><?php echo $cutRow['name']; ?></td>
+							<td width="100" align="left">ID: <?php echo $row['id']; ?></td>
+							<td align="center" style="font-size: 18px;"><?php echo $row['name']; ?></td>
 							<td width="100" align="right">
-								<a href="/manageSuppliers.php?id=<?php echo $cutRow['id']; ?>" style="right:-35px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+							<a href="/manageSuppliers.php?id=<?php echo $row['id']; ?>" id="edit"><i class="fa fa-pencil" style="color:red;padding-right:4px;" aria-hidden="true"></i></a>
+ 								<a href="javascript:;" onclick="deleteRow(<?php echo $row['id']; ?>)" id="close"><i class="fa fa-times" style="color:red;padding-right:4px;" aria-hidden="true"></i></a>
 							</td>
 						</tr>
 					</table>
