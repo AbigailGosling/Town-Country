@@ -99,7 +99,7 @@
 
 	<a href="javascript:;" onclick="window.history.back();" class="backbtn">< Back</a>
 		
-	<form style="float:right;padding-bottom:10px;" method="POST" action="markIntakeAs.php">
+	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
 		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 		<select name="state">
             <option value="0">Mark as unsold</option>
