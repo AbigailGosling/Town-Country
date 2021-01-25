@@ -508,10 +508,10 @@
  
  
  	$filename2 = 'Delivery_Note_'.$pickersheet_id.'.pdf';
-	$filename = '/home/tandcphenixdevel/public_html/PDF/' . $filename2;
+	$filename = '../PDF/' . $filename2;
 	
  	
 	$mpdf->Output($filename,'F');
 
-	echo $filename2;
+	echo $filename;
 ?>

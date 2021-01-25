@@ -8,8 +8,7 @@
 	
 	$perPage = 29;
  	$border = 0;
-	
-	$mpdf = new \Mpdf\Mpdf([
+ 	$mpdf = new \Mpdf\Mpdf([
         'mode' => 'utf-8',
         'format' => [210, 297],
 		'setAutoTopMargin' => 'stretch',
@@ -22,7 +21,7 @@
         'collapseBlockMargins' => true,
     ]);
 	
-	$pageArray = array();
+ 	$pageArray = array();
 	
 	$pickersheet_id = $_GET['id'];
 	
@@ -501,7 +500,7 @@
  
  
  	$filename2 = 'Invoice_'.$pickersheet_id.'.pdf';
-	$filename = '/home/tandcphenixdevel/public_html/PDF/' . $filename2;
+	$filename = '../PDF/' . $filename2;
 	
  	
 	$mpdf->Output($filename,'F');
