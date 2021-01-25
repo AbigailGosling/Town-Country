@@ -18,7 +18,7 @@
 		}
 	}else{
 	?>
-	<a href="javascript:;" class="intakeCutDropdown" style="border: 1px #f00f00 solid;color:#f00f00;">You must select a vaild customer!</a>
+	<a href="javascript:;" class="intakeCutDropdown" style="border: 1px #f00f00 solid;color:#f00f00;">You must select a valid customer!</a>
 	<?php
 	}
 ?>
