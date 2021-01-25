@@ -51,11 +51,12 @@
 				$ty = mysqli_query($conn, $tx);
 				$txcount = mysqli_num_rows($ty);
 				$intake = mysqli_fetch_array($ty);
-
-				if($txcount > 0){
-				?><a href="intake.php?id=<?php echo $intake['id']; ?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">View Intake</a><?php
-				}else{
-				?><a href="newDelivery.php?purchaseid=<?php echo $purchaseid; ?>" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Create Intake</a><?php
+				if($edit){
+					if($txcount > 0){
+					?><a href="intake.php?id=<?php echo $intake['id']; ?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">View Intake</a><?php
+					}else{
+					?><a href="newDelivery.php?purchaseid=<?php echo $purchaseid; ?>" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Create Intake</a><?php
+					}
 				}
             ?>
             
