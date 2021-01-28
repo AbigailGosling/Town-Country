@@ -75,6 +75,9 @@
 		
  		
 		<div class="delivery">
+			<div class="resend-invoice printhide" onclick="resendInvoice()">
+				Resend Invoice
+			</div>
 			<div class="deliverybox" style="border:0px;">
 				<div class="po">Invoice No: <span>000<?php echo $pickersheet_id; ?></span></div>
 				<h2>Invoice</h2>
@@ -470,6 +473,24 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 	
 	});
 	
+	function resendInvoice(){
+		
+		if(confirm('Are you sure you send an email copy of this invoice?')){
+
+			$.get("<?php echo $domain; ?>ajax/generatePDFdeliveryNote.php?id=<?php echo $_GET['id']; ?>", function(data, status){
+			
+				var name = data.replace(/\s+/g, '');
+				
+				var link = '<?php echo $domain; ?>/' + name;
+				
+
+				window.location.href="/email_invoice.php?id=<?php echo $pickersheet_id; ?>&link=" + link;
+			});
+		}else{
+			
+		}
+	}
+
 	function togglePrices(){
 		$('.price').toggle('');
 	}
