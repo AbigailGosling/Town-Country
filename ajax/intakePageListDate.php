@@ -9,7 +9,7 @@
 	$startDate = $year . '-' . $month . '-01';
 	$endDate = $year . '-' . $month . '-31';
 		
-	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' ORDER BY date_received DESC");
+	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' ORDER BY date_received DESC, id DESC");
 	
 	$countResults = mysqli_num_rows($searchResults);
 	

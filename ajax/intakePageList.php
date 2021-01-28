@@ -23,9 +23,9 @@
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
 			
-			$searchQuery  = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC"; 
+			$searchQuery  = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC, id DESC"; 
 		}else{
-			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR (returned='0' && (supplier_id <> '') && supplier_id IN ($supplierIDs)) OR (returned='0' && id IN ($intakeIDs)) ORDER BY date_received DESC";
+			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR (returned='0' && (supplier_id <> '') && supplier_id IN ($supplierIDs)) OR (returned='0' && id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC";
 		}
 		
 		$searchResults = mysqli_query($conn, $searchQuery) or die(mysqli_error($conn));
