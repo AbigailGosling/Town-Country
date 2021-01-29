@@ -181,9 +181,6 @@
 	$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
 	$header .= '
 	<table border="'.$border.'" width="100%">
-		<tr>
-			<td colspan="2" class="picknotetd"><a target="_blank" href="'. $domain .'/viewPickSheet.php?id='. $pickersheet_id .'">Pick Note</a></td>
-		</tr>
 		<tr valign="top">
 			<td align="center" width="50%">
 				<img class="logo" src="' .$domain .'images/tandclogo.jpg"><br/>
