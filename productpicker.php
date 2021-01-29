@@ -559,6 +559,8 @@ function checkStock(){
 			$('#SearchCutgroups').prop('selectedIndex',0);
 			$('#IntakeID').val('');
 			$('#PalletID').val('');
+
+			$('.allsoption').hide();
 		}else{
 			alert('Please fill out the form before searching');
 		}
