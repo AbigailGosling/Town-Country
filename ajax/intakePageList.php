@@ -23,9 +23,9 @@
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
 			
-			$searchQuery  = "SELECT * FROM `intake` WHERE returned='0' date_received LIKE '%$termDate%' ORDER BY date_received DESC, id DESC"; 
+			$searchQuery  = "SELECT * FROM `intake` WHERE  date_received LIKE '%$termDate%' ORDER BY date_received DESC, id DESC"; 
 		}else{
-			$searchQuery = "SELECT * FROM `intake` WHERE returned='0' && id='" . $term . "' OR returned='0' && vehicle_reg LIKE '$term%' OR returned='0' && id LIKE '%$term%' OR returned='0' && delivery_note_number LIKE '$term%' OR (returned='0' && (supplier_id <> '') && supplier_id IN ($supplierIDs)) OR (returned='0' && id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC";
+			$searchQuery = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '$term%' OR  id LIKE '%$term%' OR  delivery_note_number LIKE '$term%' OR ((supplier_id <> '') && supplier_id IN ($supplierIDs)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC";
 		}
 		
 		$searchResults = mysqli_query($conn, $searchQuery) or die(mysqli_error($conn));
@@ -44,13 +44,27 @@
                             <tr>
                                 <td width="30%" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
                                 <td align="left" style="font-size: 18px;">
-                                <?php
-                                    echo supplierName($intake['supplier_id']);
-                                    $r = intakePriceComplete($intake['id']);    
-                                    if($r == 1){
-                                    ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
-                                    }
-                                ?></td>
+								<?php
+
+									if($intake['returned'] == '1'){
+										$cusDetails =  getCustomer($intake['supplier_id']);
+										if(!empty($cusDetails) && isset($cusDetails['businessname'])){
+											echo $cusDetails['businessname'];
+										}else{
+											echo 'No Customer Data';
+										}
+
+									}else{
+										echo supplierName($intake['supplier_id']);
+									}
+
+									$r = intakePriceComplete($intake['id']);    
+									if($r == 1){
+									?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
+									}
+									if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
+									?>
+                                </td>
                                 <td width="30%" align="right"><?php echo $date_received; ?></td>
                             </tr>
                         </table>

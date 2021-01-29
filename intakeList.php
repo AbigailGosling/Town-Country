@@ -62,7 +62,7 @@
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			<?php
-				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned='0' OR returned='1' ORDER BY date_received DESC, id DESC LIMIT $limit");
+				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` ORDER BY date_received DESC, id DESC LIMIT $limit");
 
 				while($intake = mysqli_fetch_array($queryResult)){
 					$date_received = date('d/m/Y', strtotime($intake['date_received']));
