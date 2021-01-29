@@ -274,8 +274,14 @@
 						<td class="heading" colspan="4"></td>
 						<td class="heading" width="65">Quality</td>
 						<td class="heading" width="65">Unit</td>
-						<td class="heading">Weight</td>
-					</tr>';
+						<td class="heading">Weight</td>';
+
+			if($customerRow['pricedefault'] == 1){
+				$pageHeader .= '<td align="right" class="heading price" >Price</td>
+				<td align="right" class="heading price">Total</td>';
+			}
+
+			$pageHeader .= '</tr>';
 					
 			$howManyRows = 0;
 			# sell price * weight
@@ -397,11 +403,21 @@
 									}
 									$html .= '
 								  </b>
-								</td>
-							</tr>';
-							
-				 
- 							$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+								</td>';
+
+								if($customerRow['pricedefault'] == 1){
+									$html .='<td align="right" class="price">£ '. number_format((float)$pickerItem['price'], 2, '.', '') . '</td>';
+
+										if($product['unit'] == 'PPC'){
+											$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+											$html .='<td align="right" class="price">£'. number_format((float)$count * $pickerItem['price'], 2, '.', '') . '</td>';
+										}else{
+											$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+											$html .= '<td align="right" class="price">£' . number_format((float)$kg * $pickerItem['price'], 2, '.', '') . '</td>';
+									 	}
+								 } 
+
+							$html .='</tr>';
 						}
 						
 								 
@@ -446,8 +462,12 @@
 					<td align="center">
 						<img src="'. $domain .'images/ecnumber.PNG">
 					</td>
-					<td align="right">
- 						<div class="paymentDue">Payment due by: <span class="payvalue">'. $payByDate .'</span></div>
+					<td align="right">';
+					if($customerRow['pricedefault'] == 1){
+						$footer .='<div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£' . number_format((float)$totalPrice, 2, '.', '') . '</b></span></div>';
+					}
+
+ 					$footer .='<div class="paymentDue">Payment due by: <span class="payvalue">'. $payByDate .'</span></div>
 					</td>
 				</tr>
 			</table>
