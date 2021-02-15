@@ -7,7 +7,7 @@
 	if($term != ''){
 		
 		# Get any customers that match the search term
-		$customerQuery = mysqli_query($conn, "SELECT id FROM `customers` WHERE `businessname` LIKE '$term%' || businessname LIKE '%$term%' || businessname LIKE '$term%'");
+		$customerQuery = mysqli_query($conn, "SELECT id FROM `customers` WHERE `businessname` LIKE '$term%' || businessname LIKE '%$term%' || businessname LIKE '$term%' || REPLACE(businessname, ' ', '') LIKE '$term%' || REPLACE(businessname, ' ', '') = '$term'");
 		$customerIDs = array(0);
 		while($customer = mysqli_fetch_array($customerQuery)){ array_push($customerIDs, $customer['id']); }
 		$customerIDs = implode(',', $customerIDs);
