@@ -176,9 +176,8 @@
 			while($row = mysqli_fetch_array($ytest)){
 			$i++;
 			?>
-			<div class="weightEditWhiteBox" id="<?php echo $row['id']; ?>" style="position:relative;<?php if($row['tampered'] == '1'){ echo 'border:4px solid red; color:red;'; } ?>">
+			<div class="weightEditWhiteBox" id="<?php echo $row['id']; ?>" style="position:relative;<?php if($row['status_id'] == 1){ echo 'border:4px solid red;'; }else{ echo 'border:4px solid green;'; } ?>">
 				<input type="number" name="weight<?php echo $row['id']; ?>" value="<?php echo $row['weight_gross']; ?>">
-				<div class="icon"><i class="fa fa-hand-pointer-o" aria-hidden="true"></i></div>
 				<a href="javascript:;" onclick="deleteWeight('<?php echo $row['id']; ?>','<?php echo $row['weight_gross']; ?>','<?php echo $intake_id; ?>')">
 					<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;position:absolute;top: 11px;right: -41px;"></i>
 				</a>
@@ -195,8 +194,7 @@
 	
 	<div class="btnContainer">
 		<input value="Update Product" onclick="updatePallet();" type="button">
-		<input value="Set all as sold" id="marksoldbtn" type="button" style="width:300px;background:#d02f2f;color: white;">
-	</div>
+ 	</div>
 </form>
 
 <form method="POST" action="<?php echo $domain; ?>scripts/markWeightAsSold.php" id="markWeightForm">
@@ -209,30 +207,7 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		
-		$('#marksoldbtn').click(function(){
-			$('#markWeightForm').submit();
-		});
-		
-		$('.weightEditWhiteBox').click(function(){
-			
-            $(this).toggleClass('sel');
-            
-            
-            var str = '';
-
-            $('.weightEditWhiteBox.sel').each(function(){
-                str += $(this).attr('id') + ',';
-            });
-			
-			$('#weightToMark').val(str);
-			
-			if($('#weightToMark').val() != ''){
-				$('#marksoldbtn').val('Set as sold');
-			}else{
-				$('#marksoldbtn').val('Set all as sold');
-			}
-		});
-		
+	 
 		updateForm();
 		
 		<?php

@@ -1811,8 +1811,8 @@ td span.chilled{
 .weightEditWhiteBox {display: flex;}
 
 .weightEditWhiteBox input{
-	width: 82% !important;
-    height: 42px !important;
+	/* width: 82% !important; */
+    height: 35px !important;
 }
 .weightEditWhiteBox div.icon {
 	width: 18% !important;
