@@ -117,7 +117,6 @@
 <script type="text/javascript">
 
     $(document).ready(function() {
-
         var formHasChanged = false;
         var submitted = false;
 
@@ -485,8 +484,13 @@ function checkStock(){
 		
 	
 	$(document).ready(function(){  
-		setCustomerDetails(null, 'true');
-		
+		<?php
+			$user_id = $_SESSION['USER'];
+			$myCustomerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users)");
+			$row = mysqli_fetch_array($myCustomerResult);
+			$my_customer_id =  $row['id'];
+		?>
+		setCustomer('<?php echo $my_customer_id; ?>','<?php echo $row['businessname']; ?>');
 
 		
 		$.each(document.cookie.split(/; */), function(){
@@ -504,7 +508,15 @@ function checkStock(){
 		
 		
 	});
-	 
+	
+	function setCustomer(customer_id, text){
+		console.log('customer_id: ' + customer_id);
+		console.log('text: ' + text);
+		$('#customer_search_results').fadeOut();
+		$('#customer_id').val(customer_id);
+		$('#customer').val(text);
+		setCustomerDetails(customer_id);
+	}
 
     $('#SearchSpecies').change(function(){
 
