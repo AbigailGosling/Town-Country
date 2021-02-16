@@ -5,7 +5,7 @@
 	$user_id = $_SESSION['USER'];
 
 	$name = $_POST['searchterm'];
-	$x = "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users) && businessname  LIKE '%$name%'";
+	$x = "SELECT * FROM `customers` WHERE businessname LIKE '$name%' || businessname LIKE '%$name%' || businessname LIKE '$name%' || REPLACE(businessname, ' ', '') LIKE '$name%' || REPLACE(businessname, ' ', '') = '$name'";
 	$y = mysqli_query($conn, $x);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php

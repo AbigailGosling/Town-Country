@@ -586,17 +586,23 @@ function checkStock(){
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
+		
+		var request = $.ajax({
+			type: "POST",
+			url: "ajax/getCustomerDropdown.php",
+			data: {
+				searchterm: val
+			},
+			dataType: "html"
+		});
 
-	 	
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-            $('#customer_search_results').html(this.responseText);
-		}
-		};
-		xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
-		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhttp.send("searchterm=" + val);
+		request.done(function(data) {
+			$('#customer_search_results').html(data);
+ 		});
+
+		request.fail(function(jqXHR, textStatus) {
+			// alert( "Request failed: " + textStatus );
+		});
 	
 	});
 		
