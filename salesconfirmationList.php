@@ -170,17 +170,24 @@
 				var val = $('#instantSearch').val();
 				console.log(val);
 
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				  $('#intakeAjax').html(this.responseText);
-				  loadPage(1);
-				}
-				};
 
-				xhttp.open("POST", "/ajax/salesConfirmationList.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val);
+				var request = $.ajax({
+					type: "POST",
+					url: "ajax/salesConfirmationList.php",
+					data: {
+						searchterm: val
+					},
+					dataType: "html"
+				});
+
+				request.done(function(data) {
+					$('#intakeAjax').html(data);
+					loadPage(1);
+				});
+
+				request.fail(function(jqXHR, textStatus) {
+					// alert( "Request failed: " + textStatus );
+				});
 			
 			});
 			
