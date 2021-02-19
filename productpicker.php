@@ -403,7 +403,8 @@ function checkStock(){
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
-		if (customer != '' && !isNaN(customerID) && customerIDs.indexOf(parseInt(customerID))!= -1) {
+		pricedCorrectly = false;
+		if (customer != '' && !isNaN(customerID)) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
 		} else{
@@ -421,21 +422,35 @@ function checkStock(){
 
 		$('.price').each(function(){
  			var value = $(this).val();
-		
+			
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
-				$(this).css('border-color', '#f2f2f2');
+				if(parseFloat(value) >= parseFloat($('.price').attr('cost'))){
+					pricedCorrectly = true;
+				}else{
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is less than the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
+
 			}else{
 				priceEntered = false;
 				$(this).css('border','1px solid red');
 			}
 		});
 
-		if(customerEntered && dateEntered && priceEntered){
+		if(customerEntered && dateEntered && priceEntered && pricedCorrectly){
 			checkStock();
 		}else{
-			alert('Please complete the missing fields');
+			if(!customerEntered || !dateEntered || !priceEntered){
+				alert('Please complete the missing fields');
+			}
+
 			$('#sendfake').prop('disabled', false);
+
 		}
 		 
 		
