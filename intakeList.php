@@ -71,33 +71,35 @@
 
 						<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 							<table width="100%" border="0">
-								<tr>
-									<td width="30%" align="left">
-										ID: I-0000<?php echo $intake['id'];?></td>
-									<td align="left" style="font-size: 18px;">
-										<?php
+							<tr>
+								<?php
+									$r = intakePriceComplete($intake['id']);    
+								?>
+								<td width="30%" align="left">
+									ID: I-0000<?php echo $intake['id'];?></td>
+								<td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
+									<?php
 
-											if($intake['returned'] == '1'){
-												$cusDetails =  getCustomer($intake['supplier_id']);
-												if(!empty($cusDetails) && isset($cusDetails['businessname'])){
-												 	echo $cusDetails['businessname'];
-												}else{
-													echo 'No Customer Data';
-												}
-
+										if($intake['returned'] == '1'){
+											$cusDetails =  getCustomer($intake['supplier_id']);
+											if(!empty($cusDetails) && isset($cusDetails['businessname'])){
+												echo $cusDetails['businessname'];
 											}else{
-												echo supplierName($intake['supplier_id']);
+												echo 'No Customer Data';
 											}
-											
-											$r = intakePriceComplete($intake['id']);    
-											if($r == 1){
-											?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
-											}
-											if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
-										?>
-									</td>
-									<td width="30%" align="right"><?php echo $date_received; ?></td>
-								</tr>
+
+										}else{
+											echo supplierName($intake['supplier_id']);
+										}
+										if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
+
+										if($r == 1){
+										?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
+										}
+									?>
+								</td>
+								<td width="30%" align="right"><?php echo $date_received; ?></td>
+							</tr>
 							</table>
 						</a>
 						<a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>

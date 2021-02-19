@@ -182,7 +182,7 @@
 						<?php
 							
 							if($product['unit'] == 'C'){
-								$unit = 'Cases';
+								$unit = 'p/KG';
 							}else if($product['unit'] == 'PPC'){
 								$unit = 'Per Case';
 							}else if($product['unit'] == 'P'){
@@ -190,7 +190,7 @@
 							}else if($product['unit'] == 'KG'){
 								$unit = 'Kilo';
 							}else{
-								$unit = 'Cases';
+								$unit = 'p/KG';
 							}
 							
 							echo $unit;

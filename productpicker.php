@@ -117,7 +117,6 @@
 <script type="text/javascript">
 
     $(document).ready(function() {
-
         var formHasChanged = false;
         var submitted = false;
 
@@ -404,7 +403,8 @@ function checkStock(){
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
-		if (customer != '' && !isNaN(customerID) && customerIDs.indexOf(parseInt(customerID))!= -1) {
+		pricedCorrectly = false;
+		if (customer != '' && !isNaN(customerID)) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
 		} else{
@@ -422,21 +422,35 @@ function checkStock(){
 
 		$('.price').each(function(){
  			var value = $(this).val();
-		
+			
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
-				$(this).css('border-color', '#f2f2f2');
+				if(parseFloat(value) >= parseFloat($('.price').attr('cost'))){
+					pricedCorrectly = true;
+				}else{
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is less than the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
+
 			}else{
 				priceEntered = false;
 				$(this).css('border','1px solid red');
 			}
 		});
 
-		if(customerEntered && dateEntered && priceEntered){
+		if(customerEntered && dateEntered && priceEntered && pricedCorrectly){
 			checkStock();
 		}else{
-			alert('Please complete the missing fields');
+			if(!customerEntered || !dateEntered || !priceEntered){
+				alert('Please complete the missing fields');
+			}
+
 			$('#sendfake').prop('disabled', false);
+
 		}
 		 
 		
@@ -485,8 +499,13 @@ function checkStock(){
 		
 	
 	$(document).ready(function(){  
-		setCustomerDetails(null, 'true');
-		
+		<?php
+			$user_id = $_SESSION['USER'];
+			$myCustomerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users)");
+			$row = mysqli_fetch_array($myCustomerResult);
+			$my_customer_id =  $row['id'];
+		?>
+		setCustomer('<?php echo $my_customer_id; ?>','<?php echo $row['businessname']; ?>');
 
 		
 		$.each(document.cookie.split(/; */), function(){
@@ -504,7 +523,15 @@ function checkStock(){
 		
 		
 	});
-	 
+	
+	function setCustomer(customer_id, text){
+		console.log('customer_id: ' + customer_id);
+		console.log('text: ' + text);
+		$('#customer_search_results').fadeOut();
+		$('#customer_id').val(customer_id);
+		$('#customer').val(text);
+		setCustomerDetails(customer_id);
+	}
 
     $('#SearchSpecies').change(function(){
 

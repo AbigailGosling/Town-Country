@@ -13,6 +13,7 @@
 .flex{ display:flex; } 
 .space-between{ justify-content: space-between; }
 .space-evenly { justify-content: space-evenly; }
+.v-center{ align-items:center; }
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
 body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
@@ -1810,8 +1811,8 @@ td span.chilled{
 .weightEditWhiteBox {display: flex;}
 
 .weightEditWhiteBox input{
-	width: 82% !important;
-    height: 42px !important;
+	/* width: 82% !important; */
+    height: 35px !important;
 }
 .weightEditWhiteBox div.icon {
 	width: 18% !important;
