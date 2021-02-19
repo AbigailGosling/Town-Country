@@ -148,12 +148,10 @@
 
 		$(document).ready(function(){
 
-            $( "#instantSearch" ).on( "keydown", function(event) {
-                if(event.which == 13) {
-                    doSearch();
-                }
-            });
-		 
+			$('#instantSearch').keyup(function(){
+				doSearch();
+			});
+			
 			
 			$('#month').change(function(){
 				
