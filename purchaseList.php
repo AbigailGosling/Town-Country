@@ -104,6 +104,35 @@
 										?>
 									</td>
 									<td width="35%" align="right"><?php echo $date_purchased; ?></td>
+									<td width="10%" align="right">
+										<i class="peek-products fa fa-product-hunt" aria-hidden="true"></i>
+										<div class="tooltip-content">
+											<?php
+												$species = explode('|', $row['species']);
+												$cuts = explode('|', $row['cut']);
+												$units = explode('|', $row['units']);
+												$prices = explode('|', $row['price']);
+												
+												$size = sizeof($species);
+											?>
+											<table>
+												<tr>
+													<th>Species</th>
+													<th>Cuts</th>
+													<th>Units</th>
+													<th>Prices</th>
+												</tr>
+												<?php for($i=0; $i < $size; $i++){ ?>
+													<tr>
+														<td><?php echo $species[$i]; ?></td>
+														<td><?php echo $cuts[$i]; ?></td>
+														<td><?php echo $units[$i]; ?></td>
+														<td><?php echo $prices[$i]; ?></td>
+													</tr>
+													<?php } ?>
+											</table>
+										</div>
+									</td>
 								</tr>
 							</table>
 						</a>
@@ -188,6 +217,16 @@
 				loadSearchDate(month, year);
 				
 			});
+			
+			$('.peek-products').hover(
+				function() {
+					$(this).parent().find('.tooltip-content').show();
+
+				},
+				function() {
+					$(this).parent().find('.tooltip-content').hide();
+				}
+			);
 			
 		});
 		

@@ -1996,3 +1996,24 @@ textarea {
 	font-size:32px;
 	padding-right:10px;
 }
+
+.tooltip-content{
+	text-align: left;
+	display: none;
+	position: absolute;
+    z-index: 100;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: white;
+    padding: 7px;
+    width: 80%;
+    border: 3px solid black;
+    float: none;
+    margin: 0 auto;
+    color: black;
+}
+
+.tooltip-content table{
+	width: 100%;
+}
