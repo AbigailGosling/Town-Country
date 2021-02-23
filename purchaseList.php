@@ -84,7 +84,7 @@
 							<table width="100%" border="0">
 								<tr>
 									<td width="35%" align="left">ID: P-00<?php echo $row['id']; ?> </td>
-									<td align="left" style="font-size: 16px;">
+									<td width="60%" align="left" style="font-size: 16px;">
 										<?php if($row['direct_drop'] == 1){ echo '<span style="font-size:12px;">[direct drop]</span>'; } ?>
 										<?php echo supplierName($row['supplier_id']); ?>
 										<?php if($row['booking_ref_number'] == ''){ ?><span style="color:red;padding-left:5px;font-size:26px;font-weight:700">!</span><?php } ?>
