@@ -1996,29 +1996,7 @@ textarea {
 	font-size:32px;
 	padding-right:10px;
 }
-
-.pickmodeContainer{
- 	width: 100%;
-	margin-top:100px;
-}
-.pickmodeContainer .option{
-	padding:15px;
-	color:#fff;
-	cursor:pointer;
-	font-size:22px;
-	width:300px;
-	text-align: center;
-	margin:0 auto;
-}
-
-.pickmodeContainer .fresh{
-	background:#c0392b;
-	margin-bottom:10px;
-}
-
-.pickmodeContainer .frozen{
-	background:#2980b9;
-}
+ 
 
 .customer_info{
 	display:flex;
