@@ -1,0 +1,215 @@
+<?php
+include('includes/frontHeader.php');
+
+$invoiceID = $_GET['invoice_id'];
+$paymentID = $_GET['payment_id'];
+$customerID = $_GET['customer_id'];
+
+if (empty($invoiceID)) {
+    header('Location: /customer_soa.php?id=' . $customerID);
+    die();
+}
+
+$invoiceAmount = number_format((float)invoiceTotal($invoiceID), 2, '.', '');
+
+if (!empty($paymentID)) {
+    $selectedInvoicePayment = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = $paymentID AND invoice_payments.invoice_id = $invoiceID");
+    $selectedPaymentData = mysqli_fetch_assoc($selectedInvoicePayment);
+    //print_r($selectedPaymentData);
+}
+
+?>
+
+<link href="/css/bootstrap.min.css" rel="stylesheet" >
+
+<div id="top">
+    <a href="menu.php" id="menu">MENU</a>
+    <a href="logout.php" id="logout">LOGOUT</a>
+</div>
+<div class="search">
+    <div class="container flex space-between" style="align-items:center">
+        <a href="/customer_soa.php?id=<?php echo $customerID; ?>" class="back">BACK</a>
+    </div>
+</div>
+<div class="container">
+    <h3>Payments for the invoice ID <?php echo $invoiceID; ?></h3>
+    <table class="table table-bordered table-striped" width="100%">
+        <thead>
+            <tr>
+                <th align="left">#</th>
+                <th align="left">Invoice ID</th>
+                <th align="left">Payment Method</th>
+                <th align="left">Paid On</th>
+                <th align="left">Payment Entered By</th>
+                <th align="left">Edit</th>
+                <th align="right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+
+        $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
+
+        $totalPrice = 0.00;
+
+        $i = 0;
+        while ($invoicePayment = mysqli_fetch_array($invoicePayments)) { ?>
+            <tr>
+                <td><?php echo $invoicePayment['id']; ?></td>
+                <td><?php echo $invoicePayment['invoice_id']; ?></td>
+                <td><?php echo $invoicePayment['payment_method']; ?></td>
+                <td><?php echo $invoicePayment['created_at']; ?></td>
+                <td><?php echo $invoicePayment['name']; ?></td>
+                <td><a href="/customer_payments.php?customer_id=<?php echo $_GET['customer_id']; ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
+                <td align="right">
+                    <?php
+                    $totalPrice += $invoicePayment['amount'];
+                    echo '£' . number_format($invoicePayment['amount'], 2, ".", ",");
+                    ?>
+                </td>
+            </tr>
+        <?php } ?>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td align="right" colspan="6">Total</td>
+                <td align="right" colspan="1">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td>
+            </tr>
+        </tfoot>
+        
+    </table>
+</div>
+
+<div class="container container--pt">
+    <div class="row">
+        <div class="col">
+            <h2><?php echo (empty($_GET['payment_id'])) ? 'Add' : 'Edit'; ?> Payment</h2>
+        </div>
+    </div>
+    <form id="payment_entry" method="POST" action="/scripts/save_invoice_payment_entry.php">
+        <div class="row">
+            <div class="col">
+                <label for="invoice_id">Invoice ID</label>
+                <input class="form-control" id="invoice_id" type="text" name="invoice_id" value="<?php echo $invoiceID; ?>" />
+            </div>
+            <div class="col">
+                <label for="payment_method">Payment Method</label>
+                <select class="form-select" id="payment_method" name="payment_method">
+                    <?php foreach (PAYMENT_METHODS as $paymentMethod) {
+
+                        if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == $paymentMethod) {
+                            echo '<option value="' . $paymentMethod . '" selected>' . $paymentMethod . '</option>';
+                        } else {
+                            echo '<option value="' . $paymentMethod . '" >' . $paymentMethod . '</option>';
+                        }
+                    } ?>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="amount">Amount</label>
+                <input class="form-control" id="amount" type="text" name="amount" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['amount'] : $invoiceAmount ; ?>" />
+            </div>
+            <div class="col">
+                <label for="meta_data">Additional Notes</label>
+                <input class="form-control" id="meta_data" name="meta_data" type="text" placeholder="Cheque No., Bank Transaction No." value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['meta_data'] : ''; ?>" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col d-flex justify-content-end">
+                <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
+                <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
+                <input class="btn btn-success" type="submit" value="SUBMIT" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="clearfix"></div>
+<script type="text/javascript">
+</script>
+
+<style type="text/css">
+    .search {
+        background: #f8f8f8;
+        padding: 10px;
+    }
+
+    .back {
+        font-size: 18px;
+        text-decoration: none;
+        color: #888;
+        font-weight: bold;
+    }
+
+    .table {
+        margin-top: 10px;
+    }
+
+    .table td {
+        height: 30px;
+        font-size: 16px;
+    }
+
+    tr.heading,
+    tr.last {
+        font-size: 18px;
+        background: #e2e2e2;
+        height: 30px;
+    }
+
+    tr.even {
+        background: #f7f7f7;
+    }
+
+    .datePicker {
+        width: 150px;
+        height: 30px;
+    }
+
+    .searchbtn {
+        height: 32px;
+    }
+
+    .error {
+        border: 1px solid red;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#payment_entry').submit(function() {
+            return validateForm();
+        });
+    });
+
+
+    function validateForm() {
+
+        var _invoice_id = '' + <?php echo intval($invoiceID); ?>;
+        $('#invoice_id').removeClass('error');
+        $('#amount').removeClass('error');
+
+        var isValid = true;
+        var invoice_id = $('#invoice_id').val();
+        var amount = parseFloat($('#amount').val());
+
+
+        if (!isNumber(amount)) {
+            isValid = false;
+            $('#amount').addClass('error');
+        }
+
+        if (_invoice_id != invoice_id) {
+            isValid = false;
+            $('#invoice_id').addClass('error');
+        }
+
+        return isValid;
+    }
+
+    function isNumber(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n) && n > 0;
+    }
+</script>

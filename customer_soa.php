@@ -40,13 +40,17 @@
             }
         ?>
     </h2>
+    <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make Payment</a>
     <table class="table" width="100%">
         <tr class="heading">
             <th align="left">Invoice ID</th>
+            <th align="left">Add Payment</th>
             <th align="left">Date</th>
             <th align="left">PDF</th>
             <th align="right">Price</th>
-
+            <th align="right">Paid</th>
+            <th align="right">Outstanding</th>
+            <th align="right">Balance</th>
         </tr>
 	<?php   
             $customer_id = $customer['id'];
@@ -55,35 +59,66 @@
 
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
-
-                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed = 1 && customer_id=$customer_id && date BETWEEN '$date_from' AND '$date_to'");
+                
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickersheets.id = invoice_payments.invoice_id WHERE (pickersheets.completed = 1 AND pickersheets.customer_id=$customer_id AND pickersheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickersheets.id");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed = 1 && customer_id=$customer_id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickersheets.id = invoice_payments.invoice_id WHERE (pickersheets.completed = 1 AND pickersheets.customer_id=$customer_id) GROUP by pickersheets.id");
             }
-
-            $totalPrice = 0.00;
             
+            $totalPrice = 0.00;
+            $totalPaid = 0.00;
+            $totalOutstanding = 0.00;
+            $totalBalance = 0.00;
+
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
-                $this_price = invoiceTotal($picksheet['id']);
-                $totalPrice += (float) $this_price;
+                $this_price = (float) invoiceTotal($picksheet['id']);
+                $totalPrice += $this_price;
 
                 $date = str_replace('/', '-', $picksheet['date']);
                 $date = date('d/m/Y', strtotime($date));
 
+                $totalPaid += (float) $picksheet['paid'];
+                $invoicePaid = false;
+                $epsilon = 0.00001;
+                if(($this_price - $picksheet['paid']) <= $epsilon){
+                    $invoicePaid = true;
+                    $currentOutstanding = (float) 0;
+                    $currentBalance = (float) abs($this_price - $picksheet['paid']);
+                }else{
+                    $currentOutstanding = (float) $this_price - $picksheet['paid'];
+                    $currentBalance = (float) 0;
+                }
+                
+                
+                $totalOutstanding += $currentOutstanding;
+                $totalBalance += $currentBalance;
+
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
 				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a></td>
-				<td><?php echo $date; ?></td>
+                <?php if(!$invoicePaid) { ?>
+                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make Payment</a></td>
+				<?php }else{ ?>
+                    <td>Invoice Paid</a></td>  
+                <?php }?>  
+                <td><?php echo $date; ?></td>
                 <td><a href="javascript:;" onclick="generatePDF(<?php echo $picksheet['id']; ?>)">Invoice_<?php echo $picksheet['id']; ?>.pdf</a></td>
                 <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
+                <td align="right">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
+                <td align="right">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
+                <td align="right">£<?php echo number_format($currentBalance, 2, ".", ","); ?></td>
 			</tr>
 			<?php
                 $i++;
 			}
 	        ?>
             <tr class="last">
-                <td align="right" colspan="4">Total: £<?php echo number_format($totalPrice,2,".",","); ?></td> 
+                <td align="right" colspan="4">Total:</td> 
+                <td align="right" colspan="1">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
+                <td align="right" colspan="1">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
+                <td align="right" colspan="1">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
+                <td align="right" colspan="1">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
             </tr>
 	</table>
     <?php
@@ -96,6 +131,12 @@
 </script>
 
 <style type="text/css">
+
+    .mp{
+        float: right;
+        margin-bottom: 10px;
+    }
+    
     .search{
         background:#f8f8f8;
         padding:10px;
