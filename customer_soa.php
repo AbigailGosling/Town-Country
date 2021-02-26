@@ -60,9 +60,9 @@
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
                 
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickersheets.id = invoice_payments.invoice_id WHERE (pickersheets.completed = 1 AND pickersheets.customer_id=$customer_id AND pickersheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickersheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickersheets.id = invoice_payments.invoice_id WHERE (pickersheets.completed = 1 AND pickersheets.customer_id=$customer_id) GROUP by pickersheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
             }
             
             $totalPrice = 0.00;

@@ -42,7 +42,7 @@ $customer = getCustomer($customerID);
                     <label for="invoices">Select Invoices</label>
                     <select class="form-control" id="invoices" name="invoices">
                         <?php
-                        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickersheets.id = invoice_payments.invoice_id WHERE (pickersheets.completed = 1 AND pickersheets.customer_id=$customerID) GROUP by pickersheets.id");
+                        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customerID) GROUP by pickerSheets.id");
 
                         while ($picksheet = mysqli_fetch_array($customerPicksheets)) {
                             $this_price = invoiceTotal($picksheet['id']);
