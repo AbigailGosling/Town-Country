@@ -14,8 +14,6 @@ $customer = getCustomer($customerID);
 ?>
 
 <link href="/css/bootstrap.min.css" rel="stylesheet" >
-<link href="/css/select2.min.css" rel="stylesheet" />
-<script src="/js/select2.min.js"></script>
 <script src="/js/jquery.numeric.js"></script>
 
 <div id="top">
