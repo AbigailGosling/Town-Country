@@ -1447,6 +1447,6 @@
 		return $totalPrice;
 	}
 
-	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS'];
+	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH'];
 	
 ?>
