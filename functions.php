@@ -1447,7 +1447,6 @@
 		return $totalPrice;
 	}
 
-
 	function invoiceTotalCost($pickersheet_id){
 		global $conn;
 
@@ -1485,5 +1484,8 @@
 
 		return $totalCost;
 	}
+
+	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH'];
+
 	
 ?>

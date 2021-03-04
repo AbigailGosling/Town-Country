@@ -34,6 +34,22 @@
 		</div>
 		<div class="col"></div>
 	</div>
+
+	<div class="row">
+		<div class="col">
+			<label> Salesperson</label><br />
+			<select id="sales_person" name="sales_person" class="form-control">
+				<?php
+					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+
+					while ($_user = mysqli_fetch_array($_users)) {
+						echo '<option value="' . $_user['id'] . '">' . $_user['name'] . '</option>';
+					}
+				?>
+			</select>
+		</div>
+		<div class="col"></div>
+	</div>
 </div>
 
 <div class="rightPanel">
@@ -501,7 +517,8 @@ function checkStock(){
 	$(document).ready(function(){  
 		<?php
 			$user_id = $_SESSION['USER'];
-			$myCustomerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users)");
+			//$myCustomerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE FIND_IN_SET($user_id,users)");
+			$myCustomerResult = mysqli_query($conn, "SELECT * FROM `customers`");
 			$row = mysqli_fetch_array($myCustomerResult);
 			$my_customer_id =  $row['id'];
 		?>
