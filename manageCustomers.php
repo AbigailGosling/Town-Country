@@ -317,26 +317,7 @@
 		</div>
 	</div>
 	<div id="flexContainerTwo">
-    <div class="fullbox controls"></div>
-		<div class="fullbox controls">
-			<h3>Related Users</h3>
-		
-			<?php
-
-				$currentUsers = explode(',', $data['users']);
-				
-				$usersResult = mysqli_query($conn, "SELECT * FROM `users`");
-
-				while($row = mysqli_fetch_array($usersResult)){
-				?>
-				<div class="userRow" style="padding-bottom:5px;">
-					<input type="checkbox" id="user<?php echo $row['id']; ?>" name="users[]" value="<?php echo $row['id']; ?>" <?php if(in_array($row['id'], $currentUsers)){ echo 'checked'; } ?>>
-					<label for="user<?php echo $row['id']; ?>"><?php echo $row['name']; ?></label><br>
-				</div>
-				<?php
-				}
-			?>
-		</div>
+ 	 
     </div>
     	<div id="flexContainerTwo">
 
