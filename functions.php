@@ -1446,5 +1446,44 @@
 
 		return $totalPrice;
 	}
+
+
+	function invoiceTotalCost($pickersheet_id){
+		global $conn;
+
+		$totalCost = 0; 
+		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
+		$outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+                
+		$outpalletCount = mysqli_num_rows($outpalletResult2);
+
+		while($outpallet = mysqli_fetch_array($outpalletResult2)){
+			$weightids = $outpallet['weight_ids'];
+ 
+			$productIDArray = array();
+
+
+			$weightsResult = mysqli_query($conn, "SELECT product_id FROM `weights` WHERE id IN ($weightids)");
+
+			while($weight = mysqli_fetch_array($weightsResult)){
+				array_push($productIDArray, $weight['product_id']);
+			}
+  
+			$weightids = explode(',', $outpallet['weight_ids']);
+
+
+			foreach($productIDArray as $productID){
+			
+				$y1 = mysqli_query($conn, "SELECT unit FROM `product` WHERE id='$productID'");
+				$product = mysqli_fetch_array($y1);
+                
+				$cost = $product['cost'];
+
+				$totalCost += $cost;
+			}
+		}
+
+		return $totalCost;
+	}
 	
 ?>
