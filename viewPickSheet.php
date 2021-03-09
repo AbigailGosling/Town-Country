@@ -16,6 +16,13 @@
 	#addtoPalletForm{
 		margin-bottom: 12vh;
 	}
+
+	.productGroup.disabled{
+		opacity: 0.4;
+		background: rgba(0,0,255,0.1);
+		pointer-events: none;
+	}
+
 </style>
 
 <div id="top">
@@ -93,7 +100,7 @@
 
 		$temp_id = $product['cooling_id'];
 	?>
-	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" style="display:none;">
+	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" >
 	<?php 
 		
 		$smallestDate = $product['range_from'];
@@ -375,18 +382,18 @@
 		$('.picksheet_controls').show();
 		$('.outgoing_pallets').show();
 		if(mode == 'fresh'){
-			$('.productGroup.frozen').hide();
-			$('.productGroup.fresh').show();
+			$('.productGroup.frozen').addClass('disabled');
+			$('.productGroup.fresh').removeClass('disabled');
 		}
 		
 		if(mode == 'frozen'){
-			$('.productGroup.fresh').hide();
-			$('.productGroup.frozen').show();
+			$('.productGroup.fresh').addClass('disabled');
+			$('.productGroup.frozen').removeClass('disabled');
 		}
 
 		if(mode == 'all'){
-			$('.productGroup.fresh').show();
-			$('.productGroup.frozen').show();
+			$('.productGroup.fresh').removeClass('disabled');
+			$('.productGroup.frozen').removeClass('disabled');
 		}
 	}
 	
