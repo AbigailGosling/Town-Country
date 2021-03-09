@@ -54,7 +54,27 @@
 			$y = mysqli_query($conn, $x);
 			
 			while($row = mysqli_fetch_array($y)){
-				$customer_id = $row['customer_id'];
+                $product_ids = array();
+                
+                $picksheetid = $row['id'];
+
+                $result_product = mysqli_query($conn, "SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$picksheetid' GROUP BY product_id");
+                while($product = mysqli_fetch_array($result_product)){
+                    array_push($product_ids, $product['product_id']);
+                } 
+
+                $product_ids = implode(',', $product_ids);
+
+                // 1 is fresh
+                $result_fresh = mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
+                $count_fresh = mysqli_num_rows($result_fresh);
+
+                // 2 is frozen
+                $result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='2' LIMIT 1");
+                $count_frozen = mysqli_num_rows($result_frozen);
+                
+                
+                $customer_id = $row['customer_id'];
 				
 				$date = $row['date'];
 				
@@ -68,21 +88,29 @@
 				$row2 = mysqli_fetch_array($y2);
 				
             ?>
-            <div class="menuItem">
-                <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
-                <div class="actions">
-                    <a href="/viewPickSheet.php?type=<?php echo $_GET['type']; ?>&id=<?php echo $row['id']; ?>" class="icon"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
-                    <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+            <?php if($count_fresh == 1){ ?>
+                <div class="menuItem">
+                    <div class="tag fresh">FRESH</div>
+                    <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
+                    <div class="actions">
+                        <a href="/viewPickSheet.php?type=fresh&id=<?php echo $row['id']; ?>" class="icon"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                    </div>
                 </div>
-            </div>
-            <div style="position:relative;display:none;">
-                <a href="viewPickSheet.php?id=<?php echo $row['id']; ?>">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')';?></a>
-                
-                <a href="/manageSuppliers.php?id=<?php echo $row['id']; ?>">
-                    <i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i>
-                </a>
-            </div>
-            
+            <?php } ?>
+
+            <?php if($count_fresh == 1){ ?>
+                <div class="menuItem">
+                    <div class="tag frozen">FROZEN</div>
+                    <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
+                    <div class="actions">
+                        <a href="/viewPickSheet.php?type=frozen&id=<?php echo $row['id']; ?>" class="icon"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                    </div>
+                </div>
+            <?php } ?>
+
+
             <?php
 			}
         ?>
@@ -91,5 +119,20 @@
 	</div>	
 </main>
 <div id="btm"></div>
+<style>
+    .tag{
+        position:absolute;
+        left:10px;
+        padding:2px 5px;
+        color:#fff;
+        font-size: 16px;
+        height: 30px;
+        line-height: 30px;
+        top: 8px;
+        width: 70px;
+    }
+    .tag.fresh{ background:#c0392b; }
+    .tag.frozen{ background:#2980b9; }
+</style>
 </body>
 </html>
