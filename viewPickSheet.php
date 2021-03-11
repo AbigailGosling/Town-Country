@@ -63,7 +63,7 @@
 			<script> setPickMode('all'); </script>
 		<?php } ?>
 	</div>
-	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>">
+	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo $_GET['type']; ?>">
 	<?php
 		
 		##########################
@@ -382,18 +382,18 @@
 		$('.picksheet_controls').show();
 		$('.outgoing_pallets').show();
 		if(mode == 'fresh'){
-			$('.productGroup.frozen').addClass('disabled');
-			$('.productGroup.fresh').removeClass('disabled');
+			$('.productGroup.frozen').hide();
+			$('.productGroup.fresh').show();
 		}
 		
 		if(mode == 'frozen'){
-			$('.productGroup.fresh').addClass('disabled');
-			$('.productGroup.frozen').removeClass('disabled');
+			$('.productGroup.fresh').hide();
+			$('.productGroup.frozen').show();
 		}
 
 		if(mode == 'all'){
-			$('.productGroup.fresh').removeClass('disabled');
-			$('.productGroup.frozen').removeClass('disabled');
+			$('.productGroup.fresh').show();
+			$('.productGroup.frozen').show();
 		}
 	}
 	
@@ -523,7 +523,7 @@
 		var shouldSubmit = false;
 		var needApprovalBeforeSubmit = false;
 
-		$('.productGroup').each(function(){
+		$('.productGroup.<?php echo $_GET['type']; ?>').each(function(){
 			
 			var numRequired = $(this).attr('targetamount');
 			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());
