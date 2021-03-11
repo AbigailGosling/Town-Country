@@ -419,7 +419,7 @@ function checkStock(){
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
-		pricedCorrectly = false;
+		pricedCorrectly = true;
 		if (customer != '' && !isNaN(customerID)) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
@@ -441,9 +441,8 @@ function checkStock(){
 			
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
-				if(parseFloat(value) >= parseFloat($('.price').attr('cost'))){
-					pricedCorrectly = true;
-				}else{
+				
+				if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
 					$(this).css('border','1px solid red');
 					if(confirm('Are you sure? the price is less than the cost')){
 						pricedCorrectly = true;
@@ -452,6 +451,16 @@ function checkStock(){
 					}
 				}
 
+
+				if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is more than double the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
+  
 			}else{
 				priceEntered = false;
 				$(this).css('border','1px solid red');
