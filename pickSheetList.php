@@ -89,7 +89,7 @@
 				$row2 = mysqli_fetch_array($y2);
 				
             ?>
-            <?php if($count_fresh == 1){ ?>
+            <?php if($count_fresh == 1 && $row['completed_fresh'] == '0'){ ?>
                 <div class="menuItem">
                     <div class="tag fresh">FRESH</div>
                     <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
@@ -100,7 +100,7 @@
                 </div>
             <?php } ?>
 
-            <?php if($count_frozen == 1){ ?>
+            <?php if($count_frozen == 1 && $row['completed_frozen'] == '0'){ ?>
                 <div class="menuItem">
                     <div class="tag frozen">FROZEN</div>
                     <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>

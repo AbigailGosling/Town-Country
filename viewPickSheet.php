@@ -249,6 +249,7 @@
 		</form>
 		<br/>
 		<form method="POST" action="/scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
+		<input type="hidden" name="sheet_type" value="<?php echo $_GET['type']; ?>">
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
 			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0){ ?> disabled <?php } ?>>
 		</form>
@@ -357,10 +358,7 @@
 </main>
 <div id="btm"></div>
 <script>
-
-	$(document).ready(function(){
-		checkComplition();
-	});
+ 
 	
 	$('.picksheetType').click(function(){
 		$(this).next('.pickerSheetType_content').toggle();
@@ -381,30 +379,6 @@
 		});
 	});
 
-	function checkComplition(){
-
-		var totalNeeded = 0;
-		var totalGot = 0;
-
-		$('.productGroup').each(function(){
-			totalNeeded += parseInt($(this).attr('targetamount'));
-		});
-
-		console.log('Total Needed: ' + totalNeeded);
-
-		$('.counter').each(function(){
-			totalGot += parseInt($(this).val());
-		});
-
-		console.log('Total Got: ' + totalGot);
-
-
-		if(totalGot < totalNeeded){
-			$('#completeFormBtn').hide();
- 		}else{
-			$('#completeFormBtn').show();
-		}
-	}
 	
 	function setPickMode(mode){
 		$('.pickmodeContainer').hide();
@@ -505,22 +479,9 @@
 		console.log('Total Got: ' + totalGot);
 
 
-		if(totalGot < totalNeeded){
-			Swal.fire({
-				title: 'Are you sure?',
-				text: "You haven't selected all the required weights",
-				icon: 'warning',
-				showCancelButton: true,
-				confirmButtonText: 'Continue'
-			}).then((result) => {
-				if (result.value) {
-					$('#markCompletedForm').submit();
-				}
-			});
-
- 		}else{
-			$('#markCompletedForm').submit();
- 		}
+		$('#markCompletedForm').submit();
+		
+ 		 
 	});
 	
 
