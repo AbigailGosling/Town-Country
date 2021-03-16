@@ -100,7 +100,8 @@
 			<b style="color: #8c8c8c;font-size: 12px;">Delivery address</b>
 			<div class="deliverybox">
 				<p>
- 				 
+					<?php echo $customer['businessname']; ?><br/>
+					t/a <?php echo $customer['tradingas']; ?><br/>
 					<?php
 						
 						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
