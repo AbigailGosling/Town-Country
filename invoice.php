@@ -106,34 +106,34 @@
 					t/a <?php echo $customer['tradingas']; ?><br/>
 					<?php
 						
-						if($pickSheetRow['addressid'] != ''){
-							if($pickSheetRow['addressid'] == 1){
-								
-								echo $customer['address1_1'] . '<br/>';
-								echo $customer['address1_2'] . '<br/>';
-								echo $customer['address1_3'] . '<br/>';
-								echo $customer['postcode_1'] . '<br/>';
-								
-							}
-							
-							if($pickSheetRow['addressid'] == 2){
-								
-								echo $customer['address2_1'] . '<br/>';
-								echo $customer['address2_2'] . '<br/>';
-								echo $customer['address2_3'] . '<br/>';
-								echo $customer['postcode_2'] . '<br/>';
-								
-							}
-							
-							if($pickSheetRow['addressid'] == 3){
-								
-								echo $customer['address3_1'] . '<br/>';
-								echo $customer['address3_2'] . '<br/>';
-								echo $customer['address3_3'] . '<br/>';
-								echo $customer['postcode_3'] . '<br/>';
-								
-							}
-						}
+						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+
+                        if($pickSheetRow['addressid'] == 1){
+                            
+                            echo $customer['address1_1'] . '<br/>';
+                            echo $customer['address1_2'] . '<br/>';
+                            echo $customer['address1_3'] . '<br/>';
+                            echo $customer['postcode_1'] . '<br/>';
+                            
+                        }
+                        
+                        if($pickSheetRow['addressid'] == 2){
+                            
+                            echo $customer['address2_1'] . '<br/>';
+                            echo $customer['address2_2'] . '<br/>';
+                            echo $customer['address2_3'] . '<br/>';
+                            echo $customer['postcode_2'] . '<br/>';
+                            
+                        }
+                        
+                        if($pickSheetRow['addressid'] == 3){
+                            
+                            echo $customer['address3_1'] . '<br/>';
+                            echo $customer['address3_2'] . '<br/>';
+                            echo $customer['address3_3'] . '<br/>';
+                            echo $customer['postcode_3'] . '<br/>';
+                            
+                        }
 						
 					?>
 					
