@@ -70,6 +70,7 @@
                 $count_fresh = mysqli_num_rows($result_fresh);
 
                 // 2 is frozen
+
                 $result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='2' LIMIT 1");
                 $count_frozen = mysqli_num_rows($result_frozen);
                 
@@ -99,7 +100,7 @@
                 </div>
             <?php } ?>
 
-            <?php if($count_fresh == 1){ ?>
+            <?php if($count_frozen == 1){ ?>
                 <div class="menuItem">
                     <div class="tag frozen">FROZEN</div>
                     <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
