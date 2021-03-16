@@ -357,6 +357,10 @@
 </main>
 <div id="btm"></div>
 <script>
+
+	$(document).ready(function(){
+		checkComplition();
+	});
 	
 	$('.picksheetType').click(function(){
 		$(this).next('.pickerSheetType_content').toggle();
@@ -376,6 +380,31 @@
 			}
 		});
 	});
+
+	function checkComplition(){
+
+		var totalNeeded = 0;
+		var totalGot = 0;
+
+		$('.productGroup').each(function(){
+			totalNeeded += parseInt($(this).attr('targetamount'));
+		});
+
+		console.log('Total Needed: ' + totalNeeded);
+
+		$('.counter').each(function(){
+			totalGot += parseInt($(this).val());
+		});
+
+		console.log('Total Got: ' + totalGot);
+
+
+		if(totalGot < totalNeeded){
+			$('#completeFormBtn').hide();
+ 		}else{
+			$('#completeFormBtn').show();
+		}
+	}
 	
 	function setPickMode(mode){
 		$('.pickmodeContainer').hide();
