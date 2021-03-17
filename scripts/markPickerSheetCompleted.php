@@ -5,12 +5,32 @@
 	$pickersheet_id = mysqli_real_escape_string($conn, $_GET['id']);
 	$type = mysqli_real_escape_string($conn, $_POST['sheet_type']);
 	
-	if($type == 'fresh'){
+	/* START - Get all product IDs on the picksheet */
+	$product_ids = array();
+	$result_product = mysqli_query($conn, "SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' GROUP BY product_id");
+	while($product = mysqli_fetch_array($result_product)){
+		array_push($product_ids, $product['product_id']);
+	} 
+	$product_ids = implode(',', $product_ids);
+	/* END - Get all product IDs on the picksheet */
+
+
+	$result_fresh = mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
+	$count_fresh = mysqli_num_rows($result_fresh);
+
+	$result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='2' LIMIT 1");
+	$count_frozen = mysqli_num_rows($result_frozen);
+
+	// if you just submitted the fresh products OR theres no fresh products at all
+	if($type == 'fresh' || $count_fresh == 0){
+		// mark fresh as completed
 		$updateStatusQuery = "UPDATE `pickerSheets` SET completed_fresh='1' WHERE id='$pickersheet_id'";
 		mysqli_query($conn, $updateStatusQuery);
 	}
 
-	if($type == 'frozen'){
+	// if you just submitted the frozen products OR theres no frozen products at all
+	if($type == 'frozen' || $count_frozen == 0){
+		// mark frozen as completed
 		$updateStatusQuery = "UPDATE `pickerSheets` SET completed_frozen='1' WHERE id='$pickersheet_id'";
 		mysqli_query($conn, $updateStatusQuery);
 	}
