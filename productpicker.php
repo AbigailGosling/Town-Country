@@ -43,7 +43,7 @@
 					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
 
 					while ($_user = mysqli_fetch_array($_users)) {
-						echo '<option value="' . $_user['id'] . '">' . $_user['name'] . '</option>';
+						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
 					}
 				?>
 			</select>
