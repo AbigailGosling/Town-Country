@@ -177,7 +177,8 @@
 							<td width="100" align="left">ID: <?php echo $row['id']; ?></td>
 							<td align="center" style="font-size: 18px;"><?php echo $row['name']; ?></td>
 							<td width="100" align="right">
-								<a href="/manageSuppliers.php?id=<?php echo $row['id']; ?>" style="right:-35px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+ 								<a href="/manageSuppliers.php?id=<?php echo $row['id']; ?>" id="edit"><i class="fa fa-pencil" style="color:red;padding-right:4px;" aria-hidden="true"></i></a>
+ 								<a href="javascript:;" onclick="deleteRow(<?php echo $row['id']; ?>)" id="close"><i class="fa fa-times" style="color:red;padding-right:4px;" aria-hidden="true"></i></a>
 							</td>
 						</tr>
 					</table>
@@ -260,7 +261,7 @@
 
 		if(confirm('Are you sure you want to delete this?')){
 
-			window.location.href = "/scripts/deleteSupplier.php?id=" + id;
+		window.location.href = "/scripts/deleteSupplier.php?id=" + id;
 
 			// console.log(id);
 

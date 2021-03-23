@@ -16,6 +16,13 @@
 	#addtoPalletForm{
 		margin-bottom: 12vh;
 	}
+
+	.productGroup.disabled{
+		opacity: 0.4;
+		background: rgba(0,0,255,0.1);
+		pointer-events: none;
+	}
+
 </style>
 
 <div id="top">
@@ -32,19 +39,31 @@
 	<h1>PICK FORM</h1>
 	
 	<div>
-		<a href="picknote.php?id=<?php echo $pickerSheet['id']; ?>">Pick Note</a>
-		|<a href="deliverynote.php?id=<?php echo $pickerSheet['id']; ?>">Delivery Note</a>|
-		<a href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
-	</div><br/>
-	
-	<div style="padding-bottom:10px;font-size: 18px;">
-		<label>Customer Name: <?php echo $customerName; ?></label>
+		<?php if($pickerSheet['completed'] == '1'){ ?>
+
+		<div>
+			<a href="picknote.php?id=<?php echo $pickerSheet['id']; ?>">Pick Note</a>
+			|<a href="deliverynote.php?id=<?php echo $pickerSheet['id']; ?>">Delivery Note</a>|
+			<a href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
+		</div><br/>
+		<?php } ?><br/>
+		<div class="customer_info">
+			<div style="padding-bottom:10px;font-size: 18px;">
+				<label>Customer Name: <?php echo $customerName; ?></label>
+			</div>
+			
+			<div style="padding-bottom:10px;font-size: 18px;">
+				<label>Delivery Date: <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
+			</div>
+		</div>
+		<?php if($pickerSheet['completed'] != '1'){ ?>
+		
+		<script> setTimeout(() => { setPickMode('<?php echo $_GET['type']; ?>');  }, 1000);</script>
+		<?php }else{ ?>
+			<script> setPickMode('all'); </script>
+		<?php } ?>
 	</div>
-	
-	<div style="padding-bottom:10px;font-size: 18px;">
-		<label>Delivery Date: <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
-	</div>
-	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>">
+	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo $_GET['type']; ?>">
 	<?php
 		
 		##########################
@@ -78,10 +97,12 @@
 		$yCount = mysqli_query($conn, $xCount);
 		$numRequired = mysqli_num_rows($yCount);
 		# COUNT END
-	?>
-	<div class="productGroup" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>">
-	<?php 
+
 		$temp_id = $product['cooling_id'];
+	?>
+	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" >
+	<?php 
+		
 		$smallestDate = $product['range_from'];
 		$largestDate = $product['range_to'];
 
@@ -218,7 +239,7 @@
 	?>
 	
 	<?php if($pickerSheet['completed'] != '1'){ ?>
-	<div class="picksheet_controls" style="position:fixed;bottom:0px;right:10px;">
+	<div class="picksheet_controls" style="position:fixed;bottom:0px;right:10px;display:none;">
 		 	<input type="text" id="weightids" name="weightids" style="display:none;">
 			<input type="text" id="functype" name="functype" style="display:none;">
 			<input type="text" id="newweightvals" name="newweightvals" style="display:none">
@@ -228,6 +249,7 @@
 		</form>
 		<br/>
 		<form method="POST" action="/scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
+		<input type="hidden" name="sheet_type" value="<?php echo $_GET['type']; ?>">
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
 			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0){ ?> disabled <?php } ?>>
 		</form>
@@ -241,9 +263,14 @@
 	<?php } ?>
 	
 	<br/><br/><br/>
+		
+		<?php if($pickerSheet['completed'] == '1'){ ?>
+        	<div class="outgoing_pallets">
+		<?php }else{ ?>
+			<div class="outgoing_pallets" style="display:none;">
+		<?php } ?>
 
-        <div>
-            <?php
+		<?php
                 $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$picksheetid'";
                 $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
                 
@@ -304,7 +331,7 @@
 								$('#topform<?php echo $product['id']; ?>').css('opacity','0.2');
 								$('#topform<?php echo $product['id']; ?>').css("pointer-events", "none");
 								globalReady++;
-
+ 
                                 $('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>').val( $('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>-max').val());
 							}
 						</script>
@@ -331,6 +358,7 @@
 </main>
 <div id="btm"></div>
 <script>
+ 
 	
 	$('.picksheetType').click(function(){
 		$(this).next('.pickerSheetType_content').toggle();
@@ -350,7 +378,27 @@
 			}
 		});
 	});
+
+	
+	function setPickMode(mode){
+		$('.pickmodeContainer').hide();
+		$('.picksheet_controls').show();
+		$('.outgoing_pallets').show();
+		if(mode == 'fresh'){
+			$('.productGroup.frozen').hide();
+			$('.productGroup.fresh').show();
+		}
 		
+		if(mode == 'frozen'){
+			$('.productGroup.fresh').hide();
+			$('.productGroup.frozen').show();
+		}
+
+		if(mode == 'all'){
+			$('.productGroup.fresh').show();
+			$('.productGroup.frozen').show();
+		}
+	}
 	
 	function addBoxIDtoList(id, cut_id, product_id, ele, customWeight, count = 1){
 		
@@ -431,22 +479,9 @@
 		console.log('Total Got: ' + totalGot);
 
 
-		if(totalGot < totalNeeded){
-			Swal.fire({
-				title: 'Are you sure?',
-				text: "You haven't selected all the required weights",
-				icon: 'warning',
-				showCancelButton: true,
-				confirmButtonText: 'Continue'
-			}).then((result) => {
-				if (result.value) {
-					$('#markCompletedForm').submit();
-				}
-			});
-
- 		}else{
-			$('#markCompletedForm').submit();
- 		}
+		$('#markCompletedForm').submit();
+		
+ 		 
 	});
 	
 
@@ -478,7 +513,7 @@
 		var shouldSubmit = false;
 		var needApprovalBeforeSubmit = false;
 
-		$('.productGroup').each(function(){
+		$('.productGroup.<?php echo $_GET['type']; ?>').each(function(){
 			
 			var numRequired = $(this).attr('targetamount');
 			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());

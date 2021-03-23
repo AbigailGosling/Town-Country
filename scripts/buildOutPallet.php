@@ -179,5 +179,5 @@
 	
     ?>
 <script>
-	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>';
+	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo $_GET['type']; ?>';
 </script>

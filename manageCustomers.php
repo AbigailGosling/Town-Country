@@ -7,17 +7,16 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Town &amp; Country</title>
+	
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/lity.css" rel="stylesheet" type="text/css">
-	
-	
-
-
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="js/lity.js"></script>
+
 	<script>
 	$( function() {
 		$( "#datepicker" ).datepicker();
@@ -28,7 +27,44 @@
 		return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8  ||  k == 67 || (k >= 48 && k <= 57));
 	}
 	</script>
+	<style>
+		.transferPopup{
+			display:none;
+			position: fixed;
+			top: 0px;
+			left: 0px;
+			width: 100%;
+			height: 100vh;
+			background-color: rgba(0,0,0,0.5);
+		}
 
+		.transferPopup-container{
+			display:flex;
+			align-items:center;
+			justify-content: center;
+			width: 100%;
+			height: 100vh;
+		}
+
+		.transferPopup-content{
+			background-color: #fff;
+			padding:20px;
+			text-align: center;
+		}
+
+		.transferPopup select{
+			height:35px;
+			width:300px;
+		}
+
+		.transferPopup .transferbtn{
+			display: block;
+			width: 300px;
+			margin: 0 auto;
+			margin-top: 20px;
+			height: 35px;
+		}
+	</style>
 </head>
 
 <body class="menu">
@@ -114,7 +150,7 @@
 						<input type="text" class="input" id="address3" name="address3_1" value="<?php echo $data['address3_1']; ?>">
 						<div style="display:none;" id="address3container">
  							<input type="text" class="input" name="address3_2" value="<?php echo $data['address3_2']; ?>"><br/>
-							<input type="text" class="input" name="address	3_3" value="<?php echo $data['address3_3']; ?>"><br/>
+							<input type="text" class="input" name="address3_3" value="<?php echo $data['address3_3']; ?>"><br/>
 							<input type="text" class="input" name="address3_4" value="<?php echo $data['address3_4']; ?>">
 						</div>
 					</td>
@@ -179,6 +215,21 @@
 						<input type="text" class="input" name="accounts_address_4" value="<?php echo $data['accounts_address_4']; ?>">
  					</td>
 				</tr>
+
+				<tr style="vertical-align: top;">
+					<td class="label"><label>Accounts Email</label></td>
+					<td>
+						<input type="email" class="input" name="accounts_email" value="<?php echo $data['accounts_email']; ?>"><br/>
+ 					</td>
+				</tr>
+
+				<tr style="vertical-align: top;">
+					<td class="label"><label>Accounts Comments</label></td>
+					<td>
+						<textarea class="input" name="accounts_comments"><?php echo $data['accounts_comments']; ?></textarea>
+ 					</td>
+				</tr>
+
 				<tr height="40"><td colspan="2"></td></tr>	
 
 				<tr>
@@ -261,20 +312,44 @@
 						<div class="override-enabled"  style="<?php if($data['override'] == 1){ ?>display:block;<?php }?>">Enabled</div>
 					</td>
 				</tr>
-				<tr height="140"><td colspan="2"></td></tr>
+				<tr height="140"><td colspan="2"></td></tr> 
+			</table>
+		</div>
+	</div>
+	<div id="flexContainerTwo">
+ 	 
+    </div>
+    	<div id="flexContainerTwo">
+
+		<div class="fullbox controls">
+			<table width="100%">
+				<tr>
+					<td>
+						<?php if($_GET['id'] != ''){ ?>
+							<a href="/customer_soa.php?id=<?php echo $data['id']; ?>" class="update" style="color:white;background:orange;">View Statement of account</a>
+						<?php } ?>
+					</td>
+				</tr>			
+			</table>
+		</div>
+
+		<div class="fullbox controls">
+			<table width="100%">
 				<tr>
 					<td class="label"><label></label></td>
 					<td style="text-align:right;">
 						<a href="#" class="update" style="display:none;">Update & Save</a>
 						<input type="submit" class="update" value="Update & Save">
 					</td>
-				</tr>
+				</tr>			
 			</table>
 		</div>
 	</div>
+	
 	</form>
-	
-	
+
+	<Br/><BR/>
+
 	<div id="intakelist">
  
 		<h1 class="int">CUSTOMER LIST</h1>
@@ -291,6 +366,10 @@
 
 			while($row = mysqli_fetch_array($y)){
 
+				$customer_id = $row['id'];
+				$resultsCheckPicksheets = mysqli_query($conn, "SELECT id FROM pickerSheets WHERE customer_id='$customer_id'");
+
+				$existingPicksheetsCount = mysqli_num_rows($resultsCheckPicksheets);
 			?>
 
 			<table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -303,7 +382,7 @@
 							<td align="center" style="font-size: 18px;"><?php echo $row['businessname']; ?></td>
 							<td width="100" align="right">
 								<a href="/manageCustomers.php?id=<?php echo $row['id']; ?>" style="right:-35px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
-								<a href="javascript:;" onclick="deleteRow(<?php echo $row['id']; ?>)" style="right:-70px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-trash" style="padding-right:5px;" aria-hidden="true"></i></a>
+								<a href="javascript:;" onclick="deleteRow(<?php echo $row['id']; ?>, <?php echo $existingPicksheetsCount; ?>)" style="right:-70px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-trash" style="padding-right:5px;" aria-hidden="true"></i></a>
 							</td>
 						</tr>
 					</table>
@@ -319,6 +398,29 @@
 			}
 
 		?>
+		</div>
+	</div>
+	
+	<div class="transferPopup">
+		<div class="transferPopup-container">
+			<div class="transferPopup-content">
+				<h2>Transfer required</h2>
+				<p>There is currently <b id="transferCount"></b> picksheets connected to this customer.<br/>Please pick a new customer to transfer them.</p>
+				<form method="POST" action="/scripts/transferPicksheetsCustomer.php">
+					<input type="hidden" name="old_customer_id" id="old_customer_id">
+					<select name="new_customer_id">
+						<?php
+							$customers = mysqli_query($conn, "SELECT id,businessname FROM `customers`");
+
+							while($customer = mysqli_fetch_array($customers)){
+								?><option value="<?php echo $customer['id']; ?>" class="transfer_customers transfer_customers_<?php echo $customer['id']; ?>"><?php echo $customer['businessname']; ?></option><?php
+							}
+						?>
+					</select>
+					
+					<input type="submit" value="Transfer picksheets" class="transferbtn">
+				</form>
+			</div>
 		</div>
 	</div>
 </main>
@@ -371,16 +473,27 @@
 
 	});
 	
-  function deleteRow(id){
+	$('.transferPopup-container').click(function(e){
+		if(e.target != this) return;
+		$('.transferPopup').hide();
+		
+	});
 
-		if(confirm('Are you sure you want to delete this?')){
+	function deleteRow(id, existingPicksheetsCount){
+		
+		if(existingPicksheetsCount > 0){
+			$('.transferPopup').show();
+			$('#transferCount').text(existingPicksheetsCount);
+			$('#old_customer_id').val(id);
 
-			window.location.href = "/scripts/deleteCustomer.php?id=" + id;
+			$('.transfer_customers').show();
+			$('.transfer_customers_' + id).hide();
 
-			// console.log(id);
-
+		}else{
+			if(confirm('Are you sure you want to delete this?')){
+				window.location.href = "/scripts/deleteCustomer.php?id=" + id;
+			}
 		}
-
 	}
 
 	function overrideSales(ele, id){

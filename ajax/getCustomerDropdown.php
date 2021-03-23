@@ -1,10 +1,12 @@
 <?php
 
 	require('../functions.php');
+	
+	$user_id = $_SESSION['USER'];
 
 	$name = $_POST['searchterm'];
-	
-	$x = "SELECT * FROM `customers` WHERE businessname LIKE '%$name%'";
+
+	$x = "SELECT * FROM `customers` WHERE businessname LIKE '$name%' || businessname LIKE '%$name%' || businessname LIKE '$name%' || REPLACE(businessname, ' ', '') LIKE '$name%' || REPLACE(businessname, ' ', '') = '$name'";
 	$y = mysqli_query($conn, $x);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php
@@ -17,7 +19,7 @@
 		}
 	}else{
 	?>
-	<a href="javascript:;" class="intakeCutDropdown" style="border: 1px #f00f00 solid;color:#f00f00;">You must select a vaild customer!</a>
+	<a href="javascript:;" class="intakeCutDropdown" style="border: 1px #f00f00 solid;color:#f00f00;">You must select a valid customer!</a>
 	<?php
 	}
 ?>
@@ -30,12 +32,4 @@ $(document).ready(function(){
 	});
 });
 
-function setCustomer(customer_id, text){
-	console.log('customer_id: ' + customer_id);
-	console.log('text: ' + text);
-	$('#customer_search_results').fadeOut();
-	$('#customer_id').val(customer_id);
-	$('#customer').val(text);
- 	setCustomerDetails(customer_id);
-}
 </script>

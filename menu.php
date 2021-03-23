@@ -4,11 +4,14 @@
 <!doctype html>
 <html class="int">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Town &amp; Country 3</title>
-<link href="css/style.css" rel="stylesheet" type="text/css">
-<link href="css/responsive.css" rel="stylesheet" type="text/css">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Town &amp; Country 3</title>
+	<link href="css/style.css" rel="stylesheet" type="text/css">
+	<link href="css/responsive.css" rel="stylesheet" type="text/css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>		
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 </head>
 <body class="menu">
 <div id="top">
@@ -54,14 +57,26 @@
 			if($count > 0){
 				?><div class="col"><h1>Admin. Tools</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn3)){
-					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					if($page['file'] == 'exportstock.php'){
+						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					}else{
+						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					}
 				}
 
 				?></div><?php
 			}
 		?>
 	</div>
-	
+	<script>
+		function exportstock(ele, original_name){
+			$(ele).html('<img src="img/loading.gif" height="30" style="margin-top:5px"> <span>Please wait..</span>');
+
+			setTimeout(() => {
+				$(ele).html(original_name);
+			}, 15000);
+		}
+	</script>
 	<style>
 		#menu_wrap{
 			display:flex !important;

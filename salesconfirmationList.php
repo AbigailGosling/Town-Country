@@ -84,7 +84,14 @@
 										?>
 										<?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
 
-										<?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
+										<?php
+											if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){
+												echo "(VOID)";
+												if($picksheet['deleted_by_user_id'] != ''){
+													echo " - " . getUsername($picksheet['deleted_by_user_id']);
+												}
+											}
+										?>
 									</td>
 									<td width="25%" align="right"> created <?php echo $date_purchased; ?></td>
 								</tr>
@@ -163,17 +170,24 @@
 				var val = $('#instantSearch').val();
 				console.log(val);
 
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				  $('#intakeAjax').html(this.responseText);
-				  loadPage(1);
-				}
-				};
 
-				xhttp.open("POST", "/ajax/salesConfirmationList.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val);
+				var request = $.ajax({
+					type: "POST",
+					url: "ajax/salesConfirmationList.php",
+					data: {
+						searchterm: val
+					},
+					dataType: "html"
+				});
+
+				request.done(function(data) {
+					$('#intakeAjax').html(data);
+					loadPage(1);
+				});
+
+				request.fail(function(jqXHR, textStatus) {
+					// alert( "Request failed: " + textStatus );
+				});
 			
 			});
 			

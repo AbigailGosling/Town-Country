@@ -45,7 +45,14 @@
                                 ?>
                                 <?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
 
-                                <?php if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){ echo "(VOID)"; } ?>
+                                <?php
+                                    if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){
+                                        echo "(VOID)";
+                                        if($picksheet['deleted_by_user_id'] != ''){
+                                            echo " - " . getUsername($picksheet['deleted_by_user_id']);
+                                        }
+                                    }
+                                ?>
                             </td>
                             <td width="25%" align="right"> created <?php echo $date_purchased; ?></td>
                         </tr>

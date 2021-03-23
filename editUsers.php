@@ -65,6 +65,22 @@
 				<label>Password</label>
 				<input type="text" class="inputtext" name="password">
 			</div>
+
+			<div class="formElement">
+				<label>Show Intake Overview Table Prices</label>
+				<select name="view_intake_prices">
+					<option value="0" <?php if($data['view_intake_prices'] == 0){ echo 'selected'; } ?>>No</option>
+					<option value="1" <?php if($data['view_intake_prices'] == 1){ echo 'selected'; } ?>>Yes</option>
+				</select>
+			</div>
+
+			<div class="formElement">
+				<label>User Type</label>
+				<select name="user_type">
+					<option value="M" <?php if($data['user_type'] == 'M'){ echo 'selected'; } ?>>User</option>
+					<option value="A" <?php if($data['user_type'] == 'A'){ echo 'selected'; } ?>>Admin</option>
+				</select>
+			</div>
 			
 			<div class="formElement flex">
 				<div style="width:33%;">

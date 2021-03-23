@@ -16,9 +16,8 @@
 	$customer = mysqli_fetch_array($y1);
 	
 	$addressNumber = $row['address1_number'];
-    
-    if($picksheet['addressid'] == ''){ $picksheet['addressid'] = 1; }
-
+	
+	 
 
     if($picksheet['addressid'] == 1){
 
@@ -77,103 +76,46 @@
 </div>
 
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
-<div class="container">
-<div class="row">
-	<div class="col">
+
+
+
+<form id="pickerForm" method="POST" action="/scripts/updateSalesconfirmation.php" autocomplete="off">
+<input autocomplete="off" name="hidden" type="text" style="display:none;">
+<input type="hidden" name="picksheetid" id="picksheetid" value="<?php echo $picksheet_id; ?>">
+<input type="hidden" name="customerid" id="customerid" value="<?php echo $customer_id; ?>">
+<input type="hidden" name="addressid" id="addressid" value="<?php echo $picksheet['addressid']; ?>">
+<div class="container container--pt">
+	<div class="row">
+		<div class="col">
 			<label>Customer</label><br/>
-			<input type="text" id="customer" value="<?php echo $customer['businessname']; ?>" class="inputbox" disabled>
-	</div>
-	<div class="col">
-			<label>Contact Number</label><br/>
-			<input type="text" class="inputbox" name="contactnumber" value="<?php echo $customer['contactnumber']; ?>" disabled>
-	</div>
-</div>
-<div class="row">
-	<div class="col">
+			<input class="form-control" type="text" id="customer" class="inputbox" required>
+			<div id="customer_search_results" style="position:relative;z-index:99999;"></div>
+		</div>
+		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input type="text" class="inputbox" value="<?php echo $picksheet['estimated_delivery_date']; ?>" disabled>
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
+		</div>
+	  
 	</div>
-	<div class="col">
-		<label>Delivery Contact Number</label><br/>
-		<input type="text" class="inputbox" name="deliverynumber" value="<?php echo $addressNumber; ?>">
-	</div>
-</div>
-
 	
-	<span class="row" id="address">
-		<input type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
-
-		<span class="col">
-			<label>Billing Address</label><br/>
-			<textarea name="billingaddress" style="width:300px;height:80px;padding:10px;resize:none;"disabled><?php echo $customer['accounts_address_1']; ?>,&#13;<?php echo $customer['accounts_address_2']; ?>,&#13;<?php echo $customer['accounts_address_3']; ?><?php if($customer['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $customer['accounts_address_4']; ?></textarea>
-		</span>
-
-		<span class="col">
-			<label>Delivery Address</label><br/>
-			<textarea name="deliveryaddress" style="width:300px;height:80px;padding:10px;resize:none;"><?php echo $address; ?></textarea>
-		</span>
-
-	<div id="changeAddress" class="lity-hide">
-		<h2><?php echo $row['businessname']; ?>'s Address List</h2>
-		<?php 
-			$address1 = $row['address1_1'];
-			
-			if($row['address1_2']){ $address1 .= ','; }
-			$address1 .= $row['address1_2'];
-			
-			if($row['address1_3']){ $address1 .= ','; }
-			$address1 .= $row['address1_3'];
-
-			if($row['address1_4']){ $address1 .= ','; }
-			$address1 .= $row['address1_4'];
-
-
-			$address2 = $row['address2_1'];
-			
-			if($row['address2_2']){ $address2 .= ','; }
-			$address2 .= $row['address2_2'];
-			
-			if($row['address2_3']){ $address2 .= ','; }
-			$address2 .= $row['address2_3'];
-
-			if($row['address2_4']){ $address2 .= ','; }
-			$address2 .= $row['address2_4'];
-			
-			
-
-			$address3 = $row['address3_1'];
-			
-			if($row['address3_2']){ $address3 .= ','; }
-			$address3 .= $row['address3_2'];
-			
-			if($row['address3_3']){ $address3 .= ','; }
-			$address3 .= $row['address3_3'];
-
-			if($row['address3_4']){ $address3 .= ','; }
-			$address3 .= $row['address3_4'];
-			
-		?>
-		<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 1)"><?php echo $address1; ?></div>
-		<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 2)"><?php echo $address2; ?></div>
-		<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 3)"><?php echo $address3; ?></div>
-			
+	<div class="row" id="address"></div>
+	 
+	
+	<div class="row">
+		<div class="col">
+			<label>	Order Reference Number</label><br/>
+			<input id="orderReferenceNumber" class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
+		</div>
+		<div class="col"></div>
 	</div>
-	</span>
 
 	<div class="row">
 		<div class="col">
-			<label>Comments</label><br/>
-			<textarea name="comments" style="width:300px;height:142px;padding:10px;resize:none;"><?php echo $picksheet['comments']; ?></textarea>	 
+			<input type="submit" value="Update">
 		</div>
-
-		<div class="col">
-			<label>	Order Reference Number</label><br/>
-			<input type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $picksheet['orderReferenceNumber']; ?>">
-		</div>
-
-	 
 	</div>
 </div>
+</form>
 
 <div class="rightPanel">
 	<table width="100%" class="basketTable">
@@ -240,7 +182,7 @@
 						<?php
 							
 							if($product['unit'] == 'C'){
-								$unit = 'Cases';
+								$unit = 'p/KG';
 							}else if($product['unit'] == 'PPC'){
 								$unit = 'Per Case';
 							}else if($product['unit'] == 'P'){
@@ -248,7 +190,7 @@
 							}else if($product['unit'] == 'KG'){
 								$unit = 'Kilo';
 							}else{
-								$unit = 'Cases';
+								$unit = 'p/KG';
 							}
 							
 							echo $unit;
@@ -289,6 +231,50 @@
 	}
 ?>
 <script type="text/javascript">
+	$('#customer').attr('disabled', 'disabled');
+ 
+	$( "#estimated_delivery_date" ).datepicker({
+			dateFormat: 'dd/mm/yy'
+	});
+	setCustomerDetails(<?php echo $customer_id; ?>,<?php echo $picksheet['addressid']; ?>, 'true');
+	
+	setTimeout(() => {
+		$('#customer').val('<?php echo $customer['businessname']; ?>');
+		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
+		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');
+		$('#comments').val('<?php echo $picksheet['comments']; ?>');
+		$('#comments').prop('disabled', true);
+		$('#orderReferenceNumber').prop('disabled', true);
+		
+	}, 500);
+	
+	$('#customer').keyup(function(){
+		var val = $('#customer').val();
+		$('#customer_search_results').fadeIn();
+
+	 	
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+            $('#customer_search_results').html(this.responseText);
+		}
+		};
+		xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
+		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhttp.send("searchterm=" + val);
+	
+	});
+
+	function setCustomerDetails(customer_id, addressid, empty='false'){
+		customerID = customer_id;
+		console.log(' setCustomerDetails()');
+		
+		$.get( "ajax/getCustomerAddress.php?address_id=" + addressid + "&id=" + customer_id + '&empty=' + empty, function( data ) {
+			$('#address').html(data);
+			$('.rating').fadeIn();
+		});
+	}
+
 	function addToList(id){
 		
 		$.get( "/scripts/getBasketItem.php?id="+id, function( data ) {
@@ -304,6 +290,18 @@
 		console.log('trying to delete cookie ' + COOKIE_NAME);
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
+
+	function changeAddress(customer_id, address_id){
+
+		$('#addressid').val(address_id);
+
+
+		$.get("/ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+			$('#address').html(data);
+			$('.lity-close').trigger('click');
+		});
+	}
+
 </script>
 
 <style type="text/css">

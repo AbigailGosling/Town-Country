@@ -99,7 +99,7 @@
 
 	<a href="javascript:;" onclick="window.history.back();" class="backbtn">< Back</a>
 		
-	<form style="float:right;padding-bottom:10px;" method="POST" action="markIntakeAs.php">
+	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
 		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 		<select name="state">
             <option value="0">Mark as unsold</option>
@@ -301,7 +301,8 @@
 		$y = mysqli_query($conn, $x);
 		$user = mysqli_fetch_array($y);
 		
-		if($user['type'] == '3'){
+		
+		if($user['view_intake_prices'] == 1){
 	?>
 	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $intake_id; ?>">
 	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
@@ -766,8 +767,9 @@
 	
 	<br/>
 	<a href="javascript:;" class="add_product" onclick="openAddPallet(<?php echo $intake_id; ?>);">Add a Pallet</a>
-	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
-	
+ 	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
+	 <a href="printAllPallets.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print all pallets</a>
+
 	<center id="hidePalletBtnContainer"><br/><br/><br/><Br/><Br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
 	<div id="ajaxContent">
 	 

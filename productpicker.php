@@ -34,6 +34,22 @@
 		</div>
 		<div class="col"></div>
 	</div>
+
+	<div class="row">
+		<div class="col">
+			<label> Salesperson</label><br />
+			<select id="sales_person" name="sales_person" class="form-control">
+				<?php
+					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+
+					while ($_user = mysqli_fetch_array($_users)) {
+						echo '<option value="' . $_user['id'] . '">' . $_user['name'] . '</option>';
+					}
+				?>
+			</select>
+		</div>
+		<div class="col"></div>
+	</div>
 </div>
 
 <div class="rightPanel">
@@ -117,17 +133,16 @@
 <script type="text/javascript">
 
     $(document).ready(function() {
-
         var formHasChanged = false;
         var submitted = false;
 
-				document.getElementById('menu').addEventListener('click', function(e) {
-					if (formHasChanged && !submitted) {
-						e.preventDefault()	
-						changePage('menu')
-					}
-				})
-        
+		document.getElementById('menu').addEventListener('click', function(e) {
+			if (formHasChanged && !submitted) {
+				e.preventDefault()	
+				changePage('menu')
+			}
+		})
+
         $(document).on('change', 'form #customer', function (e) {
             formHasChanged  = true;
         });
@@ -136,24 +151,24 @@
             submitted = true;
         });
 
-				$(document).on('click', '.intakeLink', function(e) {
-					if (formHasChanged && !submitted) {
-						e.preventDefault()	
-						changePage($(this).attr('id'))
-					}
-				})
+		$(document).on('click', '.intakeLink', function(e) {
+			if (formHasChanged && !submitted) {
+				e.preventDefault()	
+				changePage($(this).attr('id'))
+			}
+		})
 
-				function changePage(prop) {					
-					var alert = confirm('Are you sure you want to leave?')
+		function changePage(prop) {					
+			var alert = confirm('Are you sure you want to leave?')
 
-					if (alert === true) {
-						if (prop == 'menu') {
-							window.location.href = "/menu.php"
-						} else {
-							window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
-						}
-					}
+			if (alert === true) {
+				if (prop == 'menu') {
+					window.location.href = "/menu.php"
+				} else {
+					window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
 				}
+			}
+		}
 
     });
 
@@ -404,7 +419,8 @@ function checkStock(){
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
-		if (customer != '' && !isNaN(customerID) && customerIDs.indexOf(parseInt(customerID))!= -1) {
+		pricedCorrectly = true;
+		if (customer != '' && !isNaN(customerID)) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
 		} else{
@@ -422,21 +438,44 @@ function checkStock(){
 
 		$('.price').each(function(){
  			var value = $(this).val();
-		
+			
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
-				$(this).css('border-color', '#f2f2f2');
+				
+				if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is less than the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
+
+
+				if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is more than double the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
+  
 			}else{
 				priceEntered = false;
 				$(this).css('border','1px solid red');
 			}
 		});
 
-		if(customerEntered && dateEntered && priceEntered){
+		if(customerEntered && dateEntered && priceEntered && pricedCorrectly){
 			checkStock();
 		}else{
-			alert('Please complete the missing fields');
+			if(!customerEntered || !dateEntered || !priceEntered){
+				alert('Please complete the missing fields');
+			}
+
 			$('#sendfake').prop('disabled', false);
+
 		}
 		 
 		
@@ -451,6 +490,14 @@ function checkStock(){
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
 			$('.rating').fadeIn();
+			
+			$('#addressline1').prop('disabled', true);
+			$('#addressline2').prop('disabled', true);
+			$('#addressline3').prop('disabled', true);
+			$('#addressline4').prop('disabled', true);
+			$('#addresspostcode').prop('disabled', true);
+			$('#deliverynumber').prop('disabled', true);
+			
 		});
 	}
 	ready = true;
@@ -477,9 +524,7 @@ function checkStock(){
 		
 	
 	$(document).ready(function(){  
-		setCustomerDetails(null, 'true');
-		
-		
+
 		$.each(document.cookie.split(/; */), function(){
 		  var splitCookie = this.split('=');
 
@@ -495,7 +540,15 @@ function checkStock(){
 		
 		
 	});
-	 
+	
+	function setCustomer(customer_id, text){
+		console.log('customer_id: ' + customer_id);
+		console.log('text: ' + text);
+		$('#customer_search_results').fadeOut();
+		$('#customer_id').val(customer_id);
+		$('#customer').val(text);
+		setCustomerDetails(customer_id);
+	}
 
     $('#SearchSpecies').change(function(){
 
@@ -550,6 +603,8 @@ function checkStock(){
 			$('#SearchCutgroups').prop('selectedIndex',0);
 			$('#IntakeID').val('');
 			$('#PalletID').val('');
+
+			$('.allsoption').hide();
 		}else{
 			alert('Please fill out the form before searching');
 		}
@@ -575,17 +630,23 @@ function checkStock(){
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
+		
+		var request = $.ajax({
+			type: "POST",
+			url: "ajax/getCustomerDropdown.php",
+			data: {
+				searchterm: val
+			},
+			dataType: "html"
+		});
 
-	 	
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-            $('#customer_search_results').html(this.responseText);
-		}
-		};
-		xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
-		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhttp.send("searchterm=" + val);
+		request.done(function(data) {
+			$('#customer_search_results').html(data);
+ 		});
+
+		request.fail(function(jqXHR, textStatus) {
+			// alert( "Request failed: " + textStatus );
+		});
 	
 	});
 		

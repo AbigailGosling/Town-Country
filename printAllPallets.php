@@ -13,7 +13,7 @@
 <main>
 	<a style="position:absolute;left:0px;top:20px;" class="printhide" href="intake.php?id=<?php echo $intake_id; ?>">Back</a>
 	
-	<h1 style="font-family: 'OpenSans_Semibold' !important;font-weight: 700;color: #000;padding-bottom:20px;font-size: 26px;text-align: left;"><?php if($intake['returned'] == '1'){ echo 'Returned '; } ?>Intake Print Form </h1>
+	<h1 style="font-family: 'OpenSans_Semibold' !important;font-weight: 700;color: #000;padding-bottom:20px;font-size: 26px;text-align: left;"><?php if($intake['returned'] == '1'){ echo 'Returned '; } ?>ALL PALLETS ON INTAKE <?php echo $intake_id; ?></h1>
 	<div class="overview">
 	
 		<div class="overview_block">
@@ -170,6 +170,7 @@
 				while($pallet = mysqli_fetch_array($y_pallets)){
 			?>
 				<div class="product" style="padding-bottom:0px;">
+                <br/><h2 style="margin:0;">Pallet <?php echo $pallet['id']; ?></h2>
 				 	<div class="overview" style="display:block;">
 						<?php
 							$pallet_id = $pallet['id'];
@@ -230,7 +231,6 @@
                                     
                                 ?>
 								<?php echo '[' . getTemp($product['cooling_id']) .']'; ?>
-								<?php echo '[Pallet ID: <b>' . $pallet_id .'</b>]'; ?>
 								<?php echo '[<b>' . $types[$product['ubbb']] .'</b>]'; ?>
 								<?php if($product['range_from']) { echo '<span style="color:grey;">(' . $product['range_from'] . ' - '; ?>
 								<?php echo $product['range_to'] . ')</span>'; } ?>

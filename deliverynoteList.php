@@ -113,19 +113,27 @@
 			$('#instantSearch').keyup(function(){
 
 				var val = $('#instantSearch').val();
-				
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-						$('#intakeAjax').html(this.responseText);
-						loadPage(1);
-                    }
-				};
+				console.log(val);
 
-				xhttp.open("POST", "/ajax/deliverynotePageList.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val);
-				
+				var request = $.ajax({
+					type: "POST",
+					url: "ajax/deliverynotePageList.php",
+					data: {
+						searchterm: val
+					},
+					dataType: "html"
+				});
+
+				request.done(function(data) {
+					$('#intakeAjax').html(data);
+					loadPage(1);
+				});
+
+				request.fail(function(jqXHR, textStatus) {
+					// alert( "Request failed: " + textStatus );
+				});
+			
+
 			});
         });
     </script>

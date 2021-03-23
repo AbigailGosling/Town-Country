@@ -13,10 +13,13 @@
 .flex{ display:flex; } 
 .space-between{ justify-content: space-between; }
 .space-evenly { justify-content: space-evenly; }
+.v-center{ align-items:center; }
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
 body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
 body.menu {background: #3faddd;}
+
+
 
 main {
 	max-width: 1024px;
@@ -1797,8 +1800,8 @@ td span.chilled{
 .weightEditWhiteBox {display: flex;}
 
 .weightEditWhiteBox input{
-	width: 82% !important;
-    height: 42px !important;
+	/* width: 82% !important; */
+    height: 35px !important;
 }
 .weightEditWhiteBox div.icon {
 	width: 18% !important;
@@ -1921,7 +1924,8 @@ textarea {
 
 .menuItem .text{
 	font-size:15px;
-
+	text-align: left;
+    padding-left: 100px;
 }
 
 .return-highlight{
@@ -1961,3 +1965,51 @@ textarea {
 	padding:0px 10px;
 }
  
+
+.searchAccordTitle.locked{
+	pointer-events: none;
+	opacity:0.7;
+	background: #d1e1d1!important;
+}
+
+.searchAccordTitle.locked .intakeLink{
+	pointer-events: all !important;
+	opacity: 1;
+	display:flex;
+	align-items: center;
+	padding: 0px 20px;
+	text-decoration: none !important;
+}
+.searchAccordTitle.locked .intakeLink b{ text-decoration:underline; }
+
+.searchAccordTitle.locked i.fa-lock{
+	font-size:32px;
+	padding-right:10px;
+}
+
+ 
+.customer_info{
+	display:flex;
+	justify-content: space-between;
+}
+
+.tooltip-content{
+	text-align: left;
+	display: none;
+	position: absolute;
+    z-index: 100;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: white;
+    padding: 7px;
+    width: 80%;
+    border: 3px solid black;
+    float: none;
+    margin: 0 auto;
+    color: black;
+}
+
+.tooltip-content table{
+	width: 100%;
+}

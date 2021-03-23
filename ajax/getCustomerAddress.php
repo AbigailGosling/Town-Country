@@ -22,7 +22,7 @@
 	
 	<div>
 		<label>Contact Number</label><br/>
-		<input class="form-control" type="text" class="input class="form-control"box" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
+		<input class="form-control input box" type="text" id="contactnumber" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
 	</div>
 
 	<div>
@@ -33,73 +33,68 @@
 
 
 <?php
-	 if($address_id != ''){
+	if($address_id != ''){
 		if($address_id == 1){
+			
 			$addressNumber = $row['address1_number'];
 			
-			$address = $row['address1_1'];
-			if($row['address1_2']){ $address .= ',&#13;'; }
-			$address .= $row['address1_2'];
-			
-			if($row['address1_3']){ $address .= ',&#13;'; }
-			$address .= $row['address1_3'];
-
-			if($row['address1_4']){ $address .= ',&#13;'; }
-			$address .= $row['address1_4'];
-					
+			$addressline1 = $row['address1_1'];
+			$addressline2 = $row['address1_2'];
+			$addressline3 = $row['address1_3'];
+			$addressline4 = $row['address1_4'];
+			$addresspostcode = $row['postcode_1'];						
 					
 		}else if($address_id == 2){
 			$addressNumber = $row['address2_number'];
 			
-			$address = $row['address2_1'];
-			if($row['address2_2']){ $address .= ',&#13;'; }
-			$address .= $row['address2_2'];
-			
-			if($row['address2_3']){ $address .= ',&#13;'; }
-			$address .= $row['address2_3'];
-
-			if($row['address2_4']){ $address .= ',&#13;'; }
-			$address .= $row['address2_4'];
+			$addressline1 = $row['address2_1'];
+			$addressline2 = $row['address2_2'];
+			$addressline3 = $row['address2_3'];
+			$addressline4 = $row['address2_4'];
+			$addresspostcode = $row['postcode_2'];	
 			
 		}else if($address_id == 3){
 			$addressNumber = $row['address3_number'];
 			
-			$address = $row['address3_1'];
-			if($row['address3_2']){ $address .= ',&#13;'; }
-			$address .= $row['address3_2'];
-			
-			if($row['address3_3']){ $address .= ',&#13;'; }
-			$address .= $row['address3_3'];
-
-			if($row['address3_4']){ $address .= ',&#13;'; }
-			$address .= $row['address3_4'];
+			$addressline1 = $row['address3_1'];
+			$addressline2 = $row['address3_2'];
+			$addressline3 = $row['address3_3'];
+			$addressline4 = $row['address3_4'];
+			$addresspostcode = $row['postcode_3'];	
 			
 		}
-	 }else{
+	}else{
 		$addressNumber = $row['address1_number'];
 		
-		$address = $row['address1_1'];
-		if($row['address1_2']){ $address .= ',&#13;'; }
-		$address .= $row['address1_2'];
-		
-		if($row['address1_3']){ $address .= ',&#13;'; }
-		$address .= $row['address1_3'];
-
-		if($row['address1_4']){ $address .= ',&#13;'; }
-		$address .= $row['address1_4'];
-	 }
+		$addressline1 = $row['address1_1'];
+		$addressline2 = $row['address1_2'];
+		$addressline3 = $row['address1_3'];
+		$addressline4 = $row['address1_4'];
+		$addresspostcode = $row['postcode_1'];	
+	}
 	
 ?>
 
 
 	<div class="col">
 	<div>
-	<label>Delivery Contact Number</label><br/>
-	<input class="form-control" type="text" class="input class="form-control"box" name="deliverynumber" value="<?php echo $addressNumber; ?>">
+		<label>Delivery Contact Number</label><br/>
+		<input class="form-control input box" type="text" id="deliverynumber" name="deliverynumber" value="<?php echo $addressNumber; ?>">
 	</div>
 	<div>
 		<label>Delivery Address</label> <a href="#changeAddress" data-lity>[Other]</a><br/>
-		<textarea class="form-control" name="deliveryaddress" style="height:80px;padding:10px;resize:none;"><?php echo $address; ?></textarea class="form-control">
+
+	 	<label>Address line 1</label>
+		<input class="form-control input box" type="text" id="addressline1" name="addressline1" value="<?php echo $addressline1; ?>">
+		<label>Address line 2</label>
+		<input class="form-control input box" type="text" id="addressline2" name="addressline2" value="<?php echo $addressline2; ?>">
+		<label>Address line 3</label>
+		<input class="form-control input box" type="text" id="addressline3" name="addressline3" value="<?php echo $addressline3; ?>">
+		<label>Address line 4</label>
+		<input class="form-control input box" type="text" id="addressline4" name="addressline4" value="<?php echo $addressline4; ?>">
+		<label>Postcode</label>
+		<input class="form-control input box" type="text" id="addresspostcode" name="addresspostcode" value="<?php echo $addresspostcode; ?>">
+
 	</div>
 </div>
 </div>
@@ -108,7 +103,7 @@
 		
 	<div>
 		<label>Comments</label><br/>
-		<textarea class="form-control" name="comments" style="height:142px;padding:10px;resize:none;"></textarea class="form-control">
+		<textarea class="form-control" id="comments" name="comments" style="height:142px;padding:10px;resize:none;"></textarea class="form-control">
 		
  		<?php
 			if($_GET['empty'] != 'true'){
@@ -165,7 +160,8 @@
 <div class="col"></div>
 </div>
 <div id="changeAddress" class="row lity-hide">
-	<h2><?php echo $row['businessname']; ?>'s Address List</h2>
+	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
+	
 	<?php 
 		$address1 = $row['address1_1'];
 		
@@ -205,8 +201,14 @@
 		
 	?>
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 1)"><?php echo $address1; ?></div>
+	
+	<?php if($address2 != ''){ ?>
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 2)"><?php echo $address2; ?></div>
+	<?php } ?>
+
+	<?php if($address3 != ''){ ?>
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 3)"><?php echo $address3; ?></div>
+	<?php } ?>
 		
 </div>
 </div>

@@ -9,7 +9,7 @@
 	$startDate = $year . '-' . $month . '-01';
 	$endDate = $year . '-' . $month . '-31';
 		
-	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' ORDER BY date_received DESC");
+	$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE date_received BETWEEN '$startDate' AND '$endDate' ORDER BY date_received DESC, id DESC");
 	
 	$countResults = mysqli_num_rows($searchResults);
 	
@@ -24,27 +24,32 @@
 				<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="30%" align="left">ID: 0000<?php echo $intake['id']; ?></td>
-                            <td align="left" style="font-size: 18px;">
-                            <?php
-	                            if($intake['returned'] == '1'){
-	                            	$cusDetails =  getCustomer($intake['supplier_id']);
-	                            	if(!empty($cusDetails) && isset($cusDetails['businessname'])){
-	                            		echo $cusDetails['businessname'];
-	                            	}else{
-	                            		echo 'No Customer Data';
-	                            	}
+							<?php
+								$r = intakePriceComplete($intake['id']);    
+							?>
+							<td width="30%" align="left">
+								ID: I-0000<?php echo $intake['id'];?></td>
+							<td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
+								<?php
 
-	                            }else{
-	                            	echo supplierName($intake['supplier_id']);
-	                            }
-                                $r = intakePriceComplete($intake['id']);    
-                                if($r == 1){
-                                ?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
-                                }
-                                if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
-                            ?>
-                            </td>
+									if($intake['returned'] == '1'){
+										$cusDetails =  getCustomer($intake['supplier_id']);
+										if(!empty($cusDetails) && isset($cusDetails['businessname'])){
+											echo $cusDetails['businessname'];
+										}else{
+											echo 'No Customer Data';
+										}
+
+									}else{
+										echo supplierName($intake['supplier_id']);
+									}
+									if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
+
+									if($r == 1){
+									?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
+									}
+								?>
+							</td>
 							<td width="30%" align="right"><?php echo $date_received; ?></td>
 						</tr>
 					</table>
