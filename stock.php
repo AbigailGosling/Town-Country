@@ -22,10 +22,6 @@
 
 </script>
 <style type="text/css">
-<style type="text/css">
-     
-    
-    
 
 	.rightPanel {
 		padding:50px;
@@ -188,7 +184,6 @@
 	}
 
 </style>
-</style>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
@@ -296,14 +291,7 @@
                     function($product) { return $product['productid']; },
                 $products);
         
-                // print_r($productIDs);
-                // $q = "SELECT * from `weights` WHERE status_id != '1' AND product_id IN(" . implode(",", $productIDs) . ")";
-                // $q = mysqli_query($conn, $q);
-                // $weights = mysqli_fetch_all($q, MYSQLI_ASSOC);
-                    
-               
-                 
-    
+              
                 foreach($products as $productsRow){
                     
                     $thisclass = 'thisclass'.rand(1,999999);
@@ -419,7 +407,7 @@
                             <td colspan="1"><?php echo $cut; ?></td>
                             <td colspan="1"><?php echo getNationality($productsRow['nationality_id']); ?></td>
                             <td colspan="1">
-                                <form method="post"><?php # $productsRow['productcomments']; ?>
+                                <form method="post">
                                     <textarea name="comments" class="overviewcomment" productid="<?php echo $productsRow['productid']; ?>"><?php echo $productsRow['weightnote']; ?></textarea>
                                     <input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
                                 </form>
@@ -535,10 +523,7 @@
             var productid = $(this).attr('productid');
             // var productid = 10;
             
-            // $.get("<?php echo $domain; ?>ajax/saveCommentPicker.php?comment="+currentComment+'&productid=1'+productid, function(data, status){
-                // console.log(data);
-            // });
-            
+   
             $.ajax({
                 method: "POST",
                 url: "<?php echo $domain; ?>ajax/saveCommentPicker.php",
