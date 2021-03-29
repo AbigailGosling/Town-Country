@@ -45,6 +45,7 @@
         <tr class="heading">
             <th align="left">Invoice ID</th>
             <th align="left">Add Payment</th>
+            <th align="left">Due Date</th>
             <th align="left">Date</th>
             <th align="left">PDF</th>
             <th align="right">Price</th>
@@ -102,6 +103,15 @@
 				<?php }else{ ?>
                     <td>Invoice Paid</a></td>  
                 <?php }?>  
+                <td>
+                    <?php
+                        echo $picksheet['estimated_delivery_date'];
+
+                        if (strtotime($picksheet['estimated_delivery_date']) < time()) {
+                            ?><div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div><?php
+                        }
+                    ?>
+                 </td>
                 <td><?php echo $date; ?></td>
                 <td><a href="javascript:;" onclick="generatePDF(<?php echo $picksheet['id']; ?>)">Invoice_<?php echo $picksheet['id']; ?>.pdf</a></td>
                 <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
