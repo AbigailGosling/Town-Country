@@ -41,17 +41,20 @@
         ?>
     </h2>
     <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
-    <table class="table" width="100%">
-        <tr class="heading">
-            <th align="left">Invoice ID</th>
-            <th align="left">Add Payment</th>
-            <th align="left">Due Date</th>
-            <th align="left">Date</th>
-            <th align="right">Price</th>
-            <th align="right">Paid</th>
-            <th align="right">Outstanding</th>
-            <th align="right">Balance</th>
-        </tr>
+    <table id="soaTable" class="table" width="100%">
+        <thead>
+            <tr class="heading">
+                <th align="left">Invoice ID</th>
+                <th align="left">Add Payment</th>
+                <th align="left">Due Date</th>
+                <th align="left">Date</th>
+                <th align="right">Price</th>
+                <th align="right">Paid</th>
+                <th align="right">Outstanding</th>
+                <th align="right">Balance</th>
+            </tr>
+        </thead>
+        <tbody>
 	<?php   
             $customer_id = $customer['id'];
 
@@ -101,8 +104,13 @@
                     <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
 				<?php }else{ ?>
                     <td>Invoice Paid</a></td>  
-                <?php }?>  
-                <td>
+                <?php }?>
+
+                <?php
+                    $estimated_delivery_date = strtotime($picksheet['estimated_delivery_date']);
+                    $sortableDueDateFormat = date('d-m-Y',$estimated_delivery_date);
+                ?>
+                <td data-sort="<?php echo $sortableDueDateFormat; ?>">
                     <?php
                         echo $picksheet['estimated_delivery_date'];
 
@@ -111,7 +119,12 @@
                         }
                     ?>
                  </td>
-                <td><?php echo $date; ?></td>
+
+                
+                 <?php
+                    $sortableDateFormat = date('d-m-Y',$date);
+                ?>
+                <td data-sort="<?php echo $sortableDateFormat; ?>"><?php echo $date; ?></td>
                 <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
                 <td align="right">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
                 <td align="right">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
@@ -121,14 +134,17 @@
                 $i++;
 			}
 	        ?>
-            <tr class="last">
-                <td align="right" colspan="4">Total:</td> 
-                <td align="right" colspan="1">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
-                <td align="right" colspan="1">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
-                <td align="right" colspan="1">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
-                <td align="right" colspan="1">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
-            </tr>
+            </tbody>
 	</table>
+    <table class="table" width="100%">
+        <tr class="last">
+            <td colspan="4" align="right">Total:</td> 
+            <td align="right">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
+            <td align="right">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
+            <td align="right">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
+            <td align="right">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
+        </tr>
+    </table>
     <?php
     }
     ?>
@@ -136,9 +152,20 @@
 
 <div class="clearfix"></div>
 <script type="text/javascript"> 
+
+    $(document).ready( function () {
+        $('#soaTable').DataTable( {
+            "pageLength": 30
+        });
+    });
+
 </script>
 
 <style type="text/css">
+
+    .dataTables_length{ display:none; }
+    #soaTable_filter{ display:none; }
+    
 
     .mp{
         float: right;
