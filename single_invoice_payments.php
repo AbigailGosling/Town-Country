@@ -60,7 +60,7 @@ if (!empty($paymentID)) {
                 <td><?php echo $invoicePayment['payment_method']; ?></td>
                 <td><?php echo $invoicePayment['created_at']; ?></td>
                 <td><?php echo $invoicePayment['name']; ?></td>
-                <td><a href="/customer_payments.php?customer_id=<?php echo $_GET['customer_id']; ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
+                <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['customer_id']; ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
                 <td align="right">
                     <?php
                     $totalPrice += $invoicePayment['amount'];

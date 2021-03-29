@@ -40,13 +40,13 @@
             }
         ?>
     </h2>
-    <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make Payment</a>
+    <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
     <table class="table" width="100%">
         <tr class="heading">
             <th align="left">Invoice ID</th>
             <th align="left">Add Payment</th>
+            <th align="left">Due Date</th>
             <th align="left">Date</th>
-            <th align="left">PDF</th>
             <th align="right">Price</th>
             <th align="right">Paid</th>
             <th align="right">Outstanding</th>
@@ -98,12 +98,20 @@
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
 				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a></td>
                 <?php if(!$invoicePaid) { ?>
-                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make Payment</a></td>
+                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
 				<?php }else{ ?>
                     <td>Invoice Paid</a></td>  
                 <?php }?>  
+                <td>
+                    <?php
+                        echo $picksheet['estimated_delivery_date'];
+
+                        if (strtotime($picksheet['estimated_delivery_date']) < time()) {
+                            ?><div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div><?php
+                        }
+                    ?>
+                 </td>
                 <td><?php echo $date; ?></td>
-                <td><a href="javascript:;" onclick="generatePDF(<?php echo $picksheet['id']; ?>)">Invoice_<?php echo $picksheet['id']; ?>.pdf</a></td>
                 <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
                 <td align="right">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
                 <td align="right">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
@@ -177,23 +185,3 @@
         height:32px;
     }
 </style>
-
-<script>
-    function generatePDF(id){
-		$.get("<?php echo $domain; ?>ajax/generatePDFInvoice.php?id=" + id, function(data, status){
-			
-			var name = data.replace(/\s+/g, '');
-			
-			downloadURI('<?php echo $domain; ?>PDF/' + name, name);
-			
-		});
-	}
-	
-	function downloadURI(uri, name) 
-	{
-		var link = document.createElement("a");
-		link.download = name;
-		link.href = uri;
-		link.click();
-	}
-</script>
