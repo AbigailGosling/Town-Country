@@ -2,30 +2,42 @@
 	include('includes/frontHeader.php');
 
 
-    if($_POST['user_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != ''){
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
-
-        $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
-        $date_start = str_replace('/', '-', $date_start);
-        $date_start = date('Y-m-d', strtotime($date_start));
-        
-        
-        $date_end = mysqli_real_escape_string($conn, $_POST['date_end']);
-        $date_end = str_replace('/', '-', $date_end);
-        $date_end = date('Y-m-d', strtotime($date_end));
+        $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
 
         if($_POST['date_start'] != ''){
-            $dateQuery = " && `date` >= '$date_start' && `date` <= '$date_end'";
+            $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
+            $date_start = str_replace('/', '-', $date_start);
+            $date_start = date('Y-m-d', strtotime($date_start));
+            
+            if($_POST['date_end'] == ''){
+                $date_end = date('d/m/Y');
+            }else{
+                $date_end = mysqli_real_escape_string($conn, $_POST['date_end']);
+            }
+
+            $date_end = str_replace('/', '-', $date_end);
+            $date_end = date('Y-m-d', strtotime($date_end));
+
+         
+            $dateQueryPiece = " && `date` >= '$date_start' && `date` <= '$date_end'";
         }
 
-        if($USER_ID == 0){
-        
-            // all
-            $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 $dateQuery";
+        if($CUSTOMER_ID != 0){
+            $customerQueryPiece = " && customer_id ='$CUSTOMER_ID'";
         }else{
-            // specific user
-            $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 && user_from_id='$USER_ID' $dateQuery";
+            $customerQueryPiece = "";
         }
+
+        if($USER_ID != 0){
+            $userQueryPiece = " && user_from_id ='$USER_ID'";
+        }else{
+            $userQueryPiece = "";
+        }
+        
+        $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 $userQueryPiece $dateQueryPiece $customerQueryPiece";
+       
     }
 ?>
 <div id="top">
@@ -65,7 +77,7 @@
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
     <form method="POST">
-	<select name="user_id" style="width:322px;height:40px;">
+	<select name="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salesman..</option>
         <option value="0">All sales team</option>
 		<?php
@@ -74,6 +86,19 @@
 			
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if($_POST['user_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
+
+    <select name="customer_id" style="width:182px;height:40px;">
+        <option value="" disabled selected>Select customer..</option>
+        <option value="0">All customers</option>
+		<?php
+			$x = "SELECT * FROM `customers` order by businessname ASC";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>" <?php if($_POST['customer_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
 			}
 		?>
 	</select>
