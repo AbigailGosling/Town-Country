@@ -130,33 +130,34 @@
                 $(this).find('.active').toggle();
             });
 
-
-			$('#instantSearch').keyup(function(){
-			
-				var val = $('#instantSearch').val();
-				console.log(val);
-
-
-				var request = $.ajax({
-					type: "POST",
-					url: "ajax/invoicePageList.php",
-					data: {
-						searchterm: val
-					},
-					dataType: "html"
-				});
-
-				request.done(function(data) {
-					$('#intakeAjax').html(data);
-					loadPage(1);
-				});
-
-				request.fail(function(jqXHR, textStatus) {
-					// alert( "Request failed: " + textStatus );
-				});
-
+			$('#instantSearch').on('keypress',function(e) {
+				if(e.which == 13) {
+					doSearch();
+				}
 			});
         });
+
+		function doSearch(){
+			var val = $('#instantSearch').val();
+
+			var request = $.ajax({
+				type: "POST",
+				url: "ajax/invoicePageList.php",
+				data: {
+					searchterm: val
+				},
+				dataType: "html"
+			});
+
+			request.done(function(data) {
+				$('#intakeAjax').html(data);
+				loadPage(1);
+			});
+
+			request.fail(function(jqXHR, textStatus) {
+				// alert( "Request failed: " + textStatus );
+			});
+		}
     </script>
 </main>
 <div id="btm"></div>
