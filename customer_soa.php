@@ -124,11 +124,11 @@
                  <?php
                     $sortableDateFormat = date('d-m-Y',$date);
                 ?>
-                <td data-sort="<?php echo $sortableDateFormat; ?>"><?php echo $date; ?></td>
-                <td align="right">£<?php echo number_format($this_price,2,".",","); ?></td>
-                <td align="right">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
-                <td align="right">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
-                <td align="right">£<?php echo number_format($currentBalance, 2, ".", ","); ?></td>
+                <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
+                <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
+                <td align="right" width="100">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
+                <td align="right" width="100">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
+                <td align="right" width="100">£<?php echo number_format($currentBalance, 2, ".", ","); ?></td>
 			</tr>
 			<?php
                 $i++;
@@ -138,11 +138,11 @@
 	</table>
     <table class="table" width="100%">
         <tr class="last">
-            <td colspan="4" align="right">Total:</td> 
-            <td align="right">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
-            <td align="right">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
-            <td align="right">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
-            <td align="right">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
+            <td align="right">Total:</td> 
+            <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
+            <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
+            <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
+            <td align="right" width="120">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
         </tr>
     </table>
     <?php
