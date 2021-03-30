@@ -148,8 +148,10 @@
 
 		$(document).ready(function(){
 
-			$('#instantSearch').keyup(function(){
-				doSearch();
+			$('#instantSearch').on('keypress',function(e) {
+				if(e.which == 13) {
+					doSearch();
+				}
 			});
 			
 			
