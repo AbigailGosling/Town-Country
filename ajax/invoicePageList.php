@@ -14,7 +14,7 @@
         $customerids .= " OR completed='1' && customer_id='$rowid'";
     }
     
-    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id='" . $term . "' OR completed='1' && id LIKE '%$term%' $customerids  ORDER BY `id` DESC";
+    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id='" . $term . "' OR completed='1' && id LIKE '$term%' $customerids  ORDER BY `id` DESC";
     
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
     $count = mysqli_num_rows($y);
