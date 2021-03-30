@@ -87,15 +87,14 @@
                 if(($this_price - $picksheet['paid']) <= $epsilon){
                     $invoicePaid = true;
                     $currentOutstanding = (float) 0;
-                    $currentBalance = (float) abs($this_price - $picksheet['paid']);
                 }else{
                     $currentOutstanding = (float) $this_price - $picksheet['paid'];
-                    $currentBalance = (float) 0;
+                    $currentBalance += $currentOutstanding;
                 }
                 
                 
                 $totalOutstanding += $currentOutstanding;
-                $totalBalance += $currentBalance;
+                $totalBalance = $currentBalance;
 
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
