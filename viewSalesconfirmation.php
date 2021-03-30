@@ -269,7 +269,7 @@
 		customerID = customer_id;
 		console.log(' setCustomerDetails()');
 		
-		$.get( "ajax/getCustomerAddress.php?address_id=" + addressid + "&id=" + customer_id + '&empty=' + empty, function( data ) {
+		$.get( "ajax/getCustomerAddress.php?src=salesconfirmation&address_id=" + addressid + "&id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
 			$('.rating').fadeIn();
 		});
@@ -296,7 +296,7 @@
 		$('#addressid').val(address_id);
 
 
-		$.get("/ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("/ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});
@@ -371,12 +371,16 @@
 	function printStuff(){
 
 		$('.printhide').hide();
+		$('.printenable').show();
+		$('.delivery_address_container').hide();
 
 		window.print();
 	}
 
 	function printCompleted(){
 		$('.printhide').show();
+		$('.printenable').hide();
+		$('.delivery_address_container').show();
 	}
 </script>
 

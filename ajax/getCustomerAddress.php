@@ -81,7 +81,7 @@
 		<label>Delivery Contact Number</label><br/>
 		<input class="form-control input box" type="text" id="deliverynumber" name="deliverynumber" value="<?php echo $addressNumber; ?>">
 	</div>
-	<div>
+	<div class="delivery_address_container">
 		<label>Delivery Address</label> <a href="#changeAddress" data-lity>[Other]</a><br/>
 
 	 	<label>Address line 1</label>
@@ -96,6 +96,12 @@
 		<input class="form-control input box" type="text" id="addresspostcode" name="addresspostcode" value="<?php echo $addresspostcode; ?>">
 
 	</div>
+	<?php if($_GET['src'] == 'salesconfirmation'){ ?>
+		<div class="printenable" style="display:none;">
+			<label>Delivery Address</label><br/>
+			<textarea class="form-control" style="height:185px;padding:10px;resize:none;"disabled><?php if($addressline1 != ''){ echo $addressline1 . ',&#13;'; } ?><?php if($addressline2 != ''){ echo $addressline2 . ',&#13;'; } ?><?php if($addressline3 != ''){ echo $addressline3 . ',&#13;'; } ?><?php if($addressline4 != ''){ echo $addressline4 . ',&#13;'; } ?><?php if($addresspostcode != ''){ echo $addresspostcode . ',&#13;'; } ?></textarea>
+		</div>
+	<?php } ?>
 </div>
 </div>
 <div class="row">
