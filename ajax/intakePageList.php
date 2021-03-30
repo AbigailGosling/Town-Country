@@ -31,7 +31,7 @@
 			
 			$searchQuery  = "SELECT * FROM `intake` WHERE  date_received LIKE '%$termDate%' ORDER BY date_received DESC, id DESC"; 
 		}else{
-			$searchQuery = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '$term%' OR  id LIKE '%$term%' OR  delivery_note_number LIKE '$term%' OR ((supplier_id <> '') && supplier_id IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC";
+			$searchQuery = "SELECT * FROM `intake` WHERE id='" . $term . "' OR vehicle_reg LIKE '$term%' OR  id LIKE '$term%' OR  delivery_note_number LIKE '$term%' OR ((supplier_id <> '') && supplier_id IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC";
 		}
 		
 		$searchResults = mysqli_query($conn, $searchQuery) or die(mysqli_error($conn));
