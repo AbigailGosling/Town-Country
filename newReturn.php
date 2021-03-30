@@ -44,7 +44,7 @@
 					
 					<input name="supplier_id" id="customer_id" type="text" style="display:none;" value="<?php echo $supplierid; ?>">
 					<input name="supplier_search" id="customer" type="text" value="<?php echo $supplier['name']; ?>">
-					<div id="supplier_search_results">
+					<div id="customer_search_results">
 						
 					</div>
 
@@ -104,8 +104,10 @@
 <div id="btm"></div>
 <script>
 	
-	function setCustomerDetails(id){
-		$('#supplier_search_results').hide();
+	function setCustomer(customer_id, text){
+		$('#customer_search_results').fadeOut();
+		$('#customer_id').val(customer_id);
+		$('#customer').val(text);
 	}
 	
 	function saveReturn(){
@@ -186,9 +188,9 @@
 			var val = $('#customer').val();
 			// $('#test2d').text(val);
 			if(val != ''){
-				$('#supplier_search_results').fadeIn();
+				$('#customer_search_results').fadeIn();
 			}else{
-				$('#supplier_search_results').fadeOut();
+				$('#customer_search_results').fadeOut();
 			}
 			
 			var species = $('#species_id').val();
@@ -197,7 +199,7 @@
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			  // document.getElementById("demo").innerHTML = this.responseText;
-			  $('#supplier_search_results').html(this.responseText);
+			  $('#customer_search_results').html(this.responseText);
 			}
 			};
 			xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
