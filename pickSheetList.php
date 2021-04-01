@@ -70,8 +70,9 @@
                 $count_fresh = mysqli_num_rows($result_fresh);
 
                 // 2 is frozen
+                // 3 is fresh/frozen
 
-                $result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='2' LIMIT 1");
+                $result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN (2,3) LIMIT 1");
                 $count_frozen = mysqli_num_rows($result_frozen);
                 
                 
