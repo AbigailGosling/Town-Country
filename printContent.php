@@ -179,6 +179,38 @@
 									<?php
 									}
 								?>
+								<?php
+									if($row['grosspallet'] == 1){
+									?>
+										<table width="100%">
+										<tr>
+											<td colspan="11" style="padding-bottom:0px;">
+												<div style="text-align:left;float:right;">
+													<table border="1" style="background:#cacaca;">
+														<tr>
+															<td align="left"><b>Gross Weight: </b></td>
+															<td align="right"><?php echo number_format($row['gross_weight'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Pallet Tare: </b></td>
+															<td align="right"><?php echo number_format($row['pallet_tare'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Tare per carton: </b></td>
+															<td align="right"><?php echo number_format($row['tare_per_carton'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>No of cartons: </b></td>
+															<td align="right"><?php echo number_format($row['number_of_cartons'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Net KG: </b></td>
+															<td align="right"><?php echo number_format(weightFromProductID($product_id), 2, '.', ''); ?></td>
+														</tr>
+													</table>
+												</div>
+											</td>
+										</tr>
+										</table>
+									<?php
+									}	
+								?>
 								</div>
 								
 								

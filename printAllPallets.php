@@ -182,19 +182,21 @@
 								$species_id = getSpeciesFromCut($cut_id);
 								$this_weight = weightFromProductIDArray([$product_id]);
 								
+								$pallet = getPallet($pallet_id);
+
 								?>							
 							<div style='font-size:11px;padding-top:10px;float:left;width:100%;padding-left: 7px;'>
 								<?php 
 									
-									if($row['grosspallet'] == 1){
-										echo '[GT] ' . $row['number_of_cartons'] . ' Cartons of ';
+									if($pallet['grosspallet'] == 1){
+										echo '[GT] ' . $pallet['number_of_cartons'] . ' Cartons of ';
 									}
 								
 									$xk = "SELECT * FROM `weights` WHERE product_id='$product_id'";
 									$yk = mysqli_query($conn, $xk);
 									$ykRow = mysqli_fetch_array($yk);
 									
-									if($row['grosspallet'] == 0){
+									if($pallet['grosspallet'] == 0){
                                         if($product['akg'] == ''){
                                             echo $count = mysqli_num_rows($yk);
                                             
@@ -258,6 +260,38 @@
 										</div>
 									<?php
 									}
+								?>
+								<?php
+									if($pallet['grosspallet'] == 1){
+									?>
+										<table width="100%">
+										<tr>
+											<td colspan="11" style="padding-bottom:0px;">
+												<div style="text-align:left;float:right;">
+													<table border="1" style="background:#cacaca;">
+														<tr>
+															<td align="left"><b>Gross Weight: </b></td>
+															<td align="right"><?php echo number_format($pallet['gross_weight'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Pallet Tare: </b></td>
+															<td align="right"><?php echo number_format($pallet['pallet_tare'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Tare per carton: </b></td>
+															<td align="right"><?php echo number_format($pallet['tare_per_carton'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>No of cartons: </b></td>
+															<td align="right"><?php echo number_format($pallet['number_of_cartons'], 2, '.', ''); ?></td>
+														
+															<td align="left"><b>Net KG: </b></td>
+															<td align="right"><?php echo number_format(weightFromProductID($product_id), 2, '.', ''); ?></td>
+														</tr>
+													</table>
+												</div>
+											</td>
+										</tr>
+										</table>
+									<?php
+									}	
 								?>
 								</div>
 								<?php } ?>
