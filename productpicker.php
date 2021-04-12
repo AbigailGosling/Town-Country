@@ -87,7 +87,7 @@
 <div class="leftPanel" style="position:relative;">
     <form id="searchForm">
 	<select id="SearchSpecies" style="width:322px;height:40px;">
-        <option value="" disabled selected>Select species..</option>
+        <option value="" disabled selected>...</option>
 		<?php
 			$x = "SELECT * FROM `species`";
 			$y = mysqli_query($conn, $x);
@@ -101,7 +101,7 @@
     <select id="SearchCutgroups" name="cutgroup_id" style="width:322px;height:40px;">
             <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select cut..</option>
             <?php
-                $x = "SELECT * FROM `cutgroups`";
+                $x = "SELECT * FROM `cutgroups` WHERE id != 93";
                 $y = mysqli_query($conn, $x);
                 
                 $i=0;
