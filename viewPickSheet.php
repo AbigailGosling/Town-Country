@@ -56,9 +56,11 @@
 				<label><b>Delivery Date:</b> <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
 			</div>
 			
+			<?php if($pickerSheet['picksheet_note'] != ''){ ?>
 			<div style="padding-bottom:10px;font-size: 18px;width:100%;">
 				<label><b>Sales note:</b> <?php echo $pickerSheet['picksheet_note']; ?></label>
 			</div>
+			<?php } ?>
 		</div>
 		<?php if($pickerSheet['completed'] != '1'){ ?>
 		
