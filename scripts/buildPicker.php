@@ -9,8 +9,8 @@
 	
 	$orderReferenceNumber = $_POST['orderReferenceNumber'];
 	$weightnote = $_POST['weightnote'];
-	
-	
+	$picksheet_note = $_POST['picksheet_note'];
+ 
 	$deliverynumber = $_POST['deliverynumber'];
 	$deliveryaddress = $_POST['deliveryaddress'];
 	$addressid = $_POST['addressid'];
@@ -24,7 +24,7 @@
 	//$user_from_id = $_SESSION['USER'];
 	$user_from_id = $_POST['sales_person'];
 	
-	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,comments,orderReferenceNumber,date_completed,addressid) VALUES ('$picker_id','$user_from_id','$customer_id','$estimated_delivery_date','$comments','$orderReferenceNumber','$today','$addressid')";
+	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,comments,orderReferenceNumber,date_completed,addressid,picksheet_note) VALUES ('$picker_id','$user_from_id','$customer_id','$estimated_delivery_date','$comments','$orderReferenceNumber','$today','$addressid','$picksheet_note')";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
 	$pickersheet_id = mysqli_insert_id($conn);

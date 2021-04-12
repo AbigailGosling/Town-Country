@@ -2,9 +2,10 @@
 	require('../functions.php');
 
 	
-    echo $addressid = mysqli_real_escape_string($conn, $_POST['addressid']);
+    $addressid = mysqli_real_escape_string($conn, $_POST['addressid']);
     $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
     $picksheetid = mysqli_real_escape_string($conn, $_POST['picksheetid']);
+    $picksheet_note = mysqli_real_escape_string($conn, $_POST['picksheet_note']);
 
     $addressline1 = mysqli_real_escape_string($conn, $_POST['addressline1']);
     $addressline2 = mysqli_real_escape_string($conn, $_POST['addressline2']);
@@ -20,7 +21,7 @@
    echo 'Updating..';
 
     // update delivery date && addressid
-    $y = mysqli_query($conn, "UPDATE `pickerSheets` SET estimated_delivery_date='$estimated_delivery_date', addressid='$addressid' WHERE id='$picksheetid' LIMIT 1");
+    $y = mysqli_query($conn, "UPDATE `pickerSheets` SET estimated_delivery_date='$estimated_delivery_date', addressid='$addressid',picksheet_note='$picksheet_note' WHERE id='$picksheetid' LIMIT 1");
 
 
     if($addressid == 1){
