@@ -100,6 +100,13 @@
 	
 	<div class="row" id="address"></div>
 	 
+	<div class="row">
+		<div class="col">
+			<label>Picksheet Notes</label><br/>
+			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"><?php echo $picksheet['picksheet_note']; ?></textarea>
+		</div>
+		<div class="col"></div>
+	</div>
 	
 	<div class="row">
 		<div class="col">
