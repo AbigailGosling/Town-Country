@@ -47,7 +47,7 @@
 			<a href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
 		</div><br/>
 		<?php } ?><br/>
-		<div class="customer_info">
+		<div class="customer_info" style="flex-wrap: wrap;">
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;">
 				<label><b>Customer Name:</b> <?php echo $customerName; ?></label>
 			</div>
