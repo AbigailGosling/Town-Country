@@ -101,7 +101,7 @@
     <select id="SearchCutgroups" name="cutgroup_id" style="width:322px;height:40px;">
             <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select cut..</option>
             <?php
-                $x = "SELECT * FROM `cutgroups`";
+                $x = "SELECT * FROM `cutgroups` WHERE id != 93";
                 $y = mysqli_query($conn, $x);
                 
                 $i=0;
