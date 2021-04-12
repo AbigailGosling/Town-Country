@@ -87,7 +87,7 @@
 <div class="leftPanel" style="position:relative;">
     <form id="searchForm">
 	<select id="SearchSpecies" style="width:322px;height:40px;">
-        <option value="" disabled selected>Select species..</option>
+        <option value="" disabled selected>...</option>
 		<?php
 			$x = "SELECT * FROM `species`";
 			$y = mysqli_query($conn, $x);
