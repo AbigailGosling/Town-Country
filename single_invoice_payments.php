@@ -42,6 +42,7 @@ if (!empty($paymentID)) {
                 <th align="left">Paid On</th>
                 <th align="left">Payment Entered By</th>
                 <th align="left">Edit</th>
+                <th align="left">Delete</th>
                 <th align="right">Amount</th>
             </tr>
         </thead>
@@ -60,7 +61,17 @@ if (!empty($paymentID)) {
                 <td><?php echo $invoicePayment['payment_method']; ?></td>
                 <td><?php echo $invoicePayment['created_at']; ?></td>
                 <td><?php echo $invoicePayment['name']; ?></td>
-                <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['customer_id']; ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a></td>
+                <td align="center">
+                    <a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['customer_id']; ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                </td>
+                <td align="center">
+                <form method="POST" action="/scripts/_deleteInvoicePayment.php">
+                    <input type="hidden" name="return_url" value="<?php echo "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?>">
+                    <input type="hidden" name="invoice_id" value="<?php echo $invoicePayment['id']; ?>">
+
+                    <button type="submit" style="border:0px;background:none;"><i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px !important"></i></button>
+                </form>
+                </td>
                 <td align="right">
                     <?php
                     $totalPrice += $invoicePayment['amount'];
@@ -72,7 +83,7 @@ if (!empty($paymentID)) {
         </tbody>
         <tfoot>
             <tr>
-                <td align="right" colspan="6">Total</td>
+                <td align="right" colspan="7">Total</td>
                 <td align="right" colspan="1">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td>
             </tr>
         </tfoot>
