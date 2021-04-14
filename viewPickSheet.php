@@ -47,14 +47,20 @@
 			<a href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
 		</div><br/>
 		<?php } ?><br/>
-		<div class="customer_info">
-			<div style="padding-bottom:10px;font-size: 18px;">
-				<label>Customer Name: <?php echo $customerName; ?></label>
+		<div class="customer_info" style="flex-wrap: wrap;">
+			<div style="padding-bottom:10px;font-size: 18px;width: 50%;">
+				<label><b>Customer Name:</b> <?php echo $customerName; ?></label>
 			</div>
 			
-			<div style="padding-bottom:10px;font-size: 18px;">
-				<label>Delivery Date: <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
+			<div style="padding-bottom:10px;font-size: 18px;width: 50%;text-align:right;">
+				<label><b>Delivery Date:</b> <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
 			</div>
+			
+			<?php if($pickerSheet['picksheet_note'] != ''){ ?>
+			<div style="padding-bottom:10px;font-size: 18px;width:100%;">
+				<label><b>Sales note:</b> <?php echo $pickerSheet['picksheet_note']; ?></label>
+			</div>
+			<?php } ?>
 		</div>
 		<?php if($pickerSheet['completed'] != '1'){ ?>
 		

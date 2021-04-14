@@ -134,14 +134,15 @@
 
             while($invoice = mysqli_fetch_array($searchResults)){
                 $invoice_cost = invoiceTotalCost($invoice['id']);
+                
                 $invoice_price = invoiceTotal($invoice['id']);
                 ?>
                 <tr class="result">
                     <td><a href="invoice.php?id=<?php echo $invoice['id']; ?>" target="_blank"><?php echo $invoice['id']; ?></a></td>
                     <td><?php echo customerName($invoice['customer_id']); ?> </td>
-                    <td>£<?php echo $invoice_cost; ?></td>
-                    <td>£<?php echo $invoice_price; ?></td>
-                    <td>£<?php echo $invoice_price - $invoice_cost; ?></td>
+                    <td>£<?php echo number_format($invoice_cost, 2); ?></td>
+                    <td>£<?php echo number_format($invoice_price, 2); ?></td>
+                    <td>£<?php echo number_format($invoice_price - $invoice_cost, 2); ?></td>
                 </tr>
                 <?php
             }

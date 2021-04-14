@@ -84,16 +84,11 @@
 	<div class="delivery_address_container">
 		<label>Delivery Address</label> <a href="#changeAddress" data-lity>[Other]</a><br/>
 
-	 	<label>Address line 1</label>
-		<input class="form-control input box" type="text" id="addressline1" name="addressline1" value="<?php echo $addressline1; ?>">
-		<label>Address line 2</label>
-		<input class="form-control input box" type="text" id="addressline2" name="addressline2" value="<?php echo $addressline2; ?>">
-		<label>Address line 3</label>
-		<input class="form-control input box" type="text" id="addressline3" name="addressline3" value="<?php echo $addressline3; ?>">
-		<label>Address line 4</label>
-		<input class="form-control input box" type="text" id="addressline4" name="addressline4" value="<?php echo $addressline4; ?>">
-		<label>Postcode</label>
-		<input class="form-control input box" type="text" id="addresspostcode" name="addresspostcode" value="<?php echo $addresspostcode; ?>">
+ 		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline1" name="addressline1" value="<?php echo $addressline1; ?>">
+ 		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline2" name="addressline2" value="<?php echo $addressline2; ?>">
+ 		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline3" name="addressline3" value="<?php echo $addressline3; ?>">
+ 		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline4" name="addressline4" value="<?php echo $addressline4; ?>">
+ 		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addresspostcode" name="addresspostcode" value="<?php echo $addresspostcode; ?>">
 
 	</div>
 	<?php if($_GET['src'] == 'salesconfirmation'){ ?>

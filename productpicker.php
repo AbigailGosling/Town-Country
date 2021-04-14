@@ -25,7 +25,14 @@
 	</div>
 	
 	<div class="row" id="address"></div>
-	 
+	
+	<div class="row">
+		<div class="col">
+			<label>Picksheet Notes</label><br/>
+			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
+		</div>
+		<div class="col"></div>
+	</div>
 	
 	<div class="row">
 		<div class="col">
@@ -92,9 +99,9 @@
 	</select>
     
     <select id="SearchCutgroups" name="cutgroup_id" style="width:322px;height:40px;">
-            <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select cut..</option>
+            <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
             <?php
-                $x = "SELECT * FROM `cutgroups`";
+                $x = "SELECT * FROM `cutgroups` WHERE id != 93";
                 $y = mysqli_query($conn, $x);
                 
                 $i=0;

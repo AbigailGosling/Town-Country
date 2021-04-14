@@ -1450,36 +1450,30 @@
 	function invoiceTotalCost($pickersheet_id){
 		global $conn;
 
-		$totalCost = 0; 
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
-		$outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+		$totalCost = 0;
+		
+		$outPalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
+		$outPalletsResult = mysqli_query($conn, $outPalletQuery);
                 
-		$outpalletCount = mysqli_num_rows($outpalletResult2);
+		$outPalletCount = mysqli_num_rows($outPalletsResult);
 
-		while($outpallet = mysqli_fetch_array($outpalletResult2)){
-			$weightids = $outpallet['weight_ids'];
- 
-			$productIDArray = array();
+		while($outPallet = mysqli_fetch_array($outPalletsResult)){
+			$weight_ids = $outPallet['weight_ids'];
 
 
-			$weightsResult = mysqli_query($conn, "SELECT product_id FROM `weights` WHERE id IN ($weightids)");
+			$weightCountResult = mysqli_query($conn, "SELECT count(id) as count FROM `weights` WHERE id in ($weight_ids)");
+			$weightCountData = mysqli_fetch_array($weightCountResult);
+			$this_weight_count = $weightCountData['count'];
 
-			while($weight = mysqli_fetch_array($weightsResult)){
-				array_push($productIDArray, $weight['product_id']);
-			}
-  
-			$weightids = explode(',', $outpallet['weight_ids']);
-
-
-			foreach($productIDArray as $productID){
+			$weightResult = mysqli_query($conn, "SELECT * FROM `weights` WHERE id in ($weight_ids) GROUP BY product_id");
+			$weightData = mysqli_fetch_array($weightResult);
+			$product_id = $weightData['product_id'];
 			
-				$y1 = mysqli_query($conn, "SELECT unit FROM `product` WHERE id='$productID'");
-				$product = mysqli_fetch_array($y1);
-                
-				$cost = $product['cost'];
+			
+			$productResult = mysqli_query($conn, "SELECT * FROM product WHERE id = $product_id");
+			$productData = mysqli_fetch_array($productResult);
 
-				$totalCost += $cost;
-			}
+			$totalCost += ($productData['cost'] * $this_weight_count);
 		}
 
 		return $totalCost;
