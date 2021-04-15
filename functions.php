@@ -1002,7 +1002,52 @@
 		
 		return $row;
 	}
+
+	# Get Count Customer Sales By Salesman - expects 2 param, customer_id, user_id
+	function countCustomerSalesBySalesman($customer_id, $user_id){
+		global $conn;
+
+		$queryResult = mysqli_query($conn, "SELECT COUNT(id) as count FROM `pickerSheets` WHERE user_from_id='$user_id' && customer_id='$customer_id'");
+
+		$countData = mysqli_fetch_array($queryResult);
+
+		return $countData['count'];
+	}
 	
+	# Get Outstanding Picksheet Total Price - expects 1 param, picksheet_id
+	function getOutstandingPicksheetTotal($picksheet_id){
+		global $conn;
+
+		$customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id) GROUP by pickerSheets.id");
+
+		$totalOutstanding = 0.00;
+
+		$picksheet = mysqli_fetch_array($customerPicksheets);
+		$this_price = (float) invoiceTotal($picksheet['id']);
+
+		$epsilon = 0.00001;
+		if(($this_price - $picksheet['paid']) <= $epsilon){
+			$totalOutstanding = (float) 0;
+		}else{
+			$totalOutstanding = (float) $this_price - $picksheet['paid'];
+		}
+
+		return $totalOutstanding;
+	}
+
+	# Get Picksheet Total Paid - expects 1 param, picksheet_id
+	function getPicksheetTotalPaid($picksheet_id){
+		global $conn;
+		
+		$customerPicksheets = mysqli_query($conn, "SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id) GROUP by pickerSheets.id");
+
+		$picksheet = mysqli_fetch_array($customerPicksheets);
+ 
+		$totalPaid = (float) $picksheet['paid'];
+
+		return $totalPaid;
+	}
+
 	function getCuts(){
 		global $conn;
 		
