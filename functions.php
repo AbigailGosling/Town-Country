@@ -1492,6 +1492,16 @@
 		return $totalPrice;
 	}
 
+	function getInvoiceCreditNoteTotal($invoice_id){
+		global $conn;
+
+		$db_result = mysqli_query($conn, "SELECT SUM(amount) as total_credit FROM `invoice_payments` WHERE invoice_id='$invoice_id' && payment_method='CREDIT_NOTE'"); 
+		$data = mysqli_fetch_array($db_result);
+
+		return (float) $data['total_credit'];
+
+	}
+
 	function invoiceTotalCost($pickersheet_id){
 		global $conn;
 

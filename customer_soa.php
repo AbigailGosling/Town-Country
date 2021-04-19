@@ -63,9 +63,9 @@
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
                 
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
             }
             
             $totalPrice = 0.00;
@@ -75,6 +75,7 @@
 
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
+                $total_credit = getInvoiceCreditNoteTotal($picksheet['id']);
                 $this_price = (float) invoiceTotal($picksheet['id']);
                 $totalPrice += $this_price;
 
@@ -88,10 +89,9 @@
                     $invoicePaid = true;
                     $currentOutstanding = (float) 0;
                 }else{
-                    $currentOutstanding = (float) $this_price - $picksheet['paid'];
+                    $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
                     $currentBalance += $currentOutstanding;
                 }
-                
                 
                 $totalOutstanding += $currentOutstanding;
                 $totalBalance = $currentBalance;
