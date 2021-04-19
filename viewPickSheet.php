@@ -98,11 +98,11 @@
 		$pallet = mysqli_fetch_array($yPallet);
 		# PALLET END
 		
-		# COUNT START
-		$xCount = "SELECT id FROM `pickerItems` WHERE pickersheet_id='$picksheetid' && product_id='$productID'";
-		$yCount = mysqli_query($conn, $xCount);
-		$numRequired = mysqli_num_rows($yCount);
-		# COUNT END
+		$pickerItemsResult = mysqli_query($conn, "SELECT id,target_weight FROM `pickerItems` WHERE pickersheet_id='$picksheetid' && product_id='$productID'");
+		$pickerItemsData = mysqli_fetch_array($pickerItemsResult);
+
+		$target_weight = $pickerItemsData['target_weight'];
+		$numRequired = mysqli_num_rows($pickerItemsResult);
 
 		$temp_id = $product['cooling_id'];
 	?>
@@ -153,9 +153,7 @@
 			
 			<div class="rowEndContainer">
 				<div class="numRequired"><?php echo $numRequired; ?></div>
-				<?php if($product['weightnote'] != ''){ ?>
-				<div class="weightcomment"><?php echo $product['weightnote'] . 'kg'; ?></div>
-				<?php } ?>
+				<div class="weightcomment"><?php echo $target_weight . 'kg'; ?></div>
 			</div>
 		<input type="text" value="0" class="counter" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>" style="display:none">
 		<input type="text" value="<?php echo $numRequired; ?>" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>-max" style="display:none">
