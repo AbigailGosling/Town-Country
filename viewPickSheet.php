@@ -11,6 +11,10 @@
 	
 	$customerName = customerName($pickerSheet['customer_id']);
 	
+	$customer_id = $pickerSheet['customer_id'];
+	$customerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE id='$customer_id'");
+	$customer = mysqli_fetch_array($customerResult);
+
 ?>
 <style type="text/css">
 	#addtoPalletForm{
@@ -55,12 +59,50 @@
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;text-align:right;">
 				<label><b>Delivery Date:</b> <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
 			</div>
-			
+
+			<div style="padding-bottom:10px;font-size: 18px;width:100%;">
+				<label><b>Delivery Address:</b>
+			<div class="deliverybox">
+				<p>
+ 					<?php echo $customer['businessname']; ?><br/>
+					t/a <?php echo $customer['tradingas']; ?><br/>
+					<?php
+						
+						if($pickerSheet['addressid'] == ''){ $pickerSheet['addressid'] = 1; }
+
+                        if($pickerSheet['addressid'] == 1){
+                            echo $customer['address1_1'] . '<br/>';
+                            echo $customer['address1_2'] . '<br/>';
+                            echo $customer['address1_3'] . '<br/>';
+                            echo $customer['postcode_1'] . '<br/>';
+                        }
+                        
+                        if($pickerSheet['addressid'] == 2){
+                            echo $customer['address2_1'] . '<br/>';
+                            echo $customer['address2_2'] . '<br/>';
+                            echo $customer['address2_3'] . '<br/>';
+                            echo $customer['postcode_2'] . '<br/>';
+                        }
+                        
+                        if($pickerSheet['addressid'] == 3){
+                            echo $customer['address3_1'] . '<br/>';
+                            echo $customer['address3_2'] . '<br/>';
+                            echo $customer['address3_3'] . '<br/>';
+                            echo $customer['postcode_3'] . '<br/>';
+                        }
+						
+					?>
+					
+				</p>
+				</label>
+			</div>
+
 			<?php if($pickerSheet['picksheet_note'] != ''){ ?>
 			<div style="padding-bottom:10px;font-size: 18px;width:100%;">
 				<label><b>Sales note:</b> <?php echo $pickerSheet['picksheet_note']; ?></label>
 			</div>
 			<?php } ?>
+
 		</div>
 		<?php if($pickerSheet['completed'] != '1'){ ?>
 		
