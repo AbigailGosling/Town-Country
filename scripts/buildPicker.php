@@ -33,26 +33,21 @@
 	foreach ($_POST['basketRow'] as $key => $value) {
 	
 		$price_type = $_POST['price_type'];
-		
+		$target_weight = $_POST['target_weight_' . $product_id];
+
 		$details = explode('-', $value);
-		
 		$product_id = $details[0];
 		$quantity = $details[1];
 		$cut_id = $details[2];
 		
-		
-		# WEIGHT NOTE START
-		$weightnote = $_POST['weightnote_' . $product_id];
- 		$x = "UPDATE `product` SET weightnote = '$weightnote' WHERE id='$product_id' LIMIT 1";
-		$y = mysqli_query($conn, $x);
-		# WEIGHT NOTE END
+	
 		
 		$price_type = $price_type[$index];
 		
 		$price = $_POST['price_' . $product_id];
 		
 		for($i=0;$i<$quantity;$i++){
-			$x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment) VALUES ('$pickersheet_id','$product_id','$price','$price_type','$comment')";
+			$x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES ('$pickersheet_id','$product_id','$price','$price_type','$comment','$target_weight')";
 			$y = mysqli_query($conn, $x);
 		}
 	 

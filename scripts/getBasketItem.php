@@ -59,7 +59,7 @@
 	 
 	<td><?php echo $q; ?></td>
 	<td>
-		<input type="number" value="<?php echo $rowProduct['weightnote']; ?>" name="weightnote_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">
+		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">
 	</td>
 	<td><input type="number" step="0.01" cost="<?php echo $rowProduct['cost']; ?>" class="price"   name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
 	<td>
