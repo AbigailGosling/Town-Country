@@ -42,13 +42,16 @@
 		<div class="col"></div>
 	</div>
 
+	<?php if($user['allow_override_salesman'] == 0){ ?>
+		<input type="hidden" id="sales_person" name="sales_person" value="<?php echo $userid; ?>">
+	<?php }else{ ?>
 	<div class="row">
 		<div class="col">
 			<label> Salesperson</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
 					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
-
+	
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
 					}
@@ -57,6 +60,7 @@
 		</div>
 		<div class="col"></div>
 	</div>
+	<?php } ?>
 </div>
 
 <div class="rightPanel">
