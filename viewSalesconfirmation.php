@@ -249,7 +249,6 @@
 		$('#customer').val('<?php echo $customer['businessname']; ?>');
 		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
 		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');
-		$('#comments').val('<?php echo $picksheet['comments']; ?>');		
 	}, 500);
 	
 	$('#customer').keyup(function(){
