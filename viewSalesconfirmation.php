@@ -116,7 +116,7 @@
 		<div class="col"></div>
 	</div>
 
-	<div class="row">
+	<div class="row printhide">
 		<div class="col">
 			<input type="submit" value="Update">
 		</div>
