@@ -103,9 +103,6 @@
 	<div class="col" style="">
 		
 	<div>
-		<label>Comments</label><br/>
-		<textarea class="form-control" id="comments" name="comments" style="height:142px;padding:10px;resize:none;"></textarea class="form-control">
-		
  		<?php
 			if($_GET['empty'] != 'true'){
 				

@@ -100,7 +100,7 @@
 	
 	<div class="row" id="address"></div>
 	 
-	<div class="row">
+	<div class="row printhide">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"><?php echo $picksheet['picksheet_note']; ?></textarea>
@@ -116,7 +116,7 @@
 		<div class="col"></div>
 	</div>
 
-	<div class="row">
+	<div class="row printhide">
 		<div class="col">
 			<input type="submit" value="Update">
 		</div>
@@ -249,7 +249,6 @@
 		$('#customer').val('<?php echo $customer['businessname']; ?>');
 		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
 		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');
-		$('#comments').val('<?php echo $picksheet['comments']; ?>');		
 	}, 500);
 	
 	$('#customer').keyup(function(){
