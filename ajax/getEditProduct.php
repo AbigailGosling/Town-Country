@@ -91,7 +91,7 @@
 		<textarea name="storage_location" ><?php echo $palletRow['storage_location']; ?></textarea>
 		
 		<label>comments</label>
-		<textarea name="comments" ><?php echo $palletRow['comments']; ?></textarea>
+		<textarea name="comments" ><?php echo $productRow['comments']; ?></textarea>
 		
 		
 		
