@@ -28,7 +28,7 @@
 	$cost = mysqli_real_escape_string($conn, $_POST['cost']);
 	$price = mysqli_real_escape_string($conn, $_POST['price']);
 	
-	$palletx = "UPDATE `pallet` SET storage_location='$storage_location', comments='$comments' WHERE id='$pallet_id'";
+	$palletx = "UPDATE `pallet` SET storage_location='$storage_location' WHERE id='$pallet_id'";
 	$pallety = mysqli_query($conn, $pallet);
 	
 	

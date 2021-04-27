@@ -75,6 +75,14 @@
 			</div>
 
 			<div class="formElement">
+				<label>Ability to change salesman on create sale</label>
+				<select name="allow_override_salesman">
+					<option value="0" <?php if($data['allow_override_salesman'] == 0){ echo 'selected'; } ?>>No</option>
+					<option value="1" <?php if($data['allow_override_salesman'] == 1){ echo 'selected'; } ?>>Yes</option>
+				</select>
+			</div>
+
+			<div class="formElement">
 				<label>User Type</label>
 				<select name="user_type">
 					<option value="M" <?php if($data['user_type'] == 'M'){ echo 'selected'; } ?>>User</option>

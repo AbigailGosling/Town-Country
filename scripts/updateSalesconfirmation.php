@@ -14,14 +14,15 @@
     $addresspostcode = mysqli_real_escape_string($conn, $_POST['addresspostcode']);
     $deliverynumber = mysqli_real_escape_string($conn, $_POST['deliverynumber']);
     
+    $orderReferenceNumber = mysqli_real_escape_string($conn, $_POST['orderReferenceNumber']);
+
     
     $estimated_delivery_date = mysqli_real_escape_string($conn, $_POST['estimated_delivery_date']); #picksheet
     
 
    echo 'Updating..';
 
-    // update delivery date && addressid
-    $y = mysqli_query($conn, "UPDATE `pickerSheets` SET estimated_delivery_date='$estimated_delivery_date', addressid='$addressid',picksheet_note='$picksheet_note' WHERE id='$picksheetid' LIMIT 1");
+    $y = mysqli_query($conn, "UPDATE `pickerSheets` SET estimated_delivery_date='$estimated_delivery_date', orderReferenceNumber='$orderReferenceNumber', addressid='$addressid',picksheet_note='$picksheet_note' WHERE id='$picksheetid' LIMIT 1");
 
 
     if($addressid == 1){

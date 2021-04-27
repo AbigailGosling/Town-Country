@@ -1211,12 +1211,42 @@
 		}
 	}
 	  
-	function deleteIntake($id){
+	function deleteIntake($intake_id){
 		global $conn;
+
+		$pallet_ids = array();
+		$product_ids = array();
+		$weight_ids = array();
+
+		$palletsResult = mysqli_query($conn, "SELECT id FROM `pallet` WHERE intake_id='$intake_id'");
+		while($pallet = mysqli_fetch_array($palletsResult)){ array_push($pallet_ids, $pallet['id']); }
+
+		$temp_pallet_ids = implode(',', $pallet_ids);
+
+		$productsResult = mysqli_query($conn, "SELECT id FROM `product` WHERE pallet_id IN ($temp_pallet_ids)");
+		while($product = mysqli_fetch_array($productsResult)){ array_push($product_ids, $product['id']); }
+
+		$temp_product_ids = implode(',', $product_ids);
+
+		$weightsResult = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id IN ($temp_product_ids)");
+		while($weight = mysqli_fetch_array($weightsResult)){ array_push($weight_ids, $weight['id']); }
+
 		
-		$x = "DELETE FROM `intake` WHERE id='$id'";
-		$y = mysqli_query($conn, $x);
-		
+		$pallet_ids = implode(',', $pallet_ids);
+		$product_ids = implode(',', $product_ids);
+		$weight_ids = implode(',', $weight_ids);
+
+		// Delete related pallets
+		$deletePalletResult = mysqli_query($conn, "DELETE FROM `pallet` WHERE id IN ($pallet_ids)");
+
+		// Delete related products
+		$deleteProductResult = mysqli_query($conn, "DELETE FROM `product` WHERE id IN ($product_ids)");
+
+		// Delete related weight entries
+		$deleteWeightsResult = mysqli_query($conn, "DELETE FROM `weights` WHERE id IN ($weight_ids)");
+
+		// Delete the intake 
+		$deleteIntakeResult = mysqli_query($conn, "DELETE FROM `intake` WHERE id = '$intake_id'");
 	}
 	
 	function getPallet($id){
@@ -1490,6 +1520,16 @@
 		}
 
 		return $totalPrice;
+	}
+
+	function getInvoiceCreditNoteTotal($invoice_id){
+		global $conn;
+
+		$db_result = mysqli_query($conn, "SELECT SUM(amount) as total_credit FROM `invoice_payments` WHERE invoice_id='$invoice_id' && payment_method='CREDIT_NOTE'"); 
+		$data = mysqli_fetch_array($db_result);
+
+		return (float) $data['total_credit'];
+
 	}
 
 	function invoiceTotalCost($pickersheet_id){
