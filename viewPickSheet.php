@@ -53,7 +53,8 @@
 		<?php } ?><br/>
 		<div class="customer_info" style="flex-wrap: wrap;">
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;">
-				<label><b>Customer Name:</b> <?php echo $customerName; ?></label>
+				<label><b>Customer Name:</b> <?php echo $customerName; ?></label><br/>
+				<label><b>Order Number:</b> <?php echo $pickerSheet['id']; ?></label>
 			</div>
 			
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;text-align:right;">
