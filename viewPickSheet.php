@@ -104,12 +104,6 @@
 			<?php } ?>
 
 		</div>
-		<?php if($pickerSheet['completed'] != '1'){ ?>
-		
-		<script> setTimeout(() => { setPickMode('<?php echo $_GET['type']; ?>');  }, 1000);</script>
-		<?php }else{ ?>
-			<script> setPickMode('all'); </script>
-		<?php } ?>
 	</div>
 	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo $_GET['type']; ?>">
 	<?php
@@ -402,6 +396,13 @@
             ?>
         </div>
 </main>
+
+<?php if($pickerSheet['completed'] != '1'){ ?>
+	<script> setTimeout(() => { setPickMode('<?php echo $_GET['type']; ?>');  }, 500);</script>
+<?php }else{ ?>
+	<script> setTimeout(() => { setPickMode('all'); }, 500); </script>
+<?php } ?>
+
 <div id="btm"></div>
 <script>
  
