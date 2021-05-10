@@ -99,7 +99,17 @@
 	</div>
 	
 	<div class="row" id="address"></div>
-	 
+
+	<?php if($picksheet['user_from_id'] != ''){ ?>
+	<div class="row">
+		<div class="col">
+			<label>Salesman</label><br/>
+			<input type="text" id="sales_person" class="form-control" value="<?php echo getUsername($picksheet['user_from_id']); ?>" disabled>
+		</div>
+		<div class="col"></div>
+	</div>
+	<?php } ?>
+	
 	<div class="row printhide">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
