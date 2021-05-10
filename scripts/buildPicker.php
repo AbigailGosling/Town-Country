@@ -33,6 +33,10 @@
 	
 		$price_type = $_POST['price_type'];
 		$target_weight = $_POST['target_weight_' . $product_id];
+		
+		if(empty($target_weight)){ $target_weight = 0; }
+		
+		if(!is_int($target_weight)){ $target_weight = 0; }
 
 		$details = explode('-', $value);
 		$product_id = $details[0];
