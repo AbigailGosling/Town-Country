@@ -53,12 +53,12 @@
 			
 			<div class="formElement">
 				<label>Name</label>
-				<input type="text" name="name" class="inputtext" value="<?php echo $data['name']; ?>">
+				<input type="text" name="name" class="inputtext" value="<?php echo $data['name']; ?>" required>
 			</div>
 			
 			<div class="formElement">
 				<label>Email Address</label>
-				<input type="text" name="email" class="inputtext" value="<?php echo $data['email']; ?>">
+				<input type="email" name="email" class="inputtext" value="<?php echo $data['email']; ?>" required>
 			</div>
 			
 			<div class="formElement">
