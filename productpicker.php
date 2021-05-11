@@ -424,14 +424,17 @@ function checkStock(){
 	$('#sendfake').click(function(){
 
 		$(this).prop('disabled', true);
+
+		var customer_id = $('#customer_id').val();
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
 		
+
 		customerEntered = false;
 		dateEntered = false;
 		priceEntered = false;
 		pricedCorrectly = true;
-		if (customer != '' && !isNaN(customerID)) {
+		if (customer_id != undefined) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
 		} else{
@@ -491,11 +494,7 @@ function checkStock(){
 
 			$('#sendfake').prop('disabled', false);
 
-		}
-		 
-		
-		console.log(ready);
-		
+		}		
 	});
 	
 	function setCustomerDetails(customer_id, empty='false'){
