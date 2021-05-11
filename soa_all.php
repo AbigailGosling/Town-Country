@@ -63,7 +63,7 @@
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
-        <a href="/manageCustomers.php?id=<?php echo $_GET['id']; ?>" class="back">< BACK</a>
+        <a href="javascript: window.history.back()" class="back">< BACK</a>
     </div>
 </div>
 <div class="container">
