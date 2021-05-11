@@ -59,6 +59,8 @@
 				while($page = mysqli_fetch_array($resultsColumn3)){
 					if($page['file'] == 'exportstock.php'){
 						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					}else if($page['file'] == 'exportStockPDF.php'){
+						?><a onclick="exportstockPDF(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 					}else{
 						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 					}
@@ -68,6 +70,7 @@
 			}
 		?>
 	</div>
+
 	<script>
 		function exportstock(ele, original_name){
 			$(ele).html('<img src="img/loading.gif" height="30" style="margin-top:5px"> <span>Please wait..</span>');
@@ -76,6 +79,15 @@
 				$(ele).html(original_name);
 			}, 15000);
 		}
+
+		function exportstockPDF(ele, original_name){
+			$(ele).html('<img src="img/loading.gif" height="30" style="margin-top:5px"> <span>Please wait..</span>');
+
+			setTimeout(() => {
+				$(ele).html(original_name);
+ 			}, 15000);
+		}
+
 	</script>
 	<style>
 		#menu_wrap{
