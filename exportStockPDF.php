@@ -1,0 +1,336 @@
+<?php
+	require('functions.php');
+
+	ini_set('memory_limit', '1024M');
+	
+	require_once __DIR__ . '/ajax/vendor/autoload.php';
+		
+	$mpdf = new \Mpdf\Mpdf([
+        'mode' => 'utf-8',
+        'format' => 'A4-L',
+		'setAutoTopMargin' => 'stretch',
+        'autoMarginPadding' => 0,
+        'bleedMargin' => 0,
+        'crossMarkMargin' => 0,
+        'cropMarkMargin' => 0,
+        'nonPrintMargin' => 0,
+        'margBuffer' => 0,
+        'collapseBlockMargins' => true,
+    ]);
+	
+	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
+	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
+	
+	$css ="
+		body{
+			font-family: 'Roboto', sans-serif;
+			margin:0px;
+		}
+
+        .headerBg{
+            background:#B4C7E7;
+        }
+
+        .underline{
+            text-decoration:underline;
+        }
+
+        .intakeid{
+            width:80px;
+            font-size:8px;
+            color:grey;
+            text-align:center;
+        }
+
+        .palletid{
+            width:80px;
+            
+            font-size:8px;
+            color:grey;
+            text-align:center;
+        }
+
+        .quantity{
+            width:40px;
+            font-size:11px;
+            font-weight:bold;
+            text-align:center;
+        }
+
+        .temp{
+            width:60px;
+            font-size:8px;
+        }
+
+        .product{
+            width:200px;
+            font-size:11px;
+            font-weight:bold;
+            text-align:left;
+        }
+
+        .nationality{
+            width:90px;
+            font-size:8px;
+            color:grey;
+            text-align:left;
+        }
+
+        .brand{
+            width:70px;
+            font-size:8px;
+            color:grey;
+            text-align:left;
+        }
+
+        .dateRange{
+            width:110px;
+            font-size:8px;
+            color:grey;
+            text-align:left;
+        }
+
+        .unit{
+            width:80px;
+            font-weight:bold;
+            font-size:11px;
+            text-align:right;
+        }
+
+        .cost{
+            text-align:right;
+        }
+
+        .price{
+            text-align:right;
+        }
+
+        .ppc{
+            width:50px;
+        }
+
+        .tempFrozen{
+            background:#2980B9;
+            color:#fff;
+        }
+
+        .tempFresh{
+            background:#C0392B;
+            color:#fff;
+        }
+        .tempMixed{
+            background:grey;
+            color:#fff;
+        }
+	";
+	
+	$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
+ 
+    
+    $header = '<table width="100%" class="headerBg"><tr><td><h2 class="underline">Stock Report</h2></td></tr></table>';
+
+    $header .= '<table width="100%" class="headerBg" border="0">
+                <tr>
+                    <td class="heading" width="80">Intake ID</td>
+                    <td class="heading" width="80">Plt ID</td>
+                    <td class="heading" width="40">Unit</td>
+                    <td class="heading" width="60">Chill/Frz</td>
+                    <td class="heading" width="200">Product Name</td>
+                    <td class="heading" width="90">Nationalities</td>
+                    <td class="heading" width="70">Brands</td>
+                    <td class="heading" width="110">Date Range</td>
+                    <td class="heading" width="50"></td>
+                    <td class="heading" width="80">Volume Kg</td>
+                    <td class="heading">Cost</td>
+                    <td class="heading"></td>
+                </tr>
+                </table>';
+
+
+    $productsX = "SELECT *, product.brand_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    INNER JOIN `weights` ON product.id = weights.product_id
+    JOIN `cuts` ON product.cut_id = cuts.id
+    JOIN `nationality` ON product.nationality_id = nationality.id
+    JOIN `brands` ON product.brand_id = brands.id
+    WHERE weights.status_id != 1
+    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    
+    $productsY = mysqli_query($conn, $productsX);
+    $productsCount = mysqli_num_rows($productsY);
+        
+    $totalW = 0;
+    
+    $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
+    
+    $total_quantity = 0;
+    $total_cost = 0;
+    $total_price = 0;
+
+    foreach($products as $productsRow){        
+        $pallet_id = $productsRow['pallet_id'];
+        $cut_id = $productsRow['cut_id'];
+        $ubbb = $productsRow['ubbb'];
+
+
+        $intake_id = $productsRow['intake_id'];
+        $nationality_id = $productsRow['nationality_id'];
+        $local = $productsRow['local'];
+        $brandname = $productsRow['brandname'];
+        $species = getSpeciesFromCutID($cut_id);
+        $cut = $productsRow['cutname'];
+        if($ubbb == 0){
+            $ubtext = 'UB';
+        }else if($ubbb == 1){
+            $ubtext = 'BB';
+        }else{
+            $ubtext = 'N/A';
+        }
+
+        
+        $productsX2 = "SELECT product.cut_id, product.range_from, product.range_to, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
+        $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
+        $products2Count = mysqli_num_rows($productsY2);
+        
+        
+        $products2 =  mysqli_fetch_all($productsY2, MYSQLI_ASSOC);
+
+        $product2_palletids = array();
+        $product2_cutids = array();
+        $product2_productids = array();
+        $product2_brands = array();
+        $product2_nationalities = array();
+        $product2_temperatures = array();
+        $product2_dateranges = array();
+
+            
+        array_map(
+            function($product2) {
+                global $product2_palletids;
+                global $product2_cutids;
+                global $product2_productids;
+                global $product2_brands;
+                global $product2_nationalities;
+                global $product2_temperatures;
+                global $product2_dateranges;
+
+                array_push($product2_palletids, $product2['pallet_id']);
+                array_push($product2_cutids, $product2['cut_id']);
+                array_push($product2_productids, $product2['productid']);
+
+ 
+                array_push($product2_brands, $product2['brand_id']);
+                array_push($product2_nationalities, $product2['nationality_id']);
+                array_push($product2_temperatures, $product2['cooling_id']);
+                array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+
+            },
+        $products2);
+        
+        $uniqueBrands = count(array_unique($product2_brands));
+        $uniqueNationalities = count(array_unique($product2_nationalities));
+        $uniqueTemperatures = count(array_unique($product2_temperatures));
+        $uniqueDateranges = count(array_unique($product2_dateranges));
+
+        $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
+        
+        if($quantityTotal < 1){continue;}
+        
+        $html .= '<table width="100%" border="0" class="row"><tr>';
+
+        $totalW += weightSoldFromProductID($productsRow['productid']);           
+        $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
+        
+        
+        $html .= '<td class="cell intakeid">' . $intake_id . '</td>';
+        $html .= '<td class="cell palletid">' . $pallet_id . '</td>';
+        $html .= '<td class="cell quantity">' . $quantityTotal . '</td>';
+        
+        $total_quantity += $quantityTotal;
+
+        if($uniqueTemperatures > 1){
+            $html .= '<td class="cell temp tempMixed">Mixed</td>';
+        }else{
+            $html .= '<td class="cell temp temp'. getTemp($product2_temperatures[0]) .'">' . getTemp($product2_temperatures[0]) . '</td>';
+            
+        }
+        $html .= '<td class="cell product">' . $species . ' ' . $cut . '</td>';
+
+        if($uniqueNationalities > 1){
+            $html .= '<td class="cell nationality">Various</td>';
+        }else{
+            $html .= '<td class="cell nationality">' . $local . '</td>';
+        }
+
+        if($uniqueBrands > 1){
+            $html .= '<td class="cell brand">Various</td>';
+        }else{
+            $html .= '<td class="cell brand">' . $brandname . '</td>';
+        }
+
+    
+        if($uniqueDateranges > 1){
+            $html .= '<td class="cell daterange"> -- </td>';
+        }else{
+            if($ubbb != 2){
+                $html .= '<td class="cell daterange">' . $ubtext . ' ' . $product2_dateranges[0] . '</td>';
+            }else{
+                $html .= '<td class="cell daterange">' . $ubtext . '</td>';
+            }
+        }
+
+
+        if($productsRow['unit'] == 'PPC'){
+            $html .= '<td class="cell ppc">PPC</td>';
+            $html .= '<td class="cell unit"></td>';
+        }else{
+            $html .= '<td class="cell ppc"></td>';
+
+            if($productsRow['akg'] != ''){
+                $html .= '<td class="cell unit">' . totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']) . '</td>';
+            }else{
+                $html .= '<td class="cell unit">' . totalWeightOfProduct($product2_productids) . '</td>';
+            }
+        }
+
+        $total_cost += number_format((float)$productsRow['cost'], 2, '.', '');
+        $total_price += number_format((float)$productsRow['price'], 2, '.', '');
+
+        $html .= '<td class="cell cost">£' . number_format((float)$productsRow['cost'], 2, '.', '') . '</td>';
+        $html .= '<td class="cell price">£' .  number_format((float)$productsRow['price'], 2, '.', '') . '</td>';
+        $html .='</tr></table>';
+    }
+
+    $html .= '<table width="100%" border="0" class="row"><tr>';
+    $html .= '<td class="cell intakeid"></td>';
+    $html .= '<td class="cell palletid"></td>';
+    $html .= '<td class="cell quantity">' . $total_quantity . ' </td>';
+    $html .= '<td class="cell temp"></td>';
+    $html .= '<td class="cell nationality"></td>';
+    $html .= '<td class="cell brand"></td>';
+    $html .= '<td class="cell daterange"></td>';
+    $html .= '<td class="cell ppc"></td>';
+    $html .= '<td class="cell unit"></td>';
+    $html .= '<td class="cell cost">£' . $total_cost . '</td>';
+    $html .= '<td class="cell price">£' . $total_price . '</td>';
+    $html .='</tr></table>';
+
+
+
+	$mpdf->SetHTMLHeader($header);
+
+
+    $mpdf->AddPage();
+    $mpdf->WriteHTML($html);
+  
+	
+	
+  
+ 
+ 
+ 	$filename2 = 'Export_Stock.pdf';
+	$filename = 'PDF/' . $filename2;
+	
+ 	
+	$mpdf->Output($filename,'F');
+?>
+<script> window.location.href = '/<?php echo $filename; ?>'; </script>
