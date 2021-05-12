@@ -63,7 +63,7 @@
 			
 			<div class="formElement">
 				<label>Password</label>
-				<input type="text" class="inputtext" name="password">
+				<input type="text" class="inputtext" name="password" <?php if($_GET['id'] == ''){ echo 'required'; } ?>>
 			</div>
 
 			<div class="formElement">
