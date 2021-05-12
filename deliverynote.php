@@ -226,6 +226,10 @@
                 $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
                 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
+				
+				$total_qty_count = 0;
+				$total_weight_count = 0;
+				$total_case_count = 0;
 
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
@@ -281,6 +285,8 @@
 
                             $k = $k + $w;
                         }
+
+						$total_qty_count += $count;
                         ?>
                         <tr class="productsRow">
 						<?php $numOfRows++; ?>
@@ -353,8 +359,10 @@
 						
 						if($product['unit'] == 'PPC'){
 							echo $count . ' Cases';
+							$total_case_count += $count;
 						}else{
 							echo $kg . ' kg';
+							$total_weight_count += $kg;
 						}
 						
 					  ?>
@@ -382,7 +390,7 @@
 		
 		<?php
 		
-		$target = 16 - $numOfRows;
+		$target = 15 - $numOfRows;
 	
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">
@@ -399,6 +407,16 @@
 					</td>
  				</tr>
 		<?php } ?>
+
+		<tr class="productsHeading">
+			<th align="left" colspan="7">Total:</th>
+ 			<th align="center"><?php echo $total_qty_count; ?></th>
+			<th align="left"></th>
+            <th align="right"><?php echo $total_weight_count; ?>kg (+ <?php echo $total_case_count; ?> cases)</th>
+            <?php if($customerRow['pricedefault'] == 1){ ?>
+			    <th align="price" colspan="2" class="price"></th>
+            <?php } ?>
+		</tr>
 	</table>
   	 
 		
