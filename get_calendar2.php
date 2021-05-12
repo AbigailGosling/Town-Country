@@ -182,6 +182,24 @@
 				<b>Haulier</b>
 				<p style="margin-top:5px;"><?php echo $row['haulier']; ?></p>
 			<?php } ?>
+
+			<?php if($row['temperature_id']){ ?>
+				<b>Fresh/Frz</b>
+				<p style="margin-top:5px;"><?php 
+					switch ($row['temperature_id']) {
+						case 1:
+							echo "Fresh";
+							break;
+						case 2:
+							echo "Frozen";
+							break;
+						case 3:
+							echo "Fresh/Frozen";
+							break;
+					}
+
+				?></p>
+			<?php } ?>
 			
 			<b>Comments</b>
 			<p style="margin-top: 4px;"><?php echo $row['purchase_comments']; ?></p>
