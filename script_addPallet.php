@@ -93,13 +93,13 @@
 		$_POST['quantity']++; # Fix the loop starting at 0
 		
 		# # # Create Pallet 
-		$y = mysqli_query($conn, "INSERT into `pallet` (`user_id`,`intake_id`,`comments`,`grosspallet`) VALUES ('$userid','$intake_id','$comments',0)");
+		$y = mysqli_query($conn, "INSERT into `pallet` (`user_id`,`intake_id`,`grosspallet`) VALUES ('$userid','$intake_id',0)");
 		$pallet_id = mysqli_insert_id($conn);
 		# # #
 		
 		# # # Create Product
-		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit,best_by) VALUES
-		('$akg','$quantity','$pallet_id','$status','$note_units','$note_weight','$original_intake_id','$original_pallet_id','$cut_id','$product_temp','$brand_id','$nationality_id','$temperature_id','$range_from','$range_to','$ubbb','$unit','$best_by')";
+		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit,best_by,comments) VALUES
+		('$akg','$quantity','$pallet_id','$status','$note_units','$note_weight','$original_intake_id','$original_pallet_id','$cut_id','$product_temp','$brand_id','$nationality_id','$temperature_id','$range_from','$range_to','$ubbb','$unit','$best_by','$comments')";
 		$y = mysqli_query($conn, $x);
 		$product_id = mysqli_insert_id($conn); 
 		# # #

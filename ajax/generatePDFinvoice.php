@@ -116,7 +116,7 @@
 			padding:5px;
 		}
 		
-		td.heading{
+		.heading{
 			background-color:#b0cbe1;
 		}
 		
@@ -280,6 +280,10 @@
 			$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
 			$outpalletResult = mysqli_query($conn, $outpalletQuery);
 
+			$total_qty_count = 0;
+			$total_weight_count = 0;
+			$total_case_count = 0;
+
 			while($outpallet = mysqli_fetch_array($outpalletResult)){
 			$weightids = explode(',', $outpallet['weight_ids']);
 				$queryBits = '';
@@ -342,6 +346,9 @@
 						}else{
 							$unit = 'Cases';
 						}
+
+						$total_qty_count += $howMany;
+
 						$html .='
 						<tr class="productsRow">
 						<td align="left" class="palletid"><span class="palletid">'. $product['pallet_id'] .'</span></td>
@@ -389,9 +396,11 @@
 									 
 									
 									if($product['unit'] == 'PPC'){
-										$html .= $kg . ' Cases';
+										$html .= $howMany . ' Cases';
+										$total_case_count += $howMany;
 									}else{
 										$html .= $kg . ' kg';
+										$total_weight_count += $kg;
 									}
 									$html .= '
 								  </b>
@@ -416,7 +425,17 @@
 						
  						
   				}
-				 array_push($pageArray, $html);
+
+				$html .= '<tr class="heading">
+				  <th align="left" colspan="5">Total:</th>
+				  <th align="center">' . $total_qty_count . '</th>
+				  <th align="left"></th>
+				  <th align="right">' . $total_weight_count . ' kg (+ ' . $total_case_count . ' cases)</th>';
+				$html .= '<th align="price" colspan="2" class="price"></th>';
+				
+
+				$html .='</tr>';
+				array_push($pageArray, $html);
 
 			}
 	

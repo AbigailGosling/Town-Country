@@ -97,6 +97,15 @@
 					<input type="text" name="booking_ref_number" value="<?php echo $purchase['booking_ref_number']; ?>">
 				</td>
 				<td>
+					<label class="printinput">Chill/Frz</label>
+					<select name="temperature_id" id="temperature_id" style="width:192px;height:30px;">
+						<option selected disabled>Choose an option..</option>
+						<option value="1" <?php if($purchase['temperature_id'] == 1){ echo 'selected'; } ?>>Fresh</option>
+						<option value="2" <?php if($purchase['temperature_id'] == 2){ echo 'selected'; } ?>>Frozen</option>
+						<option value="3" <?php if($purchase['temperature_id'] == 3){ echo 'selected'; } ?>>Fresh/Frozen</option>
+					</select>
+				</td>
+				<td>
 					<div style="display:none;">
 						<label class="printinput" >Transportation</label>
 						<input type="text" name="transportation" value="<?php echo $purchase['transportation']; ?>">

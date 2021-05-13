@@ -18,7 +18,7 @@
 	<div class="col">
 	
 
-	<input class="form-control" type="text" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
+	<input class="form-control" type="text" id="customer_id" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
 	
 	<div>
 		<label>Contact Number</label><br/>

@@ -198,11 +198,11 @@
 		
 	}
 	
-	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop){
+	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop, $temperature_id){
 		global $conn;
 		
-		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop) 
-		VALUES ('$supplier_id','$speciesString','$cutString','$priceString','$unitsString','$date_purchased','$purchased_by','$date_due','$purchase_comments','$file_name','$booking_ref_number','$transportation','$haulier','$direct_drop')";
+		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop,temperature_id) 
+		VALUES ('$supplier_id','$speciesString','$cutString','$priceString','$unitsString','$date_purchased','$purchased_by','$date_due','$purchase_comments','$file_name','$booking_ref_number','$transportation','$haulier','$direct_drop','$temperature_id')";
 		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
          
 		$id = mysqli_insert_id($conn);
@@ -211,11 +211,11 @@
 	}
 	
 	
-	function updatePurchase($id, $transportation, $supplier_id,$speciesString,$cutString,$unitsString, $priceString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number,$haulier, $direct_drop){
+	function updatePurchase($id, $transportation, $supplier_id,$speciesString,$cutString,$unitsString, $priceString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number,$haulier, $direct_drop, $temperature_id){
 		global $conn;
 		
 		$x ="UPDATE `purchase_form` SET transportation='$transportation', supplier_id='$supplier_id',species='$speciesString', cut='$cutString',units='$unitsString', price='$priceString', date_purchased='$date_purchased',purchased_by='$purchased_by',date_due='$date_due',
-            purchase_comments='$purchase_comments'";
+            purchase_comments='$purchase_comments', temperature_id='$temperature_id'";
             
         if($file_name != ''){
             $x .=",dfile='$file_name'";

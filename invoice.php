@@ -226,6 +226,10 @@
                 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
 
+				$total_qty_count = 0;
+				$total_weight_count = 0;
+				$total_case_count = 0;
+
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
  
@@ -278,6 +282,8 @@
 
                             $k = $k + $w;
 						}
+
+						$total_qty_count += $count;
 						?>
                     <tr class="productsRow">
 						<?php $numOfRows++; ?>
@@ -347,14 +353,16 @@
                                 }
                                 
                                 if($product['unit'] == 'PPC'){
-				    echo $count . ' Cases';
-				    $totalPriceRow = number_format((float)$count * $pickerItem['price'], 2, '.', '');
-$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');                                
+									echo $count . ' Cases';
+									$totalPriceRow = number_format((float)$count * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+									$total_case_count += $count;
                                 }else{
                                     echo $kg . ' kg';
-				    $totalPriceRow = number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-				    $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');                                
-				}
+									$totalPriceRow = number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+									$total_weight_count += $kg;
+								}
                                 
                             ?>
                             </b>
@@ -369,7 +377,7 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
  
 		<?php
 
-		$target = 16 - $numOfRows;
+		$target = 15 - $numOfRows;
 	 
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">
@@ -388,6 +396,14 @@ $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 					<td align="right" class="price"></td>
  				</tr>
 		<?php } ?>
+
+		<tr class="productsHeading" style="background-color: #7fabce9e;">
+			<th align="left" colspan="7">Total:</th>
+ 			<th align="center"><?php echo $total_qty_count; ?></th>
+			<th align="left"></th>
+            <th align="right"><?php echo $total_weight_count; ?>kg (+ <?php echo $total_case_count; ?> cases)</th>
+			<th align="price" colspan="2" class="price"></th>
+		</tr>
 	</table>
   	 
 		

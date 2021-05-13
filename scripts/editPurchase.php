@@ -9,7 +9,8 @@
 	$transportation = mysqli_real_escape_string($conn, $_POST['transportation']);
 	$haulier = mysqli_real_escape_string($conn, $_POST['haulier']);
 	$direct_drop = mysqli_real_escape_string($conn, $_POST['direct_drop']);
-
+	$temperature_id = mysqli_real_escape_string($conn, $_POST['temperature_id']);
+	
 	$date_purchased = str_replace('/', '-', $date_purchased);
 	$date_purchased = date('Y-m-d 00:00:00', strtotime($date_purchased));
 	
@@ -63,7 +64,7 @@
     $priceString = rtrim($priceString, '|');
 
 
-	updatePurchase($id,$transportation,$supplier_id,$speciesString,$cutString,$unitsString,$priceString,$date_purchased,$purchased_by,$date_due,$comments,$file_name,$booking_ref_number, $haulier, $direct_drop);
+	updatePurchase($id,$transportation,$supplier_id,$speciesString,$cutString,$unitsString,$priceString,$date_purchased,$purchased_by,$date_due,$comments,$file_name,$booking_ref_number, $haulier, $direct_drop, $temperature_id);
 	
 	
 	// $delivery_note_number = '';

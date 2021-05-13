@@ -17,8 +17,34 @@
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
 <script type="text/javascript">
-</script>
 
+    function printStuff(){
+        $('#top').hide();
+        $('.printhide').hide();
+        $('.formBackButton').hide();
+        $('.backbtn').hide();
+        $('main').css('padding','0px')
+        
+        window.print();
+	}
+
+	function printCompleted() {
+		$('#top').show();
+		$('.printhide').show();
+		$('.formBackButton').show();
+		$('.backbtn').show();
+		$('main').removeAttr("style")
+	}
+</script>
+<style>
+    @media print {
+     
+        .product_block{
+            break-inside: avoid;
+        }
+    }
+ 
+</style>
 <main class="int">
 	
 	<a href="<?php echo $domain; ?>completedPickerSheets.php" class="backbtn">< Back</a>
@@ -27,7 +53,8 @@
     <h1>PICKSHEET <?php echo '#' . str_pad($picksheetid, 4, "0", STR_PAD_LEFT); ?></h1>
     
     <div class="flex space-between">
-        <div class="picksheet_buttons">
+        <div class="picksheet_buttons printhide">
+            <a class="picksheet_btn" href="javascript:;" onclick="printStuff()">Print</a>
             <a class="picksheet_btn" href="viewCompletedPickSheet.php?id=<?php echo $pickerSheet['id']; ?>">Pick Note</a>
             <a class="picksheet_btn" href="deliverynote.php?id=<?php echo $pickerSheet['id']; ?>">Delivery Note</a>
             <a class="picksheet_btn" href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
@@ -99,7 +126,7 @@
                             $k = $k + $w;
                         }
 						?>
-						 
+						<div class="product_block">
 						<div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?> [<?php echo $k . $ext; $k = 0; ?>] <?php echo '[Plt. ID : '.$product['pallet_id'].']'; ?></div>
 						<?php
 						
@@ -122,6 +149,7 @@
                             $k = $k + $w;
                         }
 						?>
+						</div>
 						</div>
 						</div>
 						</div>
