@@ -670,19 +670,29 @@
 		}
 	}
 	
-	function printStuff(){
-		
+	function hideItemsPrint(){
+		$('#top').hide();
+		$('.printhide').hide();
+		$('.formBackButton').hide();
+		$('.backbtn').hide();
+		$('main').css('padding','0px');
+	}
+
+	function printStuff(){ // Print btn on menu
+
 		$.get("<?php echo $domain; ?>ajax/markPickAsPrinted.php?id=<?php echo $_GET['id']; ?>", function(data, status){
-			console.log(data);
-			$('#top').hide();
-			$('.printhide').hide();
-			$('.formBackButton').hide();
-			$('.backbtn').hide();
-			$('main').css('padding','0px')
-			
+			hideItemsPrint();
 			window.print();
 		});
 
+	}
+
+	function beforePrint(){ // CTRL + P
+		
+		$.get("<?php echo $domain; ?>ajax/markPickAsPrinted.php?id=<?php echo $_GET['id']; ?>", function(data, status){
+			hideItemsPrint();
+		});
+	
 	}
 
 	function printCompleted() {
