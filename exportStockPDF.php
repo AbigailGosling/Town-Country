@@ -165,6 +165,7 @@
     $total_quantity = 0;
     $total_cost = 0;
     $total_price = 0;
+    $total_weight = 0;
 
     foreach($products as $productsRow){        
         $pallet_id = $productsRow['pallet_id'];
@@ -286,10 +287,13 @@
             $html .= '<td class="cell ppc"></td>';
 
             if($productsRow['akg'] != ''){
-                $html .= '<td class="cell unit">' . totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']) . '</td>';
+                $temp_weight = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
             }else{
-                $html .= '<td class="cell unit">' . totalWeightOfProduct($product2_productids) . '</td>';
+                $temp_weight = totalWeightOfProduct($product2_productids);
             }
+
+            $html .= '<td class="cell unit">' . $temp_weight . '</td>';
+            $total_weight += $temp_weight;
         }
 
         $total_cost += number_format((float)$productsRow['cost'], 2, '.', '');
@@ -312,6 +316,7 @@
     $html .= '<td class="cell unit"></td>';
     $html .= '<td class="cell cost">£' . $total_cost . '</td>';
     $html .= '<td class="cell price">£' . $total_price . '</td>';
+    $html .= '<td class="cell unit">'. number_format((float)$total_weight, 2, '.', ',') .'</td>';
     $html .='</tr></table>';
 
 
