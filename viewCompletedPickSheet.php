@@ -18,7 +18,15 @@
 </div>
 <script type="text/javascript">
 </script>
-
+<style>
+    @media print {
+     
+        .product_block{
+            break-inside: avoid;
+        }
+    }
+ 
+</style>
 <main class="int">
 	
 	<a href="<?php echo $domain; ?>completedPickerSheets.php" class="backbtn">< Back</a>
@@ -99,7 +107,7 @@
                             $k = $k + $w;
                         }
 						?>
-						 
+						<div class="product_block">
 						<div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?> [<?php echo $k . $ext; $k = 0; ?>] <?php echo '[Plt. ID : '.$product['pallet_id'].']'; ?></div>
 						<?php
 						
@@ -122,6 +130,7 @@
                             $k = $k + $w;
                         }
 						?>
+						</div>
 						</div>
 						</div>
 						</div>
