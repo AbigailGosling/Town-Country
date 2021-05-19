@@ -188,68 +188,16 @@
                     while($cutRow = mysqli_fetch_array($cutY)){ array_push($cutsArray, $cutRow); }
                     ?>
 
-					<table width="100%" class="speciesName">
+					<table width="100%" class="speciesName" onclick="loadCutsForSpecies(<?php echo $speciesID; ?>);">
 						<tr><td align="left" class="pos">
 							<h2 style="color:#FFF;margin-bottom:0px;border-bottom:1px dashed #FFF;cursor:pointer;padding-bottom:5px;"><?php echo $speciesRow['name']; ?></h2>
 						</td></tr>
 					</table>
 
-					<div class="cutsContainer" style="display:none;">
+					<div class="cutsContainer group<?php echo $speciesID; ?>" style="display:none;">
+					 
+					</div>
 					<?php
-                        
- 
-					    $cutX = "SELECT * FROM `cuts` WHERE species_id = '$speciesID' ORDER by name ASC";
-					    $cutY = mysqli_query($conn, $cutX);
-
-					    while($cutRow = mysqli_fetch_array($cutY)){
-                        
-                        /*
-                        $cutid = $cutRow['id'];
-                        $y = mysqli_query($conn, "SELECT id from `product` WHERE cut_id='$cutid'");
-                        $count = mysqli_num_rows($y);
-                        */
-                        
-					?>
-
-					<table style="width: 100%;display: table;">
-
-						<tr><td align="center" class="pos">
-
-					
-
-							<a href="javascript:;" class="intake" <?php if($cutRow['cutgroup_id'] == ''){ echo 'style="border:2px solid red;"'; } ?>>&nbsp;<?php echo $cutRow['name']; ?></a>
-
-							<a href="/manageCuts.php?id=<?php echo $cutRow['id']; ?>" style="right:-35px;height: 29px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:0px;" aria-hidden="true"></i></a>
-
-							<?php if($user['user_type'] == 'A'){ ?>
-							    <a href="#deletePopup<?php echo $cutRow['id']; ?>" id="delete_intake" style="right:-75px;" data-lity><i class="fa fa-times" aria-hidden="true"></i></a>
-							<?php } ?>
-						</td></tr>
-
-					</table>
-					<div id="deletePopup<?php echo $cutRow['id']; ?>" class="lity-hide" style="background:#fff;padding:20px;text-align:center;max-width:490px;">
-                        <h2>Confirm</h2>
-                        <p>Where would you like to reassign the existing products?</p>
-
-                        <form method="POST" action="scripts/reassignproductcuts.php">
-                            <input type="hidden" value="<?php echo $cutRow['id']; ?>" name="before_cutid">
-                            <select style="width:100%;height:35px;" name="after_cutid" required>
-                                <option value="" disabled selected>Please select a cut..</option>
-                                <?php
-                                    foreach ($cutsArray as $cut) {
-                                        if($cut['id'] != $cutRow['id']){
-                                            ?><option value="<?php echo $cut['id']; ?>"><?php echo $cut['name']; ?></option><?php        
-                                        }
-                                    }
-                                ?>
-                            </select>
-
-                            <input type="submit" value="Reassign products & delete <?php echo $cutRow['name']; ?>" style="width:100%;height:35px;color:#fff;margin-top:20px;background:#3faddd;outline:none;border:0px;font-weight:bold;">
-                        </form>
-                    </div>
-                    <?php
-                    }
-					?></div><?php
 
 				}
 
@@ -327,19 +275,26 @@
 			
 
 		});
-
-		
-
-		$('.speciesName').click(function(){
-
-			$(this).next('.cutsContainer').toggle();
-
-			console.log(1);
-
-		});
-
 	});
 
+	function loadCutsForSpecies(id){
+		$('.cutsContainer').hide();
+		$('.group' + id).toggle();
+
+		var xhttp = new XMLHttpRequest();
+
+		xhttp.onreadystatechange = function() {
+
+			if(this.readyState == 4 && this.status == 200){
+				$('.group' + id).html(this.responseText);
+ 			}
+
+		};
+
+		xhttp.open("POST", "/ajax/cutsPageSpeciesDropdown.php", true);
+		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhttp.send("species_id=" + id);
+	}
 	
 
 	function deleteRow(id){
