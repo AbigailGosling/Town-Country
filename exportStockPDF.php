@@ -21,6 +21,8 @@
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
 	
+    $border = 0;
+
 	$css ="
 		body{
 			font-family: 'Roboto', sans-serif;
@@ -58,7 +60,7 @@
         }
 
         .temp{
-            width:60px;
+            width:70px;
             font-size:8px;
         }
 
@@ -70,7 +72,7 @@
         }
 
         .nationality{
-            width:90px;
+            width:100px;
             font-size:8px;
             color:grey;
             text-align:left;
@@ -98,10 +100,12 @@
         }
 
         .cost{
+            width:110px;
             text-align:right;
         }
 
         .price{
+            width:110px;
             text-align:right;
         }
 
@@ -118,6 +122,12 @@
             background:#C0392B;
             color:#fff;
         }
+        
+        .tempFresh/Frozen{
+            background:grey;
+            color:#fff;     
+        }
+
         .tempMixed{
             background:grey;
             color:#fff;
@@ -129,20 +139,20 @@
     
     $header = '<table width="100%" class="headerBg"><tr><td><h2 class="underline">Stock Report</h2></td></tr></table>';
 
-    $header .= '<table width="100%" class="headerBg" border="0">
+    $header .= '<table width="100%" class="headerBg" border="'. $border .'">
                 <tr>
                     <td class="heading" width="80">Intake ID</td>
                     <td class="heading" width="80">Plt ID</td>
                     <td class="heading" width="40">Unit</td>
-                    <td class="heading" width="60">Chill/Frz</td>
+                    <td class="heading" width="70">Chill/Frz</td>
                     <td class="heading" width="200">Product Name</td>
-                    <td class="heading" width="90">Nationalities</td>
+                    <td class="heading" width="100">Nationalities</td>
                     <td class="heading" width="70">Brands</td>
                     <td class="heading" width="110">Date Range</td>
                     <td class="heading" width="50"></td>
                     <td class="heading" width="80">Volume Kg</td>
-                    <td class="heading">Cost</td>
-                    <td class="heading"></td>
+                    <td class="heading" width="110" align="right">Cost</td>
+                    <td class="heading" width="110"></td>
                 </tr>
                 </table>';
 
@@ -152,8 +162,9 @@
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `nationality` ON product.nationality_id = nationality.id
     JOIN `brands` ON product.brand_id = brands.id
+    JOIN `species` ON cuts.species_id = species.id
     WHERE weights.status_id != 1
-    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY species.name, cuts.name ASC";
     
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
@@ -165,12 +176,16 @@
     $total_quantity = 0;
     $total_cost = 0;
     $total_price = 0;
+    $total_weight = 0;
+    
+    $html .= '<table width="100%" border="'. $border .'" class="row">';
 
     foreach($products as $productsRow){        
         $pallet_id = $productsRow['pallet_id'];
         $cut_id = $productsRow['cut_id'];
         $ubbb = $productsRow['ubbb'];
-
+        
+        $html .= '<tr>';
 
         $intake_id = $productsRow['intake_id'];
         $nationality_id = $productsRow['nationality_id'];
@@ -235,8 +250,6 @@
         
         if($quantityTotal < 1){continue;}
         
-        $html .= '<table width="100%" border="0" class="row"><tr>';
-
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         
@@ -286,10 +299,13 @@
             $html .= '<td class="cell ppc"></td>';
 
             if($productsRow['akg'] != ''){
-                $html .= '<td class="cell unit">' . totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']) . '</td>';
+                $temp_weight = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
             }else{
-                $html .= '<td class="cell unit">' . totalWeightOfProduct($product2_productids) . '</td>';
+                $temp_weight = totalWeightOfProduct($product2_productids);
             }
+
+            $html .= '<td class="cell unit">' . $temp_weight . '</td>';
+            $total_weight += $temp_weight;
         }
 
         $total_cost += number_format((float)$productsRow['cost'], 2, '.', '');
@@ -297,21 +313,21 @@
 
         $html .= '<td class="cell cost">£' . number_format((float)$productsRow['cost'], 2, '.', '') . '</td>';
         $html .= '<td class="cell price">£' .  number_format((float)$productsRow['price'], 2, '.', '') . '</td>';
-        $html .='</tr></table>';
+        $html .='</tr>';
     }
-
-    $html .= '<table width="100%" border="0" class="row"><tr>';
-    $html .= '<td class="cell intakeid"></td>';
+    $html .= '<tr>';
+    $html .= '<td class="cell intakeid"><b style="color:black;font-size:11px;">Totals</b></td>';
     $html .= '<td class="cell palletid"></td>';
     $html .= '<td class="cell quantity">' . $total_quantity . ' </td>';
     $html .= '<td class="cell temp"></td>';
+    $html .= '<td class="cell product"></td>';
     $html .= '<td class="cell nationality"></td>';
     $html .= '<td class="cell brand"></td>';
     $html .= '<td class="cell daterange"></td>';
     $html .= '<td class="cell ppc"></td>';
-    $html .= '<td class="cell unit"></td>';
-    $html .= '<td class="cell cost">£' . $total_cost . '</td>';
-    $html .= '<td class="cell price">£' . $total_price . '</td>';
+    $html .= '<td class="cell unit">'. number_format((float)$total_weight, 2, '.', ',') .'</td>';
+    $html .= '<td class="cell cost"></td>';
+    $html .= '<td class="cell price"><b>£' . $total_price . '</b></td>';
     $html .='</tr></table>';
 
 
