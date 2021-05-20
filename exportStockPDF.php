@@ -162,8 +162,9 @@
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `nationality` ON product.nationality_id = nationality.id
     JOIN `brands` ON product.brand_id = brands.id
+    JOIN `species` ON cuts.species_id = species.id
     WHERE weights.status_id != 1
-    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY species.name, cuts.name ASC";
     
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
