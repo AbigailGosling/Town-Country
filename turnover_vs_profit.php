@@ -2,9 +2,10 @@
 	include('includes/frontHeader.php');
 
 
-    if($_POST['user_id'] != '' || $_POST['customer_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != ''){
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
+        $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
 
         if($_POST['date_start'] != ''){
             $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
@@ -21,23 +22,38 @@
             $date_end = date('Y-m-d', strtotime($date_end));
 
          
-            $dateQueryPiece = " && `date` >= '$date_start' && `date` <= '$date_end'";
+            $dateQueryPiece = " && `pickersheets.date` >= '$date_start' && `pickersheets.date` <= '$date_end'";
         }
 
         if($CUSTOMER_ID != 0){
-            $customerQueryPiece = " && customer_id ='$CUSTOMER_ID'";
+            $customerQueryPiece = " && pickersheets.customer_id ='$CUSTOMER_ID'";
         }else{
             $customerQueryPiece = "";
         }
 
         if($USER_ID != 0){
-            $userQueryPiece = " && user_from_id ='$USER_ID'";
+            $userQueryPiece = " && pickersheets.user_from_id ='$USER_ID'";
         }else{
             $userQueryPiece = "";
         }
         
-        $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 $userQueryPiece $dateQueryPiece $customerQueryPiece";
-       
+        if($SPECIES_ID != 0){
+            $cuts_array = array();
+            
+            $cutsResult = getCutsFor($SPECIES_ID);
+            
+            while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
+
+            $cut_ids = implode(',', $cuts_array);
+            
+            $searchQueryString = "SELECT pickersheets.* FROM `pickersheets`
+                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
+                        JOIN `product` ON product.id = pickeritems.product_id
+                        WHERE pickersheets.completed = 1 && product.cut_id in ($cut_ids) $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
+        }else{
+            $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 $userQueryPiece $dateQueryPiece $customerQueryPiece";
+        }
+ 
     }
 ?>
 <div id="top">
@@ -77,7 +93,20 @@
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
     <form method="POST">
-	<select name="user_id" style="width:152px;height:40px;">
+	<select name="species_id" style="width:152px;height:40px;">
+        <option value="" disabled selected>Select species..</option>
+        <option value="0">All species</option>
+		<?php
+			$x = "SELECT * FROM `species`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>" <?php if($_POST['species_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
+
+    <select name="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salesman..</option>
         <option value="0">All sales team</option>
 		<?php
@@ -89,6 +118,7 @@
 			}
 		?>
 	</select>
+
 
     <select name="customer_id" style="width:182px;height:40px;">
         <option value="" disabled selected>Select customer..</option>
