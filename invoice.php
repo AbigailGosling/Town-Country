@@ -35,7 +35,7 @@
 	<div class="formBackButton formBackButton--invoice" style="float:right;font-size:22px;">
 		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a> |
  		<a href="javascript:;" onclick="printStuff()">Print</a>
-	</div>
+ 	</div>
 	<div id="print">
 	<div class="topheading">
 		
@@ -75,6 +75,9 @@
 		
  		
 		<div class="delivery">
+			<div class="resend-invoice printhide" onclick="resendInvoice()">
+				Resend Invoice
+			</div>
 			<div class="deliverybox" style="border:0px;">
 				<div class="po">Invoice No: <span>000<?php echo $pickersheet_id; ?></span></div>
 				<h2>Invoice</h2>
@@ -480,7 +483,24 @@
 	
 	});
 	
+	function resendInvoice(){
 
+		if(confirm('Are you sure you send an email copy of this invoice?')){
+
+			$.get("<?php echo $domain; ?>ajax/generatePDFinvoice.php?id=<?php echo $_GET['id']; ?>", function(data, status){
+
+				var name = data.replace(/\s+/g, '');
+				var link = 'PDF/' + name;
+
+				window.location.href="/email_invoice.php?id=<?php echo $pickersheet_id; ?>&link=" + link;
+			});
+		}else{
+
+		}
+	}
+	<?php if($_GET['msg'] != ''){ ?>
+		alert('<?php echo $_GET['msg']; ?>');
+	<?php } ?>
 	function togglePrices(){
 		$('.price').toggle('');
 	}
