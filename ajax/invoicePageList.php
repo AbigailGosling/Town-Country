@@ -2,6 +2,7 @@
 
 	require('../functions.php');
 	
+    $intake_picksheet_ids = array();
 	$term = $_POST['searchterm'];
     
     $x = "SELECT * FROM `customers` WHERE businessname LIKE '$term%' || businessname LIKE '%$term%' || businessname LIKE '$term%' || REPLACE(businessname, ' ', '') LIKE '$term%' || REPLACE(businessname, ' ', '') = '$term'";
@@ -14,8 +15,25 @@
         $customerids .= " OR completed='1' && customer_id='$rowid'";
     }
     
-    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id='" . $term . "' OR completed='1' && id LIKE '$term%' $customerids  ORDER BY `id` DESC";
-    
+    // START - intake id + pallet id search
+    $intakePicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
+                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
+                        JOIN `product` ON product.id = pickeritems.product_id
+                        JOIN `pallet` ON pallet.id = product.pallet_id
+                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $term || pallet.id = $term GROUP BY pickersheets.id";
+
+    $intakeQueryResult = mysqli_query($conn, $intakePicksheetSearchQuery);
+    while($intakePicksheet = mysqli_fetch_array($intakeQueryResult)){ array_push($intake_picksheet_ids, $intakePicksheet['id']); }
+
+    if(sizeof($intake_picksheet_ids) > 0){
+        $intake_picksheet_ids = implode(',', $intake_picksheet_ids);
+
+        $intakeQueryPiece = " || id IN ($intake_picksheet_ids)";
+    }
+
+    // END - intake id + pallet id search
+
+    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id='" . $term . "' OR completed='1' && id LIKE '$term%' $customerids $intakeQueryPiece ORDER BY `id` DESC";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
     $count = mysqli_num_rows($y);
 	
