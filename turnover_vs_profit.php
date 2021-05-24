@@ -2,7 +2,9 @@
 	include('includes/frontHeader.php');
 
 
-    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != ''){
+        $INTAKE_ID = mysqli_real_escape_string($conn, $_POST['intake_id']);
+        $PALLET_ID = mysqli_real_escape_string($conn, $_POST['pallet_id']);
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
@@ -37,6 +39,49 @@
             $userQueryPiece = "";
         }
         
+        if($INTAKE_ID != 0){
+            $picksheet_ids = array();
+
+            $intakePicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
+                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
+                        JOIN `product` ON product.id = pickeritems.product_id
+                        JOIN `pallet` ON pallet.id = product.pallet_id
+                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $INTAKE_ID GROUP BY pickersheets.id";
+
+            $intakeQueryResult = mysqli_query($conn, $intakePicksheetSearchQuery);
+            
+            while($intakePicksheet = mysqli_fetch_array($intakeQueryResult)){
+                array_push($picksheet_ids, $intakePicksheet['id']);
+            }
+
+            if(sizeof($picksheet_ids) > 0){
+                $picksheet_ids = implode(',', $picksheet_ids);
+
+                $intakeQueryPiece = " && pickersheets.id IN ($picksheet_ids)";
+            }
+        }
+
+        if($PALLET_ID != 0){
+            $picksheet_ids = array();
+
+            $palletPicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
+                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
+                        JOIN `product` ON product.id = pickeritems.product_id
+                        JOIN `pallet` ON pallet.id = product.pallet_id WHERE pallet.id = $PALLET_ID GROUP BY pickersheets.id";
+
+            $palletQueryResult = mysqli_query($conn, $palletPicksheetSearchQuery);
+            
+            while($palletPicksheet = mysqli_fetch_array($palletQueryResult)){
+                array_push($picksheet_ids, $palletPicksheet['id']);
+            }
+
+            if(sizeof($picksheet_ids) > 0){
+                $picksheet_ids = implode(',', $picksheet_ids);
+
+                $palletQueryPiece = " && pickersheets.id IN ($picksheet_ids)";
+            }
+        }
+
         if($SPECIES_ID != 0){
             $cuts_array = array();
             
@@ -49,11 +94,13 @@
             $searchQueryString = "SELECT pickersheets.* FROM `pickersheets`
                         JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
                         JOIN `product` ON product.id = pickeritems.product_id
-                        WHERE pickersheets.completed = 1 && product.cut_id in ($cut_ids) $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
+                        WHERE pickersheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
         }else{
-            $searchQueryString = "SELECT * FROM `pickerSheets` WHERE completed=1 $userQueryPiece $dateQueryPiece $customerQueryPiece";
-        }
- 
+            $searchQueryString = "SELECT pickersheets.* FROM `pickersheets`
+                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
+                        JOIN `product` ON product.id = pickeritems.product_id
+                        WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
+        } 
     }
 ?>
 <div id="top">
@@ -93,6 +140,8 @@
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
     <form method="POST">
+    <input name="intake_id" placeholder="Intake ID" value="<?php echo $_POST['intake_id']; ?>" style="height:34px;width:100px;">
+    <input name="pallet_id" placeholder="Pallet ID" value="<?php echo $_POST['pallet_id']; ?>" style="height:34px;width:100px;margin-right:20px;">
 	<select name="species_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select species..</option>
         <option value="0">All species</option>
