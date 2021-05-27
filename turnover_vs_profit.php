@@ -24,17 +24,17 @@
             $date_end = date('Y-m-d', strtotime($date_end));
 
          
-            $dateQueryPiece = " && `pickersheets.date` >= '$date_start' && `pickersheets.date` <= '$date_end'";
+            $dateQueryPiece = " && `pickerSheets.date` >= '$date_start' && `pickerSheets.date` <= '$date_end'";
         }
 
         if($CUSTOMER_ID != 0){
-            $customerQueryPiece = " && pickersheets.customer_id ='$CUSTOMER_ID'";
+            $customerQueryPiece = " && pickerSheets.customer_id ='$CUSTOMER_ID'";
         }else{
             $customerQueryPiece = "";
         }
 
         if($USER_ID != 0){
-            $userQueryPiece = " && pickersheets.user_from_id ='$USER_ID'";
+            $userQueryPiece = " && pickerSheets.user_from_id ='$USER_ID'";
         }else{
             $userQueryPiece = "";
         }
@@ -42,11 +42,11 @@
         if($INTAKE_ID != 0){
             $picksheet_ids = array();
 
-            $intakePicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
-                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
-                        JOIN `product` ON product.id = pickeritems.product_id
+            $intakePicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON pallet.id = product.pallet_id
-                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $INTAKE_ID GROUP BY pickersheets.id";
+                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $INTAKE_ID GROUP BY pickerSheets.id";
 
             $intakeQueryResult = mysqli_query($conn, $intakePicksheetSearchQuery);
             
@@ -57,17 +57,17 @@
             if(sizeof($picksheet_ids) > 0){
                 $picksheet_ids = implode(',', $picksheet_ids);
 
-                $intakeQueryPiece = " && pickersheets.id IN ($picksheet_ids)";
+                $intakeQueryPiece = " && pickerSheets.id IN ($picksheet_ids)";
             }
         }
 
         if($PALLET_ID != 0){
             $picksheet_ids = array();
 
-            $palletPicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
-                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
-                        JOIN `product` ON product.id = pickeritems.product_id
-                        JOIN `pallet` ON pallet.id = product.pallet_id WHERE pallet.id = $PALLET_ID GROUP BY pickersheets.id";
+            $palletPicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
+                        JOIN `pallet` ON pallet.id = product.pallet_id WHERE pallet.id = $PALLET_ID GROUP BY pickerSheets.id";
 
             $palletQueryResult = mysqli_query($conn, $palletPicksheetSearchQuery);
             
@@ -78,7 +78,7 @@
             if(sizeof($picksheet_ids) > 0){
                 $picksheet_ids = implode(',', $picksheet_ids);
 
-                $palletQueryPiece = " && pickersheets.id IN ($picksheet_ids)";
+                $palletQueryPiece = " && pickerSheets.id IN ($picksheet_ids)";
             }
         }
 
@@ -91,15 +91,15 @@
 
             $cut_ids = implode(',', $cuts_array);
             
-            $searchQueryString = "SELECT pickersheets.* FROM `pickersheets`
-                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
-                        JOIN `product` ON product.id = pickeritems.product_id
-                        WHERE pickersheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
+            $searchQueryString = "SELECT pickerSheets.* FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
         }else{
-            $searchQueryString = "SELECT pickersheets.* FROM `pickersheets`
-                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
-                        JOIN `product` ON product.id = pickeritems.product_id
-                        WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickersheets.id";
+            $searchQueryString = "SELECT pickerSheets.* FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
+                        WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id";
         } 
     }
 ?>
