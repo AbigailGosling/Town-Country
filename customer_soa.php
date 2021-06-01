@@ -51,7 +51,6 @@
                 <th align="right">Price</th>
                 <th align="right">Paid</th>
                 <th align="right">Outstanding</th>
-                <th align="right">Balance</th>
             </tr>
         </thead>
         <tbody>
@@ -71,7 +70,6 @@
             $totalPrice = 0.00;
             $totalPaid = 0.00;
             $totalOutstanding = 0.00;
-            $totalBalance = 0.00;
 
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
@@ -90,11 +88,9 @@
                     $currentOutstanding = (float) 0;
                 }else{
                     $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
-                    $currentBalance += $currentOutstanding;
                 }
                 
                 $totalOutstanding += $currentOutstanding;
-                $totalBalance = $currentBalance;
 
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
@@ -127,7 +123,6 @@
                 <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
                 <td align="right" width="100">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
                 <td align="right" width="100">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($currentBalance, 2, ".", ","); ?></td>
 			</tr>
 			<?php
                 $i++;
@@ -141,7 +136,6 @@
             <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
-            <td align="right" width="120">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
         </tr>
     </table>
     <?php
