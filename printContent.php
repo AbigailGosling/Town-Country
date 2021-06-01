@@ -21,8 +21,8 @@
 		</div>
 		
 		<div class="overview_block">
-			<label>Supplier ID</label>
-			<?php echo $intake['supplier_id']; ?>
+			<label>Supplier</label>
+			<?php echo supplierName($intake['supplier_id']); ?>
 		</div>
 		
 		<div class="overview_block">
