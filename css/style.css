@@ -2013,3 +2013,15 @@ textarea {
 .tooltip-content table{
 	width: 100%;
 }
+
+.loadMoreBtn{
+	width:100%;
+	background:#fff;
+	color: #3faddd;
+	text-align:center;
+	cursor:pointer;
+	font-size:18px;
+	height:32px;
+	line-height:32px;
+	margin-top:20px;
+}
