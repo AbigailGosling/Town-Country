@@ -63,7 +63,22 @@
 
 			request.done(function(data) {
 				$('#intakeAjax').html(data);
-				loadPage(1);
+				
+				$('.sendcontainer').click(function(){
+					var value = 0;
+					
+					if($(this).find('.active').css('display') == 'none'){ 
+						value = 1;
+					}else{
+						value = 0;
+					}
+
+					var picksheetid = $(this).find('.active').attr('picksheetid');
+					
+					$.get("/ajax/toggleInvoiceSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){ });
+
+					$(this).find('.active').toggle();
+				});
 			});
 
 			request.fail(function(jqXHR, textStatus) {
