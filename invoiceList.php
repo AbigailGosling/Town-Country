@@ -42,24 +42,6 @@
 			// load initial 80 rows
 			loadRows();
 			
-			$('.sendcontainer').click(function(){
-                var value = 0;
-                
-                if($(this).find('.active').css('display') == 'none'){ 
-                    value = 1;
-                }else{
-                    value = 0;
-                }
-
-                var picksheetid = $(this).find('.active').attr('picksheetid');
-                
-                $.get("/ajax/toggleInvoiceSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
-                    //alert("Data: " + data + "\nStatus: " + status);
-                });
-
-                $(this).find('.active').toggle();
-            });
-
 			$('#instantSearch').on('keypress',function(e) {
 				if(e.which == 13) {
 					doSearch();
@@ -81,7 +63,22 @@
 
 			request.done(function(data) {
 				$('#intakeAjax').html(data);
-				loadPage(1);
+				
+				$('.sendcontainer').click(function(){
+					var value = 0;
+					
+					if($(this).find('.active').css('display') == 'none'){ 
+						value = 1;
+					}else{
+						value = 0;
+					}
+
+					var picksheetid = $(this).find('.active').attr('picksheetid');
+					
+					$.get("/ajax/toggleInvoiceSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){ });
+
+					$(this).find('.active').toggle();
+				});
 			});
 
 			request.fail(function(jqXHR, textStatus) {
@@ -98,6 +95,22 @@
 			if (this.readyState == 4 && this.status == 200) {
 				$('#intakeAjax').append(this.responseText);
 				
+				$('.sendcontainer').click(function(){
+					var value = 0;
+					
+					if($(this).find('.active').css('display') == 'none'){ 
+						value = 1;
+					}else{
+						value = 0;
+					}
+
+					var picksheetid = $(this).find('.active').attr('picksheetid');
+					
+					$.get("/ajax/toggleInvoiceSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){ });
+
+					$(this).find('.active').toggle();
+				});
+
 
 				setTimeout(() => {
 					var toSkip = parseInt($('#toSkipCount').val());
