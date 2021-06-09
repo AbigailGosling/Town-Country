@@ -16,11 +16,11 @@
     }
     
     // START - intake id + pallet id search
-    $intakePicksheetSearchQuery = "SELECT pickersheets.id FROM `pickersheets`
-                        JOIN `pickeritems` ON pickeritems.pickersheet_id = pickersheets.id
-                        JOIN `product` ON product.id = pickeritems.product_id
+    $intakePicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON pallet.id = product.pallet_id
-                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $term || pallet.id = $term GROUP BY pickersheets.id";
+                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = $term || pallet.id = $term GROUP BY pickerSheets.id";
 
     $intakeQueryResult = mysqli_query($conn, $intakePicksheetSearchQuery);
     while($intakePicksheet = mysqli_fetch_array($intakeQueryResult)){ array_push($intake_picksheet_ids, $intakePicksheet['id']); }
