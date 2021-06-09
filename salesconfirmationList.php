@@ -67,23 +67,6 @@
 			
 			// load initial 80 rows
 			loadRows();
-			
-            $('.sendcontainer').click(function(){
-                var value = 0;
-                
-                if($(this).find('.active').css('display') == 'none'){ 
-                    value = 1;
-                }else{
-                    value = 0;
-                }
-
-                var picksheetid = $(this).find('.active').attr('picksheetid');
-                
-                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
-                });
-
-                $(this).find('.active').toggle();
-            });
 
 			$('#instantSearch').keyup(function(){
 
@@ -141,6 +124,23 @@
 				$('#intakeAjax').append(this.responseText);
 
 
+			$('.sendcontainer').click(function(){
+                var value = 0;
+                
+                if($(this).find('.active').css('display') == 'none'){ 
+                    value = 1;
+                }else{
+                    value = 0;
+                }
+
+                var picksheetid = $(this).find('.active').attr('picksheetid');
+                
+                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
+                });
+
+                $(this).find('.active').toggle();
+            });
+
 				setTimeout(() => {
 					var toSkip = parseInt($('#toSkipCount').val());
 					var totalRowsCount = parseInt($('#totalRowsCount').val());
@@ -170,6 +170,22 @@
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			  $('#intakeAjax').html(this.responseText);
+			  $('.sendcontainer').click(function(){
+                var value = 0;
+                
+                if($(this).find('.active').css('display') == 'none'){ 
+                    value = 1;
+                }else{
+                    value = 0;
+                }
+
+                var picksheetid = $(this).find('.active').attr('picksheetid');
+                
+                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
+                });
+
+                $(this).find('.active').toggle();
+            });
 			}
 			};
 
