@@ -1,6 +1,5 @@
 <?php
 	require('../functions.php');
-
 	
 	$picker_id = $_POST['picker_id'];
 	$customer_id = $_POST['customer_id'];
@@ -30,19 +29,18 @@
 	
 	$index = 0;
 	foreach ($_POST['basketRow'] as $key => $value) {
-	
-		$price_type = $_POST['price_type'];
-		$target_weight = $_POST['target_weight_' . $product_id];
-		
-		if(empty($target_weight)){ $target_weight = 0; }
-		
-		if(!is_int($target_weight)){ $target_weight = 0; }
 
 		$details = explode('-', $value);
 		$product_id = $details[0];
 		$quantity = $details[1];
 		$cut_id = $details[2];
 		
+		$price_type = $_POST['price_type'];
+		$target_weight = $_POST['target_weight_' . $product_id];
+		
+		if(empty($target_weight)){ $target_weight = 0; }
+		
+		if(!is_int($target_weight)){ $target_weight = 0; }
 	
 		
 		$price_type = $price_type[$index];
