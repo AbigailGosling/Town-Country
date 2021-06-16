@@ -36,7 +36,7 @@
 		$cut_id = $details[2];
 		
 		$price_type = $_POST['price_type'];
-		$target_weight = $_POST['target_weight_' . $product_id];
+		$target_weight = (int) $_POST['target_weight_' . $product_id];
 		
 		if(empty($target_weight)){ $target_weight = 0; }
 		
