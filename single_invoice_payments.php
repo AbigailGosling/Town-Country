@@ -127,18 +127,50 @@ if (!empty($paymentID)) {
                 <input class="form-control" id="meta_data" name="meta_data" type="text" placeholder="Cheque No., Bank Transaction No." value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['meta_data'] : ''; ?>" />
             </div>
         </div>
+        
         <div class="row">
-            <div class="col d-flex justify-content-end">
+            <div class="products_container"></div>
+        </div>
+        <br/>
+        
+        <div class="row">
+            <div class="col d-flex justify-content-start">
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
                 <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
                 <input class="btn btn-success" type="submit" value="SUBMIT" />
             </div>
         </div>
-    </form>
+    </form>    
 </div>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    
+    function removeProductRow(rowClass){
+        $('.' + rowClass).remove();
+    }
+
+    $('#payment_method').change(function(){
+        var payment_type = $(this).val(); 
+ 
+        if(payment_type == 'CREDIT_NOTE'){
+            $('.products_container').fadeIn();
+
+            var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    $('.products_container').html(this.responseText);
+                }
+			};
+
+			xhttp.open("POST", "/ajax/credit_note_product_list.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("invoiceID=" + <?php echo $invoiceID; ?>);
+        }else{
+            $('.products_container').fadeOut();
+        }
+
+    });
 </script>
 
 <style type="text/css">
