@@ -280,6 +280,9 @@
             ?></td>
             <td class="bold"><?php 
                 
+                if($productsRow['grosspallet'] == 1){
+                    echo '[GT] ';
+                }
                 if($productsRow['unit'] == 'PPC'){
                     ?><b>PPC</b><?php
                 }else{

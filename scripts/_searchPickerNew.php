@@ -107,6 +107,9 @@
                     
                     <td class="bold"><?php 
                     
+                    if($productsRow2['grosspallet'] == 1){
+                        echo '[GT] ';
+                    }
                     if($productsRow2['unit'] == 'PPC'){
                         ?><b>PPC</b><?php
                     }else{
