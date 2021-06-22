@@ -3,7 +3,7 @@
 
 	$invoiceID = $_POST['invoiceID'];
 ?>
-<table width="70%" border="0">
+<table width="75%" border="0">
 <tr style="border-bottom:1px solid #f1f1f1;">
     <th align="left">Intake ID</th>
     <th align="left">Pallet ID</th>
@@ -22,8 +22,6 @@
     $rowCount = 0;
 
     while($outpallet = mysqli_fetch_array($outpalletResult)){
-        $rowCount++;
-        $rowClass = "productRow" . $rowCount;
 
         $weightids = explode(',', $outpallet['weight_ids']);
 
@@ -42,7 +40,8 @@
         }
          
         foreach($productIDArray as $productID){
-            
+            $rowCount++;
+            $rowClass = "productRow" . $rowCount;
             $x1 = "SELECT * FROM `product` WHERE id='$productID'";
             $y1 = mysqli_query($conn, $x1);
             $product = mysqli_fetch_array($y1);
@@ -68,7 +67,10 @@
             
         ?>
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
-            <td align="left"><span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
+            <td align="left">
+                <span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span>
+                <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">    
+            </td>
             <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
             <td align="left">                    
                 <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
@@ -86,80 +88,15 @@
                 $howMany = mysqli_num_rows($howManyY);
             ?>
             <td align="left"><b class="">
-                <select style="width:55px;height:30px;">
+                <select style="width:55px;height:30px;" name="quantity[]">
                     <?php
                         $tempcount = $count+1;
                         for($i=1;$i<$tempcount;$i++) { ?>
-                        <option><?php echo $i; ?></option>
+                        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
                     <?php } ?>
                 </select>
             </td>
-            <td align="left" style="display:none;">
-                <b class="unit">
-                <?php
-                    
-                    if($product['unit'] == 'C'){
-                        $unit = 'Cases';
-                    }else if($product['unit'] == 'PPC'){
-                        $unit = 'Per Case';
-                    }else if($product['unit'] == 'P'){
-                        $unit = 'Pallet';
-                    }else if($product['unit'] == 'KG'){
-                        $unit = 'Kilo';
-                    }else{
-                        $unit = 'Cases';
-                    }
-                    
-                    echo $unit;
-                ?>
-                </b>
-            </td>
-            <td align="left" style="display:none">
-                <b class="weight">
-                <?php
-                
-                    $qBit = '';
-                    
-                    $kg = 0;
-                    
-                    foreach($weightids as $weightid){
-                        $qBit .= " id = '$weightid' && product_id='$productID' || ";
-                    }
-
-                    $qBit = rtrim($qBit," || ");
-                    
-                    $xxWeight = "SELECT * FROM `weights` WHERE $qBit";
-                    $yyWeight = mysqli_query($conn, $xxWeight);
-                    
-                    while($weightRow = mysqli_fetch_array($yyWeight)){
-                        
-                        if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-                            $tw = $weightRow['weight_gross'];
-                        }else{
-                            $tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
-                        }
-                        
-                        $kg = $kg + $tw;
-                        
-                        $kg = number_format($kg, 2, '.', '');
-                    }
-                    
-                    if($product['unit'] == 'PPC'){
-                        echo $count . ' Cases';
-                        $totalPriceRow = number_format((float)$count * $pickerItem['price'], 2, '.', '');
-                        $totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
-                        $total_case_count += $count;
-                    }else{
-                        echo $kg . ' kg';
-                        $totalPriceRow = number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-                        $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-                        $total_weight_count += $kg;
-                    }
-                    
-                ?>
-                </b>
-            </td>
-            <td align="left" class="">£<input type="number" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?>"></td>
+            <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?>"></td>
             <td>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
             </td>

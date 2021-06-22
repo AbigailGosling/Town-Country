@@ -74,8 +74,14 @@ if (!empty($paymentID)) {
                 </td>
                 <td align="right">
                     <?php
-                    $totalPrice += $invoicePayment['amount'];
-                    echo '£' . number_format($invoicePayment['amount'], 2, ".", ",");
+                        if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
+                            $credit_note_total = creditNoteTotal($invoicePayment['id']);
+                            $totalPrice -= $credit_note_total;
+                            echo '<span style="color:red;font-weight:bold">-</span> £' . number_format($credit_note_total, 2, ".", ",");
+                        }else{
+                            $totalPrice += $invoicePayment['amount'];
+                            echo '<span style="color:green;font-weight:bold">+</span> £' . number_format($invoicePayment['amount'], 2, ".", ",");
+                        }
                     ?>
                 </td>
             </tr>
@@ -118,7 +124,7 @@ if (!empty($paymentID)) {
             </div>
         </div>
         <div class="row">
-            <div class="col">
+            <div class="col" id="amountContainer">
                 <label for="amount">Amount</label>
                 <input class="form-control" id="amount" type="text" name="amount" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['amount'] : $invoiceAmount ; ?>" />
             </div>
@@ -127,9 +133,104 @@ if (!empty($paymentID)) {
                 <input class="form-control" id="meta_data" name="meta_data" type="text" placeholder="Cheque No., Bank Transaction No." value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['meta_data'] : ''; ?>" />
             </div>
         </div>
-        
         <div class="row">
-            <div class="products_container"></div>
+            <div class="products_container">
+                 <?php
+            if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == 'CREDIT_NOTE'){
+        ?>
+        <script>
+            $('#amount').val(1);
+            $('#amountContainer').hide();
+        </script>
+        <table width="75%" border="0">
+            <tr style="border-bottom:1px solid #f1f1f1;">
+                <th align="left">Intake ID</th>
+                <th align="left">Pallet ID</th>
+                <th align="left">Product</th>
+                <th align="left">Quantity</th>
+                <th align="left">Price</th>
+                <th align="left"></th>
+            </tr>
+        <?php
+                $payment_id = $selectedPaymentData['id'];
+                
+                $creditNoteResult = mysqli_query($conn, "SELECT product_id FROM `credit_note_items` WHERE payment_id=$payment_id");
+                $productIDArray = [];
+
+                while($credit_row = mysqli_fetch_array($creditNoteResult)){ array_push($productIDArray, $credit_row['product_id']); }
+
+                foreach($productIDArray as $productID){
+
+                    $creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id=$productID && payment_id=$payment_id");
+                    $creditNoteDetails = mysqli_fetch_array($creditNoteResult);
+
+                    $rowCount++;
+                    $rowClass = "productRow" . $rowCount;
+                    $x1 = "SELECT * FROM `product` WHERE id='$productID'";
+                    $y1 = mysqli_query($conn, $x1);
+                    $product = mysqli_fetch_array($y1);
+                        
+
+                    if($product['unit'] == 'PPC'){
+                        $ext = ' Cases';
+                    }else{
+                        $ext = ' kg';
+                    }
+
+                    $x2 = "SELECT * FROM `weights` WHERE ";
+
+                    foreach($weightids as $weightid){
+                        $x2 .= "product_id='$productID' && id='$weightid' || ";
+                    }
+
+                    $x2 = rtrim($x2," || ");
+                    $y2 = mysqli_query($conn, $x2);
+                    $count = mysqli_num_rows($y2);
+
+                    ${"globalProductCount" . $product['id']} += $count;
+                    
+                ?>
+                <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
+                    <td align="left">
+                        <span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span>
+                        <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">    
+                    </td>
+                    <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
+                    <td align="left">                    
+                        <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
+                        <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
+                        <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
+                        <b class=""><?php echo getCut($product['cut_id']); ?></b>
+                        <b class=""><?php echo getBrand($product['brand_id']); ?></b>
+                    </td>
+                    
+                    <?php
+                        $productID = $product['id'];
+                        $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$invoiceID' AND product_id='$productID'";
+                        $howManyY = mysqli_query($conn, $howManyX);
+                        $pickerItem = mysqli_fetch_array($howManyY);
+                        $howMany = mysqli_num_rows($howManyY);
+                    ?>
+                    <td align="left"><b class="">
+                        <select style="width:55px;height:30px;" name="quantity[]">
+                            <?php
+                                $tempcount = $howMany+1;
+                                for($i=1;$i<$tempcount;$i++) { ?>
+                                <option value="<?php echo $i; ?>" <?php if($i == $creditNoteDetails['quantity']){ echo 'selected'; } ?>><?php echo $i; ?></option>
+                            <?php } ?>
+                        </select>
+                    </td>
+                  
+                    <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
+                    <td>
+                     </td>
+                </tr>
+                <?php
+                }
+            }
+        ?>
+        </table>
+            </div>
         </div>
         <br/>
         
@@ -155,6 +256,7 @@ if (!empty($paymentID)) {
  
         if(payment_type == 'CREDIT_NOTE'){
             $('.products_container').fadeIn();
+            $('#amountContainer').hide();
 
             var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
@@ -168,6 +270,7 @@ if (!empty($paymentID)) {
 			xhttp.send("invoiceID=" + <?php echo $invoiceID; ?>);
         }else{
             $('.products_container').fadeOut();
+            $('#amountContainer').show();
         }
 
     });
