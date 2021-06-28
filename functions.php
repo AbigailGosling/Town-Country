@@ -1564,6 +1564,19 @@
 		return $totalCost;
 	}
 
+	function creditNoteTotal($invoice_payment_id){
+		global $conn;
+
+		$price = 0;
+		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id ='$invoice_payment_id'");
+		
+		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
+			$price += ($creditNoteItem['price'] * $creditNoteItem['quantity']);
+		}
+		
+		return $price;
+	}
+
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 
 	
