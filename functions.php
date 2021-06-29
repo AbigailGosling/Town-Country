@@ -1410,10 +1410,20 @@
     }
 
 
-    function intakePriceComplete($intake_id){
+	function intakePriceComplete($intake_id){
         global $conn;
 
         $r = 1;
+
+		// $x = "SELECT SUM(product.cost) as cost_total FROM product INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id=$intake_id";
+		// $y = mysqli_query($conn, $x);
+        // $row = mysqli_fetch_array($y);
+		// if($row['cost_total'] == 0){
+		// 	$r = 0;
+		// }
+
+		// return $r;
+
 
         $x = "SELECT id FROM `pallet` WHERE intake_id='$intake_id'";
         $y = mysqli_query($conn, $x);
@@ -1427,15 +1437,22 @@
             
             $palletString = implode(',', $palletIDs);
             
+			$x = "SELECT SUM(cost) as cost_total FROM product WHERE pallet_id IN ($palletString)";
+			$y = mysqli_query($conn, $x);
+            $row = mysqli_fetch_array($y);
+			if($row['cost_total'] == 0){
+				$r = 0;
+			}
 
-            $x = "SELECT * FROM product WHERE pallet_id IN ($palletString) GROUP BY cut_id";
-            $y = mysqli_query($conn, $x);
-            
-            while($row = mysqli_fetch_array($y)){
-                if($row['cost'] == 0){
-                    $r = 0;
-                }
-            }
+			// original
+            // $x = "SELECT id,cost FROM product WHERE pallet_id IN ($palletString) GROUP BY cut_id";
+			// $y = mysqli_query($conn, $x);
+
+            // while($row = mysqli_fetch_array($y)){
+            //     if($row['cost'] == 0){
+            //         $r = 0;
+            //     }
+            // }
         }
 
         return $r;
