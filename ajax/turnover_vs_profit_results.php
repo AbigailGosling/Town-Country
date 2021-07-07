@@ -164,7 +164,7 @@
             <td><?php echo getNationality($invoice['nationality_id']); ?></td>
             <td><?php echo getTemp($invoice['cooling_id']); ?></td>
             <td><?php echo getCutGroupNameFromCut($invoice['cut_id']); ?></td>
-            <td><?php echo getSpecies($invoice['species_id']) . ' ' . getCut($invoice['cut_id']); ?></td>
+            <td><?php echo getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']); ?></td>
             <td><?php echo getBrand($invoice['brand_id']); ?></td>
             <td><?php echo countFromProductIDArray(array($invoice['product_id'])); ?></td>
             <td><?php 
