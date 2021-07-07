@@ -119,7 +119,7 @@
     <th align="left">Category</th>
     <th align="left">Product</th>
     <th align="left">Brand</th>
-    <th align="left">Quantity</th>
+    <th align="left">Qty</th>
     <th align="left">Unit</th>
     <th align="left">kg</th>
 
