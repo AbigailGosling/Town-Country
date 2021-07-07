@@ -57,6 +57,18 @@
 		?>
 	</select>
 
+    <select name="cut_id" id="cut_id" style="width:152px;height:40px;">
+        <option value="0" selected>Select cut..</option>
+        <?php
+			$x = "SELECT * FROM `cuts`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option class="allspecies species<?php echo $row['species_id']; ?>" value="<?php echo $row['id']; ?>" <?php if($_POST['cut_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
+
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salesman..</option>
         <option value="0">All sales team</option>
@@ -124,7 +136,8 @@
         }
         
         var species_id = $('#species_id').val();
-        
+        var cut_id = $('#cut_id').val();
+
         var intake_id = $('#intake_id').val();
         var pallet_id = $('#pallet_id').val();
         var user_id = $('#user_id').val();
@@ -137,6 +150,7 @@
         {
             toSkip: toSkip,
             species_id: species_id,
+            cut_id: cut_id,
             intake_id: intake_id,
             pallet_id: pallet_id,
             user_id: user_id,
@@ -168,6 +182,13 @@
     $(document).ready(function() {
         $( ".datepicker" ).datepicker({
             dateFormat: 'dd/mm/yy'
+        });
+
+        $('#species_id').change(function(){
+            var val = $(this).val();
+
+            $('option.allspecies').fadeOut();
+            $('option.species' + val).fadeIn();
         });
 		
     });

@@ -10,6 +10,7 @@
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
+        $CUT_ID = mysqli_real_escape_string($conn, $_POST['cut_id']);
 
         if($_POST['date_start'] != ''){
             $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
@@ -87,9 +88,12 @@
         if($SPECIES_ID != 0){
             $cuts_array = array();
             
-            $cutsResult = getCutsFor($SPECIES_ID);
-            
-            while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
+            if($CUT_ID != 0){
+                array_push($cuts_array, $CUT_ID);
+            }else{ // no cut was posted in the form, get all cuts for the posted species_id
+                $cutsResult = getCutsFor($SPECIES_ID);
+                while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
+            }
 
             $cut_ids = implode(',', $cuts_array);
             
