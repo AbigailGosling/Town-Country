@@ -1358,6 +1358,20 @@
     }
 
 
+	function getCutGroupNameFromCut($cut_id){
+		global $conn;
+
+		$cutResult = mysqli_query($conn, "SELECT cutgroup_id FROM `cuts` WHERE id=$cut_id");
+		$cutData = mysqli_fetch_array($cutResult);
+		$cutgroup_id = $cutData['cutgroup_id'];
+
+		$cutGroupResult = mysqli_query($conn, "SELECT `name` FROM cutgroups WHERE id='$cutgroup_id'");
+		$cutGroupData = mysqli_fetch_array($cutGroupResult);
+
+		return $cutGroupData['name'];
+	}
+
+
     function palletIDsFromIntakeID($intake_id){
         global $conn;
 
