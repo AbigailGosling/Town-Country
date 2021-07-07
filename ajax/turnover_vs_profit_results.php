@@ -10,6 +10,7 @@
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
+        $CUT_ID = mysqli_real_escape_string($conn, $_POST['cut_id']);
 
         if($_POST['date_start'] != ''){
             $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
@@ -87,9 +88,12 @@
         if($SPECIES_ID != 0){
             $cuts_array = array();
             
-            $cutsResult = getCutsFor($SPECIES_ID);
-            
-            while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
+            if($CUT_ID != 0){
+                array_push($cuts_array, $CUT_ID);
+            }else{ // no cut was posted in the form, get all cuts for the posted species_id
+                $cutsResult = getCutsFor($SPECIES_ID);
+                while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
+            }
 
             $cut_ids = implode(',', $cuts_array);
             
@@ -119,7 +123,7 @@
     <th align="left">Category</th>
     <th align="left">Product</th>
     <th align="left">Brand</th>
-    <th align="left">Quantity</th>
+    <th align="left">Qty</th>
     <th align="left">Unit</th>
     <th align="left">kg</th>
 
@@ -164,7 +168,7 @@
             <td><?php echo getNationality($invoice['nationality_id']); ?></td>
             <td><?php echo getTemp($invoice['cooling_id']); ?></td>
             <td><?php echo getCutGroupNameFromCut($invoice['cut_id']); ?></td>
-            <td><?php echo getSpecies($invoice['species_id']) . ' ' . getCut($invoice['cut_id']); ?></td>
+            <td><?php echo getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']); ?></td>
             <td><?php echo getBrand($invoice['brand_id']); ?></td>
             <td><?php echo countFromProductIDArray(array($invoice['product_id'])); ?></td>
             <td><?php 
