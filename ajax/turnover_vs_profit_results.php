@@ -97,15 +97,15 @@
 
             $cut_ids = implode(',', $cuts_array);
             
-            $searchQueryString = "SELECT pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT product.cost as product_cost, product.price as product_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece  LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
         }else{
-                $searchQueryString = "SELECT pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+                $searchQueryString = "SELECT product.cost as product_cost, product.price as product_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                             JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                             JOIN `product` ON product.id = pickerItems.product_id
-                            WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece LIMIT $toSkip, $limit";
+                            WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
         }
 
     }
@@ -147,10 +147,15 @@
 
     
     while($invoice = mysqli_fetch_array($searchResults)){
-        $invoice_cost = invoiceTotalCost($invoice['pick_id']);
         
         $invoice_price = invoiceTotal($invoice['pick_id']);
-        ?>
+
+        $quantity = countFromProductIDArray(array($invoice['product_id']));
+
+        $total_product_cost = number_format($invoice['product_cost'] * $quantity, 2);
+        $total_product_sell = number_format($invoice['product_price'] * $quantity, 2);
+
+    ?>
         <tr class="result">
             <td><?php echo getUsername($invoice['user_from_id']); ?></td>
             <td>
@@ -171,7 +176,7 @@
             <td><?php echo getCutGroupNameFromCut($invoice['cut_id']); ?></td>
             <td><?php echo getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']); ?></td>
             <td><?php echo getBrand($invoice['brand_id']); ?></td>
-            <td><?php echo countFromProductIDArray(array($invoice['product_id'])); ?></td>
+            <td><?php echo $quantity; ?></td>
             <td><?php 
                 if($invoice['unit'] == 'C'){
                     echo 'Cases';
@@ -181,9 +186,9 @@
             ?></td>
             <td><?php echo getWeightFromProductID($invoice['product_id']); ?> kg</td>
 
-            <td>£<?php echo number_format($invoice_cost, 2); ?></td>
-            <td>£<?php echo number_format($invoice_price, 2); ?></td>
-            <td>£<?php echo number_format($invoice_price - $invoice_cost, 2); ?></td>
+            <td>£<?php echo $total_product_cost; ?></td>
+            <td>£<?php echo $total_product_sell; ?></td>
+            <td>£<?php echo number_format($total_product_sell - $total_product_cost, 2); ?></td>
         </tr>
         <?php
     }
