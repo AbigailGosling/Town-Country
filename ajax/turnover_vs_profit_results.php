@@ -97,16 +97,17 @@
 
             $cut_ids = implode(',', $cuts_array);
             
-            $searchQueryString = "SELECT pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece  LIMIT $toSkip, $limit";
         }else{
-                $searchQueryString = "SELECT pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+                $searchQueryString = "SELECT pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                             JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                             JOIN `product` ON product.id = pickerItems.product_id
                             WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece LIMIT $toSkip, $limit";
         }
+
     }
 ?>
 <?php if($toSkip == 0){ ?>
@@ -146,9 +147,9 @@
 
     
     while($invoice = mysqli_fetch_array($searchResults)){
-        $invoice_cost = invoiceTotalCost($invoice['id']);
+        $invoice_cost = invoiceTotalCost($invoice['pick_id']);
         
-        $invoice_price = invoiceTotal($invoice['id']);
+        $invoice_price = invoiceTotal($invoice['pick_id']);
         ?>
         <tr class="result">
             <td><?php echo getUsername($invoice['user_from_id']); ?></td>
@@ -160,7 +161,7 @@
                     echo date('d/m/Y', strtotime($date_completed));
                 ?>
             </td>
-            <td><a href="invoice.php?id=<?php echo $invoice['id']; ?>" target="_blank"><?php echo $invoice['id']; ?></a></td>
+            <td><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
             <td><?php echo customerName($invoice['customer_id']); ?> </td>
             
             <td><?php echo intakeIDfromPalletID($invoice['pallet_id']); ?></td>
