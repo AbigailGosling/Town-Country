@@ -1638,6 +1638,35 @@
 		return $count;
 	}
 
+	function weightValueOfProductOnPicksheet($pick_id, $productID){
+		global $conn;
+		
+		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pick_id'";
+        $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+        
+		$weight = 0;
+        
+		while($outpallet = mysqli_fetch_array($outpalletResult2)){
+            $weightids = $outpallet['weight_ids'];
+			
+			$x = "SELECT * FROM `weights` WHERE id IN ($weightids) && product_id ='$productID'";
+			$y = mysqli_query($conn, $x);
+            
+			while($row = mysqli_fetch_array($y)){
+				if($row['weight_tear'] == $row['weight_gross']){
+					$w = $row['weight_gross'];
+				}else{
+					$w = $row['weight_gross'] - $row['weight_tear'];
+				}
+				
+				$weight = $weight + $w;
+			}
+        }
+
+		 
+		return number_format($weight, 2, '.', '');
+	}
+
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 
 	
