@@ -2,7 +2,7 @@
    	require('../functions.php');
 
     $toSkip = $_POST['toSkip'];
-    $limit = 80;
+    $limit = 50;
 
     if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != ''){
         $INTAKE_ID = mysqli_real_escape_string($conn, $_POST['intake_id']);
@@ -160,8 +160,7 @@
         $invoice_price = invoiceTotal($invoice['pick_id']);
 
         $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
-
-        $weight_total = getWeightFromProductID($invoice['product_id']);
+        $weight_total = weightValueOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
 
         if($invoice['unit'] == 'PPC'){
             $total_product_cost = $invoice['product_cost'] * $quantity;
