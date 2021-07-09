@@ -161,8 +161,16 @@
 
         $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
 
-        $total_product_cost = number_format($invoice['product_cost'] * $quantity, 2);
-        $total_product_sell = number_format($invoice['picker_price'] * $quantity, 2);
+        $weight_total = getWeightFromProductID($invoice['product_id']);
+
+        if($invoice['unit'] == 'PPC'){
+            $total_product_cost = $invoice['product_cost'] * $quantity;
+            $total_product_sell = $invoice['picker_price'] * $quantity;    
+        }else{
+            $total_product_cost = $invoice['product_cost'] * $weight_total;
+            $total_product_sell = $invoice['picker_price'] * $weight_total;
+        }
+        
 
 
 
@@ -195,10 +203,10 @@
                     echo $invoice['unit'];
                 }
             ?></td>
-            <td><?php echo getWeightFromProductID($invoice['product_id']); ?> kg</td>
+            <td><?php echo $weight_total; ?> kg</td>
 
-            <td>£<?php echo $total_product_cost; ?></td>
-            <td>£<?php echo $total_product_sell; ?></td>
+            <td>£<?php echo number_format($total_product_cost, 2); ?></td>
+            <td>£<?php echo number_format($total_product_sell, 2); ?></td>
             <td>£<?php echo number_format($total_product_sell - $total_product_cost, 2); ?></td>
         </tr>
         <?php
