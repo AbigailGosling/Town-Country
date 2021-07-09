@@ -42,7 +42,7 @@
             $userQueryPiece = "";
         }
         
-        if($INTAKE_ID != 0){
+        if($INTAKE_ID != ''){
             $picksheet_ids = array();
 
             $intakePicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
@@ -102,10 +102,11 @@
                         JOIN `product` ON product.id = pickerItems.product_id
                         WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
         }else{
-                $searchQueryString = "SELECT product.cost as product_cost, product.price as product_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
-                            JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
-                            JOIN `product` ON product.id = pickerItems.product_id
-                            WHERE completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
+
+            $searchQueryString = "SELECT product.cost as product_cost, product.price as product_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
+                        JOIN `product` ON product.id = pickerItems.product_id
+                        WHERE pickerSheets.completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
         }
 
     }
@@ -155,7 +156,15 @@
         $total_product_cost = number_format($invoice['product_cost'] * $quantity, 2);
         $total_product_sell = number_format($invoice['product_price'] * $quantity, 2);
 
-    ?>
+        $row_intake_id = intakeIDfromPalletID($invoice['pallet_id']);
+
+        
+        if($INTAKE_ID != ''){
+            if($INTAKE_ID != $row_intake_id){
+                continue;
+            }
+        }
+        ?>
         <tr class="result">
             <td><?php echo getUsername($invoice['user_from_id']); ?></td>
             <td>
@@ -169,7 +178,7 @@
             <td><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
             <td><?php echo customerName($invoice['customer_id']); ?> </td>
             
-            <td><?php echo intakeIDfromPalletID($invoice['pallet_id']); ?></td>
+            <td><?php echo $row_intake_id; ?></td>
             <td><?php echo $invoice['pallet_id']; ?></td>
             <td><?php echo getNationality($invoice['nationality_id']); ?></td>
             <td><?php echo getTemp($invoice['cooling_id']); ?></td>
