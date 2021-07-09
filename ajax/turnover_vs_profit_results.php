@@ -148,22 +148,24 @@
 
     
     while($invoice = mysqli_fetch_array($searchResults)){
-        
-        $invoice_price = invoiceTotal($invoice['pick_id']);
-
-        $quantity = countFromProductIDArray(array($invoice['product_id']));
-
-        $total_product_cost = number_format($invoice['product_cost'] * $quantity, 2);
-        $total_product_sell = number_format($invoice['picker_price'] * $quantity, 2);
-
+    
         $row_intake_id = intakeIDfromPalletID($invoice['pallet_id']);
-
-        
+    
         if($INTAKE_ID != ''){
             if($INTAKE_ID != $row_intake_id){
                 continue;
             }
         }
+
+        $invoice_price = invoiceTotal($invoice['pick_id']);
+
+        $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
+
+        $total_product_cost = number_format($invoice['product_cost'] * $quantity, 2);
+        $total_product_sell = number_format($invoice['picker_price'] * $quantity, 2);
+
+
+
         ?>
         <tr class="result">
             <td><?php echo getUsername($invoice['user_from_id']); ?></td>
