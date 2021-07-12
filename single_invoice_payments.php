@@ -58,7 +58,16 @@ if (!empty($paymentID)) {
             <tr>
                 <td><?php echo $invoicePayment['id']; ?></td>
                 <td><?php echo $invoicePayment['invoice_id']; ?></td>
-                <td><?php echo $invoicePayment['payment_method']; ?></td>
+                <td>
+                    <?php
+                        if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
+                        ?><a target="_blank" href="/ajax/generatePDFcreditnote.php?id=<?php echo $invoiceID; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><?php echo $invoicePayment['payment_method']; ?></a><?php
+                        }else{
+                            echo $invoicePayment['payment_method'];
+                        }
+                        
+                    ?>
+                </td>
                 <td><?php echo $invoicePayment['created_at']; ?></td>
                 <td><?php echo $invoicePayment['name']; ?></td>
                 <td align="center">
