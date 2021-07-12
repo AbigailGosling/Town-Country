@@ -2,69 +2,49 @@
     require('../functions.php');
 
 	$invoiceID = $_POST['invoiceID'];
-?>
-<table width="75%" border="0">
-<tr style="border-bottom:1px solid #f1f1f1;">
-    <th align="left">Intake ID</th>
-    <th align="left">Pallet ID</th>
-    <th align="left">Product</th>
-    <th align="left">Quantity</th>
-    <th align="left">Price</th>
-    <th align="left"></th>
-</tr>
-<?php
+
+    # get all returned intakes related to this invoice
+    $returnIntakeResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE delivery_note_number='$invoiceID'");
+
+    $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
+
+    if($countReturnedIntakes == 0){ # no returned intakes for this invoice
+        echo '<b style="color:red;font-size:18px;">No returned intakes for Invoice #' . $invoiceID . ' was found</b>';
+    }else{
+        ?>           
+        <table width="75%" border="0">
+        <tr style="border-bottom:1px solid #f1f1f1;">
+            <th align="left">Intake ID</th>
+            <th align="left">Pallet ID</th>
+            <th align="left">Product</th>
+            <th align="left">Quantity</th>
+            <th align="left">Price</th>
+            <th align="left"></th>
+        </tr>
+        <?php
+        # gather IDs of all returned intakes
+        $returnedIntakeIDS = [];
+        while($returnedIntake = mysqli_fetch_array($returnIntakeResult)){ array_push($returnedIntakeIDS, $returnedIntake['id']); }        
+        $returnedIntakeIDS = implode(',', $returnedIntakeIDS);
+
+        # 
+        $palletsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN ($returnedIntakeIDS)");
+        $palletData = mysqli_fetch_array($palletsResult);
+
+        $pallet_ids = $palletData['pallet_ids'];
+
+        $productsResult = mysqli_query($conn, "SELECT * FROM `product` WHERE pallet_id IN ($pallet_ids)");
         
-    $outpalletResult = mysqli_query($conn, "SELECT * FROM `palletsOut` WHERE pickersheet_id='$invoiceID'");
-    $outpalletCount = mysqli_num_rows($outpalletResult);
+        $i = 0;
+        while($product = mysqli_fetch_array($productsResult)){
+            $i++;
+            $rowClass = "productRow" . $i;
+            $productID = $product['id'];
 
-    $total_weight_count = 0;
-    $total_case_count = 0;
-    $rowCount = 0;
+            # get number of weights for this product
+		    $weightCountResult = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id=$productID");
+            $count = mysqli_num_rows($weightCountResult);
 
-    while($outpallet = mysqli_fetch_array($outpalletResult)){
-
-        $weightids = explode(',', $outpallet['weight_ids']);
-
-        $productIDArray = array();
-                
-        foreach($weightids as $weightid){
-            $x = "SELECT * FROM `weights` WHERE id='$weightid'";
-            $y = mysqli_query($conn, $x);
-            $weight = mysqli_fetch_array($y);
-            
-            if(!in_array($weight['product_id'], $productIDArray)){
-                array_push($productIDArray, $weight['product_id']);
-            }
-
-            $queryBits .= ' id = ' . $weightid . ' || ';
-        }
-         
-        foreach($productIDArray as $productID){
-            $rowCount++;
-            $rowClass = "productRow" . $rowCount;
-            $x1 = "SELECT * FROM `product` WHERE id='$productID'";
-            $y1 = mysqli_query($conn, $x1);
-            $product = mysqli_fetch_array($y1);
-                
-
-            if($product['unit'] == 'PPC'){
-                $ext = ' Cases';
-            }else{
-                $ext = ' kg';
-            }
-
-            $x2 = "SELECT * FROM `weights` WHERE ";
-
-            foreach($weightids as $weightid){
-                $x2 .= "product_id='$productID' && id='$weightid' || ";
-            }
-
-            $x2 = rtrim($x2," || ");
-            $y2 = mysqli_query($conn, $x2);
-            $count = mysqli_num_rows($y2);
-
-            ${"globalProductCount" . $product['id']} += $count;
-            
         ?>
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
             <td align="left">
@@ -81,7 +61,6 @@
             </td>
             
             <?php
-                $productID = $product['id'];
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$invoiceID' AND product_id='$productID'";
                 $howManyY = mysqli_query($conn, $howManyX);
                 $pickerItem = mysqli_fetch_array($howManyY);
@@ -96,13 +75,13 @@
                     <?php } ?>
                 </select>
             </td>
-            <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?>"></td>
+            <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
             <td>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
             </td>
         </tr>
         <?php
-            }
         }
-    ?>
+    }
+?>
 </table>

@@ -58,7 +58,16 @@ if (!empty($paymentID)) {
             <tr>
                 <td><?php echo $invoicePayment['id']; ?></td>
                 <td><?php echo $invoicePayment['invoice_id']; ?></td>
-                <td><?php echo $invoicePayment['payment_method']; ?></td>
+                <td>
+                    <?php
+                        if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
+                        ?><a target="_blank" href="/ajax/generatePDFcreditnote.php?id=<?php echo $invoiceID; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><?php echo $invoicePayment['payment_method']; ?></a><?php
+                        }else{
+                            echo $invoicePayment['payment_method'];
+                        }
+                        
+                    ?>
+                </td>
                 <td><?php echo $invoicePayment['created_at']; ?></td>
                 <td><?php echo $invoicePayment['name']; ?></td>
                 <td align="center">
@@ -137,57 +146,48 @@ if (!empty($paymentID)) {
             <div class="products_container">
                  <?php
             if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == 'CREDIT_NOTE'){
-        ?>
-        <script>
-            $('#amount').val(1);
-            $('#amountContainer').hide();
-        </script>
-        <table width="75%" border="0">
-            <tr style="border-bottom:1px solid #f1f1f1;">
-                <th align="left">Intake ID</th>
-                <th align="left">Pallet ID</th>
-                <th align="left">Product</th>
-                <th align="left">Quantity</th>
-                <th align="left">Price</th>
-                <th align="left"></th>
-            </tr>
-        <?php
-                $payment_id = $selectedPaymentData['id'];
+            ?>
+            <script>
+                $('#amount').val(1);
+                $('#amountContainer').hide();
+            </script>
+            <table width="75%" border="0">
+                <tr style="border-bottom:1px solid #f1f1f1;">
+                    <th align="left">Intake ID</th>
+                    <th align="left">Pallet ID</th>
+                    <th align="left">Product</th>
+                    <th align="left">Quantity</th>
+                    <th align="left">Price</th>
+                    <th align="left"></th>
+                </tr>
+                <?php
                 
-                $creditNoteResult = mysqli_query($conn, "SELECT product_id FROM `credit_note_items` WHERE payment_id=$payment_id");
-                $productIDArray = [];
+                $payment_id = $selectedPaymentData['id'];
 
-                while($credit_row = mysqli_fetch_array($creditNoteResult)){ array_push($productIDArray, $credit_row['product_id']); }
+                
+                $creditNoteResult = mysqli_query($conn, "SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=$payment_id");
+                $creditNoteData = mysqli_fetch_array($creditNoteResult);
+                $productIDs = $creditNoteData['product_ids'];
 
-                foreach($productIDArray as $productID){
+                $productIDs = explode(',', $productIDs);
+
+
+                foreach($productIDs as $productID){
+                    
+                    $i++;
+                    $rowClass = "productRow" . $i;
 
                     $creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id=$productID && payment_id=$payment_id");
                     $creditNoteDetails = mysqli_fetch_array($creditNoteResult);
 
-                    $rowCount++;
-                    $rowClass = "productRow" . $rowCount;
-                    $x1 = "SELECT * FROM `product` WHERE id='$productID'";
-                    $y1 = mysqli_query($conn, $x1);
-                    $product = mysqli_fetch_array($y1);
-                        
-
-                    if($product['unit'] == 'PPC'){
-                        $ext = ' Cases';
-                    }else{
-                        $ext = ' kg';
-                    }
-
-                    $x2 = "SELECT * FROM `weights` WHERE ";
-
-                    foreach($weightids as $weightid){
-                        $x2 .= "product_id='$productID' && id='$weightid' || ";
-                    }
-
-                    $x2 = rtrim($x2," || ");
-                    $y2 = mysqli_query($conn, $x2);
-                    $count = mysqli_num_rows($y2);
-
-                    ${"globalProductCount" . $product['id']} += $count;
+                     
+                    
+                    # get number of weights for this product
+                    $weightCountResult = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id=$productID");
+                    $count = mysqli_num_rows($weightCountResult);
+                    
+                    $productResult = mysqli_query($conn, "SELECT * FROM `product` WHERE id='$productID'");
+                    $product = mysqli_fetch_array($productResult);
                     
                 ?>
                 <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
@@ -214,13 +214,12 @@ if (!empty($paymentID)) {
                     <td align="left"><b class="">
                         <select style="width:55px;height:30px;" name="quantity[]">
                             <?php
-                                $tempcount = $howMany+1;
+                                $tempcount = $count+1;
                                 for($i=1;$i<$tempcount;$i++) { ?>
                                 <option value="<?php echo $i; ?>" <?php if($i == $creditNoteDetails['quantity']){ echo 'selected'; } ?>><?php echo $i; ?></option>
                             <?php } ?>
                         </select>
                     </td>
-                  
                     <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
                     <td>
                      </td>
