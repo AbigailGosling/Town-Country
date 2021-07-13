@@ -194,7 +194,10 @@
             <td><?php echo getCutGroupNameFromCut($invoice['cut_id']); ?></td>
             <td><?php echo getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']); ?></td>
             <td><?php echo getBrand($invoice['brand_id']); ?></td>
-            <td><?php echo $quantity; ?></td>
+            <td>
+                <input type="hidden" class="quantityValue" value="<?php echo $quantity; ?>">
+                <?php echo $quantity; ?>
+            </td>
             <td><?php 
                 if($invoice['unit'] == 'C'){
                     echo 'Cases';
@@ -202,17 +205,54 @@
                     echo $invoice['unit'];
                 }
             ?></td>
-            <td><?php echo $weight_total; ?> kg</td>
+            <td>
+                <input type="hidden" class="weightValue" value="<?php echo $weight_total; ?>">
+                <?php echo $weight_total; ?> kg
+            </td>
 
-            <td>£<?php echo number_format($total_product_cost, 2); ?></td>
-            <td>£<?php echo number_format($total_product_sell, 2); ?></td>
-            <td>£<?php echo number_format($total_product_sell - $total_product_cost, 2); ?></td>
+            <td>
+                <input type="hidden" class="costValue" value="<?php echo number_format($total_product_cost, 2); ?>">
+                £<?php echo number_format($total_product_cost, 2); ?>
+            </td>
+            <td>
+                <input type="hidden" class="sellValue" value="<?php echo number_format($total_product_sell, 2); ?>">
+                £<?php echo number_format($total_product_sell, 2); ?></td>
+            <td>
+                <?php
+                    $profit_formatted = number_format($total_product_sell - $total_product_cost, 2);
+                    
+                    $profit = str_replace(",","",$profit_formatted);
+                ?>
+                <input type="hidden" class="profitValue" value="<?php echo $profit;  ?>">
+                £<?php echo $profit_formatted; ?>
+            </td>
         </tr>
         <?php
     }
 ?>
- 
+  <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;</td>
+    <td><div class="totalQuantityValue" style="font-size:13px;"></div></td>
+    <td>&nbsp;&nbsp;</td>
+    <td><div class="totalWeightValue" style="font-size:13px;"></div></td>
+    <td><div class="totalCostValue" style="font-size:13px;"></div></td>
+    <td><div class="totalSellValue" style="font-size:13px;"></div></td>
+    <td><div class="totalProfitValue" style="font-size:13px;"></div></td>
+</tr>
 <script>
+    <?php if($toSkip != 0){ ?>
+        $('#resultsTable').find('tr.totals').first().remove();
+    <?php } ?>
     $('#toSkipCount').val(<?php echo $newSkipCount; ?>);
     $('#moreRowsAvailable').val(<?php echo $moreRowsAvailable; ?>);
 </script>
