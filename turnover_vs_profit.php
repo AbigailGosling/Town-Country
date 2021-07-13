@@ -120,7 +120,11 @@
     </div>
     <div class="loadMoreBtn" onclick="loadData(false)" style="display:none;">Load More</div>
 </div>
-
+<style>
+    #resultsTable td{
+        font-size:15px;
+    }
+</style>
 
 <div class="clearfix"></div>
  
@@ -165,19 +169,63 @@
                 var toSkip = parseInt($('#toSkipCount').val());
                 var moreRowsAvailable = parseInt($('#moreRowsAvailable').val());
 
-                console.log('toskip: ' + toSkip);
-                console.log('totalCount: ' + moreRowsAvailable);
                 if(moreRowsAvailable == 1){
                     $('.loadMoreBtn').show();
                 }else{
                     $('.loadMoreBtn').hide();
                 }
+
+                 
+                var totalQuantity = 0;
+                $('.quantityValue').each(function(){
+                    var val = parseInt($(this).val());
+                    totalQuantity = parseInt(totalQuantity) + val;
+                });
+
+
+                var totalWeightValue = 0;
+                $('.weightValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalWeightValue = (parseFloat(totalWeightValue) + val).toFixed(2);
+                });
+
+
+                var totalCostValue = 0;
+                $('.costValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalCostValue = (parseFloat(totalCostValue) + val).toFixed(2);
+                });
+
+                var totalSellValue = 0;
+                $('.sellValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalSellValue = (parseFloat(totalSellValue) + val).toFixed(2);
+                });
+
+
+                var totalProfitValue = 0;
+                $('.profitValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalProfitValue = (parseFloat(totalProfitValue) + val).toFixed(2);
+                });
+
+                
+
+                $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
+                $('.totalQuantityValue').text(totalQuantity);
+                $('.totalProfitValue').text('£' + formatNumber(totalProfitValue));
+                $('.totalSellValue').text('£' + formatNumber(totalSellValue));
+                $('.totalCostValue').text('£' + formatNumber(totalCostValue));
+                
             }, 1000);
         
 
         });
     }
 
+    function formatNumber(num) {
+        return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
+    }
 
     $(document).ready(function() {
         $( ".datepicker" ).datepicker({
