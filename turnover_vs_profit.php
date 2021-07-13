@@ -189,27 +189,19 @@
                     totalWeightValue = (parseFloat(totalWeightValue) + val).toFixed(2);
                 });
 
-
-                var totalCostValue = 0;
+                var totalCostValue = 0.00;
                 $('.costValue').each(function(){
                     var val = parseFloat($(this).val());
                     totalCostValue = (parseFloat(totalCostValue) + val).toFixed(2);
-                });
+                 });
 
-                var totalSellValue = 0;
+                var totalSellValue = 0.00;
                 $('.sellValue').each(function(){
                     var val = parseFloat($(this).val());
                     totalSellValue = (parseFloat(totalSellValue) + val).toFixed(2);
                 });
 
-
-                var totalProfitValue = 0;
-                $('.profitValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalProfitValue = (parseFloat(totalProfitValue) + val).toFixed(2);
-                });
-
-                
+                totalProfitValue = (totalSellValue -totalCostValue).toFixed(2);
 
                 $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
                 $('.totalQuantityValue').text(totalQuantity);
