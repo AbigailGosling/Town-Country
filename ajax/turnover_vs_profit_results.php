@@ -211,20 +211,26 @@
             </td>
 
             <td>
-                <input type="hidden" class="costValue" value="<?php echo number_format($total_product_cost, 2); ?>">
-                £<?php echo number_format($total_product_cost, 2); ?>
+                <?php
+                    $cost_formatted = number_format($total_product_cost, 2);
+                    
+                    $cost = str_replace(",","",$cost_formatted);
+                ?>
+
+                <input type="hidden" class="costValue" value="<?php echo $cost; ?>">
+                £<?php echo $cost_formatted; ?>
             </td>
             <td>
-                <input type="hidden" class="sellValue" value="<?php echo number_format($total_product_sell, 2); ?>">
-                £<?php echo number_format($total_product_sell, 2); ?></td>
-            <td>
                 <?php
-                    $profit_formatted = number_format($total_product_sell - $total_product_cost, 2);
+                    $sell_formatted = number_format($total_product_sell, 2);
                     
-                    $profit = str_replace(",","",$profit_formatted);
+                    $sell = str_replace(",","",$sell_formatted);
                 ?>
-                <input type="hidden" class="profitValue" value="<?php echo $profit;  ?>">
-                £<?php echo $profit_formatted; ?>
+
+                <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
+                £<?php echo $sell_formatted; ?></td>
+            <td>
+                £<?php echo number_format(floor($total_product_sell) - floor($total_product_cost), 2); ?>
             </td>
         </tr>
         <?php
