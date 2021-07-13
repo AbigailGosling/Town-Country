@@ -201,6 +201,8 @@
             <td><?php 
                 if($invoice['unit'] == 'C'){
                     echo 'Cases';
+                }else if($invoice['unit'] == 'P'){
+                    echo 'GT';
                 }else{
                     echo $invoice['unit'];
                 }
