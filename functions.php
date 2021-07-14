@@ -1666,6 +1666,18 @@
 		return number_format($weight, 2, '.', '');
 	}
 
+	function totalValueCreditedOnInvoiceID($invoice_id){
+		global $conn;
+		
+		$result = mysqli_query($conn, "SELECT sum(amount) as totalamount FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=$invoice_id");
+		$data = mysqli_fetch_array($result);
+
+		if($data['totalamount'] == null){ return 0; }
+
+		return $data['totalamount'];
+	
+ 	}
+
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 
 	
