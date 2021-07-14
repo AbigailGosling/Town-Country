@@ -118,11 +118,11 @@
 		}
 		
 		.heading{
-			background-color:#b0cbe1;
+			background-color:#b4454b;
 		}
 		
 		td.bankdetails{
-			background-color:#b0cbe1;
+			background-color:#b4454b;
 		}
 		
 		td.bankdetailsLabel{
