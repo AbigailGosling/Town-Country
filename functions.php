@@ -1035,11 +1035,23 @@
 		return $totalOutstanding;
 	}
 
+	function getTotalPaidByCustomerIDForUserID($customer_id, $user_id){
+		global $conn;
+
+		$customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.user_from_id='$user_id')");
+
+		$data = mysqli_fetch_array($customerPicksheets);
+
+		if($data['paid'] == null){ return 0; }
+
+		return $data['paid'];
+	}
+
 	# Get Picksheet Total Paid - expects 1 param, picksheet_id
 	function getPicksheetTotalPaid($picksheet_id){
 		global $conn;
-		
-		$customerPicksheets = mysqli_query($conn, "SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id) GROUP by pickerSheets.id");
+
+		$customerPicksheets = mysqli_query($conn, "SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id AND invoice_payments.payment_type !=  'CREDIT_NOTE') GROUP by pickerSheets.id");
 
 		$picksheet = mysqli_fetch_array($customerPicksheets);
  
