@@ -1613,29 +1613,28 @@
 
 		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pick_id'";
         $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
-        
-        $outpalletCount = mysqli_num_rows($outpalletResult2);
+    
+		$total_count = 0;
 
-        while($outpallet = mysqli_fetch_array($outpalletResult2)){
+    	while($outpallet = mysqli_fetch_array($outpalletResult2)){
             $weightids = explode(',', $outpallet['weight_ids']);
-
-            $x1 = "SELECT * FROM `product` WHERE id='$productID'";
-            $y1 = mysqli_query($conn, $x1);
-            $product = mysqli_fetch_array($y1);
 
             $x2 = "SELECT * FROM `weights` WHERE ";
 
             foreach($weightids as $weightid){
-                $x2 .= "id='$weightid' || ";
+                $x2 .= "(id=$weightid && status_id='1' && product_id=$productID)  || ";
             }
 
             $x2 = rtrim($x2," || ");
+ 
             $y2 = mysqli_query($conn, $x2);
+	
+			$count = mysqli_num_rows($y2);
+			$total_count += $count;
         }
 
-		$count = mysqli_num_rows($y2);
 
-		return $count;
+		return $total_count;
 	}
 
 	function weightValueOfProductOnPicksheet($pick_id, $productID){
