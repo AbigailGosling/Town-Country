@@ -1408,56 +1408,19 @@
         return $y->num_rows;
         
     }
-
-
+	
 	function intakePriceComplete($intake_id){
         global $conn;
 
-        $r = 1;
+		$result = mysqli_query($conn, "SELECT count(pallet.id) as num_of_pallets FROM `pallet` INNER JOIN `product` ON pallet.id=product.pallet_id WHERE product.cost != 0 && pallet.intake_id=$intake_id");
 
-		// $x = "SELECT SUM(product.cost) as cost_total FROM product INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id=$intake_id";
-		// $y = mysqli_query($conn, $x);
-        // $row = mysqli_fetch_array($y);
-		// if($row['cost_total'] == 0){
-		// 	$r = 0;
-		// }
+		$data = mysqli_fetch_array($result);
+		
+        if($data['num_of_pallets'] == 0){ return 0; }
 
-		// return $r;
-
-
-        $x = "SELECT id FROM `pallet` WHERE intake_id='$intake_id'";
-        $y = mysqli_query($conn, $x);
-        $countPallets = mysqli_num_rows($y);
-        
-        if($countPallets == 0){
-            $r = 0;
-        }else{
-            $palletIDs = [];
-            while($row = mysqli_fetch_array($y)){ array_push($palletIDs, $row['id']); }
-            
-            $palletString = implode(',', $palletIDs);
-            
-			$x = "SELECT SUM(cost) as cost_total FROM product WHERE pallet_id IN ($palletString)";
-			$y = mysqli_query($conn, $x);
-            $row = mysqli_fetch_array($y);
-			if($row['cost_total'] == 0){
-				$r = 0;
-			}
-
-			// original
-            // $x = "SELECT id,cost FROM product WHERE pallet_id IN ($palletString) GROUP BY cut_id";
-			// $y = mysqli_query($conn, $x);
-
-            // while($row = mysqli_fetch_array($y)){
-            //     if($row['cost'] == 0){
-            //         $r = 0;
-            //     }
-            // }
-        }
-
-        return $r;
+		return 1;
 	}
-	
+
 	function invoiceTotal($pickersheet_id){
 		global $conn;
 
