@@ -1626,7 +1626,7 @@
             $x2 = "SELECT * FROM `weights` WHERE ";
 
             foreach($weightids as $weightid){
-                $x2 .= "product_id='$productID' && id='$weightid' || ";
+                $x2 .= "id='$weightid' || ";
             }
 
             $x2 = rtrim($x2," || ");
