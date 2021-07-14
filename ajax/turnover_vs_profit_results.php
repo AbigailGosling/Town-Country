@@ -157,6 +157,12 @@
             }
         }
 
+        if($PALLET_ID != ''){
+            if($PALLET_ID != $invoice['pallet_id']){
+                continue;
+            }
+        }
+
         $invoice_price = invoiceTotal($invoice['pick_id']);
 
         $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
