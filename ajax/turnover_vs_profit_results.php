@@ -241,7 +241,7 @@
                 <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
                 £<?php echo $sell_formatted; ?></td>
             <td>
-                £<?php echo number_format(floor($total_product_sell) - floor($total_product_cost), 2); ?>
+                £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
             </td>
         </tr>
         <?php
