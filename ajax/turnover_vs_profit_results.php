@@ -60,7 +60,7 @@
             if(sizeof($picksheet_ids) > 0){
                 $picksheet_ids = implode(',', $picksheet_ids);
 
-                $intakeQueryPiece = " && pickerSheets.id IN ($picksheet_ids)";
+                $intakeQueryPiece = " && pallet.intake_id=$INTAKE_ID && pickerSheets.id IN ($picksheet_ids)";
             }
         }
 
@@ -100,13 +100,16 @@
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
+                        JOIN `pallet` ON product.pallet_id = pallet.id
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
         }else{
 
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
-                        WHERE pickerSheets.completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerItems.product_id LIMIT $toSkip, $limit";
+                        JOIN `pallet` ON product.pallet_id = pallet.id
+                        WHERE pickerSheets.completed=1 $intakeQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
+                        
         }
 
     }
