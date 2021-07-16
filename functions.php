@@ -1644,7 +1644,7 @@
 	function totalValueCreditedOnInvoiceID($invoice_id){
 		global $conn;
 		
-		$result = mysqli_query($conn, "SELECT sum(amount) as totalamount FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=$invoice_id");
+		$result = mysqli_query($conn, "SELECT sum(credit_note_items.price * credit_note_items.quantity) as totalamount FROM `invoice_payments` JOIN `credit_note_items` ON invoice_payments.id = credit_note_items.payment_id WHERE invoice_payments.payment_method='CREDIT_NOTE' && invoice_payments.invoice_id=$invoice_id");
 		$data = mysqli_fetch_array($result);
 
 		if($data['totalamount'] == null){ return 0; }
