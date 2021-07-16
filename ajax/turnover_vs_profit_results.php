@@ -81,7 +81,7 @@
             if(sizeof($picksheet_ids) > 0){
                 $picksheet_ids = implode(',', $picksheet_ids);
 
-                $palletQueryPiece = " && pickerSheets.id IN ($picksheet_ids)";
+                $palletQueryPiece = " && pallet.id=$PALLET_ID && pickerSheets.id IN ($picksheet_ids)";
             }
         }
 
