@@ -235,7 +235,7 @@
                 ?>
             </td>
             <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
-            <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
+            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
             <td>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
             </td>
