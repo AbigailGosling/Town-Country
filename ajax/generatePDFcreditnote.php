@@ -271,7 +271,7 @@
 					<tr>
 						<td class="heading" width="50">Plt ID</td>
 						<td class="heading" colspan="4"></td>
-						<td class="heading" width="65">Quality</td>
+						<td class="heading" width="65">Quantity</td>
 						<td class="heading" width="65">Unit</td>
 						<td class="heading" colspan="1">Price</td>
 						<td class="heading" colspan="2">Sub Total</td>
