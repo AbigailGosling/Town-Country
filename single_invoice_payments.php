@@ -51,8 +51,7 @@ if (!empty($paymentID)) {
 
         $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
 
-        $totalPrice = 0.00;
-
+        $runningBalance = $invoiceAmount;
         $i = 0;
         while ($invoicePayment = mysqli_fetch_array($invoicePayments)) { ?>
             <tr>
@@ -85,11 +84,11 @@ if (!empty($paymentID)) {
                     <?php
                         if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
                             $credit_note_total = creditNoteTotal($invoicePayment['id']);
-                            $totalPrice -= $credit_note_total;
-                            echo '<span style="color:red;font-weight:bold">-</span> £' . number_format($credit_note_total, 2, ".", ",");
+                            $runningBalance += $credit_note_total;
+                            echo '<span style="color:green;font-weight:bold">+</span> £' . number_format($credit_note_total, 2, ".", ",");
                         }else{
-                            $totalPrice += $invoicePayment['amount'];
-                            echo '<span style="color:green;font-weight:bold">+</span> £' . number_format($invoicePayment['amount'], 2, ".", ",");
+                            $runningBalance -= $invoicePayment['amount'];
+                            echo '<span style="color:red;font-weight:bold">-</span> £' . number_format($invoicePayment['amount'], 2, ".", ",");
                         }
                     ?>
                 </td>
@@ -98,8 +97,8 @@ if (!empty($paymentID)) {
         </tbody>
         <tfoot>
             <tr>
-                <td align="right" colspan="7">Total</td>
-                <td align="right" colspan="1">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td>
+                <td align="right" colspan="7">Balance</td>
+                <td align="right" colspan="1">£<?php echo number_format($runningBalance, 2, ".", ","); ?></td>
             </tr>
         </tfoot>
         
