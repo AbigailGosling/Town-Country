@@ -1577,7 +1577,8 @@
 		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id ='$invoice_payment_id'");
 		
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
-			$price += ($creditNoteItem['price'] * $creditNoteItem['quantity']);
+			$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+			$price += ($creditNoteItem['price'] * $weight);
 		}
 		
 		return $price;

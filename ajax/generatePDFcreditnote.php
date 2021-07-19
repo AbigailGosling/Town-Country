@@ -273,7 +273,8 @@
 						<td class="heading" colspan="4"></td>
 						<td class="heading" width="65">Quality</td>
 						<td class="heading" width="65">Unit</td>
-						<td class="heading" colspan="2">Price</td>
+						<td class="heading" colspan="1">Price</td>
+						<td class="heading" colspan="2">Sub Total</td>
 					</tr>';
 			 	
 				$paymentsResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id='$payment_id'");
@@ -299,6 +300,7 @@
 						$unit = 'Cases';
 					}
 
+					$weight = weightFromProductIDArray([$productID]);
 
 					$html .='
 					<tr class="productsRow">
@@ -311,16 +313,18 @@
 					<td align="left" class="unit">
 						<b class="unit">'. $unit .'</b>
 					</td>
-					<td>£'. number_format((float)$payment['quantity'] * $payment['price'], 2, '.', '') .'</td>
+					<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
+					<td>£'. number_format((float)$payment['price'] * $weight, 2, '.', '') .'</td>
 					</tr>';
 							
 				 
-					$totalPrice += number_format((float)$payment['quantity'] * $payment['price'], 2, '.', '');					
+					$totalPrice += number_format((float)$payment['price'] * $weight, 2, '.', '');					
   				}
 
 				$html .= '<tr class="heading">
 				  <th align="left" colspan="5">Total:</th>
 				  <th align="center">' . $total_qty_count . '</th>
+				  <th align="left"></th>
 				  <th align="left"></th>';
 				$html .= '<th align="price" colspan="2" class="price">£' . number_format((float)$totalPrice, 2, '.', '') . '</th>';
 				
