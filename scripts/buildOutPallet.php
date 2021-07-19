@@ -5,6 +5,21 @@
     
 	$functype = $_POST['functype'];
     
+    $weight_ids = $_POST['weightids'];
+    $weight_ids = rtrim($weight_ids,',');
+
+    $checkSoldResult = mysqli_query($conn, "SELECT *  FROM `weights` WHERE id IN ($weight_ids) && status_id = 1");
+    $weightsAlreadySold = mysqli_num_rows($checkSoldResult);
+
+    if($weightsAlreadySold > 0){
+    ?>
+        <script>
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo $_GET['type']; ?>';
+        </script>
+    <?php
+        exit();
+    } 
+
  	if($functype == 'ADD'){ # add new weights to latest out pallet
 		
 		# last out pallet
