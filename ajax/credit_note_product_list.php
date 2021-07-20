@@ -213,7 +213,7 @@
                     <?php
                         $tempcount = $count+1;
                         for($i=1;$i<$tempcount;$i++) { ?>
-                        <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                        <option value="<?php echo $i; ?>" <?php if($i == $count){ echo 'selected'; } ?>><?php echo $i; ?></option>
                     <?php } ?>
                 </select>
             </td>
