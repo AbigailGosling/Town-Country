@@ -1645,12 +1645,20 @@
 	function totalValueCreditedOnInvoiceID($invoice_id){
 		global $conn;
 		
-		$result = mysqli_query($conn, "SELECT sum(credit_note_items.price * credit_note_items.quantity) as totalamount FROM `invoice_payments` JOIN `credit_note_items` ON invoice_payments.id = credit_note_items.payment_id WHERE invoice_payments.payment_method='CREDIT_NOTE' && invoice_payments.invoice_id=$invoice_id");
-		$data = mysqli_fetch_array($result);
+		$paymentsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) AS ids FROM `invoice_payments` WHERE invoice_id='$invoice_id'");
+		$paymentData = mysqli_fetch_array($paymentsResult);
 
-		if($data['totalamount'] == null){ return 0; }
-
-		return $data['totalamount'];
+		$payment_ids = $paymentData['ids'];
+		
+		$price = 0;
+		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
+		
+		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
+			$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+			$price += ($creditNoteItem['price'] * $weight);
+		}
+		
+		return $price;
 	
  	}
 
