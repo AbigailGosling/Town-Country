@@ -273,6 +273,7 @@
 						<td class="heading" colspan="4"></td>
 						<td class="heading" width="65">Quantity</td>
 						<td class="heading" width="65">Unit</td>
+						<td class="heading" colspan="1">Weight</td>
 						<td class="heading" colspan="1">Price</td>
 						<td class="heading" colspan="2">Sub Total</td>
 					</tr>';
@@ -313,6 +314,7 @@
 					<td align="left" class="unit">
 						<b class="unit">'. $unit .'</b>
 					</td>
+					<td>'. $weight .'kg</td>
 					<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
 					<td>£'. number_format((float)$payment['price'] * $weight, 2, '.', '') .'</td>
 					</tr>';
@@ -324,6 +326,7 @@
 				$html .= '<tr class="heading">
 				  <th align="left" colspan="5">Total:</th>
 				  <th align="center">' . $total_qty_count . '</th>
+				  <th align="left"></th>
 				  <th align="left"></th>
 				  <th align="left"></th>';
 				$html .= '<th align="price" colspan="2" class="price">£' . number_format((float)$totalPrice, 2, '.', '') . '</th>';
