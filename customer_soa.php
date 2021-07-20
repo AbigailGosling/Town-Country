@@ -70,6 +70,7 @@
             
             $totalPrice = 0.00;
             $totalPaid = 0.00;
+            $totalCredited = 0.00;
             $totalOutstanding = 0.00;
 
             $i = 0;
@@ -126,6 +127,8 @@
                 
                  <?php
                     $sortableDateFormat = date('d-m-Y',$date);
+
+                    $totalCredited += totalValueCreditedOnInvoiceID($picksheet['id']);
                 ?>
                 <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
                 <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
@@ -144,7 +147,7 @@
             <td align="right">Total:</td> 
             <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
-            <td></td>
+            <td align="right" width="120">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
             <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
         </tr>
     </table>
