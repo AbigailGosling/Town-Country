@@ -119,7 +119,7 @@
             ?>
             <table width="100%" border="1" style="margin-bottom:10px;">
             <tr>
-                <td style="vertical-align:top;">
+                <td style="vertical-align:top;width:150px;">
                     <table width="100%">
                         <tr>
                             <th align="left"><?php echo ucfirst($user['name']); ?></th>
@@ -127,7 +127,7 @@
                     </table>
                 </td>
                 <td align="left">
-                    <table width="100%">
+                    <table width="100%" border="0">
                         <tr>
                             <th align="left">Customer</th>
                             <th align="right">Total Sales</th>
@@ -160,26 +160,18 @@
                                 <?php
                                 }
                             ?>
-                        
+                            <tr>
+                                <td><b>Total:</b></td>
+                                <td></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_outstanding_user); ?></b></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_paid_user); ?></b></td>
+                            </tr>
                     </table>
                     <?php
                         
                     ?>
                 </td>
                 </tr>
-                <tr>
-                <td></td>
-                <td colspan="1" align="right">
-                    <table width="100%" border="0">
-                        <tr>
-                            <td><b>Total:</b></td>
-                            <td></td>
-                            <td align="left" width="200"><b>£<?php echo number_format($total_outstanding_user); ?></b></td>
-                            <td align="left" width="200"><b>£<?php echo number_format($total_paid_user); ?></b></td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
             </table>
             <?php
             }
