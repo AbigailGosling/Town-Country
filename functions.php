@@ -1409,16 +1409,17 @@
         
     }
 	
-	function intakePriceComplete($intake_id){
+	function productCountOnIntakeNotCosted($intake_id){
         global $conn;
 
-		$result = mysqli_query($conn, "SELECT count(pallet.id) as num_of_pallets FROM `pallet` INNER JOIN `product` ON pallet.id=product.pallet_id WHERE product.cost != 0 && pallet.intake_id=$intake_id");
+		$palletResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) AS ids FROM pallet WHERE intake_id='$intake_id'");
+		$palletData = mysqli_fetch_array($palletResult);
+		$pallet_ids = $palletData['ids'];		
 
-		$data = mysqli_fetch_array($result);
-		
-        if($data['num_of_pallets'] == 0){ return 0; }
+		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE cost is null && pallet_id IN ($pallet_ids)");
+		$productData = mysqli_fetch_array($productResult);
 
-		return 1;
+		return $productData['count'];
 	}
 
 	function invoiceTotal($pickersheet_id){
