@@ -111,7 +111,7 @@
                 <?php if(!$invoicePaid) { ?>
                     <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
 				<?php }else{ ?>
-                    <td>Invoice Paid</a></td>  
+                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
                 <?php }?>
 
                 <?php
