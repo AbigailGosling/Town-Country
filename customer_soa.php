@@ -50,7 +50,7 @@
                 <th align="left">Date</th>
                 <th align="right">Value</th>
                 <th align="right">Paid</th>
-                <th align="right">Credited</th>
+                <th align="right">Credit</th>
                 <th align="right">Outstanding</th>
             </tr>
         </thead>
@@ -133,7 +133,7 @@
                 <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
                 <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
                 <td align="right" width="100">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
-                <td align="right">£<?php echo number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ",") ?></td>
+                <td align="right" style="color:red;">£<?php echo number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ",") ?></td>
                 <td align="right" width="100">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
 			</tr>
 			<?php
@@ -147,7 +147,7 @@
             <td align="right">Total:</td> 
             <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
-            <td align="right" width="120">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
+            <td align="right" width="120" style="color:red;">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
             <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
         </tr>
     </table>
