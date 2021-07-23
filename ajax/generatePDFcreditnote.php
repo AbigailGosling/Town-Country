@@ -212,6 +212,14 @@
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td class="greybox">
+							<div class="deliverydate">Invoice Number: <span class="date">'. $pickSheetRow['id'] .'</span></div>
+						</td>
+					</tr>
+				</table>
+				
+				<table width="200" border="'.$border.'">
+					<tr>
+						<td class="greybox">
 							<div class="deliverydate">P.O Number: <span class="date">mt396</span></div>
 						</td>
 					</tr>
