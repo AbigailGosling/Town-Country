@@ -48,7 +48,7 @@
                 <th align="left">Add Payment</th>
                 <th align="left">Due Date</th>
                 <th align="left">Date</th>
-                <th align="right">Price</th>
+                <th align="right">Value</th>
                 <th align="right">Paid</th>
                 <th align="right">Credited</th>
                 <th align="right">Outstanding</th>
