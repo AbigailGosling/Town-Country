@@ -98,9 +98,13 @@
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
 				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
                     <?php
-                        $bool = doesInvoiceHaveReturns($picksheet['id']);        
-                        if($bool){
-                            ?><div class="soa_cr_label">CR</div><?php
+                        $hasReturns = doesInvoiceHaveReturns($picksheet['id']);
+                        $hasCreditNote = doesInvoiceHaveCreditNote($picksheet['id']);
+                        
+                        if(!$hasCreditNote){
+                            if($hasReturns){
+                                ?><div class="soa_cr_label">CR</div><?php
+                            }
                         }
                     ?> 
                 </td>

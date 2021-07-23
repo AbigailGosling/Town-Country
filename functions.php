@@ -1674,9 +1674,22 @@
 		}
 
 		return true;
-
-
 	}
+
+	function doesInvoiceHaveCreditNote($invoice_id){
+		global $conn;
+
+		$result = mysqli_query($conn, "SELECT count(id) as count FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id='$invoice_id'");
+		$data = mysqli_fetch_array($result);
+
+		if($data['count'] == 0){
+			return false;
+		}
+
+		return true;
+	}
+
+
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 
 	
