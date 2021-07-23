@@ -84,8 +84,8 @@ if (!empty($paymentID)) {
                     <?php
                         if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
                             $credit_note_total = creditNoteTotal($invoicePayment['id']);
-                            $runningBalance += $credit_note_total;
-                            echo '<span style="color:green;font-weight:bold">+</span> £' . number_format($credit_note_total, 2, ".", ",");
+                            $runningBalance -= $credit_note_total;
+                            echo '<span style="color:red;font-weight:bold">-</span> £' . number_format($credit_note_total, 2, ".", ",");
                         }else{
                             $runningBalance -= $invoicePayment['amount'];
                             echo '<span style="color:red;font-weight:bold">-</span> £' . number_format($invoicePayment['amount'], 2, ".", ",");

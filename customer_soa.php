@@ -75,7 +75,7 @@
 
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
-                $total_credit = getInvoiceCreditNoteTotal($picksheet['id']);
+                $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
                 $this_price = (float) invoiceTotal($picksheet['id']);
                 $totalPrice += $this_price;
 
