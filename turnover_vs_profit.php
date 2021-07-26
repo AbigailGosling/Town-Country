@@ -165,7 +165,7 @@
         function(data, status){
             $('#resultsTable').append(data);
             
-            setTimeout(() => {
+            setTimeout(function() {
                 var toSkip = parseInt($('#toSkipCount').val());
                 var moreRowsAvailable = parseInt($('#moreRowsAvailable').val());
 
@@ -223,6 +223,7 @@
         $( ".datepicker" ).datepicker({
             dateFormat: 'dd/mm/yy'
         });
+
 
         $('#species_id').change(function(){
             var val = $(this).val();
