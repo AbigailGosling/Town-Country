@@ -13,6 +13,7 @@
     array_push($headings, 'Pallet ID');
     array_push($headings, 'Unit');
     array_push($headings, 'Chill/Frz');
+    array_push($headings, 'Species');
     array_push($headings, 'Product Name');
     array_push($headings, 'Nationalities');
     array_push($headings, 'Brands');
@@ -24,7 +25,7 @@
 
 
 
-    $productsX = "SELECT *, product.brand_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `nationality` ON product.nationality_id = nationality.id
@@ -53,6 +54,7 @@
         $local = $productsRow['local'];
         $brandname = $productsRow['brandname'];
         $cut = $productsRow['cutname'];
+        $species_name = getSpecies($productsRow['species_id']);
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -128,6 +130,7 @@
             array_push($single_row, getTemp($product2_temperatures[0]));
         }
 
+        array_push($single_row, $species_name);
         array_push($single_row, $cut);
 
         if($uniqueNationalities > 1){
