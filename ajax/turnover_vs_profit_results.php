@@ -27,7 +27,7 @@
             $date_end = date('Y-m-d', strtotime($date_end));
 
          
-            $dateQueryPiece = " && `pickerSheets.date` >= '$date_start' && `pickerSheets.date` <= '$date_end'";
+            $dateQueryPiece = " && pickerSheets.date_completed >= '$date_start' && pickerSheets.date_completed <= '$date_end'";
         }
 
         if($CUSTOMER_ID != 0){
