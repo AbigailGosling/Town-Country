@@ -105,7 +105,7 @@ if (!empty($paymentID)) {
     </table>
 </div>
 
-<?php if($runningBalance != 0){ ?>
+<?php if($runningBalance != 0 || !empty($paymentID)){ ?>
 <div class="container container--pt">
     <div style="background:#f2f2f2;padding:10px;">
 <h2 style="font-size:22px;padding-bottom:10px;">Original Invoice</h2>
