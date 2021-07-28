@@ -259,7 +259,21 @@
 						</select>
 					</td>
 				</tr>
-				 
+				<tr height="40"><td colspan="2"></td></tr>
+				<tr>
+					<td class="label"><label>Default User</label></td>
+					<td>
+						<select id="sales_person" name="default_salesman_id">
+							<?php
+								$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+				
+								while ($_user = mysqli_fetch_array($_users)) {
+									?><option value="<?php echo $_user['id']; ?>" <?php if($data['default_salesman_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
+								}
+							?>
+						</select>
+					</td>
+				</tr>
  			</table>
 		</div>
 	</div>
