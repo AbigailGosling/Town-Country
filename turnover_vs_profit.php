@@ -45,8 +45,7 @@
     <input type="hidden" id="moreRowsAvailable" value="1"> 
 
     <select name="species_id" id="species_id" style="width:152px;height:40px;">
-        <option value="" disabled selected>Select species..</option>
-        <option value="0">All species</option>
+        <option value="0" selected>All species</option>
 		<?php
 			$x = "SELECT * FROM `species`";
 			$y = mysqli_query($conn, $x);
