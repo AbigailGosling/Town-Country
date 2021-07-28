@@ -1576,10 +1576,14 @@
 
 		$price = 0;
 		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id ='$invoice_payment_id'");
-		
+
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
-			$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
-			$price += ($creditNoteItem['price'] * $weight);
+			if($creditNoteItem['product_id'] == 0){ # bespoke credit note, not attached product
+				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];	
+			}else{
+				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+				$price += ($creditNoteItem['price'] * $weight);
+			}
 		}
 		
 		return $price;
@@ -1655,8 +1659,12 @@
 		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
 		
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
-			$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
-			$price += ($creditNoteItem['price'] * $weight);
+			if($creditNoteItem['product_id'] == 0){ # bespoke credit note, not attached product
+				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];
+			}else{
+				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+				$price += ($creditNoteItem['price'] * $weight);
+			}
 		}
 		
 		return $price;

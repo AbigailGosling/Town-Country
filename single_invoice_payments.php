@@ -289,7 +289,7 @@ if (!empty($paymentID)) {
                 $('#amountContainer').hide();
             </script>
             <table width="75%" border="0">
-                <tr style="border-bottom:1px solid #f1f1f1;">
+                <tr style="border-bottom:1px solid #f1f1f1;" class="product-return-header">
                     <th align="left">Intake ID</th>
                     <th align="left">Pallet ID</th>
                     <th align="left">Product</th>
@@ -310,17 +310,38 @@ if (!empty($paymentID)) {
 
                 $productIDs = explode(',', $productIDs);
 
-
                 foreach($productIDs as $productID){
-                    
                     $i++;
                     $rowClass = "productRow" . $i;
-
+                    
                     $creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id=$productID && payment_id=$payment_id");
                     $creditNoteDetails = mysqli_fetch_array($creditNoteResult);
 
-                     
-                    
+                    if($productID == 0){
+                    ?>
+                    <script> $('.product-return-header').hide(); </script>
+                    <tr style="border-bottom:1px solid #f1f1f1;">
+                        <th align="left">Description</th>
+                        <th align="left">Quantity</th>
+                        <th align="left"></th>
+                    </tr>
+                    <tr class="" style="height:50px;border-bottom:1px solid #f1f1f1;">
+                        <td align="left">
+                            <input type="hidden" name="product_id[]" value="0">
+                            <input type="text" name="description[]" value="<?php echo $creditNoteDetails['description']; ?>">
+                        </td>
+
+                        <td align="left">
+                            <input type="text" name="quantity[]" style="width:90px;" value="<?php echo $creditNoteDetails['quantity']; ?>">
+                        </td>
+                        <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo $creditNoteDetails['price']; ?>"></td>
+                        <td>
+                            <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
+                        </td>
+                    </tr>
+                    <?php
+                    }else{
+
                     # get number of weights for this product
                     $weightCountResult = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id=$productID");
                     $count = mysqli_num_rows($weightCountResult);
@@ -382,6 +403,7 @@ if (!empty($paymentID)) {
                      </td>
                 </tr>
                 <?php
+                    }
                 }
             }
         ?>

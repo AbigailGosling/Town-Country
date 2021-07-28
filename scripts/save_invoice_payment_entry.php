@@ -35,9 +35,12 @@
 
                 $price = $_POST['price'][$i];
                 $quantity = $_POST['quantity'][$i];
+                $description = $_POST['description'][$i];
 
-                $y = mysqli_query($conn, "INSERT into `credit_note_items` (payment_id,product_id,quantity,price) VALUES ('$id','$product_id','$quantity','$price')");
-
+                if($description != null){
+                    $y = mysqli_query($conn, "INSERT into `credit_note_items` (payment_id,product_id,quantity,price,`description`) VALUES ('$id','$product_id','$quantity','$price','$description')");
+                }
+                
                 $i++;
             }
         }
@@ -53,9 +56,12 @@
                 
                 $price = $_POST['price'][$i];
                 $quantity = $_POST['quantity'][$i];
-
-                $y = mysqli_query($conn, "UPDATE `credit_note_items` SET quantity='$quantity', price='$price' WHERE payment_id='$paymentID' && product_id='$product_id'") or die(mysqli_error($conn));
-
+                $description = $_POST['description'][$i];
+                
+                if($description != null){
+                    $y = mysqli_query($conn, "UPDATE `credit_note_items` SET quantity='$quantity', price='$price', `description`='$description' WHERE payment_id='$paymentID' && product_id='$product_id'") or die(mysqli_error($conn));
+                }
+                
                 $i++;
             }
  
