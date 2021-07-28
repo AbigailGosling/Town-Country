@@ -186,11 +186,6 @@
 					<td><input type="text" class="input" name="customer_email" value="<?php echo $data['customer_email']; ?>"></td>
 				</tr>
 				
-				<tr>
-					<td class="label"><label>Salesman</label></td>
-					<td><input type="text" class="input" name="salesman" value="<?php echo $data['salesman']; ?>"></td>
-				</tr>
-				
 			</table>
 		</div>
 		
