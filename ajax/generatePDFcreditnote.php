@@ -296,39 +296,56 @@
 					$productResult = mysqli_query($conn, "SELECT * FROM `product` WHERE id='$productID'");
 					$product = mysqli_fetch_array($productResult);
 					
-				
-					if($product['unit'] == 'C'){
-						$unit = 'Cases';
-					}else if($product['unit'] == 'PPC'){
-						$unit = 'Per Case';
-					}else if($product['unit'] == 'P'){
-						$unit = 'Pallet';
-					}else if($product['unit'] == 'KG'){
-						$unit = 'Kilo';
+					if($productID == 0){
+						$html .='
+						<tr class="productsRow">
+						<td></td>
+						<td align="left" colspan="4" class="brand"><b class="brand">'. $payment['description'] .'</b></td>
+						<td align="right" class="quantity"><b class="quantity">'. $payment['quantity'] .'</b></td>
+						<td align="left" class="unit">
+							<b class="unit">'. $unit .'</b>
+						</td>
+						<td></td>
+						<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
+						<td>£'. number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '') .'</td>
+						</tr>';
+
+						$totalPrice += number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '');
 					}else{
-						$unit = 'Cases';
+					
+						if($product['unit'] == 'C'){
+							$unit = 'Cases';
+						}else if($product['unit'] == 'PPC'){
+							$unit = 'Per Case';
+						}else if($product['unit'] == 'P'){
+							$unit = 'Pallet';
+						}else if($product['unit'] == 'KG'){
+							$unit = 'Kilo';
+						}else{
+							$unit = 'Cases';
+						}
+
+						$weight = weightFromProductIDArray([$productID]);
+
+						$html .='
+						<tr class="productsRow">
+						<td align="left" class="palletid"><span class="palletid">'. $product['pallet_id'] .'</span></td>
+						<td align="left" class="chilled"><span class="chilled">'. getTemp($product['cooling_id']) .'</span></td>
+						<td align="left" class="species"><b class="species">' . getSpeciesFromCutID($product['cut_id']) .'</b></td>
+						<td align="left" class="cut"><b class="cut">'. getCut($product['cut_id']).'</b></td>
+						<td align="left" class="brand"><b class="brand">'. getBrand($product['brand_id']) .'</b></td>
+						<td align="right" class="quantity"><b class="quantity">'. $payment['quantity'] .'</b></td>
+						<td align="left" class="unit">
+							<b class="unit">'. $unit .'</b>
+						</td>
+						<td>'. $weight .'kg</td>
+						<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
+						<td>£'. number_format((float)$payment['price'] * $weight, 2, '.', '') .'</td>
+						</tr>';
+								
+					
+						$totalPrice += number_format((float)$payment['price'] * $weight, 2, '.', '');					
 					}
-
-					$weight = weightFromProductIDArray([$productID]);
-
-					$html .='
-					<tr class="productsRow">
-					<td align="left" class="palletid"><span class="palletid">'. $product['pallet_id'] .'</span></td>
-					<td align="left" class="chilled"><span class="chilled">'. getTemp($product['cooling_id']) .'</span></td>
-					<td align="left" class="species"><b class="species">' . getSpeciesFromCutID($product['cut_id']) .'</b></td>
-					<td align="left" class="cut"><b class="cut">'. getCut($product['cut_id']).'</b></td>
-					<td align="left" class="brand"><b class="brand">'. getBrand($product['brand_id']) .'</b></td>
-					<td align="right" class="quantity"><b class="quantity">'. $payment['quantity'] .'</b></td>
-					<td align="left" class="unit">
-						<b class="unit">'. $unit .'</b>
-					</td>
-					<td>'. $weight .'kg</td>
-					<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
-					<td>£'. number_format((float)$payment['price'] * $weight, 2, '.', '') .'</td>
-					</tr>';
-							
-				 
-					$totalPrice += number_format((float)$payment['price'] * $weight, 2, '.', '');					
   				}
 
 				$html .= '<tr class="heading">

@@ -9,11 +9,38 @@
     $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
 
     if($countReturnedIntakes == 0){ # no returned intakes for this invoice
-        echo '<b style="color:red;font-size:18px;">No returned intakes for Invoice #' . $invoiceID . ' was found</b>';
-    }else{
+    ?>
+    <Br>
+    <h2 style="font-size:22px;padding-bottom:10px;">Create Return</h2>
+    <table width="75%" border="0">
+        <tr style="border-bottom:1px solid #f1f1f1;">
+            <th align="left">Description</th>
+            <th align="left">Quantity</th>
+            <th align="left"></th>
+        </tr>
+        <?php
+            for($i=0;$i<5;$i++){
+            $rowClass = 'classItem' . $i;
         ?>
-        
-        
+        <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
+            <td align="left">
+                <input type="hidden" name="product_id[]" value="0">
+                <input type="text" name="description[]">
+            </td>
+
+            <td align="left">
+                <input type="text" name="quantity[]" style="width:90px;">
+            </td>
+            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="0.00"></td>
+            <td>
+                <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
+            </td>
+        </tr>
+        <?php } ?>
+    </table>
+    <?php
+    }else{
+?>
 <div style="background:#f2f2f2;padding:10px;">
 <h2 style="font-size:22px;padding-bottom:10px;">Original Invoice</h2>
 <table width="100%" border="0">
