@@ -52,14 +52,24 @@
 
         if($paymentMethod == 'CREDIT_NOTE'){
             $i = 0;
-            foreach($_POST['product_id'] as $product_id){
+
+            if($_POST['delete_ids'] != null){
                 
+                $DELETE_IDS = mysqli_real_escape_string($conn, $_POST['delete_ids']);
+                $DELETE_IDS = rtrim($DELETE_IDS, ',');
+                
+                mysqli_query($conn, "DELETE FROM `credit_note_items` WHERE id IN ($DELETE_IDS)");
+                
+            }
+
+            foreach($_POST['product_id'] as $product_id){
+                $credit_id = $_POST['credit_id'][$i];
                 $price = $_POST['price'][$i];
                 $quantity = $_POST['quantity'][$i];
                 $description = $_POST['description'][$i];
                 
                 if($description != null){
-                    $y = mysqli_query($conn, "UPDATE `credit_note_items` SET quantity='$quantity', price='$price', `description`='$description' WHERE payment_id='$paymentID' && product_id='$product_id'") or die(mysqli_error($conn));
+                    $y = mysqli_query($conn, "UPDATE `credit_note_items` SET quantity='$quantity', price='$price', `description`='$description' WHERE id='$credit_id'") or die(mysqli_error($conn));
                 }
                 
                 $i++;
