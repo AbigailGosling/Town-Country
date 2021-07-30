@@ -36,7 +36,7 @@
 			
 		</script>
 	</head>
-<body onafterprint="printCompleted()">
+<body onbeforeprint="beforePrint()" onafterprint="printCompleted()">
 
 <div id="networkError">
 	<img src="/images/wifilogo.png"><br/>

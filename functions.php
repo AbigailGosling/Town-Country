@@ -1035,11 +1035,23 @@
 		return $totalOutstanding;
 	}
 
+	function getTotalPaidByCustomerIDForUserID($customer_id, $user_id){
+		global $conn;
+
+		$customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.user_from_id='$user_id')");
+
+		$data = mysqli_fetch_array($customerPicksheets);
+
+		if($data['paid'] == null){ return 0; }
+
+		return $data['paid'];
+	}
+
 	# Get Picksheet Total Paid - expects 1 param, picksheet_id
 	function getPicksheetTotalPaid($picksheet_id){
 		global $conn;
-		
-		$customerPicksheets = mysqli_query($conn, "SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id) GROUP by pickerSheets.id");
+
+		$customerPicksheets = mysqli_query($conn, "SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=$picksheet_id AND invoice_payments.payment_type !=  'CREDIT_NOTE') GROUP by pickerSheets.id");
 
 		$picksheet = mysqli_fetch_array($customerPicksheets);
  
@@ -1358,6 +1370,20 @@
     }
 
 
+	function getCutGroupNameFromCut($cut_id){
+		global $conn;
+
+		$cutResult = mysqli_query($conn, "SELECT cutgroup_id FROM `cuts` WHERE id=$cut_id");
+		$cutData = mysqli_fetch_array($cutResult);
+		$cutgroup_id = $cutData['cutgroup_id'];
+
+		$cutGroupResult = mysqli_query($conn, "SELECT `name` FROM cutgroups WHERE id='$cutgroup_id'");
+		$cutGroupData = mysqli_fetch_array($cutGroupResult);
+
+		return $cutGroupData['name'];
+	}
+
+
     function palletIDsFromIntakeID($intake_id){
         global $conn;
 
@@ -1408,39 +1434,20 @@
         return $y->num_rows;
         
     }
-
-
-    function intakePriceComplete($intake_id){
+	
+	function productCountOnIntakeNotCosted($intake_id){
         global $conn;
 
-        $r = 1;
+		$palletResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) AS ids FROM pallet WHERE intake_id='$intake_id'");
+		$palletData = mysqli_fetch_array($palletResult);
+		$pallet_ids = $palletData['ids'];		
 
-        $x = "SELECT id FROM `pallet` WHERE intake_id='$intake_id'";
-        $y = mysqli_query($conn, $x);
-        $countPallets = mysqli_num_rows($y);
-        
-        if($countPallets == 0){
-            $r = 0;
-        }else{
-            $palletIDs = [];
-            while($row = mysqli_fetch_array($y)){ array_push($palletIDs, $row['id']); }
-            
-            $palletString = implode(',', $palletIDs);
-            
+		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE cost is null && pallet_id IN ($pallet_ids)");
+		$productData = mysqli_fetch_array($productResult);
 
-            $x = "SELECT * FROM product WHERE pallet_id IN ($palletString) GROUP BY cut_id";
-            $y = mysqli_query($conn, $x);
-            
-            while($row = mysqli_fetch_array($y)){
-                if($row['cost'] == 0){
-                    $r = 0;
-                }
-            }
-        }
-
-        return $r;
+		return $productData['count'];
 	}
-	
+
 	function invoiceTotal($pickersheet_id){
 		global $conn;
 
@@ -1563,6 +1570,133 @@
 
 		return $totalCost;
 	}
+
+	function creditNoteTotal($invoice_payment_id){
+		global $conn;
+
+		$price = 0;
+		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id ='$invoice_payment_id'");
+
+		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
+			if($creditNoteItem['product_id'] == 0){ # bespoke credit note, not attached product
+				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];	
+			}else{
+				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+				$price += ($creditNoteItem['price'] * $weight);
+			}
+		}
+		
+		return $price;
+	}
+
+	function weightCountOfProductOnPicksheet($pick_id, $productID){
+		global $conn;
+
+		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pick_id'";
+        $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+    
+		$total_count = 0;
+
+    	while($outpallet = mysqli_fetch_array($outpalletResult2)){
+            $weightids = explode(',', $outpallet['weight_ids']);
+
+            $x2 = "SELECT * FROM `weights` WHERE ";
+
+            foreach($weightids as $weightid){
+                $x2 .= "(id=$weightid && status_id='1' && product_id=$productID)  || ";
+            }
+
+            $x2 = rtrim($x2," || ");
+ 
+            $y2 = mysqli_query($conn, $x2);
+	
+			$count = mysqli_num_rows($y2);
+			$total_count += $count;
+        }
+
+
+		return $total_count;
+	}
+
+	function weightValueOfProductOnPicksheet($pick_id, $productID){
+		global $conn;
+		
+		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pick_id'";
+        $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+        
+		$weight = 0;
+        
+		while($outpallet = mysqli_fetch_array($outpalletResult2)){
+            $weightids = $outpallet['weight_ids'];
+			
+			$x = "SELECT * FROM `weights` WHERE id IN ($weightids) && product_id ='$productID'";
+			$y = mysqli_query($conn, $x);
+            
+			while($row = mysqli_fetch_array($y)){
+				if($row['weight_tear'] == $row['weight_gross']){
+					$w = $row['weight_gross'];
+				}else{
+					$w = $row['weight_gross'] - $row['weight_tear'];
+				}
+				
+				$weight = $weight + $w;
+			}
+        }
+
+		 
+		return number_format($weight, 2, '.', '');
+	}
+
+	function totalValueCreditedOnInvoiceID($invoice_id){
+		global $conn;
+		
+		$paymentsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) AS ids FROM `invoice_payments` WHERE invoice_id='$invoice_id'");
+		$paymentData = mysqli_fetch_array($paymentsResult);
+
+		$payment_ids = $paymentData['ids'];
+		
+		$price = 0;
+		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
+		
+		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
+			if($creditNoteItem['product_id'] == 0){ # bespoke credit note, not attached product
+				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];
+			}else{
+				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
+				$price += ($creditNoteItem['price'] * $weight);
+			}
+		}
+		
+		return $price;
+	
+ 	}
+
+	function doesInvoiceHaveReturns($invoice_id){
+		global $conn;
+
+		$result = mysqli_query($conn, "SELECT count(id) as count FROM `intake` WHERE returned=1 && delivery_note_number='$invoice_id'");
+		$data = mysqli_fetch_array($result);
+
+		if($data['count'] == 0){
+			return false;
+		}
+
+		return true;
+	}
+
+	function doesInvoiceHaveCreditNote($invoice_id){
+		global $conn;
+
+		$result = mysqli_query($conn, "SELECT count(id) as count FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id='$invoice_id'");
+		$data = mysqli_fetch_array($result);
+
+		if($data['count'] == 0){
+			return false;
+		}
+
+		return true;
+	}
+
 
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 

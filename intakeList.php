@@ -70,6 +70,9 @@
 
                 
         function doSearch(){
+			
+			$('.loadMoreBtn').hide();
+
             console.log('doSearch..');
             var val = $('#instantSearch').val();
             
@@ -148,6 +151,8 @@
 
 		function loadSearchDate(month, year){
 			
+			$('.loadMoreBtn').hide();
+
 			$('#instantSearch').val('');
 			
 			console.log('month: ' + month);

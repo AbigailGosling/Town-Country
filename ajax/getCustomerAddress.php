@@ -207,6 +207,14 @@
 	<?php if($address3 != ''){ ?>
 	<div class="row" onclick="changeAddress('<?php echo $row['id']; ?>', 3)"><?php echo $address3; ?></div>
 	<?php } ?>
-		
+	
+	<?php
+		if($row['default_salesman_id'] != null){
+		?>
+		<script> $('#sales_person').val(<?php echo $row['default_salesman_id']; ?>); </script>
+		<?php
+		}
+	?>
+
 </div>
 </div>

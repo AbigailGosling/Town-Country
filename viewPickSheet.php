@@ -192,7 +192,7 @@
 				<div class="numRequired"><?php echo $numRequired; ?></div>
 				<div class="weightcomment"><?php echo $target_weight . 'kg'; ?></div>
 			</div>
-		<input type="text" value="0" class="counter" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>" style="display:none">
+		<input type="text" value="<?php if($pallet['grosspallet']){ echo 1; }else{ echo 0; } ?>" class="counter" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>" style="display:none">
 		<input type="text" value="<?php echo $numRequired; ?>" id="counter-<?php echo $cut_id . '-'. $product['id']; ?>-max" style="display:none">
 		</div>
 		<div class="pickerSheetType_content" style="position:relative;">
@@ -237,11 +237,12 @@
                     
                         if($pallet['grosspallet']){
                             
-                            //$netWeight = number_format($weights['weight_gross'], 2, '.', '');
+                            $netWeight = number_format($weights['weight_gross'], 2, '.', '');
                         ?>
-                         	<div class="weightbox" onclick="addStringName('<?php echo $someString; ?>'); addBoxIDtoList(<?php echo $weights['id']; ?>,<?php echo $product['cut_id']; ?>,<?php echo $product['id']; ?>,this,'<?php if($product['weightnote'] != ''){ echo 'true'; }else{ echo 'false'; } ?>');">
-								<?php echo $weights['weight_gross']; ?> [GT]
-							</div>
+                         	<div style="position:relative;padding:10px;">
+                                <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
+                                <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="1" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
+                            </div>
                             <?php             
                         }else{
                         ?>
@@ -407,6 +408,11 @@
 <div id="btm"></div>
 <script>
  
+	function maxValueCheck(ele, max){
+		if (parseInt($(ele).val()) > max) {
+        	$(ele).val(max);
+    	}
+	}
 	
 	$('.picksheetType').click(function(){
 		$(this).next('.pickerSheetType_content').toggle();
@@ -569,6 +575,7 @@
 			{
 				shouldSubmit = true;
 			}
+			
 
 			if(numRequired != selectedWeightsCount)
 			{
@@ -576,6 +583,7 @@
 			}			
 		 });
 		 
+
 		 if(!shouldSubmit)
 		 {
 			 return false;

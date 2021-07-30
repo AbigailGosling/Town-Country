@@ -25,7 +25,7 @@
 					<table width="100%" border="0">
 						<tr>
 							<?php
-								$r = intakePriceComplete($intake['id']);    
+								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
 							?>
 							<td width="30%" align="left">
 								ID: I-0000<?php echo $intake['id'];?></td>
@@ -45,7 +45,7 @@
 									}
 									if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 
-									if($r == 1){
+									if($productCountNotCosted == 0){
 									?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 									}
 								?>

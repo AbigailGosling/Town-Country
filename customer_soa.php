@@ -48,8 +48,9 @@
                 <th align="left">Add Payment</th>
                 <th align="left">Due Date</th>
                 <th align="left">Date</th>
-                <th align="right">Price</th>
+                <th align="right">Value</th>
                 <th align="right">Paid</th>
+                <th align="right">Credit</th>
                 <th align="right">Outstanding</th>
             </tr>
         </thead>
@@ -69,11 +70,12 @@
             
             $totalPrice = 0.00;
             $totalPaid = 0.00;
+            $totalCredited = 0.00;
             $totalOutstanding = 0.00;
 
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
-                $total_credit = getInvoiceCreditNoteTotal($picksheet['id']);
+                $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
                 $this_price = (float) invoiceTotal($picksheet['id']);
                 $totalPrice += $this_price;
 
@@ -85,7 +87,7 @@
                 $epsilon = 0.00001;
                 if(($this_price - $picksheet['paid']) <= $epsilon){
                     $invoicePaid = true;
-                    $currentOutstanding = (float) 0;
+                    $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
                 }else{
                     $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
                 }
@@ -94,11 +96,22 @@
 
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
-				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a></td>
+				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
+                    <?php
+                        $hasReturns = doesInvoiceHaveReturns($picksheet['id']);
+                        $hasCreditNote = doesInvoiceHaveCreditNote($picksheet['id']);
+                        
+                        if(!$hasCreditNote){
+                            if($hasReturns){
+                                ?><div class="soa_cr_label">CR</div><?php
+                            }
+                        }
+                    ?> 
+                </td>
                 <?php if(!$invoicePaid) { ?>
                     <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
 				<?php }else{ ?>
-                    <td>Invoice Paid</a></td>  
+                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
                 <?php }?>
 
                 <?php
@@ -118,11 +131,14 @@
                 
                  <?php
                     $sortableDateFormat = date('d-m-Y',$date);
+
+                    $totalCredited += totalValueCreditedOnInvoiceID($picksheet['id']);
                 ?>
                 <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
-                <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
+                <td align="right" width="100"><?php if($this_price != 0) { echo '£' . number_format($this_price,2,".",","); } ?></td>
+                <td align="right" width="100"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
+                <td align="right" style="color:red;"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
+                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if($currentOutstanding){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
 			</tr>
 			<?php
                 $i++;
@@ -135,6 +151,7 @@
             <td align="right">Total:</td> 
             <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
+            <td align="right" width="120" style="color:red;">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
             <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
         </tr>
     </table>
