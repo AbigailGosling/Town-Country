@@ -104,7 +104,7 @@
 	<div class="row">
 		<div class="col">
 			<label>Salesman</label><br/>
-			<input type="text" id="sales_person" class="form-control" value="<?php echo getUsername($picksheet['user_from_id']); ?>" disabled>
+			<input type="text" class="form-control" value="<?php echo getUsername($picksheet['user_from_id']); ?>" disabled>
 		</div>
 		<div class="col"></div>
 	</div>
