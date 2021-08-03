@@ -104,10 +104,19 @@
 	<div class="row">
 		<div class="col">
 			<label>Salesman</label><br/>
-			<input type="text" class="form-control" value="<?php echo getUsername($picksheet['user_from_id']); ?>" disabled>
+ 		 	<select id="" class="form-control" name="user_from_id">
+				<?php
+					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+
+					while ($_user = mysqli_fetch_array($_users)) {
+						?><option value="<?php echo $_user['id']; ?>" <?php if($picksheet['user_from_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
+					}
+				?>
+			</select>
 		</div>
 		<div class="col"></div>
 	</div>
+	
 	<?php } ?>
 	
 	<div class="row printhide">
