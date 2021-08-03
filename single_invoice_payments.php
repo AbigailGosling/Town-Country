@@ -366,7 +366,8 @@ if (!empty($paymentID)) {
                 <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
                     <td align="left">
                         <span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span>
-                        <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">    
+                        <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">
+                        <input type="hidden" name="credit_id[]" value="<?php echo $creditNoteDetails['id']; ?>">
                     </td>
                     <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
                     <td align="left">                    
@@ -411,7 +412,7 @@ if (!empty($paymentID)) {
                     ?>
                 </td>
                 <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
-                    <td align="left" class="">£<input type="number" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
+                    <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
                     <td>
                      </td>
                 </tr>
