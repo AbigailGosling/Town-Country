@@ -25,7 +25,7 @@
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
             <td align="left">
                 <input type="hidden" name="product_id[]" value="0">
-                <input type="text" name="description[]">
+                <input type="text" name="description[]" required>
             </td>
 
             <td align="left">

@@ -337,7 +337,7 @@ if (!empty($paymentID)) {
                             <td align="left">
                                 <input type="hidden" name="product_id[]" value="0">
                                 <input type="hidden" name="credit_id[]" value="<?php echo $creditNoteDetails['id']; ?>">
-                                <input type="text" name="description[]" value="<?php echo $creditNoteDetails['description']; ?>">
+                                <input type="text" name="description[]" value="<?php echo $creditNoteDetails['description']; ?>" required>
                             </td>
 
                             <td align="left">
