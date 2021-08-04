@@ -29,9 +29,9 @@
             </td>
 
             <td align="left">
-                <input type="text" name="quantity[]" style="width:90px;">
+                <input type="text" name="quantity[]" style="width:90px;" required>
             </td>
-            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="0.00"></td>
+            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="" required></td>
             <td>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
             </td>

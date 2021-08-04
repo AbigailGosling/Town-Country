@@ -341,9 +341,9 @@ if (!empty($paymentID)) {
                             </td>
 
                             <td align="left">
-                                <input type="text" name="quantity[]" style="width:90px;" value="<?php echo $creditNoteDetails['quantity']; ?>">
+                                <input type="text" name="quantity[]" style="width:90px;" value="<?php echo $creditNoteDetails['quantity']; ?>" required>
                             </td>
-                            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo $creditNoteDetails['price']; ?>"></td>
+                            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo $creditNoteDetails['price']; ?>" required></td>
                             <td>
                                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');deleteId(<?php echo $creditNoteDetails['id']; ?>);" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
                             </td>
