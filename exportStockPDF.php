@@ -66,6 +66,13 @@
             text-align:center;
         }
 
+        .species{
+            font-size:8px;
+            color:grey;
+            text-align:center;
+            width:80px;
+        }
+
         .product{
             width:200px;
             font-size:11px;
@@ -153,6 +160,7 @@
                     <td class="heading" width="80">Plt ID</td>
                     <td class="heading" width="40">Unit</td>
                     <td class="heading" width="70">Chill/Frz</td>
+                    <td class="heading" width="80">Species</td>
                     <td class="heading" width="200">Product Name</td>
                     <td class="heading" width="100">Nationalities</td>
                     <td class="heading" width="70">Brands</td>
@@ -160,7 +168,7 @@
                     <td class="heading" width="50"></td>
                     <td class="heading" width="80">Volume Kg</td>
                     <td class="heading" width="110" align="right">Cost</td>
-                    <td class="heading" width="110"></td>
+                    <td class="heading" width="110" align="right">RRP</td>
                 </tr>
                 </table>';
 
@@ -274,7 +282,8 @@ INNER JOIN `weights` ON product.id = weights.product_id
             $html .= '<td class="cell temp temp'. getTemp($product2_temperatures[0]) .'">' . getTemp($product2_temperatures[0]) . '</td>';
             
         }
-        $html .= '<td class="cell product">' . $species . ' ' . $cut . '</td>';
+        $html .= '<td class="cell species">' . $species . '</td>';
+        $html .= '<td class="cell product">' . $cut . '</td>';
 
         if($uniqueNationalities > 1){
             $html .= '<td class="cell nationality">Various</td>';
@@ -328,13 +337,14 @@ INNER JOIN `weights` ON product.id = weights.product_id
     $html .= '<td class="cell palletid"></td>';
     $html .= '<td class="cell quantity">' . $total_quantity . ' </td>';
     $html .= '<td class="cell temp"></td>';
+    $html .= '<td class="cell species"></td>';
     $html .= '<td class="cell product"></td>';
     $html .= '<td class="cell nationality"></td>';
     $html .= '<td class="cell brand"></td>';
     $html .= '<td class="cell daterange"></td>';
     $html .= '<td class="cell ppc"></td>';
     $html .= '<td class="cell unit">'. number_format((float)$total_weight, 2, '.', ',') .'</td>';
-    $html .= '<td class="cell cost"></td>';
+    $html .= '<td class="cell cost"><b style="font-size:8px;">£' . $total_cost . '</b></td>';
     $html .= '<td class="cell price"><b style="font-size:8px;">£' . $total_price . '</b></td>';
     $html .='</tr></table>';
 
