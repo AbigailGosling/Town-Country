@@ -321,7 +321,7 @@ INNER JOIN `weights` ON product.id = weights.product_id
                 $temp_weight = totalWeightOfProduct($product2_productids);
             }
 
-            $html .= '<td class="cell unit">' . $temp_weight . '</td>';
+            $html .= '<td class="cell unit">' . number_format((float)$temp_weight, 3, '.', '') . '</td>';
             $total_weight += $temp_weight;
         }
 
@@ -343,7 +343,7 @@ INNER JOIN `weights` ON product.id = weights.product_id
     $html .= '<td class="cell brand"></td>';
     $html .= '<td class="cell daterange"></td>';
     $html .= '<td class="cell ppc"></td>';
-    $html .= '<td class="cell unit">'. number_format((float)$total_weight, 2, '.', ',') .'</td>';
+    $html .= '<td class="cell unit">'. number_format((float)$total_weight, 3, '.', ',') .'</td>';
     $html .= '<td class="cell cost"><b style="font-size:8px;">£' . $total_cost . '</b></td>';
     $html .= '<td class="cell price"><b style="font-size:8px;">£' . $total_price . '</b></td>';
     $html .='</tr></table>';
