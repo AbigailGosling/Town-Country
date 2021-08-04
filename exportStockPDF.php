@@ -41,7 +41,7 @@
             width:80px;
             font-size:8px;
             color:grey;
-            text-align:center;
+            text-align:left;
         }
 
         .palletid{
@@ -49,7 +49,7 @@
             
             font-size:8px;
             color:grey;
-            text-align:center;
+            text-align:left;
         }
 
         .quantity{
@@ -57,17 +57,20 @@
             font-size:11px;
             font-weight:bold;
             text-align:center;
+            color:black;
         }
 
         .temp{
             width:70px;
             font-size:8px;
+            text-align:center;
         }
 
         .product{
             width:200px;
             font-size:11px;
             font-weight:bold;
+            color:black;
             text-align:left;
         }
 
@@ -96,17 +99,22 @@
             width:80px;
             font-weight:bold;
             font-size:11px;
-            text-align:right;
+            color:black;
+            text-align:center;
         }
 
         .cost{
             width:110px;
             text-align:right;
+            font-size:8px;
+            color:grey;
         }
 
         .price{
             width:110px;
             text-align:right;
+            font-size:8px;
+            color:grey;
         }
 
         .ppc{
@@ -327,7 +335,7 @@ INNER JOIN `weights` ON product.id = weights.product_id
     $html .= '<td class="cell ppc"></td>';
     $html .= '<td class="cell unit">'. number_format((float)$total_weight, 2, '.', ',') .'</td>';
     $html .= '<td class="cell cost"></td>';
-    $html .= '<td class="cell price"><b>£' . $total_price . '</b></td>';
+    $html .= '<td class="cell price"><b style="font-size:8px;">£' . $total_price . '</b></td>';
     $html .='</tr></table>';
 
 
