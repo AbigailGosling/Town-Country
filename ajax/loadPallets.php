@@ -242,7 +242,7 @@
  													<td align="right"><?php echo number_format($pallet['number_of_cartons'], 2, '.', ''); ?></td>
 												
 													<td align="left"><b>Net KG: </b></td>
-													<td align="right"><?php echo number_format(weightFromProductID($product_id), 2, '.', ''); ?></td>
+													<td align="right"><?php echo number_format(weightFromProductID($product_id), 3, '.', ''); ?></td>
 												</tr>
 											</table>
  										</div>
@@ -259,7 +259,7 @@
 									$yWeights = mysqli_query($conn, $xWeights);
 									
 									while($w = mysqli_fetch_array($yWeights)){
-										?><div class="weightbox" style="min-width:90px;"><?php echo $w['weight_gross']; ?>kg </div><?php
+										?><div class="weightbox" style="min-width:90px;"><?php echo number_format($w['weight_gross'], 3, '.', ''); ?>kg </div><?php
 									}
 								?></div></td></tr><?php
 								}

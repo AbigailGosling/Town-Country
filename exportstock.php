@@ -39,6 +39,11 @@
      
     $totalW = 0;
     
+    $TOTAL_QUANTITY = 0;
+    $TOTAL_COST = 0;
+    $TOTAL_PRICE = 0;
+
+    
     $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     
     foreach($products as $productsRow){
@@ -124,6 +129,8 @@
         array_push($single_row, $pallet_id);
         array_push($single_row, $quantityTotal);
 
+        $TOTAL_QUANTITY += $quantityTotal;
+
         if($uniqueTemperatures > 1){
             array_push($single_row, 'Mixed');
         }else{
@@ -167,11 +174,29 @@
             }
         }
 
+        $TOTAL_COST += (float)$productsRow['cost'];
+        $TOTAL_PRICE += (float)$productsRow['price'];
 
         array_push($single_row, '' . number_format((float)$productsRow['cost'], 2, '.', ''));
         array_push($single_row, '' . number_format((float)$productsRow['price'], 2, '.', ''));
+        
 
         fputcsv($output, $single_row);
     }
+
+    $final_row = array();
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, $TOTAL_QUANTITY);
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, $TOTAL_COST);
+    array_push($final_row, $TOTAL_PRICE);
+    fputcsv($output, $final_row);
 
 ?>
