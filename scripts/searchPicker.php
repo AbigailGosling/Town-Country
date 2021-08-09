@@ -206,7 +206,7 @@
 
         $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
 
-        if($totalWeightOfProduct < 1){ continue; }
+        if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         ?>
         <tr class="searchAccordTitle <?php if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){ echo 'locked'; } ?>">
             <td colspan="1">
