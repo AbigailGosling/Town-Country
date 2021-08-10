@@ -38,6 +38,8 @@
                 
                 echo '(' . $date_from . ' - ' . $date_to . ')';
             }
+        
+        
         ?>
     </h2>
     <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
@@ -63,9 +65,9 @@
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
                 
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
             }
             
             $totalPrice = 0.00;
@@ -96,7 +98,7 @@
 
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
-				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
+				<td data-order="<?php echo $picksheet['id']; ?>"><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
                     <?php
                         $hasReturns = doesInvoiceHaveReturns($picksheet['id']);
                         $hasCreditNote = doesInvoiceHaveCreditNote($picksheet['id']);
@@ -138,7 +140,7 @@
                 <td align="right" width="100"><?php if($this_price != 0) { echo '£' . number_format($this_price,2,".",","); } ?></td>
                 <td align="right" width="100"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
                 <td align="right" style="color:red;"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
-                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if($currentOutstanding){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
+                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if($currentOutstanding > 0){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
 			</tr>
 			<?php
                 $i++;
@@ -165,7 +167,8 @@
 
     $(document).ready( function () {
         $('#soaTable').DataTable( {
-            "pageLength": 30
+            "pageLength": 30,
+            "order": [[ 0, "ASC" ]]
         });
     });
 
