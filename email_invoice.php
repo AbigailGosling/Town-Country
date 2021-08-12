@@ -44,7 +44,10 @@
         // Content
         $mail->isHTML(true);                                  // Set email format to HTML
         $mail->Subject = 'Town & Country Invoice #' . $pickersheet_id;
-        $mail->Body    = 'Please see attached PDF for Invoice <b>#'. $pickersheet_id .'</b>';
+        $mail->Body    = '
+                        <p style="font-family:16px;font-family: Verdana, sans-serif;">'. $customer['businessname'] .',<br/></p>
+                        <p style="font-family:16px;font-family: Verdana, sans-serif;">Please see attached PDF for Invoice <b>#'. $pickersheet_id .'</b></p>
+                        ';
 
         $mail->send();
         ?><script> window.location.href = '/invoice.php?id=<?php echo $pickersheet_id; ?>&msg=Invoice Sent'; </script><?php
