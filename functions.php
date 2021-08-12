@@ -215,10 +215,14 @@
 		global $conn;
 		
 		$x ="UPDATE `purchase_form` SET transportation='$transportation', supplier_id='$supplier_id',species='$speciesString', cut='$cutString',units='$unitsString', price='$priceString', date_purchased='$date_purchased',purchased_by='$purchased_by',date_due='$date_due',
-            purchase_comments='$purchase_comments', temperature_id='$temperature_id'";
+            purchase_comments='$purchase_comments'";
             
         if($file_name != ''){
             $x .=",dfile='$file_name'";
+		}
+		
+		if($temperature_id != ''){
+            $x .=",temperature_id='$temperature_id'";
         }
 
         $x .=",booking_ref_number='$booking_ref_number', haulier='$haulier',direct_drop='$direct_drop' WHERE id='$id'";
