@@ -249,7 +249,7 @@
                         ?>
                          	<div style="position:relative;padding:10px;">
                                 <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
-                                <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="1" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
+                                <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="0" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
                             </div>
                             <?php             
                         }else{
@@ -485,7 +485,7 @@
 			counter--;
 			$('#counter-' + cut_id + '-' + product_id).val(counter);
 			
-			
+
 		}else{
 			
 			var maxCounter = $('#counter-' + cut_id + '-' + product_id + '-max').val();
