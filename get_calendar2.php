@@ -80,7 +80,7 @@
 			<option value="5" <?php if($month == '5'){ echo 'selected'; } ?>>May</option>
 			<option value="6" <?php if($month == '6'){ echo 'selected'; } ?>>June</option>
 			<option value="7" <?php if($month == '7'){ echo 'selected'; } ?>>July</option>
-			<option value="8" <?php if($month == '8'){ echo 'selected'; } ?>>Auguest</option>
+			<option value="8" <?php if($month == '8'){ echo 'selected'; } ?>>August</option>
 			<option value="9" <?php if($month == '9'){ echo 'selected'; } ?>>September</option>
 			<option value="10" <?php if($month == '10'){ echo 'selected'; } ?>>October</option>
 			<option value="11" <?php if($month == '11'){ echo 'selected'; } ?>>November</option>
