@@ -69,12 +69,16 @@
 									}
 									if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 
+								?>
+							</td>
+							<td width="30">
+								<?php
 									if($productCountNotCosted == 0){
 									?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 									}
 								?>
 							</td>
-							<td width="30%" align="right"><?php echo $date_received; ?></td>
+							<td width="100" align="right"><?php echo $date_received; ?></td>
 						</tr>
                         </table>
                     </a>
