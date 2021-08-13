@@ -15,6 +15,14 @@
 	$customerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE id='$customer_id'");
 	$customer = mysqli_fetch_array($customerResult);
 
+	$type = $_GET['type'];
+
+	if($type == 'fresh'){
+		$type_value = '1';
+	}else{
+		$type_value = '2,3';
+	}
+
 ?>
 <style type="text/css">
 	#addtoPalletForm{
@@ -115,7 +123,7 @@
 		
 		$productids = '';
 		
-		while($row = mysqli_fetch_array($y)){ $productids .= ' id = ' . $row['product_id'] . ' ||'; }
+		while($row = mysqli_fetch_array($y)){ $productids .= '(id = ' . $row['product_id'] . ' && cooling_id IN ('. $type_value .')) ||'; }
 		$productids = rtrim($productids," ||");
 		##########################
 		
@@ -241,7 +249,7 @@
                         ?>
                          	<div style="position:relative;padding:10px;">
                                 <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
-                                <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="1" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
+                                <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="0" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
                             </div>
                             <?php             
                         }else{
@@ -295,6 +303,7 @@
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
 			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0){ ?> disabled <?php } ?>>
 		</form>
+
 	</div>
 	
 	<script>
@@ -476,7 +485,7 @@
 			counter--;
 			$('#counter-' + cut_id + '-' + product_id).val(counter);
 			
-			
+
 		}else{
 			
 			var maxCounter = $('#counter-' + cut_id + '-' + product_id + '-max').val();

@@ -132,7 +132,7 @@
 		}
  ?>
  <script>
- 
+    
     $(document).ready(function(){
         $('.location-input').each(function(){
             $(this).on('keypress',function(e) {

@@ -44,25 +44,14 @@
                     $x1 = "SELECT * FROM `weights` WHERE id='$weightID'";
                     $y1 = mysqli_query($conn, $x1);
                     $weight = mysqli_fetch_array($y1);
-                    # END GET WEIGHT ROW
-    
-                    # START GROSSTARE WEIGHT CALCULATIONS
-                    $original_gross = number_format($weight['original_gross'], 2, '.', '');
-                    $num_cartons = number_format($weight['number_of_cartons'], 2, '.', '');
-                    $pallet_tare = number_format($weight['pallet_tare'], 2, '.', '');
-                    $tare_per_carton = number_format($weight['tare_per_carton'], 2, '.', '');
-                    
-                    $carton_tare = $num_cartons * $tare_per_carton;
-                    $total_tare = $carton_tare + $pallet_tare;
-                    $tare = $original_gross - $total_tare;
-                    # END GROSSTARE WEIGHT CALCULATIONS
+                    $tare = $weight['weight_gross'];
+                    # END GET WEIGHT ROW 
                     
     
                     $product_id = $weight['product_id'];
                     
                     $weightOne = $_POST['gross_' . $weightID];
                     $weightTwo = (float) $tare - (float) $weightOne;
-                    
                     
                     # START UPDATE CURRENT WEIGHT INFO
                     $x2 = "UPDATE `weights` SET weight_gross='$weightOne', weight_tear='$weightOne', grosstare='0', status_id='1' WHERE id='$weightID'";
