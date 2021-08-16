@@ -456,27 +456,27 @@ function checkStock(){
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
 				
-				<?php // temp removed cost check as requested by Jamie  ?>
+				
 				pricedCorrectly = true;
 
-				// if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
-				// 	$(this).css('border','1px solid red');
-				// 	if(confirm('Are you sure? the price is less than the cost')){
-				// 		pricedCorrectly = true;
-				// 	}else{
-				// 		pricedCorrectly = false;
-				// 	}
-				// }
+				if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is less than the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
 
 
-				// if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
-				// 	$(this).css('border','1px solid red');
-				// 	if(confirm('Are you sure? the price is more than double the cost')){
-				// 		pricedCorrectly = true;
-				// 	}else{
-				// 		pricedCorrectly = false;
-				// 	}
-				// }
+				if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+					$(this).css('border','1px solid red');
+					if(confirm('Are you sure? the price is more than double the cost')){
+						pricedCorrectly = true;
+					}else{
+						pricedCorrectly = false;
+					}
+				}
 
   
 			}else{
