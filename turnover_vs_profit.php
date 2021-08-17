@@ -68,6 +68,18 @@
 		?>
 	</select>
 
+    <select name="cooling_id" id="cooling_id" style="width:152px;height:40px;">
+        <option value="0" selected>Select option..</option>
+        <?php
+			$x = "SELECT * FROM `temperature`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option class="alltemperature temperature<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" <?php if($_POST['cooling_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
+			}
+		?>
+	</select>
+
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salesman..</option>
         <option value="0">All sales team</option>
@@ -140,7 +152,7 @@
         
         var species_id = $('#species_id').val();
         var cut_id = $('#cut_id').val();
-
+        var cooling_id = $('#cooling_id').val();
         var intake_id = $('#intake_id').val();
         var pallet_id = $('#pallet_id').val();
         var user_id = $('#user_id').val();
@@ -154,6 +166,7 @@
             toSkip: toSkip,
             species_id: species_id,
             cut_id: cut_id,
+            cooling_id: cooling_id,
             intake_id: intake_id,
             pallet_id: pallet_id,
             user_id: user_id,
