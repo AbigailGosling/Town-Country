@@ -125,6 +125,7 @@
     </form>
  	
 	<div id="loadResults" class="resultsContainer">
+        <div id="loadingContainer" style="display:none;"><center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
         <table style="width:100%;" id="resultsTable">
 
         </table>
@@ -142,7 +143,7 @@
 <script type="text/javascript">
     
     function loadData(reset){
-
+        $('#loadingContainer').fadeIn();
         if(reset == true){
             var toSkip = 0;
             $('#resultsTable').html('');
@@ -175,6 +176,7 @@
             date_end: date_end,
         },
         function(data, status){
+            $('#loadingContainer').hide();
             $('#resultsTable').append(data);
             
             setTimeout(function() {
