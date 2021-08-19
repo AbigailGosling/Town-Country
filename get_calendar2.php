@@ -74,7 +74,7 @@
 	<div>
 		<select name="month" class="calMonth" id="calMonth">
 			<option value="1" <?php if($month == '1'){ echo 'selected'; } ?>>January</option>
-			<option value="2" <?php if($month == '2'){ echo 'selected'; } ?>>Feburary</option>
+			<option value="2" <?php if($month == '2'){ echo 'selected'; } ?>>February</option>
 			<option value="3" <?php if($month == '3'){ echo 'selected'; } ?>>March</option>
 			<option value="4" <?php if($month == '4'){ echo 'selected'; } ?>>April</option>
 			<option value="5" <?php if($month == '5'){ echo 'selected'; } ?>>May</option>
