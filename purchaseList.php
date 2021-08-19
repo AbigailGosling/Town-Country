@@ -100,15 +100,6 @@
 				
 			});
 			
-			$('.peek-products').hover(
-				function() {
-					$(this).parent().find('.tooltip-content').show();
-
-				},
-				function() {
-					$(this).parent().find('.tooltip-content').hide();
-				}
-			);
 			
 		});
 		
@@ -131,6 +122,16 @@
 					}else{
 						$('.loadMoreBtn').show();
 					}
+
+					$('.peek-products').hover(
+						function() {
+							$(this).parent().find('.tooltip-content').show();
+
+						},
+						function() {
+							$(this).parent().find('.tooltip-content').hide();
+						}
+					);
 				}, 1000);
 			}
 			};

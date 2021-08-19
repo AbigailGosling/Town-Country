@@ -68,6 +68,18 @@
 		?>
 	</select>
 
+    <select name="cooling_id" id="cooling_id" style="width:152px;height:40px;">
+        <option value="0" selected>Select option..</option>
+        <?php
+			$x = "SELECT * FROM `temperature`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option class="alltemperature temperature<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" <?php if($_POST['cooling_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
+			}
+		?>
+	</select>
+
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salesman..</option>
         <option value="0">All sales team</option>
@@ -113,6 +125,7 @@
     </form>
  	
 	<div id="loadResults" class="resultsContainer">
+        <div id="loadingContainer" style="display:none;"><center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
         <table style="width:100%;" id="resultsTable">
 
         </table>
@@ -130,7 +143,7 @@
 <script type="text/javascript">
     
     function loadData(reset){
-
+        $('#loadingContainer').fadeIn();
         if(reset == true){
             var toSkip = 0;
             $('#resultsTable').html('');
@@ -140,7 +153,7 @@
         
         var species_id = $('#species_id').val();
         var cut_id = $('#cut_id').val();
-
+        var cooling_id = $('#cooling_id').val();
         var intake_id = $('#intake_id').val();
         var pallet_id = $('#pallet_id').val();
         var user_id = $('#user_id').val();
@@ -154,6 +167,7 @@
             toSkip: toSkip,
             species_id: species_id,
             cut_id: cut_id,
+            cooling_id: cooling_id,
             intake_id: intake_id,
             pallet_id: pallet_id,
             user_id: user_id,
@@ -162,6 +176,7 @@
             date_end: date_end,
         },
         function(data, status){
+            $('#loadingContainer').hide();
             $('#resultsTable').append(data);
             
             setTimeout(function() {
