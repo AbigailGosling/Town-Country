@@ -13,6 +13,7 @@
     array_push($headings, 'Pallet ID');
     array_push($headings, 'Unit');
     array_push($headings, 'Chill/Frz');
+    array_push($headings, 'Species');
     array_push($headings, 'Product Name');
     array_push($headings, 'Nationalities');
     array_push($headings, 'Brands');
@@ -24,18 +25,24 @@
 
 
 
-    $productsX = "SELECT *, product.brand_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `nationality` ON product.nationality_id = nationality.id
     JOIN `brands` ON product.brand_id = brands.id
+    JOIN `species` ON cuts.species_id = species.id
     WHERE weights.status_id != 1
-    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY species.name, cuts.name ASC";
     
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
      
     $totalW = 0;
+    
+    $TOTAL_QUANTITY = 0;
+    $TOTAL_COST = 0;
+    $TOTAL_PRICE = 0;
+
     
     $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     
@@ -52,6 +59,7 @@
         $local = $productsRow['local'];
         $brandname = $productsRow['brandname'];
         $cut = $productsRow['cutname'];
+        $species_name = getSpecies($productsRow['species_id']);
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -121,12 +129,15 @@
         array_push($single_row, $pallet_id);
         array_push($single_row, $quantityTotal);
 
+        $TOTAL_QUANTITY += $quantityTotal;
+
         if($uniqueTemperatures > 1){
             array_push($single_row, 'Mixed');
         }else{
             array_push($single_row, getTemp($product2_temperatures[0]));
         }
 
+        array_push($single_row, $species_name);
         array_push($single_row, $cut);
 
         if($uniqueNationalities > 1){
@@ -163,11 +174,29 @@
             }
         }
 
+        $TOTAL_COST += (float)$productsRow['cost'];
+        $TOTAL_PRICE += (float)$productsRow['price'];
 
         array_push($single_row, '' . number_format((float)$productsRow['cost'], 2, '.', ''));
         array_push($single_row, '' . number_format((float)$productsRow['price'], 2, '.', ''));
+        
 
         fputcsv($output, $single_row);
     }
+
+    $final_row = array();
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, $TOTAL_QUANTITY);
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, '');
+    array_push($final_row, $TOTAL_COST);
+    array_push($final_row, $TOTAL_PRICE);
+    fputcsv($output, $final_row);
 
 ?>

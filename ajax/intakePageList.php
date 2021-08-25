@@ -49,7 +49,7 @@
                         <table width="100%" border="0">
 						<tr>
 							<?php
-								$r = intakePriceComplete($intake['id']);    
+								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
 							?>
 							<td width="30%" align="left">
 								ID: I-0000<?php echo $intake['id'];?></td>
@@ -69,12 +69,16 @@
 									}
 									if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 
-									if($r == 1){
+								?>
+							</td>
+							<td width="30">
+								<?php
+									if($productCountNotCosted == 0){
 									?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 									}
 								?>
 							</td>
-							<td width="30%" align="right"><?php echo $date_received; ?></td>
+							<td width="100" align="right"><?php echo $date_received; ?></td>
 						</tr>
                         </table>
                     </a>
@@ -84,7 +88,7 @@
             <?php
             }
         }
-    }else{ ?>
+	}else{ ?>
 		<?php
 		
 		$searchResults = mysqli_query($conn, "SELECT * FROM `intake` WHERE returned ='0' ORDER BY date_received DESC");
@@ -110,8 +114,8 @@
 									echo supplierName($intake['supplier_id']);
 								}
 
-								$r = intakePriceComplete($intake['id']);    
-								if($r == 1){
+								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
+								if($productCountNotCosted == 0){
 								?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 								}
 								if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }

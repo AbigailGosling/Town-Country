@@ -119,7 +119,7 @@
             ?>
             <table width="100%" border="1" style="margin-bottom:10px;">
             <tr>
-                <td style="vertical-align:top;">
+                <td style="vertical-align:top;width:150px;">
                     <table width="100%">
                         <tr>
                             <th align="left"><?php echo ucfirst($user['name']); ?></th>
@@ -127,12 +127,12 @@
                     </table>
                 </td>
                 <td align="left">
-                    <table width="100%">
+                    <table width="100%" border="0">
                         <tr>
                             <th align="left">Customer</th>
-                            <th align="left">Total Sales</th>
-                            <th align="left">Total Outstanding</th>
-                            <th align="left">Total Received</th>
+                            <th align="right">Total Sales</th>
+                            <th align="right">Total Outstanding</th>
+                            <th align="right">Total Received</th>
                         </tr>
                         
                             <?php
@@ -145,7 +145,7 @@
                                     $num_of_sales = countCustomerSalesBySalesman($picksheet['customer_id'], $user_id);
                                     
                                     $total_outstanding_picksheet = getOutstandingPicksheetTotal($picksheet['id']);
-                                    $total_paid_picksheet = getPicksheetTotalPaid($picksheet['id']);
+                                    $total_paid_picksheet = getTotalPaidByCustomerIDForUserID($picksheet['customer_id'], $user['id']);
 
                                     $total_outstanding_user += $total_outstanding_picksheet;
                                     $total_paid_user += $total_paid_picksheet;
@@ -153,33 +153,25 @@
                                 ?>
                                 <tr class="<?php if($i % 2 == 0){ echo 'even'; }else{ echo 'odd'; } ?>">
                                     <td align="left"><?php echo $customer['businessname']; ?></td>
-                                    <td align="left"><?php echo $num_of_sales; ?></td>
-                                    <td align="left" width="200">£<?php echo number_format($total_outstanding_picksheet); ?></td>
-                                    <td align="left" width="200">£<?php echo $total_paid_picksheet; ?></td>
+                                    <td align="right"><?php echo $num_of_sales; ?></td>
+                                    <td align="right" width="200">£<?php echo number_format($total_outstanding_picksheet); ?></td>
+                                    <td align="right" width="200">£<?php echo number_format($total_paid_picksheet, 2); ?></td>
                                 </tr>
                                 <?php
                                 }
                             ?>
-                        
+                            <tr>
+                                <td><b>Total:</b></td>
+                                <td></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_outstanding_user); ?></b></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_paid_user); ?></b></td>
+                            </tr>
                     </table>
                     <?php
                         
                     ?>
                 </td>
                 </tr>
-                <tr>
-                <td></td>
-                <td colspan="1" align="right">
-                    <table width="100%" border="0">
-                        <tr>
-                            <td><b>Total:</b></td>
-                            <td></td>
-                            <td align="left" width="200"><b>£<?php echo number_format($total_outstanding_user); ?></b></td>
-                            <td align="left" width="200"><b>£<?php echo number_format($total_paid_user); ?></b></td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
             </table>
             <?php
             }

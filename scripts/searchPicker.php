@@ -203,6 +203,10 @@
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
+
+        $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
+
+        if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         ?>
         <tr class="searchAccordTitle <?php if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){ echo 'locked'; } ?>">
             <td colspan="1">
@@ -280,13 +284,16 @@
             ?></td>
             <td class="bold"><?php 
                 
+                if($productsRow['grosspallet'] == 1){
+                    echo '[GT] ';
+                }
                 if($productsRow['unit'] == 'PPC'){
                     ?><b>PPC</b><?php
                 }else{
                     if($productsRow['akg'] != ''){
                         echo totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
                     }else{
-                        echo $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
+                        echo $totalWeightOfProduct;
                     }
 
                     echo 'kg';

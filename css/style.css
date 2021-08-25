@@ -2026,3 +2026,28 @@ textarea {
 	font-weight:bold;
 	color:#fff;
 }
+
+.loadMoreBtn{
+	width:100%;
+	background:#fff;
+	color: #3faddd;
+	text-align:center;
+	cursor:pointer;
+	font-size:18px;
+	height:32px;
+	line-height:32px;
+	margin-top:20px;
+}
+
+.soa_cr_label{
+	background: #3faddd;
+    display: inline-block;
+    color: #fff;
+    border-radius: 100%;
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    padding: 4px;
+    margin-left: 4px;
+}

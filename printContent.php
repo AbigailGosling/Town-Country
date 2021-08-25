@@ -21,8 +21,8 @@
 		</div>
 		
 		<div class="overview_block">
-			<label>Supplier ID</label>
-			<?php echo $intake['supplier_id']; ?>
+			<label>Supplier</label>
+			<?php echo supplierName($intake['supplier_id']); ?>
 		</div>
 		
 		<div class="overview_block">
@@ -79,108 +79,103 @@
 	<div class="clearfix"></div>
 	
 	<div id="product_list">
- 
-		<?php
-			$x = "SELECT * FROM `pallet` where intake_id = '$intake_id' && id = '$pallet_id' LIMIT 1";
-			// echo $x = "SELECT * FROM `pallet` where intake_id = '$intake_id' && id = '$pallet_id'";
-			$y = mysqli_query($conn, $x);
-			
-			while($row = mysqli_fetch_array($y)){
-				
-				$pallet_id = $row['id'];
+ 			<?php
+				$y_pallets = mysqli_query($conn, "SELECT id FROM `pallet` WHERE intake_id='$intake_id' && id = '$pallet_id' ORDER BY id ASC");
+				while($pallet = mysqli_fetch_array($y_pallets)){
 			?>
-			<div class="product" style="padding-bottom:0px;">
-				<div class="title">
-					
-					<div class="title" style="display:none;">
-						<div onclick="palletDetail(<?php echo $pallet_id; ?>)" onselectstart="return false" style="font-size:12px;display:block;width:50%;float:left; cursor:pointer;padding-left: 4px;" >Pallet No. <span>0000<?php echo $pallet_id; ?></span><br/><br/></div> 
-					</div>
-					
-				</div>
-				<div class="overview" style="display:block;">
-					<?php
-						$cutResult = getCuts();
-						
-						while($cuts = mysqli_fetch_array($cutResult)){
-							$cut_id = $cuts['id'];
-							
-							$x = "SELECT * FROM `product` WHERE pallet_id='$pallet_id' && cut_id ='$cut_id'";
-							$y = mysqli_query($conn, $x);
-							
-							while($product = mysqli_fetch_array($y)){
+				<div class="product" style="padding-bottom:0px;">
+				 	<div class="overview" style="display:block;">
+						<?php
+							$pallet_id = $pallet['id'];
+							$product_y = mysqli_query($conn, "SELECT * FROM `product` WHERE pallet_id='$pallet_id'");
+
+							while($product = mysqli_fetch_array($product_y)){
 								$product_id = $product['id'];
 								$cut_id = $product['cut_id'];
 								$species_id = getSpeciesFromCut($cut_id);
-								$weightthing = weightFromProductID($product_id);
-							?>
-							<input type="text" class="aWeight" value="<?php echo $weightthing; ?>" style="display:none;">
-							
+								$this_weight = weightFromProductIDArray([$product_id]);
+								
+								$pallet = getPallet($pallet_id);
+
+								?>							
 							<div style='font-size:11px;padding-top:10px;float:left;width:100%;padding-left: 7px;'>
 								<?php 
- 									 
-									if($row['grosspallet'] == 1){
-										echo '[GT] ' . $row['number_of_cartons'] . ' Cartons of ';
+									
+									if($pallet['grosspallet'] == 1){
+										echo '[GT] ' . $pallet['number_of_cartons'] . ' Cartons of ';
 									}
-										
-										
+								
 									$xk = "SELECT * FROM `weights` WHERE product_id='$product_id'";
 									$yk = mysqli_query($conn, $xk);
 									$ykRow = mysqli_fetch_array($yk);
 									
-									if($row['grosspallet'] == 0){
-										echo $count = mysqli_num_rows($yk);
-									
-										if($product['unit'] =='C'){
-											echo ' Cases';
-										}else if($product['unit'] == 'P'){
-											echo ' Pallet';
-										}else if($product['unit'] =='PP'){
-											echo ' Packet';
-										}else if ($product['unit'] == 'KG'){
-											echo ' Kilo';
-										}
+									if($pallet['grosspallet'] == 0){
+                                        if($product['akg'] == ''){
+                                            echo $count = mysqli_num_rows($yk);
+                                            
+                                            if($product['unit'] =='C'){
+                                                echo ' Cases';
+                                            }else if($product['unit'] == 'P'){
+                                                echo ' Pallet';
+                                            }else if($product['unit'] =='PP'){
+                                                echo ' Packet';
+                                            }else if ($product['unit'] == 'KG'){
+                                                echo ' Kilo';
+                                            }
+                                        }
 									}
+									  
+									 
 								?>
 								<?php echo '<b>' . getSpecies($species_id); ?> <?php echo getCut($cut_id) . "</b>"; ?>
-                                <?php
+								<?php
+								
                                     if($product['akg'] != ''){
                                         echo ' ['. $product['quantity'] . '  Cases Advised KG] ';
                                     }else{
-                                        echo '<b>[' . number_format($weightthing, 3, '.', '') . 'kg]</b>';
+										if($product['unit'] == 'PP'){
+											echo '[' . $totalCountOfCut . ' Cases ]';
+										}else if($product['unit'] == 'PPC'){
+											echo '[PPC]';
+										}else{
+											$weightthing = weightFromProductIDArray([$product['id']]);
+											echo '<b>[' . number_format($weightthing, 3, '.', '') . 'kg]</b>';
+										}
+										 
                                     }
                                     
                                 ?>
 								<?php echo '[' . getTemp($product['cooling_id']) .']'; ?>
 								<?php echo '[<b>' . $types[$product['ubbb']] .'</b>]'; ?>
-								<?php echo '<span style="color:grey;">(' . $product['range_from'] . ' - '; ?>
-								<?php echo $product['range_to'] . ')</span>'; ?>
-								
-								<div class="picksheetPalletDetail">
+								<?php if($product['range_from']) { echo '<span style="color:grey;">(' . $product['range_from'] . ' - '; ?>
+								<?php echo $product['range_to'] . ')</span>'; } ?>
+
+								<?php if($product['unit'] == 'PPC'){ ?>
+									<br/><Br/>
+								<?php }else{ ?>
+								<div class="picksheetPalletDetail" style="padding:0px;display: flex;flex-wrap: wrap">
 								<?php
-									// $areThey = areWeightsAllTheSame($product_id);
-									
-									// if($areThey != 0){
-										// $weightsX = "SELECT * FROM `weights` WHERE product_id='$product_id' GROUP BY weight_gross";
-									// }else{
-										$weightsX = "SELECT * FROM `weights` WHERE product_id='$product_id'";
-									// }
-									
+									$weightValue = weightFromProductID($product_id);
+									$weightsX = "SELECT * FROM `weights` WHERE product_id='$product_id'";
 									$weightsY = mysqli_query($conn, $weightsX);
 									
 									while($weights = mysqli_fetch_array($weightsY)){
-									 
+									?>
+									<?php
 											if($weights['weight_tear'] == $weights['weight_gross']){
 												$w = $weights['weight_gross'];
 											}else{
 												$w = $weights['weight_gross'] - $weights['weight_tear'];
 											}
 										?>
-										<div class="weightbox"><?php echo number_format($w, 3, '.', ''); ?></div>
+										<div class="weightbox" <?php if($w == 1){ ?> style="margin: 2px;width: 12px;"<?php }?>>
+											<?php echo $w; ?>
+										</div>
 									<?php
 									}
 								?>
 								<?php
-									if($row['grosspallet'] == 1){
+									if($pallet['grosspallet'] == 1){
 									?>
 										<table width="100%">
 										<tr>
@@ -189,16 +184,16 @@
 													<table border="1" style="background:#cacaca;">
 														<tr>
 															<td align="left"><b>Gross Weight: </b></td>
-															<td align="right"><?php echo number_format($row['gross_weight'], 2, '.', ''); ?></td>
+															<td align="right"><?php echo number_format($pallet['gross_weight'], 2, '.', ''); ?></td>
 														
 															<td align="left"><b>Pallet Tare: </b></td>
-															<td align="right"><?php echo number_format($row['pallet_tare'], 2, '.', ''); ?></td>
+															<td align="right"><?php echo number_format($pallet['pallet_tare'], 2, '.', ''); ?></td>
 														
 															<td align="left"><b>Tare per carton: </b></td>
-															<td align="right"><?php echo number_format($row['tare_per_carton'], 2, '.', ''); ?></td>
+															<td align="right"><?php echo number_format($pallet['tare_per_carton'], 2, '.', ''); ?></td>
 														
 															<td align="left"><b>No of cartons: </b></td>
-															<td align="right"><?php echo number_format($row['number_of_cartons'], 2, '.', ''); ?></td>
+															<td align="right"><?php echo number_format($pallet['number_of_cartons'], 2, '.', ''); ?></td>
 														
 															<td align="left"><b>Net KG: </b></td>
 															<td align="right"><?php echo number_format(weightFromProductID($product_id), 2, '.', ''); ?></td>
@@ -212,24 +207,18 @@
 									}	
 								?>
 								</div>
-								
-								
+								<?php } ?>
 							</div>
-							<?php
-							}
-						
-						}
-					?>
+								<?php
+							}							
+						?>
+					</div>
 				</div>
-			</div>
-			<?php
-			}
-			$overallWeight = 0;
-			$overallWeight2 = 0;
-		?>
+				<?php		
+				}
+
+ 			?>
 	</div>
-	
-	<!--<a href="javascript:;" class="add_product openAddPallet">Add a Pallet</a>-->
 </main>
 <script>
 	

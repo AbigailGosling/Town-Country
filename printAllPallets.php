@@ -34,7 +34,6 @@
 		<?php }else{ ?>
 			<div class="overview_block">
 				<label>Supplier</label>
-				<?php echo $intake['supplier_id']; ?>
 				<?php echo supplierName($intake['supplier_id']); ?>
 			</div>
 		<?php } ?>

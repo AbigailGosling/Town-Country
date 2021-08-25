@@ -29,6 +29,9 @@
 		<h1 class="int">Sales Confirmation LIST</h1>
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
 		
+		<input type="hidden" id="toSkipCount" value="0">
+		<input type="hidden" id="totalRowsCount" value="0">
+
 		<a href="salesconfirmationList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
@@ -51,119 +54,19 @@
             <span style="position: absolute;right: -109px;color: #fff;font-weight: bold;top: 10px;">SENT</span>
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
-			<?php
-				$x = "SELECT * FROM `pickerSheets` ORDER BY date DESC";
-				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-
-				$page_limit = 50;
-				$num_of_pages = 1;
-				$entry_count = 0;
-				while($picksheet = mysqli_fetch_array($y)){
-					$entry_count++;
-					if($entry_count == $page_limit){
-						$entry_count = 0;
-						$num_of_pages++;
-					}
-
-					$date_purchased = date('d/m/Y', strtotime($picksheet['date']));
-				?>
-					<tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
-						<a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
-							<table width="100%" border="0">
-								<tr>
-									<td width="25%" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
-									<td align="left" style="font-size: 14px;">
-										<?php
-										
-											$customer_id = $picksheet['customer_id'];
-											$x1 = "SELECT * from `customers` WHERE id='$customer_id'";
-											$y1 = mysqli_query($conn, $x1);
-											
-											$customer = mysqli_fetch_array($y1);
-										
-										?>
-										<?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
-
-										<?php
-											if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){
-												echo "(VOID)";
-												if($picksheet['deleted_by_user_id'] != ''){
-													echo " - " . getUsername($picksheet['deleted_by_user_id']);
-												}
-											}
-										?>
-									</td>
-									<td width="25%" align="right"> created <?php echo $date_purchased; ?></td>
-								</tr>
-							</table>
-						</a>
-						 
-                     
-            
-			            <div class="sendcontainer">
-                            <div class="active" picksheetid="<?php echo $picksheet['id']; ?>" <?php if($picksheet['sent'] == 0){ echo 'style="display:none;"'; }?>>
-                                <i class="fa fa-check" aria-hidden="true"></i>
-                            </div>
-                        </div>
-
-					</td></tr>
-					<?php
-				}
-			?>
-			<tr>
-				<td>
-					<div class="pages_container">
-						<div class="flex" style="align-items:center;justify-content:flex-end;">
-							<p style="color:#fff;padding-right:10px;font-weight:bold">Jump to page</p>
-							<?php $num_of_pages_temp = $num_of_pages+1; ?>
-							<select style="width:60px;height:30px;" onchange="changePage(this)">
-								<?php for($i=1;$i<($num_of_pages_temp); $i++){ ?>
-									<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-								<?php } ?>
-							</select>
-						</div>
-					</div>
-				</td>
-			</tr>
 		</table>
+		<div class="loadMoreBtn" onclick="loadRows()">Load More</div>
 	</div>
 </main>
 
  
 <div id="btm"></div>
 	<script type="text/javascript">
-	
-		function changePage(ele){
-			var page = $(ele).val();
-			$('.pages').hide();
-			$('.page' + page).fadeIn();
-		}
-
-		function loadPage(page){
-			$('.pages').hide();
-			$('.page' + page).fadeIn();
-		}
-
 		
 		$(document).ready(function(){
-			loadPage(1);
-
-            $('.sendcontainer').click(function(){
-                var value = 0;
-                
-                if($(this).find('.active').css('display') == 'none'){ 
-                    value = 1;
-                }else{
-                    value = 0;
-                }
-
-                var picksheetid = $(this).find('.active').attr('picksheetid');
-                
-                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
-                });
-
-                $(this).find('.active').toggle();
-            });
+			
+			// load initial 80 rows
+			loadRows();
 
 			$('#instantSearch').keyup(function(){
 
@@ -182,7 +85,6 @@
 
 				request.done(function(data) {
 					$('#intakeAjax').html(data);
-					loadPage(1);
 				});
 
 				request.fail(function(jqXHR, textStatus) {
@@ -212,6 +114,51 @@
 			
 		});
 		
+		function loadRows(){
+
+			var toSkip = $('#toSkipCount').val();
+
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				$('#intakeAjax').append(this.responseText);
+
+
+			$('.sendcontainer').click(function(){
+                var value = 0;
+                
+                if($(this).find('.active').css('display') == 'none'){ 
+                    value = 1;
+                }else{
+                    value = 0;
+                }
+
+                var picksheetid = $(this).find('.active').attr('picksheetid');
+                
+                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
+                });
+
+                $(this).find('.active').toggle();
+            });
+
+				setTimeout(() => {
+					var toSkip = parseInt($('#toSkipCount').val());
+					var totalRowsCount = parseInt($('#totalRowsCount').val());
+
+					if(toSkip >= totalRowsCount){
+						$('.loadMoreBtn').hide();
+					}else{
+						$('.loadMoreBtn').show();
+					}
+				}, 1000);
+			}
+			};
+
+			xhttp.open("POST", "/ajax/page-list/salesConfirmationList.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("toSkip=" + toSkip);
+		}
+		
 		function loadSearchDate(month, year){
 			
 			$('#instantSearch').val('');
@@ -223,6 +170,22 @@
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			  $('#intakeAjax').html(this.responseText);
+			  $('.sendcontainer').click(function(){
+                var value = 0;
+                
+                if($(this).find('.active').css('display') == 'none'){ 
+                    value = 1;
+                }else{
+                    value = 0;
+                }
+
+                var picksheetid = $(this).find('.active').attr('picksheetid');
+                
+                $.get("/ajax/togglePicksheetSent.php?picksheet=" + picksheetid + '&status=' + value, function(data, status){
+                });
+
+                $(this).find('.active').toggle();
+            });
 			}
 			};
 

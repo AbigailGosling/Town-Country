@@ -1,7 +1,5 @@
 <?php
     include('functions.php');
-    
-    $limit = (isset($_GET['limit'])) ? $_GET['limit'] : '100';
 ?>
 <!doctype html>
 <html class="int">
@@ -25,7 +23,8 @@
 	<div id="intakelist">
 		<h1 class="int">Intake LIST</h1>
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
-		
+		<input type="hidden" id="toSkipCount" value="0">
+		<input type="hidden" id="totalRowsCount" value="0">
 		<a href="intakeList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
@@ -61,68 +60,9 @@
 						
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
-			<?php
-				$queryResult = mysqli_query($conn, "SELECT * FROM `intake` ORDER BY date_received DESC, id DESC LIMIT $limit");
-
-				while($intake = mysqli_fetch_array($queryResult)){
-					$date_received = date('d/m/Y', strtotime($intake['date_received']));
-					?>
-					<tr><td align="center" class="pos">
-
-						<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
-							<table width="100%" border="0">
-							<tr>
-								<?php
-									$r = intakePriceComplete($intake['id']);    
-								?>
-								<td width="30%" align="left">
-									ID: I-0000<?php echo $intake['id'];?></td>
-								<td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
-									<?php
-
-										if($intake['returned'] == '1'){
-											$cusDetails =  getCustomer($intake['supplier_id']);
-											if(!empty($cusDetails) && isset($cusDetails['businessname'])){
-												echo $cusDetails['businessname'];
-											}else{
-												echo 'No Customer Data';
-											}
-
-										}else{
-											echo supplierName($intake['supplier_id']);
-										}
-										if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
-
-										if($r == 1){
-										?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
-										}
-									?>
-								</td>
-								<td width="30%" align="right"><?php echo $date_received; ?></td>
-							</tr>
-							</table>
-						</a>
-						<a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
-					</td></tr>
-					<?php
-                }
-                
-                if($limit == 100){
-                ?>
-                <tr><td align="center" class="pos">
-
-                <a href="intakeList.php?limit=99999999" class="intake">
-                    <table width="100%" border="0">
-                        <tr>
-                            <td width="100" align="center">Load All</td>
-                        </tr>
-                    </table>
-                </a>
-                </td></tr>
-                <?php
-                }
-			?>
+			 
 		</table>
+		<div class="loadMoreBtn" onclick="loadRows()">Load More</div>
 	</div>
 </main>
 <div id="btm"></div>
@@ -130,6 +70,9 @@
 
                 
         function doSearch(){
+			
+			$('.loadMoreBtn').hide();
+
             console.log('doSearch..');
             var val = $('#instantSearch').val();
             
@@ -147,6 +90,9 @@
         }
 
 		$(document).ready(function(){
+
+			// load initial 80 rows
+			loadRows();
 
 			$('#instantSearch').on('keypress',function(e) {
 				if(e.which == 13) {
@@ -175,8 +121,38 @@
 			
 		});
 		
+		function loadRows(){
+			
+			var toSkip = $('#toSkipCount').val();
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				$('#intakeAjax').append(this.responseText);
+				
+
+				setTimeout(() => {
+					var toSkip = parseInt($('#toSkipCount').val());
+					var totalRowsCount = parseInt($('#totalRowsCount').val());
+
+					if(toSkip >= totalRowsCount){
+						$('.loadMoreBtn').hide();
+					}else{
+						$('.loadMoreBtn').show();
+					}
+				}, 1000);
+			}
+			};
+
+			xhttp.open("POST", "/ajax/page-list/intakeList.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("toSkip=" + toSkip);
+		}
+
 		function loadSearchDate(month, year){
 			
+			$('.loadMoreBtn').hide();
+
 			$('#instantSearch').val('');
 			
 			console.log('month: ' + month);

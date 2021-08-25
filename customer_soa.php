@@ -27,6 +27,13 @@
         $customer = getCustomer($_GET['id']);
     ?>
     <h2>Statement of account for <?php echo $customer['businessname']; ?>
+    <?php
+        $days = averageDaysUntilPaidForCustomer($customer['id']);
+
+        if($days != null){
+        ?><h2 style="font-size:18px;">Average days outstanding: <?php echo $days; ?> days</h2><?php
+        }
+    ?>
         <?php
             if($_GET['date_from'] != '' && $_GET['date_to'] != ''){
 
@@ -38,6 +45,8 @@
                 
                 echo '(' . $date_from . ' - ' . $date_to . ')';
             }
+        
+        
         ?>
     </h2>
     <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
@@ -48,10 +57,10 @@
                 <th align="left">Add Payment</th>
                 <th align="left">Due Date</th>
                 <th align="left">Date</th>
-                <th align="right">Price</th>
+                <th align="right">Value</th>
                 <th align="right">Paid</th>
+                <th align="right">Credit</th>
                 <th align="right">Outstanding</th>
-                <th align="right">Balance</th>
             </tr>
         </thead>
         <tbody>
@@ -63,19 +72,19 @@
                 $date_from = $_GET['date_from'];
                 $date_to = $_GET['date_to'];
                 
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
             }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
+                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
             }
             
             $totalPrice = 0.00;
             $totalPaid = 0.00;
+            $totalCredited = 0.00;
             $totalOutstanding = 0.00;
-            $totalBalance = 0.00;
 
             $i = 0;
 			while($picksheet = mysqli_fetch_array($customerPicksheets)){
-                $total_credit = getInvoiceCreditNoteTotal($picksheet['id']);
+                $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
                 $this_price = (float) invoiceTotal($picksheet['id']);
                 $totalPrice += $this_price;
 
@@ -87,22 +96,31 @@
                 $epsilon = 0.00001;
                 if(($this_price - $picksheet['paid']) <= $epsilon){
                     $invoicePaid = true;
-                    $currentOutstanding = (float) 0;
+                    $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
                 }else{
                     $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
-                    $currentBalance += $currentOutstanding;
                 }
                 
                 $totalOutstanding += $currentOutstanding;
-                $totalBalance = $currentBalance;
 
 			?>
 			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
-				<td><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a></td>
+				<td data-order="<?php echo $picksheet['id']; ?>"><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
+                    <?php
+                        $hasReturns = doesInvoiceHaveReturns($picksheet['id']);
+                        $hasCreditNote = doesInvoiceHaveCreditNote($picksheet['id']);
+                        
+                        if(!$hasCreditNote){
+                            if($hasReturns){
+                                ?><div class="soa_cr_label">CR</div><?php
+                            }
+                        }
+                    ?> 
+                </td>
                 <?php if(!$invoicePaid) { ?>
                     <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
 				<?php }else{ ?>
-                    <td>Invoice Paid</a></td>  
+                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
                 <?php }?>
 
                 <?php
@@ -122,12 +140,14 @@
                 
                  <?php
                     $sortableDateFormat = date('d-m-Y',$date);
+
+                    $totalCredited += totalValueCreditedOnInvoiceID($picksheet['id']);
                 ?>
                 <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
-                <td align="right" width="100">£<?php echo number_format($this_price,2,".",","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($picksheet['paid'], 2, ".", ","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($currentOutstanding, 2, ".", ","); ?></td>
-                <td align="right" width="100">£<?php echo number_format($currentBalance, 2, ".", ","); ?></td>
+                <td align="right" width="100"><?php if($this_price != 0) { echo '£' . number_format($this_price,2,".",","); } ?></td>
+                <td align="right" width="100"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
+                <td align="right" style="color:red;"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
+                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if($currentOutstanding > 0){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
 			</tr>
 			<?php
                 $i++;
@@ -140,8 +160,8 @@
             <td align="right">Total:</td> 
             <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
             <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
+            <td align="right" width="120" style="color:red;">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
             <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
-            <td align="right" width="120">£<?php echo number_format($totalBalance, 2, ".", ","); ?></td> 
         </tr>
     </table>
     <?php
@@ -154,7 +174,8 @@
 
     $(document).ready( function () {
         $('#soaTable').DataTable( {
-            "pageLength": 30
+            "pageLength": 30,
+            "order": [[ 0, "ASC" ]]
         });
     });
 

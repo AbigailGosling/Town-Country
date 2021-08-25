@@ -74,13 +74,13 @@
 	<div>
 		<select name="month" class="calMonth" id="calMonth">
 			<option value="1" <?php if($month == '1'){ echo 'selected'; } ?>>January</option>
-			<option value="2" <?php if($month == '2'){ echo 'selected'; } ?>>Feburary</option>
+			<option value="2" <?php if($month == '2'){ echo 'selected'; } ?>>February</option>
 			<option value="3" <?php if($month == '3'){ echo 'selected'; } ?>>March</option>
 			<option value="4" <?php if($month == '4'){ echo 'selected'; } ?>>April</option>
 			<option value="5" <?php if($month == '5'){ echo 'selected'; } ?>>May</option>
 			<option value="6" <?php if($month == '6'){ echo 'selected'; } ?>>June</option>
 			<option value="7" <?php if($month == '7'){ echo 'selected'; } ?>>July</option>
-			<option value="8" <?php if($month == '8'){ echo 'selected'; } ?>>Auguest</option>
+			<option value="8" <?php if($month == '8'){ echo 'selected'; } ?>>August</option>
 			<option value="9" <?php if($month == '9'){ echo 'selected'; } ?>>September</option>
 			<option value="10" <?php if($month == '10'){ echo 'selected'; } ?>>October</option>
 			<option value="11" <?php if($month == '11'){ echo 'selected'; } ?>>November</option>
