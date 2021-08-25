@@ -27,6 +27,13 @@
         $customer = getCustomer($_GET['id']);
     ?>
     <h2>Statement of account for <?php echo $customer['businessname']; ?>
+    <?php
+        $days = averageDaysUntilPaidForCustomer($customer['id']);
+
+        if($days != null){
+        ?><h2 style="font-size:18px;">Average days outstanding: <?php echo $days; ?> days</h2><?php
+        }
+    ?>
         <?php
             if($_GET['date_from'] != '' && $_GET['date_to'] != ''){
 
