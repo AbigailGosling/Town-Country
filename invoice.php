@@ -75,9 +75,11 @@
 		
  		
 		<div class="delivery">
+			<?php if($customer['accounts_email'] != '' && $customer['accounts_email'] != null){ ?>
 			<div class="resend-invoice printhide" onclick="resendInvoice()">
 				Resend Invoice
 			</div>
+			<?php } ?>
 			<div class="deliverybox" style="border:0px;">
 				<div class="po">Invoice No: <span>000<?php echo $pickersheet_id; ?></span></div>
 				<h2>Invoice</h2>
