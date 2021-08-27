@@ -246,14 +246,41 @@
 					</tr>
 					<tr>
 						<td class="deliveryaddresstd">
-							<div class="deliveryaddress">
-								'. $customer['businessname'] .'<br/>
+							<div class="deliveryaddress">';
+							
+						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+
+                        if($pickSheetRow['addressid'] == 1){
+                            
+							$header .= $customer['businessname'] .'<br/>
 								t/a'. $customer['tradingas'] .'<br/>
 								'. $customer['address1_1'].'<br/>
 								'. $customer['address1_2'].'<br/>
 								'. $customer['address1_3'].'<br/>
-								'. $customer['postcode_1'].'<br/>
-							</div>
+								'. $customer['postcode_1'].'<br/>';    
+						}
+                        
+                        if($pickSheetRow['addressid'] == 2){
+                            
+							$header .= $customer['businessname'] .'<br/>
+								t/a'. $customer['tradingas'] .'<br/>
+								'. $customer['address2_1'].'<br/>
+								'. $customer['address2_2'].'<br/>
+								'. $customer['address2_3'].'<br/>
+								'. $customer['postcode_2'].'<br/>'; 
+                        }
+                        
+                        if($pickSheetRow['addressid'] == 3){
+                            
+							$header .= $customer['businessname'] .'<br/>
+								t/a'. $customer['tradingas'] .'<br/>
+								'. $customer['address3_1'].'<br/>
+								'. $customer['address3_2'].'<br/>
+								'. $customer['address3_3'].'<br/>
+								'. $customer['postcode_3'].'<br/>';
+                        }
+
+						$header .= '</div>
 						</td>
 					</tr>
 				</table>
