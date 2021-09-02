@@ -35,7 +35,7 @@
         $mail->Port       = $mail_port;                                    // TCP port to connect to, use 465 for `PHPMailer::ENCRYPTION_SMTPS` above
 
         //Recipients
-        $mail->setFrom($mail_email, 'Town & Country');
+        $mail->setFrom($mail_from_address, 'Town & Country');
         $mail->addAddress($customer['accounts_email']);     // Add a recipient
        
         // Attachments
