@@ -103,6 +103,49 @@
 		
 		return $totalPrice;
 	}
+
+	function averageDaysUntilPaidForCustomer($customer_id){
+        global $conn;
+        
+        $invoice_payment_times = [];
+
+        $invoiceResults = mysqli_query($conn, "SELECT date_completed,id FROM `pickerSheets` WHERE completed ='1' && customer_id='$customer_id'");
+
+        // loop through all completed invoices associated with this customer_id
+        while($invoice = mysqli_fetch_array($invoiceResults)){
+            $invoice_id = $invoice['id'];
+            $date_completed = $invoice['date_completed'];
+            
+            // get the final payment for this invoice
+            $paymentResult = mysqli_query($conn, "SELECT created_at,id FROM `invoice_payments` WHERE invoice_id='$invoice_id' ORDER BY created_at DESC LIMIT 1");
+            $count = mysqli_num_rows($paymentResult);
+
+            // check we have a payment record, old completed invoices do not have any
+            if($count == 1){
+                $paymentData = mysqli_fetch_array($paymentResult);
+
+                $fully_paid_date = $paymentData['created_at'];
+                
+                $difference = abs(strtotime($fully_paid_date) - strtotime($date_completed));
+                
+                $years = floor($difference / (365*60*60*24));
+                $months = floor(($difference - $years * 365*60*60*24) / (30*60*60*24));
+
+                $days = round(($difference - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24),1);
+
+                // store the number of days it took to fully pay the invoice inside an array
+                array_push($invoice_payment_times, $days);
+            }
+        }
+        
+        if(empty($invoice_payment_times)){
+            return null;
+        }
+
+        $average_days_until_paid = round(array_sum($invoice_payment_times) / count($invoice_payment_times), 1);
+
+        return $average_days_until_paid;
+    }
 	
 	function sql($table, $data, $id = '#'){
 		global $conn;
@@ -1446,7 +1489,7 @@
 		$palletData = mysqli_fetch_array($palletResult);
 		$pallet_ids = $palletData['ids'];		
 
-		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE cost is null && pallet_id IN ($pallet_ids)");
+		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE (cost is null && pallet_id IN ($pallet_ids)) || (cost = '0.00' && pallet_id IN ($pallet_ids))");
 		$productData = mysqli_fetch_array($productResult);
 
 		return $productData['count'];

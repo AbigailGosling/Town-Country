@@ -831,14 +831,18 @@
 			
 			$('.multiweight').val(0);
 			
-		} else{
+		}else if($('#individualweights').val() == 'D'){
+			$('#akgDiv').fadeOut();
+
+			$('#grossWeightDiv').fadeIn();
+			$('#tearWeightDiv').fadeIn();
+		}else{
 			showSingleWeight();
 			removeWeightBoxes();
 			
 			$('#grossWeightDiv').fadeOut();
 			$('#akgDiv').fadeOut();
 			$('#tearWeightDiv').fadeOut();
-			 
 		}
 		
 	  

@@ -246,14 +246,41 @@
 					</tr>
 					<tr>
 						<td class="deliveryaddresstd">
-							<div class="deliveryaddress">
-								'. $customer['businessname'] .'<br/>
+							<div class="deliveryaddress">';
+							
+						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+
+                        if($pickSheetRow['addressid'] == 1){
+                            
+							$header .= $customer['businessname'] .'<br/>
 								t/a'. $customer['tradingas'] .'<br/>
 								'. $customer['address1_1'].'<br/>
 								'. $customer['address1_2'].'<br/>
 								'. $customer['address1_3'].'<br/>
-								'. $customer['postcode_1'].'<br/>
-							</div>
+								'. $customer['postcode_1'].'<br/>';    
+						}
+                        
+                        if($pickSheetRow['addressid'] == 2){
+                            
+							$header .= $customer['businessname'] .'<br/>
+								t/a'. $customer['tradingas'] .'<br/>
+								'. $customer['address2_1'].'<br/>
+								'. $customer['address2_2'].'<br/>
+								'. $customer['address2_3'].'<br/>
+								'. $customer['postcode_2'].'<br/>'; 
+                        }
+                        
+                        if($pickSheetRow['addressid'] == 3){
+                            
+							$header .= $customer['businessname'] .'<br/>
+								t/a'. $customer['tradingas'] .'<br/>
+								'. $customer['address3_1'].'<br/>
+								'. $customer['address3_2'].'<br/>
+								'. $customer['address3_3'].'<br/>
+								'. $customer['postcode_3'].'<br/>';
+                        }
+
+						$header .= '</div>
 						</td>
 					</tr>
 				</table>
@@ -273,6 +300,8 @@
 						<td class="heading" width="65">Quality</td>
 						<td class="heading" width="65">Unit</td>
 						<td class="heading">Weight</td>
+						<td class="heading">Price</td>
+						<td class="heading">Sub Total</td>
 					</tr>';
 					
 			$howManyRows = 0;
@@ -285,7 +314,7 @@
 			$total_case_count = 0;
 
 			while($outpallet = mysqli_fetch_array($outpalletResult)){
-			$weightids = explode(',', $outpallet['weight_ids']);
+				$weightids = explode(',', $outpallet['weight_ids']);
 				$queryBits = '';
 				$queryBits2 = ''; 
 
@@ -406,10 +435,19 @@
 								  </b>
 								</td>
 							</tr>';
-							
+							$html .='<td align="right" class="price">£ '. number_format((float)$pickerItem['price'], 2, '.', '') . '</td>';
+
+							if($product['unit'] == 'PPC'){
+								$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+								$html .='<td align="right" class="price">£'. number_format((float)$count * $pickerItem['price'], 2, '.', '') . '</td>';
+							}else{
+								$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+								$html .= '<td align="right" class="price">£' . number_format((float)$kg * $pickerItem['price'], 2, '.', '') . '</td>';
+							 }
 				 
- 							$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+ 							// $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
 						}
+						
 						
 								 
 						
@@ -425,20 +463,17 @@
 						
  						
   				}
-
-				$html .= '<tr class="heading">
-				  <th align="left" colspan="5">Total:</th>
-				  <th align="center">' . $total_qty_count . '</th>
-				  <th align="left"></th>
-				  <th align="right">' . $total_weight_count . ' kg (+ ' . $total_case_count . ' cases)</th>';
-				$html .= '<th align="price" colspan="2" class="price"></th>';
-				
-
-				$html .='</tr>';
-				array_push($pageArray, $html);
-
 			}
-	
+			
+			$html .= '<tr class="heading">
+			<th align="left" colspan="5">Total:</th>
+			<th align="center">' . $total_qty_count . '</th>
+			<th align="left"></th>
+			<th align="right">' . $total_weight_count . ' kg (+ ' . $total_case_count . ' cases)</th>';
+			$html .= '<th align="price" colspan="2" class="price" align="right">£'. number_format((float)$totalPrice, 2, '.', '') .'</th>';
+			$html .='</tr>';
+		  array_push($pageArray, $html);
+
 
 	
 	$pageFooter .= '</table>
