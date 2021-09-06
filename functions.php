@@ -1489,7 +1489,7 @@
 		$palletData = mysqli_fetch_array($palletResult);
 		$pallet_ids = $palletData['ids'];		
 
-		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE cost is null && pallet_id IN ($pallet_ids)");
+		$productResult = mysqli_query($conn, "SELECT count(id) as count FROM product WHERE (cost is null && pallet_id IN ($pallet_ids)) || (cost = '0.00' && pallet_id IN ($pallet_ids))");
 		$productData = mysqli_fetch_array($productResult);
 
 		return $productData['count'];
