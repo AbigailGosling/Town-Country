@@ -3,7 +3,7 @@
     ini_set('max_execution_time','256');
 	ini_set('memory_limit', '1536M');
 	
-	require_once __DIR__ . '/vendor/autoload.php';
+	require_once 'vendor/autoload.php';
 		
 	$mpdf = new \Mpdf\Mpdf([
         'mode' => 'utf-8',
