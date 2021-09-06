@@ -1495,6 +1495,30 @@
 		return $productData['count'];
 	}
 
+	function totalOutstandingForCustomer($customer_id){
+		global $conn;
+
+		$customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
+		    
+		$totalOutstanding = 0.00;
+
+		while($picksheet = mysqli_fetch_array($customerPicksheets)){
+			$total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
+			$this_price = (float) invoiceTotal($picksheet['id']);
+
+			$epsilon = 0.00001;
+			if(($this_price - $picksheet['paid']) <= $epsilon){
+				$currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
+			}else{
+				$currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
+			}
+			
+			$totalOutstanding += $currentOutstanding;
+		}
+
+		return number_format((float)$totalOutstanding, 2, '.', '');
+	}
+
 	function invoiceTotal($pickersheet_id){
 		global $conn;
 

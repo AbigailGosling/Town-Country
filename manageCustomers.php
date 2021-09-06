@@ -286,7 +286,7 @@
 				</tr>
 				<tr>
 					<td class="label"><label>Current outstanding</label></td>
-					<td><input type="text" class="input" name="current_outstanding" value="<?php echo number_format((float)$data['current_outstanding'], 2, '.', ''); ?>"></td>
+					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']); ?>"></td>
 				</tr>
 				<tr>
 					<td class="label"><label>Payments received</label></td>
