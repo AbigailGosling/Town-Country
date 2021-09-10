@@ -1715,7 +1715,7 @@
         }
 
 		 
-		return number_format($weight, 2, '.', '');
+		return number_format($weight, 3, '.', '');
 	}
 
 	function totalValueCreditedOnInvoiceID($invoice_id){
