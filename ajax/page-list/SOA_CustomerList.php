@@ -4,13 +4,13 @@
     
     $name = $_POST['searchterm'];
 	
-	if($name != '' && strlen($name) > 1){
+	if($name != ''){
 	
 		?>
 		<div class="cutsContainer">
 		<?php
 		
-		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '%$name%'");
+		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '%$name%' || id = '$name'");
 		
 		while($customer = mysqli_fetch_array($customerQueryResult)){
 		?>
