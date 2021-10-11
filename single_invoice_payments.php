@@ -272,7 +272,7 @@ if (!empty($paymentID)) {
         <div class="row">
             <div class="col" id="amountContainer">
                 <label for="amount">Amount</label>
-                <input class="form-control" id="amount" type="text" name="amount" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['amount'] : $runningBalance; ?>" />
+                <input class="form-control" id="amount" type="text" name="amount" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['amount'] : number_format($runningBalance, 2, ".", ","); ?>" />
             </div>
             <div class="col">
                 <label for="meta_data">Additional Notes</label>
