@@ -147,7 +147,7 @@
                 <td align="right" width="100"><?php if($this_price != 0) { echo '£' . number_format($this_price,2,".",","); } ?></td>
                 <td align="right" width="100"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
                 <td align="right" style="color:red;"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
-                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if($currentOutstanding > 0){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
+                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if(number_format($currentOutstanding) != 0){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
 			</tr>
 			<?php
                 $i++;
