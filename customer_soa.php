@@ -7,7 +7,7 @@
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
-        <a href="/manageCustomers.php?id=<?php echo $_GET['id']; ?>" class="back">< BACK</a>
+        <a href="javascript: window.history.back();" class="back">< BACK</a>
         <div class="daterange">
             <form method="GET">
             <input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">
@@ -94,6 +94,7 @@
                 $totalPaid += (float) $picksheet['paid'];
                 $invoicePaid = false;
                 $epsilon = 0.00001;
+
                 if(($this_price - $picksheet['paid']) <= $epsilon){
                     $invoicePaid = true;
                     $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
@@ -115,6 +116,7 @@
                                 ?><div class="soa_cr_label">CR</div><?php
                             }
                         }
+                    
                     ?> 
                 </td>
                 <?php if(!$invoicePaid) { ?>
