@@ -1522,58 +1522,65 @@
 	function invoiceTotal($pickersheet_id){
 		global $conn;
 
-		$totalPrice = 0;
-		$numOfRows = 0;
 		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pickersheet_id'";
 		$outpalletResult2 = mysqli_query($conn, $outpalletQuery);
                 
 		$outpalletCount = mysqli_num_rows($outpalletResult2);
 
+
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
-			$weightids = $outpallet['weight_ids'];
+			$weightids = explode(',', $outpallet['weight_ids']);
  
 			$productIDArray = array();
+						
+			foreach($weightids as $weightid){
+				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
+				$y = mysqli_query($conn, $x);
+				$weight = mysqli_fetch_array($y);
+				
+				if(!in_array($weight['product_id'], $productIDArray)){
+					array_push($productIDArray, $weight['product_id']);
+				}
 
-
-			$weightsResult = mysqli_query($conn, "SELECT product_id FROM `weights` WHERE id IN ($weightids) GROUP BY product_id");
-
-			while($weight = mysqli_fetch_array($weightsResult)){
-				array_push($productIDArray, $weight['product_id']);
+				$queryBits .= ' id = ' . $weightid . ' || ';
 			}
-  
-			$weightids = explode(',', $outpallet['weight_ids']);
-
 
 			foreach($productIDArray as $productID){
-			
-				$y1 = mysqli_query($conn, "SELECT unit FROM `product` WHERE id='$productID'");
+				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
+				$y1 = mysqli_query($conn, $x1);
 				$product = mysqli_fetch_array($y1);
-                
- 				$y2 = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id='$productID' && id IN ($weightids)");
+					
+
+				$x2 = "SELECT * FROM `weights` WHERE ";
+
+				foreach($weightids as $weightid){
+					$x2 .= "product_id='$productID' && id='$weightid' || ";
+				}
+
+				$x2 = rtrim($x2," || ");
+				$y2 = mysqli_query($conn, $x2);
 				$count = mysqli_num_rows($y2);
 
-                          
-				$k = 0;
-
-			 
-				$numOfRows++;
-
- 				$howManyX = "SELECT price FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
+								
+				$productID = $product['id'];
+				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
 				$howManyY = mysqli_query($conn, $howManyX);
 				$pickerItem = mysqli_fetch_array($howManyY);
-				$howMany = mysqli_num_rows($howManyY);
-            
+									
 				$qBit = '';
-				
+						
 				$kg = 0;
-				
-				foreach($weightids as $weightid){ $qBit .= " id = '$weightid' && product_id='$productID' || "; }
+						
+				foreach($weightids as $weightid){
+					$qBit .= " id = '$weightid' && product_id='$productID' || ";
+				}
 
 				$qBit = rtrim($qBit," || ");
-                
-				$weightsResult = mysqli_query($conn, "SELECT weight_gross,weight_tear FROM `weights` WHERE $qBit");
 				
-				while($weightRow = mysqli_fetch_array($weightsResult)){
+				$xxWeight = "SELECT * FROM `weights` WHERE $qBit";
+				$yyWeight = mysqli_query($conn, $xxWeight);
+						
+				while($weightRow = mysqli_fetch_array($yyWeight)){
 					
 					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 						$tw = $weightRow['weight_gross'];
@@ -1583,20 +1590,17 @@
 					
 					$kg = $kg + $tw;
 					
-					$kg = number_format($kg, 2, '.', '');
+					$kg = number_format($kg, 3, '.', '');
 				}
-                                
+						
 				if($product['unit'] == 'PPC'){
- 				    $totalPriceRow = number_format((float)$count * $pickerItem['price'], 2, '.', '');
-					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');                                
+					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 				}else{
-					$totalPriceRow = number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-				    $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');                                
+					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
 				}
-                                
 			}
 		}
-
+        
 		return $totalPrice;
 	}
 
