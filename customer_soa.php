@@ -183,12 +183,14 @@
 
     function beforePrint(){
         $('.printhide').hide();
-        $('#soaTable').DataTable().page.len(9999999).draw();
+        $('#soaTable').DataTable().page.len(-1).draw();
+        $('.container').css('width', '100%');
     }
 
     function printCompleted(){
         $('.printhide').show();
         $('#soaTable').DataTable().page.len(30).draw();
+        $('.container').css('width', '1024px');
 
     }
 </script>
