@@ -369,7 +369,7 @@
 
 		<?php
 
-			$x = "SELECT * FROM `customers`";
+			$x = "SELECT * FROM `customers` ORDER BY id ASC";
 
 			$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 
