@@ -1,11 +1,11 @@
 <?php
 	include('includes/frontHeader.php');
 ?>
-<div id="top">
+<div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
-<div class="search">
+<div class="search printhide">
     <div class="container flex space-between" style="align-items:center">
         <a href="javascript: window.history.back();" class="back">< BACK</a>
         <div class="daterange">
@@ -181,6 +181,18 @@
         });
     });
 
+    function beforePrint(){
+        $('.printhide').hide();
+        $('#soaTable').DataTable().page.len(-1).draw();
+        $('.container').css('width', '100%');
+    }
+
+    function printCompleted(){
+        $('.printhide').show();
+        $('#soaTable').DataTable().page.len(30).draw();
+        $('.container').css('width', '1024px');
+
+    }
 </script>
 
 <style type="text/css">
