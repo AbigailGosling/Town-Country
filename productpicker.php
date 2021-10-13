@@ -7,7 +7,7 @@
 </div>
 
 
-<form id="pickerForm" method="POST" action="/scripts/buildPicker.php" autocomplete="off" onkeydown="return event.key != 'Enter';">
+<form id="pickerForm" method="POST" action="/scripts/buildPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
 <div class="container container--pt">
