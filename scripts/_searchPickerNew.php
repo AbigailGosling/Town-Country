@@ -73,6 +73,7 @@
 
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
+                    
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = $productsRow2['range_from'];
                     $largestDate = $productsRow2['range_to'];
@@ -84,8 +85,10 @@
                     }else{
                         $this_row_weight = weightSoldFromProductID($product_id);
                     }
-
-                    if($this_row_weight == 0){ continue; }
+                    
+                    if($productsRow2['grosspallet'] == 1){
+                        if($this_row_weight == 0){ continue; }
+                    }
 
                     ?>
                     <tr class="subrow <?php echo $class; ?>">
