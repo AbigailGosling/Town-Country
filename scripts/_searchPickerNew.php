@@ -78,6 +78,15 @@
                     $largestDate = $productsRow2['range_to'];
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
+
+                    if($productsRow2['akg'] != ''){
+                        $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id);
+                    }else{
+                        $this_row_weight = weightSoldFromProductID($product_id);
+                    }
+
+                    if($this_row_weight == 0){ continue; }
+
                     ?>
                     <tr class="subrow <?php echo $class; ?>">
                     <td colspan="1">
@@ -106,20 +115,14 @@
                     <td><?php echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; ?></td>
                     
                     <td class="bold"><?php 
-                    
+
                     if($productsRow2['grosspallet'] == 1){
                         echo '[GT] ';
                     }
                     if($productsRow2['unit'] == 'PPC'){
                         ?><b>PPC</b><?php
                     }else{
-                        if($productsRow2['akg'] != ''){
-                            echo totalWeightOfAdvisedKGProduct($intake_id);
-                        }else{
-                            echo weightSoldFromProductID($product_id);
-                        }
-
-                        echo 'kg';
+                        echo $this_row_weight . 'kg';
                     }
                     ?></td>
                     <td></td>
