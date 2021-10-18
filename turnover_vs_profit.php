@@ -56,16 +56,22 @@
 		?>
 	</select>
 
-    <select name="cut_id" id="cut_id" style="width:152px;height:40px;">
-        <option value="0" selected>Select cut..</option>
+    <select name="cutgroup_id" id="cutgroup_id" style="width:152px;height:40px;">
+        <option class="header" selected>...</option>
         <?php
-			$x = "SELECT * FROM `cuts`";
-			$y = mysqli_query($conn, $x);
-			
-			while($row = mysqli_fetch_array($y)){
-			?><option class="allspecies species<?php echo $row['species_id']; ?>" value="<?php echo $row['id']; ?>" <?php if($_POST['cut_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
-			}
-		?>
+            $x = "SELECT * FROM `cutgroups` WHERE id != 93";
+            $y = mysqli_query($conn, $x);
+            
+            $i=0;
+            while($row = mysqli_fetch_array($y)){
+                
+                
+                $thisid = $row['species_id'];
+                $y2 = mysqli_query($conn,"SELECT * FROM species WHERE id='$thisid'");
+                $species = mysqli_fetch_array($y2);
+                    ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+                }
+        ?>
 	</select>
 
     <select name="cooling_id" id="cooling_id" style="width:152px;height:40px;">
@@ -152,7 +158,7 @@
         }
         
         var species_id = $('#species_id').val();
-        var cut_id = $('#cut_id').val();
+        var cutgroup_id = $('#cutgroup_id').val();
         var cooling_id = $('#cooling_id').val();
         var intake_id = $('#intake_id').val();
         var pallet_id = $('#pallet_id').val();
@@ -166,7 +172,7 @@
         {
             toSkip: toSkip,
             species_id: species_id,
-            cut_id: cut_id,
+            cutgroup_id: cutgroup_id,
             cooling_id: cooling_id,
             intake_id: intake_id,
             pallet_id: pallet_id,
@@ -241,9 +247,13 @@
 
         $('#species_id').change(function(){
             var val = $(this).val();
+            $('#cutgroup_id option.allsoption').hide();
+            $('#cutgroup_id option.s' + val).show();
 
-            $('option.allspecies').fadeOut();
-            $('option.species' + val).fadeIn();
+            // iOS fix - display:none doesn't work on select options
+            $('#cutgroup_id option.allsoption').unwrap('span');
+            $('#cutgroup_id option.allsoption').wrap('<span/>');
+            $('#cutgroup_id option.s' + val).unwrap();
         });
 		
     });
