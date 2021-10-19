@@ -266,24 +266,23 @@
 	let month = '<?php echo $month; ?>';
 	let year = '<?php echo $year; ?>';
 	let chilled_filter = 0;
-	
+	let week = '<?php echo $week; ?>';
+
 	$('#calMonth').change(function(){
 		month = $(this).val();
 		
-		updateCalendar(month, year, chilled_filter);
+		updateCalendar(month, year, chilled_filter, week);
 	});
 	
 	$('#calYear').change(function(){
 		year = $(this).val();
 		
-		updateCalendar(month, year, chilled_filter);
+		updateCalendar(month, year, chilled_filter, week);
 	});
 
 	$('#temperature_id').change(function(){
 		chilled_filter = $(this).val();
-		// alert(chilled_filter);
-		updateCalendar(month, year, chilled_filter);
-		
+		updateCalendar(month, year, chilled_filter, week);
 	});
 
 	
