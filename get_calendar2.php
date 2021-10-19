@@ -110,7 +110,6 @@
 			<option value="0" <?php if($temperature_id == 0){ echo 'selected'; } ?>>All Fresh & Frozen</option>
 			<option value="1" <?php if($temperature_id == 1){ echo 'selected'; } ?>>Fresh</option>
 			<option value="2" <?php if($temperature_id == 2){ echo 'selected'; } ?>>Frozen</option>
-			<option value="3" <?php if($temperature_id == 3){ echo 'selected'; } ?>>Fresh/Frozen</option>
 		</select>
 	</div>
 	<div>
