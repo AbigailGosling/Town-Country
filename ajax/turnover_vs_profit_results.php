@@ -10,7 +10,7 @@
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
-        $CUT_ID = mysqli_real_escape_string($conn, $_POST['cut_id']);
+        $CUTGROUP_ID = mysqli_real_escape_string($conn, $_POST['cutgroup_id']);
         $COOLING_ID = mysqli_real_escape_string($conn, $_POST['cooling_id']);
 
         if($_POST['date_start'] != ''){
@@ -93,17 +93,18 @@
         }
 
         if($SPECIES_ID != 0){
-            $cuts_array = array();
             
-            if($CUT_ID != 0){
-                array_push($cuts_array, $CUT_ID);
-            }else{ // no cut was posted in the form, get all cuts for the posted species_id
-                $cutsResult = getCutsFor($SPECIES_ID);
-                while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
-            }
+            if($CUTGROUP_ID != 0){
+                $ARRAY_CUTS = cutsFromCutGroup($SPECIES_ID, $CUTGROUP_ID);
+                $cut_ids = implode(',', $ARRAY_CUTS);
+            }else{
+                $cut_ids = array();
+                $cuts = getCutsFor($SPECIES_ID);
+                while($cut = mysqli_fetch_array($cuts)){ array_push($cut_ids, $cut['id']); }
 
-            $cut_ids = implode(',', $cuts_array);
-            
+                $cut_ids = implode(',', $cut_ids);
+            }
+                        
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
