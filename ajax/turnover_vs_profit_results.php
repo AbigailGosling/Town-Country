@@ -4,7 +4,9 @@
     $toSkip = $_POST['toSkip'];
     $limit = 50;
 
-    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''){
+        
+        $INVOICE_ID = mysqli_real_escape_string($conn, $_POST['invoice_id']);
         $INTAKE_ID = mysqli_real_escape_string($conn, $_POST['intake_id']);
         $PALLET_ID = mysqli_real_escape_string($conn, $_POST['pallet_id']);
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
@@ -71,6 +73,10 @@
             }
         }
 
+        if($INVOICE_ID != 0){
+            $invoiceQueryPiece = " && pickerSheets.id IN ($INVOICE_ID)";
+        }
+
         if($PALLET_ID != 0){
             $picksheet_ids = array();
 
@@ -108,14 +114,14 @@
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
         }else{
 
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed=1 $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id LIMIT $toSkip, $limit";
                         
         }
 
