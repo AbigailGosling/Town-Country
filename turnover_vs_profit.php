@@ -38,6 +38,7 @@
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
     <form method="POST">
+    <input name="invoice_id" id="invoice_id" placeholder="Invoice ID" value="<?php echo $_POST['invoice_id']; ?>" style="height:34px;width:100px;">
     <input name="intake_id" id="intake_id" placeholder="Intake ID" value="<?php echo $_POST['intake_id']; ?>" style="height:34px;width:100px;">
     <input name="pallet_id" id="pallet_id" placeholder="Pallet ID" value="<?php echo $_POST['pallet_id']; ?>" style="height:34px;width:100px;margin-right:20px;">
 
@@ -157,6 +158,7 @@
             var toSkip = $('#toSkipCount').val();
         }
         
+        var invoice_id = $('#invoice_id').val();
         var species_id = $('#species_id').val();
         var cutgroup_id = $('#cutgroup_id').val();
         var cooling_id = $('#cooling_id').val();
@@ -171,6 +173,7 @@
         $.post("/ajax/turnover_vs_profit_results.php",
         {
             toSkip: toSkip,
+            invoice_id: invoice_id,
             species_id: species_id,
             cutgroup_id: cutgroup_id,
             cooling_id: cooling_id,
