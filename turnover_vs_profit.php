@@ -42,9 +42,6 @@
     <input name="intake_id" id="intake_id" placeholder="Intake ID" value="<?php echo $_POST['intake_id']; ?>" style="height:34px;width:100px;">
     <input name="pallet_id" id="pallet_id" placeholder="Pallet ID" value="<?php echo $_POST['pallet_id']; ?>" style="height:34px;width:100px;margin-right:20px;">
 
-    <input type="hidden" id="toSkipCount" value="0">
-    <input type="hidden" id="moreRowsAvailable" value="1"> 
-
     <select name="species_id" id="species_id" style="width:152px;height:40px;">
         <option value="0" selected>All species</option>
 		<?php
@@ -149,15 +146,7 @@
  
 <script type="text/javascript">
     
-    function loadData(reset){
-        $('#loadingContainer').fadeIn();
-        if(reset == true){
-            var toSkip = 0;
-            $('#resultsTable').html('');
-        }else{
-            var toSkip = $('#toSkipCount').val();
-        }
-        
+    function loadData(reset){    
         var invoice_id = $('#invoice_id').val();
         var species_id = $('#species_id').val();
         var cutgroup_id = $('#cutgroup_id').val();
@@ -170,9 +159,10 @@
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
 
+        $('#loadingContainer').fadeIn();
+
         $.post("/ajax/turnover_vs_profit_results.php",
         {
-            toSkip: toSkip,
             invoice_id: invoice_id,
             species_id: species_id,
             cutgroup_id: cutgroup_id,
@@ -186,19 +176,10 @@
         },
         function(data, status){
             $('#loadingContainer').hide();
-            $('#resultsTable').append(data);
+            $('#resultsTable').html(data);
             
             setTimeout(function() {
-                var toSkip = parseInt($('#toSkipCount').val());
-                var moreRowsAvailable = parseInt($('#moreRowsAvailable').val());
-
-                if(moreRowsAvailable == 1){
-                    $('.loadMoreBtn').show();
-                }else{
-                    $('.loadMoreBtn').hide();
-                }
-
-                 
+              
                 var totalQuantity = 0;
                 $('.quantityValue').each(function(){
                     var val = parseInt($(this).val());
@@ -262,7 +243,4 @@
     });
 
 
-</script>
- 
-  
 </script>
