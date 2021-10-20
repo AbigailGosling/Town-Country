@@ -1,9 +1,6 @@
 <?php
    	require('../functions.php');
 
-    $toSkip = $_POST['toSkip'];
-    $limit = 50;
-
     if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''){
         
         $INVOICE_ID = mysqli_real_escape_string($conn, $_POST['invoice_id']);
@@ -115,20 +112,20 @@
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id";
         }else{
 
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
                         
         }
 
     }
 ?>
-<?php if($toSkip == 0){ ?>
+
 <tr>
     <th align="left">SALESMAN</th>
     <th align="left">DATE</th>
@@ -150,19 +147,9 @@
     <th align="left">Sell</th>
     <th align="left">Profit</th>
 </tr>
-<?php } ?>
+
 <?php
     $searchResults = mysqli_query($conn, $searchQueryString);
-
-    $count = mysqli_num_rows($searchResults);
-    $newSkipCount = ($toSkip + $count);
-
-    if($count == $limit){
-        $moreRowsAvailable = 1;
-    }else{
-        $moreRowsAvailable = 0;
-    }
-
     
     while($invoice = mysqli_fetch_array($searchResults)){
     
@@ -280,10 +267,3 @@
     <td><div class="totalSellValue" style="font-size:13px;"></div></td>
     <td><div class="totalProfitValue" style="font-size:13px;"></div></td>
 </tr>
-<script>
-    <?php if($toSkip != 0){ ?>
-        $('#resultsTable').find('tr.totals').first().remove();
-    <?php } ?>
-    $('#toSkipCount').val(<?php echo $newSkipCount; ?>);
-    $('#moreRowsAvailable').val(<?php echo $moreRowsAvailable; ?>);
-</script>
