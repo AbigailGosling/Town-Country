@@ -118,10 +118,19 @@
 		<?php if($intake['returned'] == 1){ ?>
 		<div class="overview_block">
 			<label>Customer</label>
-			<?php
-				$customer = getCustomer($intake['supplier_id']);
-			?>
-			<?php echo $customer['businessname']; ?>
+			<form id="changeIntakeSupplierForm" method="post" action="/scripts/changeIntakeSupplier.php">
+                <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                <select id="changeIntakeSupplier" style="height:30px;outline:none;border:0px;width: 100%;" name="supplier_id">
+                    <?php
+                        $y = mysqli_query($conn, "SELECT * FROM `customers` ORDER BY businessname ASC");
+
+                        while($customer = mysqli_fetch_array($y)){
+                        ?><option value="<?php echo $customer['id']; ?>" <?php if($customer['id'] == $intake['supplier_id']){ echo 'selected'; } ?>><?php echo $customer['businessname']; ?></option>
+                        <?php }
+                    ?>
+                </select>   
+            </form>
+
 		</div>
 		
 		<?php }else{ ?>
@@ -129,7 +138,7 @@
             <label>Supplier</label>
             <form id="changeIntakeSupplierForm" method="post" action="/scripts/changeIntakeSupplier.php">
                 <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
-                <select id="changeIntakeSupplier" style="height:30px;outline:none;border:0px;" name="supplier_id">
+                <select id="changeIntakeSupplier" style="height:30px;outline:none;border:0px;width: 100%;" name="supplier_id">
                     <?php
                         $y = mysqli_query($conn, "SELECT * FROM `supplier` ORDER BY name ASC");
 
@@ -164,7 +173,15 @@
 		
 		<div class="overview_block">
 			<label>Delivery Note Number</label>
-			<?php echo $intake['delivery_note_number']; ?>
+			<?php if($intake['returned'] == 1){ ?>
+			<form method="POST" action="/scripts/changeIntakeDeliveryNoteNumber.php" class="flex">
+				<input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+				<input type="text" name="delivery_note_number" value="<?php echo $intake['delivery_note_number']; ?>" style="width:140px;">
+				<input type="submit" value="Save">
+			</form>
+			<?php }else{
+				echo $intake['delivery_note_number'];
+			} ?>
 		</div>
 		
 		<div class="overview_block">
