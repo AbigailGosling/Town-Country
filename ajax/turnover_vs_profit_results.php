@@ -253,6 +253,7 @@
                 $credit_qty += $creditItem['quantity'];
             }
 
+            if($credit_qty > 0){
         ?>
         <tr class="result" style="height:28px;">
             <td style="color:red;"><?php echo $cell_username ?></td>
@@ -294,6 +295,7 @@
             </td>
         </tr>
         <?php
+            }
     }
 ?>
   <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
