@@ -93,6 +93,21 @@
             <option value="<?php echo $user['id']; ?>" <?php if($_GET['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
             <?php } ?>
         </select>
+        <?php
+        if($_GET['date_start'] != ''){
+            $uk_date_start = str_replace('/', '-', $_GET['date_start']);
+            $uk_date_start = date('d/m/Y', strtotime($uk_date_start));
+        }
+
+        if($_GET['date_end'] != ''){
+            $uk_date_end = str_replace('/', '-', $_GET['date_end']);
+            $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
+        }
+    ?>
+        <b>BETWEEN</b>
+        <input class="datepicker" name="date_start" id="date_start" placeholder="START DATE" value="<?php echo $uk_date_start; ?>" style="height:30px;width:100px;">
+        <b>AND</b>
+        <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" value="<?php echo $uk_date_end; ?>" style="height:30px;width:100px;">
 
         <input type="submit" style="height:30px;" value="Search">
         <a href="soa_all.php" style="font-size:12px;text-decoration:none">Reset Form</a>
@@ -103,6 +118,21 @@
         
         // if the form has been submitted
         if($form_user_id != null){
+
+            // Dates were selected
+            if($_GET['date_start'] != '' && $_GET['date_end'] != ''){
+                $date_start = mysqli_real_escape_string($conn, $_GET['date_start']);
+                $date_end = mysqli_real_escape_string($conn, $_GET['date_end']);
+
+                $date_start = str_replace('/', '-', $date_start);
+                $date_start = date('Y-m-d', strtotime($date_start));
+
+                $date_end = str_replace('/', '-', $date_end);
+                $date_end = date('Y-m-d', strtotime($date_end));
+
+
+                $dateQueryPiece = " && date_completed >= '$date_start' && date_completed <= '$date_end'";
+            }
 
             // if 'all salesmen' was selected
             if($form_user_id == 0){
@@ -136,7 +166,7 @@
                         </tr>
                         
                             <?php
-                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && user_from_id='$user_id' GROUP BY customer_id");
+                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && user_from_id='$user_id' $dateQueryPiece GROUP BY customer_id");
                                 
                                 $i=0;
                                 while($picksheet = mysqli_fetch_array($picksheetsResult)){
@@ -184,5 +214,9 @@
 <div class="clearfix"></div>
 <script type="text/javascript"> 
 
-   
+   $(document).ready(function() {
+        $( ".datepicker" ).datepicker({
+            dateFormat: 'dd/mm/yy'
+        });
+    });
 </script>
