@@ -210,15 +210,32 @@
             $rowClass = "productRow" . $i;
             $productID = $product['id'];
 
+            $productQuantityToDeduct = 0;
+
+            # Check for credit notes with this product_id
+            $creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$productID'");
+
+            # If this product has a credit note
+            if(mysqli_num_rows($creditNoteResult) > 0){
+                while($creditNoteData = mysqli_fetch_array($creditNoteResult)){
+                    $productQuantityToDeduct += $creditNoteData['quantity'];
+                }
+            }
+            
             # get number of weights for this product
 		    $weightCountResult = mysqli_query($conn, "SELECT id FROM `weights` WHERE product_id=$productID");
             $count = mysqli_num_rows($weightCountResult);
 
+            $loop_count = $count;
+            $loop_count -= $productQuantityToDeduct;
+
         ?>
-        <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
+        <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;<?php if($loop_count <= 0){ echo 'opacity:0.4;pointer-events:none;'; } ?>">
             <td align="left">
                 <span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span>
-                <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">    
+                <?php if($loop_count > 0){ ?>
+                <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">
+                <?php } ?>
             </td>
             <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
             <td align="left">                    
@@ -236,13 +253,15 @@
                 $howMany = mysqli_num_rows($howManyY);
             ?>
             <td align="left"><b class="">
-                <select style="width:55px;height:30px;" name="quantity[]">
-                    <?php
-                        $tempcount = $count+1;
-                        for($i=1;$i<$tempcount;$i++) { ?>
-                        <option value="<?php echo $i; ?>" <?php if($i == $count){ echo 'selected'; } ?>><?php echo $i; ?></option>
-                    <?php } ?>
-                </select>
+                <?php if($loop_count > 0){ ?>
+                    <select style="width:55px;height:30px;" name="quantity[]">
+                        <?php
+                            $fix_loop_val = $loop_count+1;
+                            for($i=1;$i<$fix_loop_val;$i++) { ?>
+                            <option value="<?php echo $i; ?>" <?php if($i == ($fix_loop_val-1)){ echo 'selected'; } ?>><?php echo $i; ?></option>
+                        <?php } ?>
+                    </select>
+                <?php } ?>
             </td>
             <td>
                  <?php
@@ -262,9 +281,14 @@
                 ?>
             </td>
             <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
-            <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
+            <td align="left" class="">
+                <?php if($loop_count > 0){ ?>    
+                £<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
+                <?php } ?>
             <td>
+                <?php if($loop_count > 0){ ?>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
+                <?php } ?>
             </td>
         </tr>
         <?php
