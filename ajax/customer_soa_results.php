@@ -21,6 +21,9 @@
     $totalCredited = 0.00;
     $totalOutstanding = 0.00;
 
+    $count = mysqli_num_rows($customerPicksheets);
+
+
     $i = 0;
     while($picksheet = mysqli_fetch_array($customerPicksheets)){
         $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
@@ -92,5 +95,15 @@
     </tr>
     <?php
         $i++;
+    }
+
+    if($count == 0){
+    ?>
+    <script>
+        setTimeout(function(){
+            $('.loadMore').remove();
+        }, 1000);
+    </script>
+    <?php
     }
     ?>
