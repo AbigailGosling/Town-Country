@@ -146,6 +146,14 @@
                 $user_id = $user['id'];
                 $total_outstanding_user = 0;
                 $total_paid_user = 0;
+
+                $myCustomersResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE default_salesman_id='$user_id'");
+
+                $customer_ids = [];
+                while($customer = mysqli_fetch_array($myCustomersResult)){ array_push($customer_ids, $customer['id']); }
+                $customer_ids = implode(',', $customer_ids);
+
+
             ?>
             <table width="100%" border="1" style="margin-bottom:10px;">
             <tr>
@@ -166,7 +174,9 @@
                         </tr>
                         
                             <?php
-                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && user_from_id='$user_id' $dateQueryPiece GROUP BY customer_id");
+
+                                
+                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && customer_id IN ($customer_ids) $dateQueryPiece GROUP BY customer_id");
                                 
                                 $i=0;
                                 while($picksheet = mysqli_fetch_array($picksheetsResult)){
@@ -182,7 +192,7 @@
 
                                 ?>
                                 <tr class="<?php if($i % 2 == 0){ echo 'even'; }else{ echo 'odd'; } ?>">
-                                    <td align="left"><?php echo $customer['businessname']; ?></td>
+                                    <td align="left"><?php echo $customer['id'] . ' ' . $customer['businessname']; ?></td>
                                     <td align="right"><?php echo $num_of_sales; ?></td>
                                     <td align="right" width="200">£<?php echo number_format($total_outstanding_picksheet); ?></td>
                                     <td align="right" width="200">£<?php echo number_format($total_paid_picksheet, 2); ?></td>
