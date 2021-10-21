@@ -192,7 +192,7 @@
 
                                 ?>
                                 <tr class="<?php if($i % 2 == 0){ echo 'even'; }else{ echo 'odd'; } ?>">
-                                    <td align="left"><?php echo $customer['id'] . ' ' . $customer['businessname']; ?></td>
+                                    <td align="left"><?php echo $customer['businessname']; ?></td>
                                     <td align="right"><?php echo $num_of_sales; ?></td>
                                     <td align="right" width="200">£<?php echo number_format($total_outstanding_picksheet); ?></td>
                                     <td align="right" width="200">£<?php echo number_format($total_paid_picksheet, 2); ?></td>
