@@ -147,7 +147,7 @@
                 $total_outstanding_user = 0;
                 $total_paid_user = 0;
 
-                $myCustomersResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE default_salesman_id='$user_id'");
+                $myCustomersResult = mysqli_query($conn, "SELECT id FROM `customers` WHERE default_salesman_id='$user_id'");
 
                 $customer_ids = [];
                 while($customer = mysqli_fetch_array($myCustomersResult)){ array_push($customer_ids, $customer['id']); }
