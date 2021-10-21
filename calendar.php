@@ -58,11 +58,13 @@
 			}
 			
 				
-			function updateCalendar(month, year){
-				$.get("/get_calendar2.php?m=" + month + "&y=" + year + "&w=1", function(data, status){
+			function updateCalendar(month, year, chilled_filter, week){
+
+				$.get("/get_calendar2.php?m=" + month + "&y=" + year + "&w=" + week + '&temperature_id=' + chilled_filter, function(data, status){
 					$('#calendar').html(data);
 				});
-				console.log('month: ' + month + ' / year:' + year );
+				
+				console.log('month: ' + month + ' / year:' + year + ' / chilled_filter:' + chilled_filter );
 			}
 		
 		</script>

@@ -16,6 +16,13 @@
 		}
 	}
 	
+	if($_GET['temperature_id'] != 0){
+		$temperature_id = mysqli_real_escape_string($conn, $_GET['temperature_id']);
+		
+		$temperatureQueryPiece = "&& temperature_id='$temperature_id'"; 
+	}else{
+		$temperature_id = 0;
+	}
 	
 	$d = date('d');
 	$week = $_GET['w'] ?: 1;
@@ -66,7 +73,7 @@
 	
 	if(!isset($_GET['w'])){
 		
-	?><script> window.location.href = 'calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo $weeksToJump; ?>'; </script> <?php
+	?><script> window.location.href = 'calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo $weeksToJump; ?>&temperature_id=<?php echo $temperature_id; ?>'; </script> <?php
 	}
 	
 ?>
@@ -97,10 +104,17 @@
 				}
 			?>
 		</select>
+
+		<select name="temperature_id" class="calMonth" id="temperature_id" style="width:150px">
+			<option disabled selected>Chilled/Frozen</option>
+			<option value="0" <?php if($temperature_id == 0){ echo 'selected'; } ?>>All Fresh & Frozen</option>
+			<option value="1" <?php if($temperature_id == 1){ echo 'selected'; } ?>>Fresh</option>
+			<option value="2" <?php if($temperature_id == 2){ echo 'selected'; } ?>>Frozen</option>
+		</select>
 	</div>
 	<div>
-		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week - 1); ?>" onclick="javascript:;" class="calprev"><</a>
-		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week + 1); ?>" onclick="javascript:;" class="calnext">></a>
+		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week - 1); ?>&temperature_id=<?php echo $temperature_id; ?>" onclick="javascript:;" class="calprev"><</a>
+		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week + 1); ?>&temperature_id=<?php echo $temperature_id; ?>" onclick="javascript:;" class="calnext">></a>
 	</div>
 </div>
 <table style="border-collapse:collapse;">
@@ -125,6 +139,7 @@
 		?>
 	</tr>
 		<?php
+
 			for($x = 0; $x < $hourCount; $x++){
 				$number = $startTime + $x;
 				$i = str_pad($number, 2, '0', STR_PAD_LEFT);
@@ -135,11 +150,12 @@
 						<td class="calendar_blank_box"></td>
 					<?php } ?>
 					<?php
+
 						for($day = $weekStartDate; $day <= ($weekEndDate - $running_day); $day++){
 							if($day < ($days_in_month + 1)){ # this month
 							$formatedDate = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) .'-'. str_pad($day, 2, '0', STR_PAD_LEFT) . ' ' . $i . ':00:00';
 							
-							$xxx = "SELECT * FROM purchase_form WHERE date_due = '$formatedDate' && direct_drop = '0' && booking_ref_number != ''";
+							$xxx = "SELECT * FROM purchase_form WHERE date_due = '$formatedDate' && direct_drop = '0' && booking_ref_number != '' $temperatureQueryPiece";
 							$y = mysqli_query($conn, $xxx);
 							?>
 							<td class="calendar_box">
@@ -170,7 +186,7 @@
 
 <?php
 
-	$x = "SELECT * FROM `purchase_form` WHERE booking_ref_number != ''";
+	$x = "SELECT * FROM `purchase_form` WHERE booking_ref_number != '' $temperatureQueryPiece";
 	$y = mysqli_query($conn, $x);
 	
 	while($row = mysqli_fetch_array($y)){
@@ -248,19 +264,27 @@
 <script>
 	let month = '<?php echo $month; ?>';
 	let year = '<?php echo $year; ?>';
-	
+	let chilled_filter = 0;
+	let week = '<?php echo $week; ?>';
+
 	$('#calMonth').change(function(){
 		month = $(this).val();
 		
-		updateCalendar(month, year);
+		updateCalendar(month, year, chilled_filter, week);
 	});
 	
 	$('#calYear').change(function(){
 		year = $(this).val();
 		
-		updateCalendar(month, year);
+		updateCalendar(month, year, chilled_filter, week);
 	});
+
+	$('#temperature_id').change(function(){
+		chilled_filter = $(this).val();
+		updateCalendar(month, year, chilled_filter, week);
+	});
+
 	
-	//window.location.href = "calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo $week + $weeksToSkip; ?>";
+
 </script>
 

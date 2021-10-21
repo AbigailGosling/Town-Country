@@ -1,16 +1,15 @@
 <?php
    	require('../functions.php');
 
-    $toSkip = $_POST['toSkip'];
-    $limit = 50;
-
-    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''){
+        
+        $INVOICE_ID = mysqli_real_escape_string($conn, $_POST['invoice_id']);
         $INTAKE_ID = mysqli_real_escape_string($conn, $_POST['intake_id']);
         $PALLET_ID = mysqli_real_escape_string($conn, $_POST['pallet_id']);
         $USER_ID = mysqli_real_escape_string($conn, $_POST['user_id']);
         $CUSTOMER_ID = mysqli_real_escape_string($conn, $_POST['customer_id']);
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
-        $CUT_ID = mysqli_real_escape_string($conn, $_POST['cut_id']);
+        $CUTGROUP_ID = mysqli_real_escape_string($conn, $_POST['cutgroup_id']);
         $COOLING_ID = mysqli_real_escape_string($conn, $_POST['cooling_id']);
 
         if($_POST['date_start'] != ''){
@@ -71,6 +70,10 @@
             }
         }
 
+        if($INVOICE_ID != 0){
+            $invoiceQueryPiece = " && pickerSheets.id IN ($INVOICE_ID)";
+        }
+
         if($PALLET_ID != 0){
             $picksheet_ids = array();
 
@@ -93,35 +96,36 @@
         }
 
         if($SPECIES_ID != 0){
-            $cuts_array = array();
             
-            if($CUT_ID != 0){
-                array_push($cuts_array, $CUT_ID);
-            }else{ // no cut was posted in the form, get all cuts for the posted species_id
-                $cutsResult = getCutsFor($SPECIES_ID);
-                while($cut = mysqli_fetch_array($cutsResult)){ array_push($cuts_array, $cut['id']); }
-            }
+            if($CUTGROUP_ID != 0){
+                $ARRAY_CUTS = cutsFromCutGroup($SPECIES_ID, $CUTGROUP_ID);
+                $cut_ids = implode(',', $ARRAY_CUTS);
+            }else{
+                $cut_ids = array();
+                $cuts = getCutsFor($SPECIES_ID);
+                while($cut = mysqli_fetch_array($cuts)){ array_push($cut_ids, $cut['id']); }
 
-            $cut_ids = implode(',', $cuts_array);
-            
+                $cut_ids = implode(',', $cut_ids);
+            }
+                        
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id";
         }else{
 
             $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed=1 $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id LIMIT $toSkip, $limit";
+                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
                         
         }
 
     }
 ?>
-<?php if($toSkip == 0){ ?>
+
 <tr>
     <th align="left">SALESMAN</th>
     <th align="left">DATE</th>
@@ -143,19 +147,9 @@
     <th align="left">Sell</th>
     <th align="left">Profit</th>
 </tr>
-<?php } ?>
+
 <?php
     $searchResults = mysqli_query($conn, $searchQueryString);
-
-    $count = mysqli_num_rows($searchResults);
-    $newSkipCount = ($toSkip + $count);
-
-    if($count == $limit){
-        $moreRowsAvailable = 1;
-    }else{
-        $moreRowsAvailable = 0;
-    }
-
     
     while($invoice = mysqli_fetch_array($searchResults)){
     
@@ -273,10 +267,3 @@
     <td><div class="totalSellValue" style="font-size:13px;"></div></td>
     <td><div class="totalProfitValue" style="font-size:13px;"></div></td>
 </tr>
-<script>
-    <?php if($toSkip != 0){ ?>
-        $('#resultsTable').find('tr.totals').first().remove();
-    <?php } ?>
-    $('#toSkipCount').val(<?php echo $newSkipCount; ?>);
-    $('#moreRowsAvailable').val(<?php echo $moreRowsAvailable; ?>);
-</script>

@@ -63,107 +63,22 @@
                 <th align="right">Outstanding</th>
             </tr>
         </thead>
-        <tbody>
-	<?php   
-            $customer_id = $customer['id'];
-
-            if($_GET['date_from'] != '' && $_GET['date_to'] != ''){
-
-                $date_from = $_GET['date_from'];
-                $date_to = $_GET['date_to'];
-                
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
-            }else{
-                $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC");
-            }
-            
-            $totalPrice = 0.00;
-            $totalPaid = 0.00;
-            $totalCredited = 0.00;
-            $totalOutstanding = 0.00;
-
-            $i = 0;
-			while($picksheet = mysqli_fetch_array($customerPicksheets)){
-                $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
-                $this_price = (float) invoiceTotal($picksheet['id']);
-                $totalPrice += $this_price;
-
-                $date = str_replace('/', '-', $picksheet['date']);
-                $date = date('d/m/Y', strtotime($date));
-
-                $totalPaid += (float) $picksheet['paid'];
-                $invoicePaid = false;
-                $epsilon = 0.00001;
-
-                if(($this_price - $picksheet['paid']) <= $epsilon){
-                    $invoicePaid = true;
-                    $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
-                }else{
-                    $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
-                }
-                
-                $totalOutstanding += $currentOutstanding;
-
-			?>
-			<tr class="<?php  if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
-				<td data-order="<?php echo $picksheet['id']; ?>"><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
-                    <?php
-                        $hasReturns = doesInvoiceHaveReturns($picksheet['id']);
-                        $hasCreditNote = doesInvoiceHaveCreditNote($picksheet['id']);
-                        
-                        if(!$hasCreditNote){
-                            if($hasReturns){
-                                ?><div class="soa_cr_label">CR</div><?php
-                            }
-                        }
-                    
-                    ?> 
-                </td>
-                <?php if(!$invoicePaid) { ?>
-                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
-				<?php }else{ ?>
-                    <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
-                <?php }?>
-
-                <?php
-                    $estimated_delivery_date = strtotime($picksheet['estimated_delivery_date']);
-                    $sortableDueDateFormat = date('d-m-Y',$estimated_delivery_date);
-                ?>
-                <td data-sort="<?php echo $sortableDueDateFormat; ?>">
-                    <?php
-                        echo $picksheet['estimated_delivery_date'];
-
-                        if (strtotime($picksheet['estimated_delivery_date']) < time()) {
-                            ?><div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div><?php
-                        }
-                    ?>
-                 </td>
-
-                
-                 <?php
-                    $sortableDateFormat = date('d-m-Y',$date);
-
-                    $totalCredited += totalValueCreditedOnInvoiceID($picksheet['id']);
-                ?>
-                <td data-sort="<?php echo $sortableDateFormat; ?>" width="100"><?php echo $date; ?></td>
-                <td align="right" width="100"><?php if($this_price != 0) { echo '£' . number_format($this_price,2,".",","); } ?></td>
-                <td align="right" width="100"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
-                <td align="right" style="color:red;"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
-                <td align="right" width="100" <?php if($currentOutstanding < 0) { echo 'style="color:red;"'; } ?> ><?php if(number_format($currentOutstanding) != 0){ echo '£' . number_format($currentOutstanding, 2, ".", ","); } ?></td>
-			</tr>
-			<?php
-                $i++;
-			}
-	        ?>
-            </tbody>
+        <tbody id="dataResults">
+	 
+        </tbody>
 	</table>
+    <div class="loadMore" style="display:none;" onclick="loadMoreData()">Load More</div>
+    <div class="loadingContainer">
+        <img src="img/loading.gif" alt="">
+    </div>
+
     <table class="table" width="100%">
         <tr class="last">
             <td align="right">Total:</td> 
-            <td align="right" width="120">£<?php echo number_format($totalPrice, 2, ".", ","); ?></td> 
-            <td align="right" width="120">£<?php echo number_format($totalPaid, 2, ".", ","); ?></td> 
-            <td align="right" width="120" style="color:red;">£<?php echo number_format($totalCredited, 2, ".", ","); ?></td>
-            <td align="right" width="120">£<?php echo number_format($totalOutstanding, 2, ".", ","); ?></td>
+            <td align="right" width="120" class="total_digit_value"></td> 
+            <td align="right" width="120" class="total_digit_paid"></td> 
+            <td align="right" width="120" class="total_digit_credit" style="color:red;"></td>
+            <td align="right" width="120" class="total_digit_outstanding"></td>
         </tr>
     </table>
     <?php
@@ -174,13 +89,81 @@
 <div class="clearfix"></div>
 <script type="text/javascript"> 
 
+    var toSkip = 0;
+    var customer_id = <?php echo $_GET['id']; ?>;
+    var date_from = '<?php echo $_GET['date_from']; ?>';
+    var date_to = '<?php echo $_GET['date_to']; ?>';
+
+
     $(document).ready( function () {
-        $('#soaTable').DataTable( {
-            "pageLength": 30,
-            "order": [[ 0, "ASC" ]]
-        });
+        getData();
     });
 
+    function loadMoreData(){
+        $('.loadingContainer').show();
+        $('.loadMore').hide();
+        toSkip += 50;
+
+        getData();
+    }
+
+    function getData(){
+        $.post("/ajax/customer_soa_results.php",
+        {
+            toSkip: toSkip,
+            customer_id: customer_id,
+            date_from: date_from,
+            date_to: date_to
+        },
+        function(data, status){
+            $('#soaTable').append(data);
+            $('.loadMore').show();
+            $('.loadingContainer').hide();
+
+            let nf = new Intl.NumberFormat('en-GB');
+
+            var total_digit_value = 0;
+            var total_digit_paid = 0;
+            var total_digit_credit = 0;
+            var total_digit_outstanding = 0;
+
+            //  Total Value Column
+            $('.digit_value').each(function(index) {
+                total_digit_value += parseFloat($(this).attr('value'));
+            });
+
+            total_digit_value = nf.format(total_digit_value);
+            $('.total_digit_value').text('£' + total_digit_value);
+
+
+            //  Total Paid Column
+            $('.digit_paid').each(function(index) {
+                total_digit_paid += parseFloat($(this).attr('value'));
+            });
+
+            total_digit_paid = nf.format(total_digit_paid);
+            $('.total_digit_paid').text('£' + total_digit_paid);
+
+            //  Total Credit Column
+            $('.digit_credit').each(function(index) {
+                total_digit_credit += parseFloat($(this).attr('value'));
+            });
+
+            total_digit_credit = nf.format(total_digit_credit);
+            $('.total_digit_credit').text('£' + total_digit_credit);
+
+
+            //  Total Outstanding Column
+            $('.digit_outstanding').each(function(index) {
+                total_digit_outstanding += parseFloat($(this).attr('value'));
+            });
+
+            total_digit_outstanding = nf.format(total_digit_outstanding);
+            $('.total_digit_outstanding').text('£' + total_digit_outstanding);
+
+        });
+    }
+    
     function beforePrint(){
         $('.printhide').hide();
         $('#soaTable').DataTable().page.len(-1).draw();
@@ -191,16 +174,28 @@
         $('.printhide').show();
         $('#soaTable').DataTable().page.len(30).draw();
         $('.container').css('width', '1024px');
-
     }
 </script>
 
 <style type="text/css">
+    .loadingContainer{
+        width: 100%;
+        text-align: center;
+        margin: 10px 0px;
+    }
 
-    .dataTables_length{ display:none; }
-    #soaTable_filter{ display:none; }
+    .loadMore{
+        text-align: center;
+        padding: 15px 20px;
+        cursor: pointer;
+        margin-top: 7px;
+        font-weight: bold;
+    }
+
+    .loadMore:hover{
+        background:#f7f7f7;
+    }
     
-
     .mp{
         float: right;
         margin-bottom: 10px;
