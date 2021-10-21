@@ -96,7 +96,13 @@
 
 
     $(document).ready( function () {
+        $('#soaTable').DataTable( {
+            "pageLength": -1,
+            "order": [[ 0, "ASC" ]]
+        });
         getData();
+
+       
     });
 
     function loadMoreData(){
@@ -116,7 +122,13 @@
             date_to: date_to
         },
         function(data, status){
-            $('#soaTable').append(data);
+            $('#soaTable').DataTable().destroy();
+            $('#soaTable tbody').append(data);
+            $('#soaTable').DataTable({
+                "pageLength": -1,
+                "order": [[ 0, "ASC" ]]
+            }).draw();
+
             $('.loadMore').show();
             $('.loadingContainer').hide();
 
@@ -160,19 +172,18 @@
 
             total_digit_outstanding = nf.format(total_digit_outstanding);
             $('.total_digit_outstanding').text('£' + total_digit_outstanding);
-
-        });
+ 
+            
+         });
     }
     
     function beforePrint(){
         $('.printhide').hide();
-        $('#soaTable').DataTable().page.len(-1).draw();
         $('.container').css('width', '100%');
     }
 
     function printCompleted(){
         $('.printhide').show();
-        $('#soaTable').DataTable().page.len(30).draw();
         $('.container').css('width', '1024px');
     }
 </script>
@@ -240,4 +251,9 @@
     .searchbtn{
         height:32px;
     }
+
+    .dataTables_length,
+    .dataTables_info,
+    .dataTables_paginate,
+    #soaTable_filter{ display:none; }
 </style>
