@@ -146,6 +146,14 @@
                 $user_id = $user['id'];
                 $total_outstanding_user = 0;
                 $total_paid_user = 0;
+
+                $myCustomersResult = mysqli_query($conn, "SELECT id FROM `customers` WHERE default_salesman_id='$user_id'");
+
+                $customer_ids = [];
+                while($customer = mysqli_fetch_array($myCustomersResult)){ array_push($customer_ids, $customer['id']); }
+                $customer_ids = implode(',', $customer_ids);
+
+
             ?>
             <table width="100%" border="1" style="margin-bottom:10px;">
             <tr>
@@ -166,7 +174,9 @@
                         </tr>
                         
                             <?php
-                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && user_from_id='$user_id' $dateQueryPiece GROUP BY customer_id");
+
+                                
+                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && customer_id IN ($customer_ids) $dateQueryPiece GROUP BY customer_id");
                                 
                                 $i=0;
                                 while($picksheet = mysqli_fetch_array($picksheetsResult)){
