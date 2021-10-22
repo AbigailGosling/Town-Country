@@ -152,7 +152,6 @@
     $searchResults = mysqli_query($conn, $searchQueryString);
     
     while($invoice = mysqli_fetch_array($searchResults)){
-    
         $row_intake_id = intakeIDfromPalletID($invoice['pallet_id']);
     
         if($INTAKE_ID != ''){
@@ -179,31 +178,31 @@
             $total_product_cost = $invoice['product_cost'] * $weight_total;
             $total_product_sell = $invoice['picker_price'] * $weight_total;
         }
-        
+        $date_completed = $invoice['date_completed'];
+        $date_completed = str_replace('/', '-', $date_completed);
+        $cell_date_completed = date('d/m/Y', strtotime($date_completed));
 
-
+        $cell_username = getUsername($invoice['user_from_id']);
+        $cell_customer_name = customerName($invoice['customer_id']);
+        $cell_nationality = getNationality($invoice['nationality_id']);
+        $cell_temp = getTemp($invoice['cooling_id']);
+        $cell_cutgroup = getCutGroupNameFromCut($invoice['cut_id']);
+        $cell_product = getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']);
+        $cell_brand = getBrand($invoice['brand_id']);
 
         ?>
         <tr class="result">
-            <td><?php echo getUsername($invoice['user_from_id']); ?></td>
-            <td>
-                <?php
-                    $date_completed = $invoice['date_completed'];
-
-                    $date_completed = str_replace('/', '-', $date_completed);
-                    echo date('d/m/Y', strtotime($date_completed));
-                ?>
-            </td>
+            <td><?php echo $cell_username ?></td>
+            <td><?php echo $cell_date_completed; ?></td>
             <td><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
-            <td><?php echo customerName($invoice['customer_id']); ?> </td>
-            
+            <td><?php echo $cell_customer_name; ?> </td>
             <td><?php echo $row_intake_id; ?></td>
             <td><?php echo $invoice['pallet_id']; ?></td>
-            <td><?php echo getNationality($invoice['nationality_id']); ?></td>
-            <td><?php echo getTemp($invoice['cooling_id']); ?></td>
-            <td><?php echo getCutGroupNameFromCut($invoice['cut_id']); ?></td>
-            <td><?php echo getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']); ?></td>
-            <td><?php echo getBrand($invoice['brand_id']); ?></td>
+            <td><?php echo $cell_nationality ?></td>
+            <td><?php echo $cell_temp; ?></td>
+            <td><?php echo $cell_cutgroup; ?></td>
+            <td><?php echo $cell_product; ?></td>
+            <td><?php echo $cell_brand; ?></td>
             <td>
                 <input type="hidden" class="quantityValue" value="<?php echo $quantity; ?>">
                 <?php echo $quantity; ?>
@@ -225,27 +224,116 @@
             <td>
                 <?php
                     $cost_formatted = number_format($total_product_cost, 2);
-                    
                     $cost = str_replace(",","",$cost_formatted);
                 ?>
-
                 <input type="hidden" class="costValue" value="<?php echo $cost; ?>">
                 £<?php echo $cost_formatted; ?>
             </td>
             <td>
                 <?php
                     $sell_formatted = number_format($total_product_sell, 2);
-                    
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
-
                 <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
                 £<?php echo $sell_formatted; ?></td>
             <td>
                 £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
             </td>
         </tr>
+
         <?php
+            $credit_value = 0;
+            $credit_qty = 0;
+
+            $invoice_id = $invoice['pick_id'];
+            
+            $payment_ids = [];
+            $credit_payments = mysqli_query($conn, "SELECT * FROM `invoice_payments` WHERE invoice_id='$invoice_id' && payment_method='CREDIT_NOTE'");
+            while($credit_payment = mysqli_fetch_array($credit_payments)){ array_push($payment_ids, $credit_payment['id']); }
+            $payment_ids = implode(',', $payment_ids);
+
+            
+            $credit_items = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
+            while($credit_item = mysqli_fetch_array($credit_items)){
+                $returned_product_id = $credit_item['product_id'];
+
+
+                $real_cut_id = $invoice['cut_id'];
+
+                $returned_product_result =  mysqli_query($conn, "SELECT * FROM `product` WHERE id='$returned_product_id' && cut_id = '$real_cut_id'");
+
+                $returned_product_count = mysqli_num_rows($returned_product_result);
+                if($returned_product_count > 0){
+                    $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$returned_product_id'");
+                    
+                    while($creditItem = mysqli_fetch_array($creditNoteCheck)){
+                        $weight = weightFromProductIDArray([$returned_product_id]);
+                        $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
+                        
+                        $credit_qty += $creditItem['quantity'];
+                    }
+                }
+            }
+            
+            // cost = original product total
+            // sell = creditnote total
+            // profit = credit - cost
+
+            // $product_id = $invoice['product_id'];
+            // $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$product_id'");
+            
+            // while($creditItem = mysqli_fetch_array($creditNoteCheck)){
+            //     $credit_value += ((float) $creditItem['price'] * $creditItem['quantity']);
+            //     $credit_qty += $creditItem['quantity'];
+            // }
+
+            if($credit_qty > 0){
+        ?>
+        <tr class="result" style="height:28px;">
+            <td style="color:red;"><?php echo $cell_username ?></td>
+            <td style="color:red;"><?php echo $cell_date_completed; ?></td>
+            <td style="color:red;"><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
+            <td style="color:red;"><?php echo $cell_customer_name; ?> </td>
+            <td style="color:red;"><?php echo $row_intake_id; ?></td>
+            <td style="color:red;"><?php echo $invoice['pallet_id']; ?></td>
+            <td style="color:red;"><?php echo $cell_nationality ?></td>
+            <td style="color:red;"><?php echo $cell_temp; ?></td>
+            <td style="color:red;"><?php echo $cell_cutgroup; ?></td>
+            <td style="color:red;"><?php echo $cell_product; ?></td>
+            <td style="color:red;"><?php echo $cell_brand; ?></td>
+            <td style="color:red;" colspan="1" style="color:red;"><?php echo $credit_qty; ?></td>
+            <td style="color:red;">
+                <?php 
+                    if($invoice['unit'] == 'C'){
+                        echo 'Cases';
+                    }else if($invoice['unit'] == 'P'){
+                        echo 'GT';
+                    }else{
+                        echo $invoice['unit'];
+                    }
+                ?>
+            </td>
+            <td style="color:red;"><?php echo $weight_total; ?> kg</td>
+            <td style="color:red;">
+                <?php
+                    $sell_formatted = number_format($total_product_sell, 2);
+                    $sell = str_replace(",","",$sell_formatted);
+                ?>
+                £<?php echo $sell_formatted; ?></td>
+            </td>
+            <td style="color:red;">
+                £<?php echo number_format($credit_value, 2); ?>
+            </td>
+            <td style="color:red;">
+            <?php
+                $profit = $credit_value - $sell;
+            ?>
+                <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
+                £<?php echo number_format($profit, 2); ?>
+            </td>
+        </tr>
+        <?php
+            }
     }
 ?>
   <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">

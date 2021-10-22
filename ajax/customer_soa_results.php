@@ -21,6 +21,9 @@
     $totalCredited = 0.00;
     $totalOutstanding = 0.00;
 
+    $count = mysqli_num_rows($customerPicksheets);
+
+
     $i = 0;
     while($picksheet = mysqli_fetch_array($customerPicksheets)){
         $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
@@ -59,9 +62,9 @@
             ?> 
         </td>
         <?php if(!$invoicePaid) { ?>
-            <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
+            <td><a href="/single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
         <?php }else{ ?>
-            <td><a href="/single_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
+            <td><a href="/single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
         <?php }?>
 
         <?php
@@ -92,5 +95,15 @@
     </tr>
     <?php
         $i++;
+    }
+
+    if($count == 0){
+    ?>
+    <script>
+        setTimeout(function(){
+            $('.loadMore').remove();
+        }, 1000);
+    </script>
+    <?php
     }
     ?>

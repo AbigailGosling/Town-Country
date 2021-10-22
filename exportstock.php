@@ -168,10 +168,13 @@
             array_push($single_row, 'PPC');
         }else{
             if($productsRow['akg'] != ''){
-                array_push($single_row, totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']) . 'kg');
+                $weight_value = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
+                array_push($single_row, $weight_value . 'kg');
             }else{
-                array_push($single_row, totalWeightOfProduct($product2_productids) . 'kg');
+                $weight_value = totalWeightOfProduct($product2_productids);
+                array_push($single_row, $weight_value . 'kg');
             }
+            $TOTAL_WEIGHT += $weight_value;
         }
 
         $TOTAL_COST += (float)$productsRow['cost'];
@@ -194,7 +197,7 @@
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');
-    array_push($final_row, '');
+    array_push($final_row, number_format($TOTAL_WEIGHT, 3, '.', ',') . 'kg');
     array_push($final_row, $TOTAL_COST);
     array_push($final_row, $TOTAL_PRICE);
     fputcsv($output, $final_row);
