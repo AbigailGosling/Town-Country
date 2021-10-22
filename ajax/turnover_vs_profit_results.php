@@ -325,7 +325,11 @@
                 £<?php echo number_format($credit_value, 2); ?>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($credit_value - $sell, 2); ?>
+            <?php
+                $profit = $credit_value - $sell;
+            ?>
+                <input type="hidden" class="costValue" value="<?php echo $profit; ?>">
+                £<?php echo number_format($profit, 2); ?>
             </td>
         </tr>
         <?php
