@@ -185,7 +185,8 @@
                                     $num_of_sales = countCustomerSalesBySalesman($picksheet['customer_id'], $user_id);
                                     
                                     $total_outstanding_picksheet = getOutstandingPicksheetTotal($picksheet['id']);
-                                    $total_paid_picksheet = getTotalPaidByCustomerIDForUserID($picksheet['customer_id'], $user['id']);
+                                    $total_paid_picksheet = getTotalPaidByCustomerIDForUserWithinDates($picksheet['customer_id'], $user['id'], $date_start, $date_end);
+                                    
 
                                     $total_outstanding_user += $total_outstanding_picksheet;
                                     $total_paid_user += $total_paid_picksheet;
