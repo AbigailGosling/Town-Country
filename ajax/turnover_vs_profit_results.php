@@ -328,7 +328,7 @@
             <?php
                 $profit = $credit_value - $sell;
             ?>
-                <input type="hidden" class="costValue" value="<?php echo $profit; ?>">
+                <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>
             </td>
         </tr>
