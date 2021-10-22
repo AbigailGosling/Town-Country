@@ -267,12 +267,17 @@
                     $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$returned_product_id'");
                     
                     while($creditItem = mysqli_fetch_array($creditNoteCheck)){
-                        $credit_value += ((float) $creditItem['price'] * $creditItem['quantity']);
+                        $weight = weightFromProductIDArray([$returned_product_id]);
+                        $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
+                        
                         $credit_qty += $creditItem['quantity'];
                     }
                 }
             }
             
+            // cost = original product total
+            // sell = creditnote total
+            // profit = credit - cost
 
             // $product_id = $invoice['product_id'];
             // $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$product_id'");
@@ -320,7 +325,7 @@
                 £<?php echo number_format($credit_value, 2); ?>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
+                £<?php echo number_format($credit_value - $cost, 2); ?>
             </td>
         </tr>
         <?php
