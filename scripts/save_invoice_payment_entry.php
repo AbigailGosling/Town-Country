@@ -10,7 +10,7 @@
     $paymentMethod = $_POST['payment_method'];
     
     
-    if(empty($customerID) || empty($invoiceID) || $amount == '' || $amount < 0 || !in_array($paymentMethod, PAYMENT_METHODS) || !$_SESSION['USER']){
+    if(empty($customerID) || empty($invoiceID) || ($amount == '' && $paymentMethod != 'CREDIT_NOTE') || ($amount < 0 && $paymentMethod != 'CREDIT_NOTE') || !in_array($paymentMethod, PAYMENT_METHODS) || !$_SESSION['USER']){
         
         header('Location: /single_invoice_payments.php?customer_id=' .$customerID . '&invoice_id=' . $invoiceID);
         die();
