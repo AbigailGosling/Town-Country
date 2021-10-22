@@ -105,7 +105,6 @@ if (!empty($paymentID)) {
     </table>
 </div>
 
-<?php if($runningBalance != 0 || !empty($paymentID)){ ?>
 <div class="container container--pt">
     <div style="background:#f2f2f2;padding:10px;">
 <h2 style="font-size:22px;padding-bottom:10px;">Original Invoice</h2>
@@ -430,12 +429,11 @@ if (!empty($paymentID)) {
             <div class="col d-flex justify-content-start">
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
                 <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
-                <input class="btn btn-success" type="submit" value="SUBMIT" />
+                <input class="btn btn-success" type="submit" value="SUBMIT" />  
             </div>
         </div>
     </form>    
 </div>
-<?php } ?>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
@@ -539,7 +537,7 @@ if (!empty($paymentID)) {
         var amount = parseFloat($('#amount').val());
 
 
-        if (!isNumber(amount)) {
+        if (!isNumber(amount) && $('#payment_method').val() != 'CREDIT_NOTE') {
             isValid = false;
             $('#amount').addClass('error');
         }
