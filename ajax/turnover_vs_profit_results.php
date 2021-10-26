@@ -322,7 +322,7 @@
                 £<?php echo $sell_formatted; ?></td>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($sell, 2); ?>
+                £<?php echo number_format($total_product_cost, 2); ?>
             </td>
             <td style="color:red;">
             <?php
