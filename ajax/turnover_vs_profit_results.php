@@ -326,7 +326,7 @@
             </td>
             <td style="color:red;">
             <?php
-                $profit = $credit_value - $sell;
+                $profit = $total_product_sell - $total_product_cost;
             ?>
                 <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>
