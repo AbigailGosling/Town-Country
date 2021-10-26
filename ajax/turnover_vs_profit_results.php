@@ -322,7 +322,7 @@
                 £<?php echo $sell_formatted; ?></td>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($credit_value, 2); ?>
+                £<?php echo number_format($sell, 2); ?>
             </td>
             <td style="color:red;">
             <?php
