@@ -95,8 +95,8 @@ include('includes/frontHeader.php');
     var date_from = '<?php echo $_GET['date_from']; ?>';
     var date_to = '<?php echo $_GET['date_to']; ?>';
     var table = null;
-    var column = 0;
-    var order = 'ASC';
+    var column = 3;
+    var order = 'DESC';
 
     $(document).ready(function() {
         table = $('#soaTable').DataTable({
@@ -121,9 +121,15 @@ include('includes/frontHeader.php');
         });
 
         $('#soaTable').on('order.dt', function (e) {
-            column = 0;
-            order = 'ASC';
-            console.log(column);
+
+            var order = table.order();
+
+            if(order.length > 1 && order[0][0] != 2 && order[0][0] != 3){
+                column = 0;
+                order = 'ASC';
+                console.log(column);
+            }
+           
         })
 
     });
