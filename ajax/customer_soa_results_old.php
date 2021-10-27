@@ -3,20 +3,7 @@
 
     $limit = 50;
     $toSkip = $_POST['toSkip'] ?? 0;
-    $column = null;
-    $order = $_POST['order'] ?? null;
-    switch($_POST['column']){
-        case 2:
-            $column = "STR_TO_DATE(pickerSheets.estimated_delivery_date, '%d/%m/%Y')";
-            break;
-        case 3:
-            $column = "pickerSheets.date";
-            break;
 
-    }
-
-    
-    
     $customer_id = $_POST['customer_id'];
 
     if($_POST['date_from'] != '' && $_POST['date_to'] != ''){
@@ -24,9 +11,9 @@
         $date_from = $_POST['date_from'];
         $date_to = $_POST['date_to'];
         
-        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id ORDER BY " . ($column ? $column : 'pickerSheets.id')."  " . (($column && $order) ? $order : 'ASC')." LIMIT $toSkip, $limit");
+        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id AND pickerSheets.date BETWEEN '$date_from' AND '$date_to') GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC LIMIT $toSkip, $limit");
     }else{
-        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY " . ($column ? $column : 'pickerSheets.id')." " . (($column && $order) ? $order : 'ASC')." LIMIT $toSkip, $limit");
+        $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC LIMIT $toSkip, $limit");
     }
     
     $totalPrice = 0.00;
@@ -88,9 +75,8 @@
             <?php
                 echo $picksheet['estimated_delivery_date'];
 
-                if (strtotime($picksheet['estimated_delivery_date']) < time()) { 
-                    echo '<div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div>';
-                    
+                if (strtotime($picksheet['estimated_delivery_date']) < time()) {
+                    ?><div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div><?php
                 }
             ?>
             </td>
