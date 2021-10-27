@@ -326,6 +326,11 @@
 						}
 
 						$weight = weightFromProductIDArray([$productID]);
+						if($product['unit'] == 'PPC'){
+							$sub_tot = number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '');
+						}else{
+							$sub_tot = number_format((float)$payment['price'] * $weight, 2, '.', '');
+						}
 
 						$html .='
 						<tr class="productsRow">
@@ -340,11 +345,11 @@
 						</td>
 						<td>'. $weight .'kg</td>
 						<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
-						<td>£'. number_format((float)$payment['price'] * $weight, 2, '.', '') .'</td>
+						<td>£'. $sub_tot .'</td>
 						</tr>';
 								
 					
-						$totalPrice += number_format((float)$payment['price'] * $weight, 2, '.', '');					
+						$totalPrice += $sub_tot;					
 					}
   				}
 
