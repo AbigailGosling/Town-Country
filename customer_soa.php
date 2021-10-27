@@ -59,8 +59,8 @@ include('includes/frontHeader.php');
                 <tr class="heading">
                     <th align="left">Invoice ID</th>
                     <th align="left">Add Payment</th>
-                    <th align="left" data-orderable="false">Due Date <div><i class="fa fa-sort-asc" aria-hidden="true" data-column="2"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="2"></i></div></th>
-                    <th align="left" data-orderable="false">Date <div><i class="fa fa-sort-asc" aria-hidden="true" data-column="3"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="3"></i></div></th>
+                    <th align="left" data-orderable="false" >Due Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="2"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="2"></i></div></th>
+                    <th align="left" data-orderable="false" >Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="3"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="3"></i></div></th>
                     <th align="right">Value</th>
                     <th align="right">Paid</th>
                     <th align="right">Credit</th>
@@ -295,5 +295,10 @@ include('includes/frontHeader.php');
     .dataTables_paginate,
     #soaTable_filter {
         display: none;
+    }
+
+    .ingrid{
+        display: inline-grid;
+        float: right;
     }
 </style>
