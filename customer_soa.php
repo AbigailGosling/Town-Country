@@ -120,17 +120,7 @@ include('includes/frontHeader.php');
             getData(false);
         });
 
-        $('#soaTable').on('order.dt', function (e) {
-
-            var order = table.order();
-
-            if(order.length > 1 && order[0][0] != 2 && order[0][0] != 3){
-                column = 0;
-                order = 'ASC';
-                console.log(column);
-            }
-           
-        })
+        
 
     });
 
