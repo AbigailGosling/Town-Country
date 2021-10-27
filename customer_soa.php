@@ -51,6 +51,9 @@ include('includes/frontHeader.php');
             ?>
         </h2>
         <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
+        <div class="loadingContainer">
+            <img src="img/loading.gif" alt="">
+        </div>
         <table id="soaTable" class="table" width="100%">
             <thead>
                 <tr class="heading">
@@ -69,9 +72,7 @@ include('includes/frontHeader.php');
             </tbody>
         </table>
         <div class="loadMore" style="display:none;" onclick="loadMoreData()">Load More</div>
-        <div class="loadingContainer">
-            <img src="img/loading.gif" alt="">
-        </div>
+        
 
         <table class="table" width="100%">
             <tr class="last">
