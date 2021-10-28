@@ -505,12 +505,12 @@ function checkStock(){
 			$('#address').html(data);
 			$('.rating').fadeIn();
 			
-			$('#addressline1').prop('disabled', true);
-			$('#addressline2').prop('disabled', true);
-			$('#addressline3').prop('disabled', true);
-			$('#addressline4').prop('disabled', true);
-			$('#addresspostcode').prop('disabled', true);
-			$('#deliverynumber').prop('disabled', true);
+			$('#addressline1').prop('readonly', true);
+			$('#addressline2').prop('readonly', true);
+			$('#addressline3').prop('readonly', true);
+			$('#addressline4').prop('readonly', true);
+			$('#addresspostcode').prop('readonly', true);
+			$('#deliverynumber').prop('readonly', true);
 			
 		});
 	}
