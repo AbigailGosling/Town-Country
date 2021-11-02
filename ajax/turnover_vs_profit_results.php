@@ -316,7 +316,7 @@
             <td style="color:red;"><?php echo $weight_total; ?> kg</td>
             <td style="color:red;">
                 <?php
-                    $sell_formatted = number_format($total_product_sell, 2);
+                    $sell_formatted = number_format($credit_value, 2);
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
                 £<?php echo $sell_formatted; ?></td>
