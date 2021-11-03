@@ -316,17 +316,18 @@
             <td style="color:red;"><?php echo $weight_total; ?> kg</td>
             <td style="color:red;">
                 <?php
-                    $sell_formatted = number_format($total_product_sell, 2);
+                    $sell_formatted = number_format($credit_value, 2);
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
                 £<?php echo $sell_formatted; ?></td>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($total_product_cost, 2); ?>
+                £<?php echo number_format($credit_value, 2); ?>
             </td>
+            
             <td style="color:red;">
             <?php
-                $profit = $total_product_cost - $total_product_sell;
+                $profit = $credit_value - $sell;
             ?>
                 <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>
