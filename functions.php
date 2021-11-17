@@ -7,6 +7,7 @@
 	require('config.php');
 
 	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
+	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
 
 	error_reporting(0);
@@ -492,17 +493,18 @@
 	# Login form
 	# Just checking for a email/pass match. Passwords are sha1 encrypted
 	function check_login($email, $password){
-		global $conn;
+		global $mysqli;
+		$email = $mysqli->real_escape_string($email);
+		$password = sha1($mysqli->real_escape_string($password));
+
+		$stmt = $mysqli->prepare("SELECT * FROM `users` WHERE `email` = ? && `password` = ? LIMIT 1");
+		$stmt->bind_param('ss', $email, $password);
 		
-		$email = mysqli_real_escape_string($conn, $_POST['email']);
-		$password = sha1(mysqli_real_escape_string($conn, $_POST['password']));
+		$stmt->execute();
 		
-		$x = "SELECT * FROM `users` WHERE email = '$email' && password = '$password' LIMIT 1";
-		$y = mysqli_query($conn, $x);
-		
-		$row = mysqli_fetch_array($y);
-		$count = mysqli_num_rows($y);
-							
+		$result = $stmt->get_result();
+		$count = $result->num_rows;
+		$row = $result->fetch_assoc();
 		if($count != 0){
 			
 			$_SESSION['USER'] = $row['id'];
