@@ -169,7 +169,7 @@ include('includes/frontHeader.php');
                 $('.loadMore').show();
                 $('.loadingContainer').hide();
 
-                let nf = new Intl.NumberFormat('en-GB');
+                let nf = new Intl.NumberFormat('en-GB',{ style: 'currency', currency: 'GBP'});
 
                 var total_digit_value = 0;
                 var total_digit_paid = 0;
@@ -182,7 +182,7 @@ include('includes/frontHeader.php');
                 });
 
                 total_digit_value = nf.format(total_digit_value);
-                $('.total_digit_value').text('£' + total_digit_value);
+                $('.total_digit_value').text(total_digit_value);
 
 
                 //  Total Paid Column
@@ -191,7 +191,7 @@ include('includes/frontHeader.php');
                 });
 
                 total_digit_paid = nf.format(total_digit_paid);
-                $('.total_digit_paid').text('£' + total_digit_paid);
+                $('.total_digit_paid').text(total_digit_paid);
 
                 //  Total Credit Column
                 $('.digit_credit').each(function(index) {
@@ -199,16 +199,16 @@ include('includes/frontHeader.php');
                 });
 
                 total_digit_credit = nf.format(total_digit_credit);
-                $('.total_digit_credit').text('£' + total_digit_credit);
+                $('.total_digit_credit').text(total_digit_credit);
 
 
                 //  Total Outstanding Column
                 $('.digit_outstanding').each(function(index) {
                     total_digit_outstanding += parseFloat($(this).attr('value'));
                 });
-
+                
                 total_digit_outstanding = nf.format(total_digit_outstanding);
-                $('.total_digit_outstanding').text('£' + total_digit_outstanding);
+                $('.total_digit_outstanding').text(total_digit_outstanding);
 
 
             });
