@@ -108,14 +108,14 @@
                 $cut_ids = implode(',', $cut_ids);
             }
                         
-            $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
                         WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id";
         }else{
 
-            $searchQueryString = "SELECT product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
@@ -150,9 +150,13 @@
 
 <?php
     $searchResults = mysqli_query($conn, $searchQueryString);
-    
+
+    $invoice_price_store = array();
+    $quantity_store = array();
+    $weight_total_store = array();
+
     while($invoice = mysqli_fetch_array($searchResults)){
-        $row_intake_id = intakeIDfromPalletID($invoice['pallet_id']);
+        $row_intake_id = $invoice['intake_id'];
     
         if($INTAKE_ID != ''){
             if($INTAKE_ID != $row_intake_id){
@@ -165,11 +169,35 @@
                 continue;
             }
         }
+        if(array_key_exists($invoice['pick_id'],$invoice_price_store))
+        {
+            $invoice_price = $invoice_price_store[$invoice['pick_id']];
+        }
+        else
+        {
+            $invoice_price = invoiceTotal($invoice['pick_id']);
+            $invoice_price_store[$invoice['pick_id']] = $invoice_price;
+        }
 
-        $invoice_price = invoiceTotal($invoice['pick_id']);
+        if(array_key_exists($invoice['pick_id'] ."_". $invoice['product_id'],$quantity_store))
+        {
+            $quantity = $quantity_store[$invoice['pick_id'] ."_". $invoice['product_id']];
+        }
+        else
+        {
+            $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
+            $quantity_store[$invoice['pick_id'] ."_". $invoice['product_id']] = $quantity;
+        }
 
-        $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
-        $weight_total = weightValueOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
+        if(array_key_exists($invoice['pick_id'] ."_". $invoice['product_id'],$weight_total_store))
+        {
+            $weight_total = $weight_total_store[$invoice['pick_id'] ."_". $invoice['product_id']];
+        }
+        else
+        {
+            $weight_total = weightValueOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
+            $weight_total_store[$invoice['pick_id'] ."_". $invoice['product_id']] = $weight_total;
+        }
 
         if($invoice['unit'] == 'PPC'){
             $total_product_cost = $invoice['product_cost'] * $quantity;
@@ -250,31 +278,34 @@
             $payment_ids = [];
             $credit_payments = mysqli_query($conn, "SELECT * FROM `invoice_payments` WHERE invoice_id='$invoice_id' && payment_method='CREDIT_NOTE'");
             while($credit_payment = mysqli_fetch_array($credit_payments)){ array_push($payment_ids, $credit_payment['id']); }
-            $payment_ids = implode(',', $payment_ids);
+            if (count($payment_ids) > 0)
+            {
+                $payment_ids = implode(',', $payment_ids);
 
             
-            $credit_items = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
-            while($credit_item = mysqli_fetch_array($credit_items)){
-                $returned_product_id = $credit_item['product_id'];
+                $credit_items = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
+                while($credit_item = mysqli_fetch_array($credit_items)){
+                    $returned_product_id = $credit_item['product_id'];
 
 
-                $real_cut_id = $invoice['cut_id'];
+                    $real_cut_id = $invoice['cut_id'];
 
-                $returned_product_result =  mysqli_query($conn, "SELECT * FROM `product` WHERE id='$returned_product_id' && cut_id = '$real_cut_id'");
+                    $returned_product_result =  mysqli_query($conn, "SELECT * FROM `product` WHERE id='$returned_product_id' && cut_id = '$real_cut_id'");
 
-                $returned_product_count = mysqli_num_rows($returned_product_result);
-                if($returned_product_count > 0){
-                    $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$returned_product_id'");
-                    
-                    while($creditItem = mysqli_fetch_array($creditNoteCheck)){
-                        $weight = weightFromProductIDArray([$returned_product_id]);
-                        $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
+                    $returned_product_count = mysqli_num_rows($returned_product_result);
+                    if($returned_product_count > 0){
+                        $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$returned_product_id'");
                         
-                        $credit_qty += $creditItem['quantity'];
+                        while($creditItem = mysqli_fetch_array($creditNoteCheck)){
+                            $weight = weightFromProductIDArray([$returned_product_id]);
+                            $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
+                            
+                            $credit_qty += $creditItem['quantity'];
+                        }
                     }
                 }
+                
             }
-            
             // cost = original product total
             // sell = creditnote total
             // profit = credit - cost
@@ -316,18 +347,17 @@
             <td style="color:red;"><?php echo $weight_total; ?> kg</td>
             <td style="color:red;">
                 <?php
-                    $sell_formatted = number_format($credit_value, 2);
+                    $sell_formatted = number_format($total_product_sell, 2);
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
                 £<?php echo $sell_formatted; ?></td>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($credit_value, 2); ?>
+                £<?php echo number_format($total_product_cost, 2); ?>
             </td>
-            
             <td style="color:red;">
             <?php
-                $profit = $credit_value - $sell;
+                $profit = $total_product_cost - $total_product_sell;
             ?>
                 <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>

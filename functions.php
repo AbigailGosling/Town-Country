@@ -7,6 +7,7 @@
 	require('config.php');
 
 	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
+	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
 
 	error_reporting(0);
@@ -492,17 +493,18 @@
 	# Login form
 	# Just checking for a email/pass match. Passwords are sha1 encrypted
 	function check_login($email, $password){
-		global $conn;
+		global $mysqli;
+		$email = $mysqli->real_escape_string($email);
+		$password = sha1($mysqli->real_escape_string($password));
+
+		$stmt = $mysqli->prepare("SELECT * FROM `users` WHERE `email` = ? && `password` = ? LIMIT 1");
+		$stmt->bind_param('ss', $email, $password);
 		
-		$email = mysqli_real_escape_string($conn, $_POST['email']);
-		$password = sha1(mysqli_real_escape_string($conn, $_POST['password']));
+		$stmt->execute();
 		
-		$x = "SELECT * FROM `users` WHERE email = '$email' && password = '$password' LIMIT 1";
-		$y = mysqli_query($conn, $x);
-		
-		$row = mysqli_fetch_array($y);
-		$count = mysqli_num_rows($y);
-							
+		$result = $stmt->get_result();
+		$count = $result->num_rows;
+		$row = $result->fetch_assoc();
 		if($count != 0){
 			
 			$_SESSION['USER'] = $row['id'];
@@ -1572,12 +1574,7 @@
 					
 
 				$x2 = "SELECT * FROM `weights` WHERE ";
-
-				foreach($weightids as $weightid){
-					$x2 .= "product_id='$productID' && id='$weightid' || ";
-				}
-
-				$x2 = rtrim($x2," || ");
+				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
 				$y2 = mysqli_query($conn, $x2);
 				$count = mysqli_num_rows($y2);
 
@@ -1586,21 +1583,10 @@
 				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
 				$howManyY = mysqli_query($conn, $howManyX);
 				$pickerItem = mysqli_fetch_array($howManyY);
-									
-				$qBit = '';
 						
 				$kg = 0;
 						
-				foreach($weightids as $weightid){
-					$qBit .= " id = '$weightid' && product_id='$productID' || ";
-				}
-
-				$qBit = rtrim($qBit," || ");
-				
-				$xxWeight = "SELECT * FROM `weights` WHERE $qBit";
-				$yyWeight = mysqli_query($conn, $xxWeight);
-						
-				while($weightRow = mysqli_fetch_array($yyWeight)){
+				while($weightRow = mysqli_fetch_array($y2)){
 					
 					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 						$tw = $weightRow['weight_gross'];
@@ -1688,22 +1674,16 @@
 		global $conn;
 
 		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id='$pick_id'";
-        $outpalletResult2 = mysqli_query($conn, $outpalletQuery);
+        	$outpalletResult2 = mysqli_query($conn, $outpalletQuery);
     
 		$total_count = 0;
 
-    	while($outpallet = mysqli_fetch_array($outpalletResult2)){
-            $weightids = explode(',', $outpallet['weight_ids']);
+    		while($outpallet = mysqli_fetch_array($outpalletResult2)){
+            		$weightids = explode(',', $outpallet['weight_ids']);
 
-            $x2 = "SELECT * FROM `weights` WHERE ";
-
-            foreach($weightids as $weightid){
-                $x2 .= "(id=$weightid && status_id='1' && product_id=$productID)  || ";
-            }
-
-            $x2 = rtrim($x2," || ");
+            		$x2 = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).") && status_id='1' && product_id=$productID)";
  
-            $y2 = mysqli_query($conn, $x2);
+            		$y2 = mysqli_query($conn, $x2);
 	
 			$count = mysqli_num_rows($y2);
 			$total_count += $count;
@@ -1724,7 +1704,7 @@
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
             $weightids = $outpallet['weight_ids'];
 			
-			$x = "SELECT * FROM `weights` WHERE id IN ($weightids) && product_id ='$productID'";
+			$x = "SELECT * FROM `weights` WHERE id IN ($weightids) AND product_id = $productID";
 			$y = mysqli_query($conn, $x);
             
 			while($row = mysqli_fetch_array($y)){
