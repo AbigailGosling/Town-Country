@@ -4,7 +4,7 @@
 	$invoiceID = $_POST['invoiceID'];
 
     # get all returned intakes related to this invoice
-    $returnIntakeResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE delivery_note_number='$invoiceID'");
+    $returnIntakeResult = mysqli_query($conn, "SELECT * FROM `intake` WHERE delivery_note_number='$invoiceID' AND returned = 1");
 
     $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
 
@@ -197,6 +197,7 @@
         $returnedIntakeIDS = implode(',', $returnedIntakeIDS);
 
         # 
+        debug_to_console("SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN ($returnedIntakeIDS)");
         $palletsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN ($returnedIntakeIDS)");
         $palletData = mysqli_fetch_array($palletsResult);
 
@@ -286,6 +287,7 @@
                 £<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$product['price'], 2, '.', ''); ?>"></td>
                 <?php } ?>
             <td>
+                
                 <?php if($loop_count > 0){ ?>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
                 <?php } ?>
