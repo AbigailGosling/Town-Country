@@ -197,7 +197,6 @@
         $returnedIntakeIDS = implode(',', $returnedIntakeIDS);
 
         # 
-        debug_to_console("SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN ($returnedIntakeIDS)");
         $palletsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN ($returnedIntakeIDS)");
         $palletData = mysqli_fetch_array($palletsResult);
 
