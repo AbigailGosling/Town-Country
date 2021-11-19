@@ -2052,3 +2052,13 @@ textarea {
     padding: 4px;
     margin-left: 4px;
 }
+.sticky-header{
+	position: sticky; 
+	top: 0; 
+	background: #e2e2e2;
+}
+.sticky-footer{
+	position: sticky; 
+	bottom: 0; 
+	background: #e2e2e2;
+}

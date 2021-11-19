@@ -57,31 +57,31 @@ include('includes/frontHeader.php');
         <table id="soaTable" class="table" width="100%">
             <thead>
                 <tr class="heading">
-                    <th align="left">Invoice ID</th>
-                    <th align="left">Add Payment</th>
-                    <th align="left" data-orderable="false" >Due Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="2"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="2"></i></div></th>
-                    <th align="left" data-orderable="false" >Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="3"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="3"></i></div></th>
-                    <th align="right">Value</th>
-                    <th align="right">Paid</th>
-                    <th align="right">Credit</th>
-                    <th align="right">Outstanding</th>
+                    <th align="left" class="sticky-header">Invoice ID</th>
+                    <th align="left" class="sticky-header">Add Payment</th>
+                    <th align="left" data-orderable="false" class="sticky-header">Due Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="2"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="2"></i></div></th>
+                    <th align="left" data-orderable="false" class="sticky-header">Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="3"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="3"></i></div></th>
+                    <th align="right" class="sticky-header">Value</th>
+                    <th align="right" class="sticky-header">Paid</th>
+                    <th align="right" class="sticky-header">Credit</th>
+                    <th align="right" class="sticky-header">Outstanding</th>
                 </tr>
             </thead>
             <tbody id="dataResults">
 
             </tbody>
-        </table>
-        <div class="loadMore" style="display:none;" onclick="loadMoreData()">Load More</div>
-        
-
-        <table class="table" width="100%">
-            <tr class="last">
-                <td align="right">Total:</td>
-                <td align="right" width="120" class="total_digit_value"></td>
-                <td align="right" width="120" class="total_digit_paid"></td>
-                <td align="right" width="120" class="total_digit_credit" style="color:red;"></td>
-                <td align="right" width="120" class="total_digit_outstanding"></td>
-            </tr>
+            <tfoot class="last">
+                <tr>
+                    <th align="right" class="sticky-footer"></th>
+                    <th align="right" class="sticky-footer"></th>
+                    <th align="right" class="sticky-footer"></th>
+                    <th align="right" class="sticky-footer">Total:</th>
+                    <th align="right" width="120" class="total_digit_value sticky-footer"></th>
+                    <th align="right" width="120" class="total_digit_paid sticky-footer"></th>
+                    <th align="right" style="color:red;" width="120" class="total_digit_credit sticky-footer"></th>
+                    <th align="right" width="120" class="total_digit_outstanding sticky-footer"></th>
+                </tr>
+            </tfoot>
         </table>
     <?php
     }
@@ -110,110 +110,107 @@ include('includes/frontHeader.php');
             $('.loadingContainer').show();
             column = $(this).data('column');
             order = 'asc';
-            getData(false);
+            getData();
         });
 
         $('#soaTable thead .fa-sort-desc').on('click', function() {
             $('.loadingContainer').show();
             column = $(this).data('column');
             order = 'desc';
-            getData(false);
+            getData();
         });
 
         
 
     });
 
-    function loadMoreData() {
-        $('.loadingContainer').show();
-        $('.loadMore').hide();
-        toSkip += 50;
-
-        getData();
-    }
-
-    function getData(append = true) {
+    function getData() {
         $.post("/ajax/customer_soa_results.php", {
-                toSkip: toSkip,
                 customer_id: customer_id,
                 date_from: date_from,
-                date_to: date_to,
-                column: column,
-                order: order
+                date_to: date_to
             },
-            function(data, status) {
-                $('#soaTable').DataTable().destroy();
-
-                if(!append){
-                    $("#soaTable > tbody").empty();
-                }
-
-                $('#soaTable tbody').append(data);
-                
-                console.log(((column == 0) ? [[ column, order ]] : false));
-                table = $('#soaTable').DataTable({
-                    "aaSorting": [],
-                    "pageLength": -1,
-                    "columnDefs": [
-                        { "orderable": true, "targets": 0 },
-                        { "orderable": true, "targets": 1 },
-                        { "orderable": false, "targets": 2 },
-                        { "orderable": false, "targets": 3 },
-                        { "orderable": true, "targets": 4 },
-                        { "orderable": true, "targets": 5 },
-                        { "orderable": true, "targets": 6 },
-                        { "orderable": true, "targets": 7 }
-                    ]
-                }).draw();
-
-                $('.loadMore').show();
-                $('.loadingContainer').hide();
-
-                let nf = new Intl.NumberFormat('en-GB',{ style: 'currency', currency: 'GBP'});
-
-                var total_digit_value = 0;
-                var total_digit_paid = 0;
-                var total_digit_credit = 0;
-                var total_digit_outstanding = 0;
-
-                //  Total Value Column
-                $('.digit_value').each(function(index) {
-                    total_digit_value += parseFloat($(this).attr('value'));
-                });
-
-                total_digit_value = nf.format(total_digit_value);
-                $('.total_digit_value').text(total_digit_value);
-
-
-                //  Total Paid Column
-                $('.digit_paid').each(function(index) {
-                    total_digit_paid += parseFloat($(this).attr('value'));
-                });
-
-                total_digit_paid = nf.format(total_digit_paid);
-                $('.total_digit_paid').text(total_digit_paid);
-
-                //  Total Credit Column
-                $('.digit_credit').each(function(index) {
-                    total_digit_credit += parseFloat($(this).attr('value'));
-                });
-
-                total_digit_credit = nf.format(total_digit_credit);
-                $('.total_digit_credit').text(total_digit_credit);
-
-
-                //  Total Outstanding Column
-                $('.digit_outstanding').each(function(index) {
-                    total_digit_outstanding += parseFloat($(this).attr('value'));
-                });
-                
-                total_digit_outstanding = nf.format(total_digit_outstanding);
-                $('.total_digit_outstanding').text(total_digit_outstanding);
-
-
-            });
+            getDataResp);
     }
+    private var dataParsed = null;
+    function getDataResp(data, status) {
+        $('#soaTable').DataTable().destroy();
+        $("#soaTable > tbody").empty();
+        var dataParsed = JSON.parse(data);
+        for (const count in data)
+        {
+            $.post("ajax/customer_soa_row_renderer.php", {
+                picksheet: JSON.stringify(data[count]),
+                count: count
+            },
+            getRenderResp);
+        }
+        
+    }
+    function getRenderResp(data, status){
+        /*
+        $('#soaTable tbody').append(data);
+        
+        table = $('#soaTable').DataTable({
+            "aaSorting": [],
+            "pageLength": -1,
+            "columnDefs": [
+                { "orderable": true, "targets": 0 },
+                { "orderable": true, "targets": 1 },
+                { "orderable": false, "targets": 2 },
+                { "orderable": false, "targets": 3 },
+                { "orderable": true, "targets": 4 },
+                { "orderable": true, "targets": 5 },
+                { "orderable": true, "targets": 6 },
+                { "orderable": true, "targets": 7 }
+            ]
+        }).draw();
 
+        $('.loadMore').show();
+        $('.loadingContainer').hide();
+
+        let nf = new Intl.NumberFormat('en-GB',{ style: 'currency', currency: 'GBP'});
+
+        var total_digit_value = 0;
+        var total_digit_paid = 0;
+        var total_digit_credit = 0;
+        var total_digit_outstanding = 0;
+
+        //  Total Value Column
+        $('.digit_value').each(function(index) {
+            total_digit_value += parseFloat($(this).attr('value'));
+        });
+
+        total_digit_value = nf.format(total_digit_value);
+        $('.total_digit_value').text(total_digit_value);
+
+
+        //  Total Paid Column
+        $('.digit_paid').each(function(index) {
+            total_digit_paid += parseFloat($(this).attr('value'));
+        });
+
+        total_digit_paid = nf.format(total_digit_paid);
+        $('.total_digit_paid').text(total_digit_paid);
+
+        //  Total Credit Column
+        $('.digit_credit').each(function(index) {
+            total_digit_credit += parseFloat($(this).attr('value'));
+        });
+
+        total_digit_credit = nf.format(total_digit_credit);
+        $('.total_digit_credit').text(total_digit_credit);
+
+
+        //  Total Outstanding Column
+        $('.digit_outstanding').each(function(index) {
+            total_digit_outstanding += parseFloat($(this).attr('value'));
+        });
+        
+        total_digit_outstanding = nf.format(total_digit_outstanding);
+        $('.total_digit_outstanding').text(total_digit_outstanding);*/
+
+    }
     function beforePrint() {
         $('.printhide').hide();
         $('.container').css('width', '100%');
