@@ -132,23 +132,20 @@ include('includes/frontHeader.php');
             },
             getDataResp);
     }
-    private var dataParsed = null;
+    var dataParsed = null;
     function getDataResp(data, status) {
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
-        var dataParsed = JSON.parse(data);
-        for (const count in data)
-        {
-            $.post("ajax/customer_soa_row_renderer.php", {
-                picksheet: JSON.stringify(data[count]),
-                count: count
+        dataParsed = JSON.parse(data);
+        $.post("ajax/customer_soa_row_renderer.php", {
+                picksheet: data,
+                customer_id: customer_id
             },
             getRenderResp);
-        }
         
     }
     function getRenderResp(data, status){
-        /*
+     
         $('#soaTable tbody').append(data);
         
         table = $('#soaTable').DataTable({
@@ -208,7 +205,7 @@ include('includes/frontHeader.php');
         });
         
         total_digit_outstanding = nf.format(total_digit_outstanding);
-        $('.total_digit_outstanding').text(total_digit_outstanding);*/
+        $('.total_digit_outstanding').text(total_digit_outstanding);
 
     }
     function beforePrint() {
