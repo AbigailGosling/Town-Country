@@ -1681,8 +1681,8 @@
     		while($outpallet = mysqli_fetch_array($outpalletResult2)){
             		$weightids = explode(',', $outpallet['weight_ids']);
 
-            		$x2 = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).") && status_id='1' && product_id=$productID)";
- 
+            		$x2 = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).") && status_id='1' && product_id=$productID";
+
             		$y2 = mysqli_query($conn, $x2);
 	
 			$count = mysqli_num_rows($y2);
