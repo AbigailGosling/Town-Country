@@ -133,16 +133,20 @@ include('includes/frontHeader.php');
             getDataResp);
     }
     var dataParsed = null;
+    var showAll = false;
     function getDataResp(data, status) {
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
-        dataParsed = JSON.parse(data);
+        dataParsed = JSON.parse(data);     
+        getRender();
+    }
+    function getRender(){
         $.post("ajax/customer_soa_row_renderer.php", {
-                picksheet: data,
-                customer_id: customer_id
+                picksheet: JSON.stringify(dataParsed),
+                customer_id: customer_id,
+                showAll: showAll?1:0
             },
             getRenderResp);
-        
     }
     function getRenderResp(data, status){
      

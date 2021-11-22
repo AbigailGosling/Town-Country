@@ -3,7 +3,7 @@
     
     $customer_id = $_POST['customer_id'];
 
-    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id");
+    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
 
     $ret = [];
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
@@ -17,11 +17,11 @@
         $picksheet['invoicePaid'] = false;
         $epsilon = 0.00001;
 
-        if(($this_price - $picksheet['paid']) <= $epsilon){
+        if(($picksheet['price'] - $picksheet['paid']) <= $epsilon){
             $picksheet['invoicePaid'] = true;
         }
 	        
-	    $picksheet['outstanding'] = (float) $this_price - $picksheet['paid'] - $total_credit;
+	    $picksheet['outstanding'] = (float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'];
         $picksheet['credited'] = totalValueCreditedOnInvoiceID($picksheet['id']);
         $picksheet['hasReturns'] = doesInvoiceHaveReturns($picksheet['id']);
         $picksheet['hasCreditNote'] = doesInvoiceHaveCreditNote($picksheet['id']);
