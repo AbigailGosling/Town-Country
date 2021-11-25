@@ -1555,17 +1555,12 @@
  
 			$productIDArray = array();
 						
-			foreach($weightids as $weightid){
-				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
-				$y = mysqli_query($conn, $x);
-				$weight = mysqli_fetch_array($y);
-				
-				if(!in_array($weight['product_id'], $productIDArray)){
-					array_push($productIDArray, $weight['product_id']);
-				}
+			$x = "SELECT GROUP_CONCAT(DISTINCT product_id) as product_ids FROM `weights` WHERE id IN (".implode(",",$weightids).")";
+            $y = mysqli_query($conn, $x);
+            $weight = mysqli_fetch_array($y);
+            
+            $productIDArray = explode(",", $weight['product_ids']);
 
-				$queryBits .= ' id = ' . $weightid . ' || ';
-			}
 
 			foreach($productIDArray as $productID){
 				$x1 = "SELECT * FROM `product` WHERE id='$productID'";

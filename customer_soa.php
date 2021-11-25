@@ -50,6 +50,7 @@ include('includes/frontHeader.php');
 
             ?>
         </h2>
+        <a id="viewAllLabel" href="">Show All</a>
         <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo $_GET['id']; ?>">Make / View payments</a>
         <div class="loadingContainer">
             <img src="img/loading.gif" alt="">
@@ -59,8 +60,8 @@ include('includes/frontHeader.php');
                 <tr class="heading">
                     <th align="left" class="sticky-header">Invoice ID</th>
                     <th align="left" class="sticky-header">Add Payment</th>
-                    <th align="left" data-orderable="false" class="sticky-header">Due Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="2"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="2"></i></div></th>
-                    <th align="left" data-orderable="false" class="sticky-header">Date <div class="ingrid"><i class="fa fa-sort-asc" aria-hidden="true" data-column="3"></i><i class="fa fa-sort-desc" aria-hidden="true" data-column="3"></i></div></th>
+                    <th align="left" data-orderable="false" class="sticky-header">Due Date</th>
+                    <th align="left" data-orderable="false" class="sticky-header">Date</th>
                     <th align="right" class="sticky-header">Value</th>
                     <th align="right" class="sticky-header">Paid</th>
                     <th align="right" class="sticky-header">Credit</th>
@@ -105,36 +106,22 @@ include('includes/frontHeader.php');
             
         });
         getData();
-
-        $('#soaTable thead .fa-sort-asc').on('click', function() {
-            $('.loadingContainer').show();
-            column = $(this).data('column');
-            order = 'asc';
-            getData();
-        });
-
-        $('#soaTable thead .fa-sort-desc').on('click', function() {
-            $('.loadingContainer').show();
-            column = $(this).data('column');
-            order = 'desc';
-            getData();
-        });
-
-        
-
     });
+    document.getElementById("viewAllLabel").addEventListener("click", toggleViewAll);
 
     function getData() {
         $.post("/ajax/customer_soa_results.php", {
                 customer_id: customer_id,
                 date_from: date_from,
-                date_to: date_to
+                date_to: date_to,
+                showAll: "Y"
             },
             getDataResp);
     }
     var dataParsed = null;
     var showAll = false;
     function getDataResp(data, status) {
+        console.log(data);
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
         dataParsed = JSON.parse(data);     
@@ -158,8 +145,8 @@ include('includes/frontHeader.php');
             "columnDefs": [
                 { "orderable": true, "targets": 0 },
                 { "orderable": true, "targets": 1 },
-                { "orderable": false, "targets": 2 },
-                { "orderable": false, "targets": 3 },
+                { "orderable": true, "targets": 2 },
+                { "orderable": true, "targets": 3 },
                 { "orderable": true, "targets": 4 },
                 { "orderable": true, "targets": 5 },
                 { "orderable": true, "targets": 6 },
@@ -220,6 +207,42 @@ include('includes/frontHeader.php');
     function printCompleted() {
         $('.printhide').show();
         $('.container').css('width', '1024px');
+    }
+    function toggleViewAll(event){
+        event.preventDefault();
+        $('.loadingContainer').show();
+        if (showAll) 
+        {
+            showAll = false;
+            $("#viewAllLabel").text('Show All');
+        }
+        else 
+        {
+            showAll = true;
+            $("#viewAllLabel").text('Show Outstanding');
+        }
+        $('#soaTable').DataTable().destroy();
+        $("#soaTable > tbody").empty();
+        getRender();
+    }
+    function applySort(){
+        dataParsed = dataParsed.sort(function s(a,b){
+            var columnName = '';
+            if (column == 2) columnName = 'sortableDueDateFormat';
+            else columnName = 'sortableDateFormat';
+            
+            var sortDirection = -1;           
+            if (order == "asc") sortDirection = 1;
+
+            return  b[columnName] < a[columnName] ? sortDirection
+                :   b[columnName] > a[columnName] ? (sortDirection / -1)
+                :   0;
+
+        });
+
+        $('#soaTable').DataTable().destroy();
+        $("#soaTable > tbody").empty();
+        getRender();
     }
 </script>
 

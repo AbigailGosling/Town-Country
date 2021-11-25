@@ -41,7 +41,7 @@
             <?php
             $sortableDateFormat = date('d-m-Y',$date);
         ?>
-        <td data-sort="<?php echo $picksheet['sortableDueDateFormat']; ?>" width="100"><?php echo $date; ?></td>
+        <td data-sort="<?php echo $picksheet['sortableDueDateFormat']; ?>" width="100"><?php echo $picksheet['date']; ?></td>
         <td align="right" width="100" class="digit_value" value="<?php echo number_format($picksheet['price'],2,".",""); ?>"><?php if($picksheet['price'] != 0) { echo '£' . number_format($picksheet['price'],2,".",","); } ?></td>
         <td align="right" width="100" class="digit_paid" value="<?php echo number_format($picksheet['paid'],2,".",""); ?>"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
         <td align="right" style="color:red;" class="digit_credit" value="<?php echo number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ""); ?>"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
