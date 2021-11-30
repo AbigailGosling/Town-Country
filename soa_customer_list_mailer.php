@@ -65,7 +65,6 @@
 
 					if(toSkip >= totalRowsCount){
 						$('.loadMoreBtn').hide();
-						getOutstandingBalance();
 					}else{
 						$('.loadMoreBtn').show();
 					}
@@ -75,41 +74,7 @@
 
 			xhttp.open("POST", "/ajax/page-list/SOA_CustomerList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			xhttp.send("toSkip=" + toSkip);
-		}
-		function getOutstandingBalance(){	
-
-			<?php
-				$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers`");
-				$ret = array();
-				while($customer = mysqli_fetch_array($customerQueryResult)){
-					$ret[] = $customer['id'];
-				}
-				echo "var customerIDs = [".implode(",",$ret)."];";
-			?>
-
-			customerIDs.forEach(
-				(customer_id) => {
-						$.post("/ajax/customer_soa_results.php", {
-						customer_id: customer_id,
-						showAll: "N"
-					},
-					getDataResp);
-				}
-			);
-		}
-		function getDataResp(data,status){
-			var dataParsed = JSON.parse(data);
-			if (dataParsed.length == 0) return;
-			var customer_id = dataParsed[0].customer_id;
-			var outstanding = 0;
-			dataParsed.forEach(
-				(row) => {
-					outstanding += row.outstanding;
-				}
-			);
-			var nf = new Intl.NumberFormat('en-GB',{ style: 'currency', currency: 'GBP'});
-			$( "#customer_id_"+customer_id).val(nf.format(outstanding));
+			xhttp.send("toSkip=" + toSkip + "&showBal=1");
 		}
         function doSearch(){
             var value = $('#instantSearch').val();

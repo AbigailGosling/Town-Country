@@ -10,7 +10,7 @@
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
 
-	error_reporting(0);
+	//error_reporting(0);
  
 	$userid = $_SESSION['USER'];
 	
@@ -1552,54 +1552,43 @@
 
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
 			$weightids = explode(',', $outpallet['weight_ids']);
- 
-			$productIDArray = array();
 						
-			$x = "SELECT GROUP_CONCAT(DISTINCT product_id) as product_ids FROM `weights` WHERE id IN (".implode(",",$weightids).")";
-            $y = mysqli_query($conn, $x);
-            $weight = mysqli_fetch_array($y);
-            
-            $productIDArray = explode(",", $weight['product_ids']);
+			$x = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).")";
+            $y = mysqli_query($conn, $x);	
+			$products = [];
+			while($weightRow = mysqli_fetch_array($y)){
+				$productID = $weightRow['product_id'];
 
+				if (array_key_exists($productID,$products) == false)
+				{
+					$x1 = "SELECT * FROM `product` WHERE id=".$productID;
+					$y1 = mysqli_query($conn, $x1);
+					$products[$productID] = mysqli_fetch_array($y1);	
+				}	
+				$product = $products[$productID];
 
-			foreach($productIDArray as $productID){
-				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
-				$y1 = mysqli_query($conn, $x1);
-				$product = mysqli_fetch_array($y1);
-					
-
-				$x2 = "SELECT * FROM `weights` WHERE ";
-				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
-				$y2 = mysqli_query($conn, $x2);
-				$count = mysqli_num_rows($y2);
-
-								
-				$productID = $product['id'];
 				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
 				$howManyY = mysqli_query($conn, $howManyX);
 				$pickerItem = mysqli_fetch_array($howManyY);
-						
+				
 				$kg = 0;
-						
-				while($weightRow = mysqli_fetch_array($y2)){
-					
-					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-						$tw = $weightRow['weight_gross'];
-					}else{
-						$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
-					}
-					
-					$kg = $kg + $tw;
-					
-					$kg = number_format($kg, 3, '.', '');
+				
+				if($weightRow['weight_tear'] == $weightRow['weight_gross']){
+					$tw = $weightRow['weight_gross'];
+				}else{
+					$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
 				}
-						
+				
+				$kg = $kg + $tw;
+				
+				$kg = number_format($kg, 3, '.', '');
+
 				if($product['unit'] == 'PPC'){
-					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+					$totalPrice += number_format((float) $pickerItem['price'], 2, '.', '');
 				}else{
 					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
 				}
-			}
+			}			
 		}
         
 		return $totalPrice;
