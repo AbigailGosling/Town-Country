@@ -9,16 +9,6 @@ include('includes/frontHeader.php');
     <div class="container flex space-between" style="align-items:center">
         <a href="javascript: window.history.back();" class="back">
             < BACK</a>
-                <div class="daterange">
-                    <form method="GET">
-                        <input type="hidden" name="id" value="<?php echo $_GET['id']; ?>">
-                        From:
-                        <input type="date" name="date_from" class="datePicker">
-                        To:
-                        <input type="date" name="date_to" class="datePicker">
-
-                        <input type="submit" value="Search" class="searchbtn">
-                </div>
     </div>
 </div>
 <div class="container">
@@ -112,16 +102,13 @@ include('includes/frontHeader.php');
     function getData() {
         $.post("/ajax/customer_soa_results.php", {
                 customer_id: customer_id,
-                date_from: date_from,
-                date_to: date_to,
-                showAll: "Y"
+                adv: "Y"
             },
             getDataResp);
     }
     var dataParsed = null;
     var showAll = false;
     function getDataResp(data, status) {
-        console.log(data);
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
         dataParsed = JSON.parse(data);     
@@ -244,6 +231,8 @@ include('includes/frontHeader.php');
         $("#soaTable > tbody").empty();
         getRender();
     }
+
+
 </script>
 
 <style type="text/css">

@@ -1,14 +1,32 @@
+<?php
+//This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
+//-----IMPORTS-----//
+require_once('../functions.php');
+include_once('../includes/frontHeader.php');
+require_once '../vendor/autoload.php';
+//SOCKETLABS IMPORTS//
+use Socketlabs\SocketLabsClient;
+use Socketlabs\Message\BasicMessage;
+use Socketlabs\Message\EmailAddress;
+//SOCKETLABS CONFIG//
+$SocketID = 1;
+$APIKey = "";
+//---PHP CONFIG---//
+ini_set('memory_limit', '1024M');
+//---POST DATA---//
+$htmlData = json_decode($_POST["web"]);
+$customerID = $_POST["id"];
+
+//Define the CSS Info we want to render in the PDF
+$css = '
 @page {
     margin-top: 5mm;
     margin-bottom: 5mm;
 }
-
 *{
-    
     color-adjust: exact;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-
 } 
 .flex{ display:flex; } 
 .space-between{ justify-content: space-between; }
@@ -16,11 +34,7 @@
 .v-center{ align-items:center; }
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
-body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
-body.menu {background: #3faddd;}
-
-
-
+body.menu {background:  #f44336;}
 main {
 	max-width: 1024px;
 	margin: 0 auto;
@@ -30,18 +44,16 @@ main {
 	box-sizing: border-box;
 }
 main.int {padding: 50px 30px 50px 30px;}
-
 main.int--extra-padding {
 	padding-top: 100px;
 	position: relative;
 }
-
 main h1 {
 	margin: 0;
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3fadde;
+	color: #f44336;
 	font-size: 40px;
 	line-height: 40px;
 	font-weight: normal;
@@ -49,7 +61,6 @@ main h1 {
 	text-transform: uppercase; 
 }
 main h1.int {color: #fff;}
-
 main div#login {
 	width: 350px;
 	margin: 0 auto;
@@ -66,7 +77,6 @@ div#login h2 {
 	font-size: 30px;
 	line-height: 30px;
 	font-weight: normal;
-	font-family: 'OpenSans_Bold';
 }
 div#login form {
 	margin: 0;
@@ -83,14 +93,13 @@ div#login input[type="text"], div#login input[type="password"] {
 	color: #a5a1a1;
 	font-size: 16px;
 	line-height: 32px;
-	font-family: 'OpenSans_Semibold';
 	border: 0;
 	border-bottom: 1px #797979 solid;
 	-webkit-appearance: none;
 	box-sizing: border-box;
 }
 div#login input[type="submit"] {
-	background: #3fadde !important;
+	background: #f44336 !important;
 	width: 120px;
 	height: 36px;
 	margin: 0;
@@ -101,93 +110,17 @@ div#login input[type="submit"] {
 	font-size: 14px;
 	line-height: 36px;
 	text-align: center;
-	font-family: 'OpenSans_Bold';
 	cursor: pointer;
 	border: 0 !important;
 	border-radius: 0 !important;
 	-webkit-appearance: none;
 }
-div#login div#remember {
-	margin: 0;
-	padding: 20px 0 20px 0;
-	display: block;
-	clear: both;
-	color: #404040;
-	font-size: 14px;
-	line-height: 14px;
-	font-family: 'OpenSans_Semibold';
-}
-div#top {
-	background: #3faddd;
-	width: 100%;
-	height: 70px;
-	margin: 0;
-	padding: 0;
-	display: block;
-	clear: both;
-	position: relative;
-}
-div#top a#menu {
-	background: url('../images/menu.jpg') 0% 50% no-repeat;
-	background-size: auto;
-	margin: 0;
-	padding: 0 0 0 20px;
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 50px;
-	color: #fff;
-	font-size: 18px;
-	line-height: 70px;
-	text-decoration: none;
-	text-transform: uppercase;
-	font-family: 'OpenSans_Semibold';
-}
-div#top a#logout {
-	margin: 0;
-	padding: 0;
-	display: block;
-	position: absolute;
-	top: 0;
-	right: 50px;
-	color: #fff;
-	font-size: 18px;
-	line-height: 70px;
-	text-decoration: none;
-	text-transform: uppercase;
-	font-family: 'OpenSans_Semibold';
-}
-div#menu_wrap {
-	margin: 0;
-	padding: 50px 0 0 0;
-	display: block;
-	clear: both;
-}
-div#menu_wrap a {
-	background: #fff;
-	width: 90%;
-	margin: 0 auto;
-	margin-top: 10px;
-	padding: 0;
-	display: block;
-	clear: both;
-	color: #3faddd;
-	font-size: 20px;
-	line-height: 50px;
-	text-align: center;
-	text-decoration: none;
- 	font-family: 'OpenSans_Semibold';
-	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
-	padding-left: 20px;
-    box-sizing: border-box;
-	text-align:left;
-}
+
 span.small {
     font-size: 12px;
 }
 
-div#menu_wrap a:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+div#menu_wrap a:hover {background: #f44336;color: #fff;border: 1px #fff solid;}
 
 
 /* Product */
@@ -207,100 +140,8 @@ div#product div#product_heading {
 	font-size: 40px;
 	line-height: 40px;
 	font-weight: normal;
-	font-family: 'OpenSans_Bold';
 }
-div#product div#product_options {
-	margin: 0;
-	padding: 0;
-	display: block;
-	position: absolute;
-	top: 0;
-	right: 5%;
-}
-#kezhere{}
-asdf.div#product_options a {
-	margin: 0 0 0 50px;
-	padding: 0;
-	display: block;
-	float: left;
-	color: #3faddd;
-	font-size: 18px;
-	line-height: 40px;
-	font-weight: normal;
-	text-decoration: none;
-	font-family: 'OpenSans_Bold';
-}
-div#product div#id_ref {
-	margin: 0;
-	padding: 45px 0 0 0;
-	display: block;
-	clear: both;
-	color: #4a4a4a;
-	font-size: 22px;
-	line-height: 22px;
-	font-weight: normal;
-	font-family: 'OpenSans_Semibold';
-}
-div#id_ref span {font-family: 'OpenSans_Regular';}
-
-div#product table {
-	width: 75%;
-	margin: 0;
-	padding: 50px 0 0 0;
-	display: table;
-}
-div#product table tr {
-	margin: 0;
-	padding: 0;
-}
-div#product table tr td {
-	width: 40%;
-	margin: 0;
-	padding: 0 10% 0 0;
-}
-div#product table tr td:nth-child(2) {
-	width: 40%;
-	margin: 0;
-	padding: 0 0 0 10%;
-}
-
-div#product table label {
-	margin: 0;
-	padding: 15px 0 5px 0;
-	display: block;
-	clear: both;
-	color: #4a4a4a;
-	font-size: 16px;
-	line-height: 16px;
-	font-family: 'OpenSans_Regular';
-}
-div#product table input[type="text"] {
-	background: #f9f9f9;
-	max-width: 184px;
-	margin: 0;
-	padding: 0 5px 0 5px;
-	display: block;
-	clear: both;
-	color: #4a4a4a;
-	font-size: 16px;
-	line-height: 27px;
-	font-family: 'OpenSans_Regular';
-	border: 1px #bfbfbf solid;
-}
-div#product table input[type="number"] {
-	background: #f9f9f9;
-	max-width: 184px;
-	margin: 0;
-	padding: 0 5px 0 5px;
-	display: block;
-	clear: both;
-	color: #4a4a4a;
-	font-size: 16px;
-	line-height: 27px;
-	font-family: 'OpenSans_Regular';
-	border: 1px #bfbfbf solid;
-}
-input::placeholder, textarea::placeholder {color: #4a4a4a !important;}
+placeholder {color: #4a4a4a !important;}
 
 div#product_list {
 	margin: 0 15px 0 15px;
@@ -324,11 +165,11 @@ div#product_list::-webkit-scrollbar-track {
 }
 /* Handle */
 div#product_list::-webkit-scrollbar-thumb {
-    background: #3faddd;
+    background: #f44336;
 }
 /* Handle on hover */
 div#product_list::-webkit-scrollbar-thumb:hover {
-    background: #3faddd;
+    background: #f44336;
 }
 
 .overview {
@@ -368,7 +209,6 @@ div#product_list th {
 	font-size: 11px;
 	line-height: 14px;
 	text-transform: uppercase;
-	font-family: 'OpenSans_Regular';
 }
 div#product_list td {
 	width: 105px;
@@ -378,12 +218,10 @@ div#product_list td {
 	color: #4a4a4a;
 	font-size: 14px;
 	line-height: 14px;
-	font-family: 'OpenSans_Regular';
 }
 div#product_list th.even, div#product_list td.even {background: #ebf7fc;}
 
 a.add_product {
-	background:url('../images/add_product.jpg') 50% 0% no-repeat;
 	width: 192px;
 	height: 39px;
 	margin: 35px 0 0 15px;
@@ -394,11 +232,9 @@ a.add_product {
 	font-size: 14px;
 	line-height: 39px;
 	text-decoration: none;
-	font-family: 'OpenSans_Bold';
 	box-sizing: border-box;
 }
 a.print_intake {
-	background:url('../images/add_product.jpg') 50% 0% no-repeat;
 	width: 192px;
 	height: 39px;
 	margin: 35px 15px 0 0;
@@ -409,36 +245,12 @@ a.print_intake {
 	font-size: 14px;
 	line-height: 39px;
 	text-decoration: none;
-	font-family: 'OpenSans_Bold';
 	box-sizing: border-box;
 }
 .clearfix {clear: both;}
 
-@font-face {
-  font-family: 'OpenSans_Regular';
-  src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'OpenSans_Semibold';
-  src: url('../fonts/OpenSans-Semibold.ttf') format('truetype');
-}
-@font-face {
-  font-family: 'OpenSans_Bold';
-  src: url('../fonts/OpenSans-Bold.ttf') format('truetype'); 
-}
-
-a.edit_row {
-	margin: 0 0 0 0;
-	padding: 0;
-	float: left;
-}
-a.delete_row {
-	margin: 0 0 0 0;
-	padding: 0;
-	float: right;
-}
 #box, #box2, #editBox {
-	background: #3fadde;
+	background: #f44336;
 	width: 100%;
 	min-height: 100%;
     height: auto;
@@ -449,17 +261,6 @@ a.delete_row {
 	top: 70px;
 	left: 0;
 	z-index: 998;
-}
-#box a.close, #box2 a.close, #editBox a.close {
-	background: url('../images/close.png') 50% 0% no-repeat;
-	width: 27px;
-	height: 27px;
-	margin: 0;
-	padding: 0;
-	display: block;
-	position: absolute;
-	top: 20px;
-	right: 20px;
 }
 #box h1, #box2 h1, #editBox h1 {
 	margin: 0;
@@ -472,7 +273,6 @@ a.delete_row {
 	font-weight: normal;
 	text-align: center;
 	text-transform: uppercase;
-	font-family: "Times New Roman", "serif";
 }
 #box form, #box2 form, #editBox form {width: 100%;margin: 0 auto;display: block;box-sizing: border-box;}
 #box div.float, #box2 div.float, #editBox div.float {width: 50%;padding: 0 20px 0 20px;display: block;float: left;overflow: hidden;box-sizing: border-box;}
@@ -488,7 +288,6 @@ a.delete_row {
 	font-weight: normal;
 	text-align: left;
 	text-transform: uppercase;
-	font-family: "OpenSans_Regular";
 }
 #box form input[type="text"], #box form input[type="number"], #box form input[type="email"], #box form input[type="password"], #editBox form input[type="text"], #editBox form input[type="number"], #editBox form input[type="email"], #editBox form input[type="password"], #box2 form input[type="text"],#box2 form input[type="number"], #box2 form input[type="email"], #box2 form input[type="password"] {
 	background: #f9f9f9;
@@ -500,7 +299,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 27px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
     box-sizing: border-box;
     height: 55px;
@@ -516,7 +314,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 27px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
 	box-sizing: border-box;
 	height: 55px;
@@ -533,7 +330,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 20px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
 	box-sizing: border-box;
 }
@@ -545,19 +341,18 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #f44336;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
 	text-decoration: none;
 	text-transform: uppercase;
-	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #f44336 solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #f44336;color: #fff;border: 1px #fff solid;}
 #intakelist {
 	width: 100%;
 	max-width: 100%;
@@ -581,7 +376,6 @@ a.delete_row {
 	font-weight: normal;
 	text-align: left;
 	text-transform: uppercase;
-	font-family: "OpenSans_Regular";
 }
 #intakelist form input[type="text"], #box form input[type="email"], #box form input[type="password"] {
     background: #f9f9f9;
@@ -593,7 +387,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 27px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
 	box-sizing: border-box;
 }
@@ -607,7 +400,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 27px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
 	box-sizing: border-box;
 }
@@ -622,7 +414,6 @@ a.delete_row {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 20px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
 	box-sizing: border-box;
 }
@@ -634,19 +425,18 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #f44336;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
 	text-decoration: none;
 	text-transform: uppercase;
-	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #f44336 solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#intakelist form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+#intakelist form input[type="submit"]:hover {background: #f44336;color: #fff;border: 1px #fff solid;}
 .intake {
 	background: #fff;
 	margin: 0 auto;
@@ -654,19 +444,18 @@ a.delete_row {
 	padding: 0 10px 0 10px;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #f44336;
 	font-size: 14px;
 	line-height: 40px;
 	text-align: left;
 	text-decoration: none;
 	text-transform: capitalize;
-	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #f44336 solid;
 	cursor: pointer;
 	position: relative;
 }
-.intake:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+.intake:hover {background: #f44336;color: #fff;border: 1px #fff solid;}
 td.pos {position: relative;}
 a#delete_intake {
 	margin: 0;
@@ -753,15 +542,14 @@ a#delete_intake {
 	padding: 10px 8px 8px 8px;
     display: block;
     clear: both;
-    color: #3faddd;
+    color: #f44336;
     font-size: 14px;
     line-height: 40px;
     text-align: left;
     text-decoration: none;
     text-transform: uppercase;
-    font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #3faddd solid;
+    border: 1px #f44336 solid;
     cursor: pointer;
     position: relative;
 	line-height: 22px;
@@ -786,7 +574,7 @@ a i.fa-pencil{
 
 
 .picksheetType{
-	background:#3faddd;
+	background:#f44336;
 	padding:8px;
 	margin-top:10px;
 	color:#fff;
@@ -843,7 +631,7 @@ a#delete_intake {
 }
 
 .loadPalletBtn{
-	background:#3faddd;
+	background:#f44336;
     display: inline-block;
     margin: 0 auto;
     padding: 10px;
@@ -861,7 +649,7 @@ a#delete_intake {
 	top:220px;
 	left:calc(50% - 150px);
 	padding:35px;
-	background:#3faddd;
+	background:#f44336;
 	text-align:center;
 	color:#fff;
 	font-weight:700;
@@ -907,7 +695,7 @@ a#delete_intake {
 	position:absolute;
 	top:0px;
 	left:0px;
-	background:#3faddd;
+	background:#f44336;
 	z-index:1000;
 	padding:10px;
 }
@@ -979,7 +767,6 @@ a#delete_intake {
     color: #4a4a4a;
     font-size: 16px;
     line-height: 27px;
-    font-family: 'OpenSans_Regular';
     border: 1px #bfbfbf solid;
     width:140px;
 }
@@ -989,14 +776,14 @@ select.producttext{
 }
 
 .bluebtn{
-	background: #3faddd !important;
+	background: #f44336 !important;
     border: 0px !important;
     padding: 15px !important;
     color: #fff !important;
 }
 
 .viewpurchase{
-	background: #3faddd !important;
+	background: #f44336 !important;
     border: 0px !important;
     position: absolute;
     padding: 10px !important;
@@ -1012,7 +799,7 @@ select.producttext{
 	color:#333;
 }
 
-.calendar_head_box { background:#3faddd; height:40px; color:#fff; border:1px solid #3faddd; }
+.calendar_head_box { background:#f44336; height:40px; color:#fff; border:1px solid #f44336; }
 .calendar_blank_box { background:#ddd; border:1px solid #a1a1a1; }
 .calendar_box { background:#ddd; border:1px solid #a1a1a1;}
 
@@ -1026,7 +813,7 @@ select.producttext{
 }
 
 .calendar_box.event_here span{
-	background: #3faddd;
+	background: #f44336;
     padding: 15px;
     border-radius: 100%;
     color: #fff;
@@ -1048,7 +835,7 @@ select.producttext{
 	cursor:pointer;
 	text-decoration:none;
 	font-weight:700;
-	color:#3faddd;
+	color:#f44336;
 	font-size:22px;
 }
 
@@ -1090,7 +877,7 @@ select.producttext{
 
 .deliveryBox a.btn{
 	margin-right: 10px;
-    background: #3faddd;
+    background: #f44336;
     padding: 10px;
     font-size: 14px;
     color: #fff;
@@ -1186,7 +973,7 @@ span.add-on{
 	height: 30px;
 }
 	
-.activeWeight { background:#3faddd !important; color:#fff !important}
+.activeWeight { background:#f44336 !important; color:#fff !important}
 .weightbox:hover{ background:#cacaca; }
 
 .backbtn{
@@ -1238,7 +1025,7 @@ span.add-on{
 	position: absolute;
 	right: 4px;
 	top: -9px;
-	background: #3FADDD;
+	background: #f44336;
 	height: 36px;
 	width: 37px;
 	text-align: center;
@@ -1275,7 +1062,6 @@ span.add-on{
     resize: none;
     background: white;
     padding: 10px;
-    font-family: 'Roboto', sans-serif !important;
     line-height: 22px;
     color: black;
 	border:0px;
@@ -1412,7 +1198,7 @@ span.add-on{
     width: 410px;
     margin: 12px;
     text-align: center;
-    background: #3faddd;
+    background: #f44336;
     color: #fff;
 	cursor:pointer;
 }
@@ -1457,7 +1243,7 @@ span.add-on{
 .returnStockBtn{
     width: 160px;
     height: 40px;
-    background: #3faddd;
+    background: #f44336;
     line-height: 40px;
     text-align: center;
     margin: 20px;
@@ -1561,7 +1347,6 @@ span.add-on{
 #print .bottom .signbox span{
 	display:block;
 	padding:5px;
-	font-family: 'Handlee', cursive;
 }
 
 
@@ -1818,12 +1603,11 @@ td span.chilled{
     line-height: 50px;
     height: 50px;
     margin-bottom: 10px;
-    color: #3faddd;
+    color: #f44336;
     font-size: 14px;
     text-transform: capitalize;
-    font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #3faddd solid;
+    border: 1px #f44336 solid;
     cursor: pointer;
     position: relative;
     text-align:center;
@@ -1838,7 +1622,7 @@ td span.chilled{
 
 .menuItem a.icon{
     font-size:22px;
-    color: #3faddd;
+    color: #f44336;
 
     margin-left:50px;
 }
@@ -1871,7 +1655,7 @@ td span.chilled{
 }
 
 .completedby-tag{
-    background: #3faddd;
+    background: #f44336;
     padding: 8px 20px;
     border-radius: 20px;
     color: #fff;
@@ -1888,7 +1672,7 @@ td span.chilled{
     display: block;
     padding: 10px;
     margin-right: 12px;
-    color: #3faddd;
+    color: #f44336;
     font-weight: bold;
 }
 
@@ -1914,7 +1698,6 @@ td span.chilled{
   font-size: 16px;
   line-height: 27px;
   color: #4a4a4a;
-  font-family: 'OpenSans_Regular';
   border: 1px #bfbfbf solid;
   border-radius: 5px;
 }
@@ -2031,7 +1814,7 @@ textarea {
 .loadMoreBtn{
 	width:100%;
 	background:#fff;
-	color: #3faddd;
+	color: #f44336;
 	text-align:center;
 	cursor:pointer;
 	font-size:18px;
@@ -2041,7 +1824,7 @@ textarea {
 }
 
 .soa_cr_label{
-	background: #3faddd;
+	background: #f44336;
     display: inline-block;
     color: #fff;
     border-radius: 100%;
@@ -2059,4 +1842,68 @@ textarea {
 .sticky-footer{
 	position: sticky; 
 	background: #e2e2e2;
+}';
+
+//This function generates a Unique ID using Mersenne Twister RNG
+//Going to want to switch RNG algo before pushing to LIVE!!!!
+function generate_uuid() {
+    return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+        mt_rand( 0, 0xffff ),
+        mt_rand( 0, 0x0C2f ) | 0x4000,
+        mt_rand( 0, 0x3fff ) | 0x8000,
+        mt_rand( 0, 0x2Aff ), mt_rand( 0, 0xffD3 ), mt_rand( 0, 0xff4B )
+    );
 }
+
+//This function renders a PDF document from a string using mPDF
+function renderPDF($inArray, $css, $customerID){
+	$statementDate = date();
+	$filename2 = 'Statement_'.$customerID.'_'.$statementDate.'.pdf';
+	$filename = '../PDF/' . $filename2;
+	//Set up the socketlabs client
+	$client = new SocketLabsClient($SocketID, $APIKey);
+	$message = new BasicMessage();
+	$message->subject = "Statement of Account from Town and Country Meats";
+	$message->htmlBody = "<html>Please find attached an example statement of accounts from Town and Country Meats Group.</html>";
+	$message->from = new EmailAddress("tang-socketlabs@townandcountrymeats.co.uk");
+	$message->addToAddress("CLIENT EMAIL HERE");
+    $mpdf = new \Mpdf\Mpdf([
+        'mode' => 'utf-8',
+        'format' => [210, 297],
+		'setAutoTopMargin' => 'stretch',
+        'autoMarginPadding' => 0,
+        'bleedMargin' => 0,
+        'crossMarkMargin' => 0,
+        'cropMarkMargin' => 0,
+        'nonPrintMargin' => 0,
+        'margBuffer' => 0,
+        'collapseBlockMargins' => true,
+    ]);
+    $mpdf->WriteHTML($css, 1);
+	foreach($inArray as $i => $printDiv){
+		$mpdf->WriteHTML($printDiv);
+		if(++$i === count($inArray)){
+			//Dont add another page on the last iteration
+		}else{
+			$mpdf->AddPage();
+		}
+	}
+
+    $mpdf->Output($filename,'F');
+	$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . $filename, $filename2, "PDF", "Statement of Account");
+	$message->attachments[] = $attachment;
+	//Generate a Unique Identifier for this Email
+	$message->messageId = generate_uuid();
+	//Append a item to the database
+	/*
+
+	*/
+	$response = $client->send($message);
+    return 1;
+}
+
+//Main Decleration
+renderPDF($htmlData, $css, $customerID);
+
+?>

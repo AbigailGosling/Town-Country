@@ -10,7 +10,7 @@
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
 
-	//error_reporting(0);
+	error_reporting(0);
  
 	$userid = $_SESSION['USER'];
 	
@@ -1549,13 +1549,13 @@
                 
 		$outpalletCount = mysqli_num_rows($outpalletResult2);
 
-
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
 			$weightids = explode(',', $outpallet['weight_ids']);
 						
 			$x = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).")";
             $y = mysqli_query($conn, $x);	
 			$products = [];
+			$pickerItems = [];
 			while($weightRow = mysqli_fetch_array($y)){
 				$productID = $weightRow['product_id'];
 
@@ -1566,10 +1566,14 @@
 					$products[$productID] = mysqli_fetch_array($y1);	
 				}	
 				$product = $products[$productID];
-
-				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
-				$howManyY = mysqli_query($conn, $howManyX);
-				$pickerItem = mysqli_fetch_array($howManyY);
+				
+				if (array_key_exists($pickersheet_id . "-" . $productID,$pickerItems) == false)
+				{
+					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
+					$howManyY = mysqli_query($conn, $howManyX);
+					$pickerItems[$pickersheet_id . "-" . $productID] = mysqli_fetch_array($howManyY);
+				}
+				$pickerItem = $pickerItems[$pickersheet_id . "-" . $productID];
 				
 				$kg = 0;
 				

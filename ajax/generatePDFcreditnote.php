@@ -9,6 +9,7 @@
 	$perPage = 29;
  	$border = 0;
  	$mpdf = new \Mpdf\Mpdf([
+		'debug' => true,
         'mode' => 'utf-8',
         'format' => [210, 297],
 		'setAutoTopMargin' => 'stretch',

@@ -21,11 +21,11 @@
 </div>
 <main>
 	<div id="intakelist">
-		<h1 class="int">Customers S.O.A</h1>
+		<h1 class="int">Customers S.O.A 2</h1>
         <input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
 		<input type="hidden" id="toSkipCount" value="0">
 		<input type="hidden" id="totalRowsCount" value="0">
-		<a href="soa_customer_list.php" class="resetBtn">Clear</a>
+		<a href="soa_customer_list_mailer.php" class="resetBtn">Clear</a>
 		
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			 
@@ -72,7 +72,7 @@
 			}
 			};
 
-			xhttp.open("POST", "/ajax/page-list/SOA_CustomerList.php", true);
+			xhttp.open("POST", "/ajax/page-list/SOAM_CustomerList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send("toSkip=" + toSkip + "&showBal=1");
 		}
@@ -87,9 +87,9 @@
                 }
             };
 
-            xhttp.open("POST", "/ajax/page-list/SOA_CustomerList.php", true);
+            xhttp.open("POST", "/ajax/page-list/SOAM_CustomerList.php", true);
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhttp.send("searchterm=" + value);
+            xhttp.send("searchterm=" + value + "&showBal=1");
         }
 	</script>
 </body>
