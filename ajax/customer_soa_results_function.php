@@ -73,12 +73,13 @@ function update_customer_outstanding_cache($cacheRow)
     
     if ($cacheRow['newRow'] == true)
     {
-        $sql = "INSERT INTO `tcstock`.`customer_outstanding_cache` (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `outstanding`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",".$cacheRow['invoice_payment_id'].",'".(float)$cacheRow['outstanding']."')";
+        $sql = "INSERT INTO customer_outstanding_cache (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `outstanding`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",".$cacheRow['invoice_payment_id'].",'".(float)$cacheRow['outstanding']."')";
     }
     else
     {
-        $sql = "UPDATE `tcstock`.`customer_outstanding_cache` SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = ".$cacheRow['invoice_payment_id'].", `outstanding` = '".(float)$cacheRow['outstanding']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
+        $sql = "UPDATE customer_outstanding_cache SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = ".$cacheRow['invoice_payment_id'].", `outstanding` = '".(float)$cacheRow['outstanding']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
     }
     $x = mysqli_query($conn, $sql);
 }
+?>
 ?>
