@@ -79,7 +79,7 @@
 										<?php } ?>
 										<div class="deliverybox" style="border:0px; background-color: #D5D5D5;">
 											<div class="po" style="background-color: #D5D5D5;">Invoice No:
-												<span>000<?php echo $pickersheet_id; ?></span>
+												<span><?php echo $pickersheet_id; ?></span>
 											</div>
 											<h2>Invoice</h2>
 										</div>
