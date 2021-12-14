@@ -109,6 +109,7 @@ include('includes/frontHeader.php');
     var dataParsed = null;
     var showAll = false;
     function getDataResp(data, status) {
+        
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
         dataParsed = JSON.parse(data);     
@@ -123,7 +124,6 @@ include('includes/frontHeader.php');
             getRenderResp);
     }
     function getRenderResp(data, status){
-     
         $('#soaTable tbody').append(data);
         
         table = $('#soaTable').DataTable({

@@ -1583,19 +1583,19 @@
 					$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
 				}
 				
-				$kg = $kg + $tw;
+				$kg = $kg + round($tw,3,PHP_ROUND_HALF_DOWN);
 				
 				$kg = number_format($kg, 3, '.', '');
 
 				if($product['unit'] == 'PPC'){
-					$totalPrice += number_format((float) $pickerItem['price'], 2, '.', '');
+					$totalPrice += (float) $pickerItem['price'];
 				}else{
-					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+					$totalPrice += (float)$kg * $pickerItem['price'];
 				}
 			}			
 		}
         
-		return $totalPrice;
+		return (float) round($totalPrice,2,PHP_ROUND_HALF_DOWN);
 	}
 
 	function getInvoiceCreditNoteTotal($invoice_id){

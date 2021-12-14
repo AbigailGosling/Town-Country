@@ -49,7 +49,7 @@ if (!empty($paymentID)) {
         <tbody>
         <?php
 
-        $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
+        $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
 
         $runningBalance = $invoiceAmount;
         $i = 0;

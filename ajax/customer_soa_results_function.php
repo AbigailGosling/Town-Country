@@ -82,4 +82,3 @@ function update_customer_outstanding_cache($cacheRow)
     $x = mysqli_query($conn, $sql);
 }
 ?>
-?>
