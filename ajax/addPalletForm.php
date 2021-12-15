@@ -666,7 +666,19 @@
 				}
 			});
 		}
-		
+
+		var nationality = $('#nationality_id').val();
+		if(nationality == '--'){
+			nationality = '';
+		}
+		if(nationality == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('#nationality').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#nationality').css('border','1px solid grey');
+		}
+				
 		$('#msgNotice2').html(msg);
 		
 		if(good == 1){
