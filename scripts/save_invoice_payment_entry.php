@@ -44,7 +44,9 @@
         }
 
     }else{
-        
+        $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = $customerID";
+	    $y = mysqli_query($conn, $x);
+
         $x = "UPDATE `invoice_payments` SET amount='$amount', payment_method='$paymentMethod', meta_data='$metaData' WHERE id ='$paymentID'";
 	    $y = mysqli_query($conn, $x);
 
