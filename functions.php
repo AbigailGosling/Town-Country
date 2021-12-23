@@ -953,7 +953,7 @@
 	function weightTypeOfProduct($product_id){
 		global $conn;
 		
-		$x = "SELECT * FROM `boxes` WHERE product_id = '$product_id'";
+		$x = "SELECT * FROM `product` WHERE id = '$product_id'";
 		$y = mysqli_query($conn, $x);
 		$row = mysqli_fetch_array($y);
 		
@@ -1722,7 +1722,7 @@
 		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
 		
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
-			if($creditNoteItem['product_id'] == 0){ # bespoke credit note, not attached product
+			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
 				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];
 			}else{
 				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
