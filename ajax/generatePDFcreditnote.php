@@ -5,22 +5,8 @@
 	
 	require_once '../vendor/autoload.php';
 	
-	
 	$perPage = 29;
  	$border = 0;
- 	$mpdf = new \Mpdf\Mpdf([
-		'debug' => true,
-        'mode' => 'utf-8',
-        'format' => [210, 297],
-		'setAutoTopMargin' => 'stretch',
-        'autoMarginPadding' => 0,
-        'bleedMargin' => 0,
-        'crossMarkMargin' => 0,
-        'cropMarkMargin' => 0,
-        'nonPrintMargin' => 0,
-        'margBuffer' => 0,
-        'collapseBlockMargins' => true,
-    ]);
 	
  	$pageArray = array();
 	
@@ -69,7 +55,7 @@
 		 
 		
 		tr.productsRow{
-			height:70px;
+			height:29px;
  		}
 		
 		td{ display:table-cell; }
@@ -122,11 +108,11 @@
 			background-color:#b4454b;
 		}
 		
-		td.bankdetails{
+		td.bankdetails2{
 			background-color:#b4454b;
 		}
 		
-		td.bankdetailsLabel{
+		td.bankdetails2Label{
 			font-size: 10px;
 		}
 		
@@ -177,8 +163,7 @@
 			font-size:10px;
 		}
 	";
-	
-	$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
+
 	$header .= '
 	<table border="'.$border.'" width="100%">
 		<tr valign="top">
@@ -376,10 +361,10 @@
 		
 	$footer = '<table width="100%">
 		<tr>
-			<td colspan="2" class="bankdetailsLabel">Bank Details</td>
+			<td colspan="2" class="bankdetails2Label">Bank Details</td>
 		</tr>
 		<tr>
-			<td colspan="2" class="bankdetails">
+			<td colspan="2" class="bankdetails2">
 			<table width="100%" border="'.$border.'">
 				<tr>
 					<td>
@@ -428,32 +413,69 @@
 		</tr>
 	</table>
 	';
-	$mpdf->SetHTMLHeader($header);
+	if (!isset($_GET['adv']))
+	{
+		$mpdf = new \Mpdf\Mpdf([
+			'debug' => true,
+			'mode' => 'utf-8',
+			'format' => [210, 297],
+			'setAutoTopMargin' => 'stretch',
+			'autoMarginPadding' => 0,
+			'bleedMargin' => 0,
+			'crossMarkMargin' => 0,
+			'cropMarkMargin' => 0,
+			'nonPrintMargin' => 0,
+			'margBuffer' => 0,
+			'collapseBlockMargins' => true,
+		]);
+		$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
+		$mpdf->SetHTMLHeader($header);
+		
+		
+		 
+		 foreach($pageArray as $page){
+			$mpdf->SetHTMLFooter($footer);
+			$mpdf->AddPage();
+			$mpdf->WriteHTML($pageHeader);
+			$mpdf->WriteHTML($page);
+			$mpdf->WriteHTML($pageFooter);
+		}
+		
+		
+		   $mpdf->SetHTMLFooter($footer);
+	 
+	 
+	 
+		 $filename2 = 'Credit_Note_'.$pickersheet_id.'.pdf';
+		$filename = '../PDF/' . $filename2;
+		
+		 
+		$mpdf->Output($filename,'F');
 	
-	
- 	
- 	foreach($pageArray as $page){
-		$mpdf->SetHTMLFooter($footer);
-		$mpdf->AddPage();
-		$mpdf->WriteHTML($pageHeader);
-		$mpdf->WriteHTML($page);
-		$mpdf->WriteHTML($pageFooter);
-	}
-	
-	
-   	$mpdf->SetHTMLFooter($footer);
- 
- 
- 
- 	$filename2 = 'Credit_Note_'.$pickersheet_id.'.pdf';
-	$filename = '../PDF/' . $filename2;
-	
- 	
-	$mpdf->Output($filename,'F');
+		echo $filename2;
 
-	echo $filename2;
 ?>
 
 <script>
 	window.location.href="/PDF/<?php echo $filename2; ?>";
 </script>
+<?php
+	}
+	else
+	{
+		echo "<div class='printme'>";
+		
+		echo $header;
+		if ($_GET['count'] != "0")echo "<style type='text/css'>$css</style>"; 
+		 for($i = 0; $i < count($pageArray); $i++){
+			$page = $pageArray[$i];
+			if ($i != 0) echo $footer;
+			//$mpdf->AddPage();
+			echo $pageHeader;
+			echo $page;
+			echo $pageFooter;
+		}	
+		echo $footer;
+		echo "</div>";
+	}
+?>

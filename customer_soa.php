@@ -101,15 +101,13 @@ include('includes/frontHeader.php');
 
     function getData() {
         $.post("/ajax/customer_soa_results.php", {
-                customer_id: customer_id,
-                adv: "Y"
+                customer_id: customer_id
             },
             getDataResp);
     }
     var dataParsed = null;
     var showAll = false;
     function getDataResp(data, status) {
-        
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
         dataParsed = JSON.parse(data);     
@@ -119,7 +117,7 @@ include('includes/frontHeader.php');
         $.post("ajax/customer_soa_row_renderer.php", {
                 picksheet: JSON.stringify(dataParsed),
                 customer_id: customer_id,
-                showAll: showAll?1:0
+                showAll: showAll?"Y":"N"
             },
             getRenderResp);
     }

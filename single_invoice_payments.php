@@ -147,9 +147,8 @@ if (!empty($paymentID)) {
 
             $queryBits .= ' id = ' . $weightid . ' || ';
         }
-        $kg = 0;
         foreach($productIDArray as $productID){
-
+            $kg = 0;
             $x1 = "SELECT * FROM `product` WHERE id='$productID'";
             $y1 = mysqli_query($conn, $x1);
             $product = mysqli_fetch_array($y1);
@@ -308,7 +307,7 @@ if (!empty($paymentID)) {
                 $payment_id = $selectedPaymentData['id'];
 
                 
-                $creditNoteResult = mysqli_query($conn, "SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=$payment_id");
+                $creditNoteResult = mysqli_query($conn, "SELECT GROUP_CONCAT(product_id) as product_ids FROM `vc` WHERE payment_id=$payment_id");
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
 
@@ -551,6 +550,6 @@ if (!empty($paymentID)) {
     }
 
     function isNumber(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n) && n > 0;
+        return !isNaN(parseFloat(n)) && isFinite(n);
     }
 </script>

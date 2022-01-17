@@ -7,7 +7,7 @@ function get_customer_soa_results($customer_id,$adv)
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
 
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
-        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
+        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_UP);
 
         $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
         $picksheet['date'] = date('d/m/Y', strtotime($picksheet['date']));
@@ -21,9 +21,10 @@ function get_customer_soa_results($customer_id,$adv)
         }
 	        
 	    $picksheet['outstanding'] = (float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'];
-        if ($picksheet['outstanding'] == 0 && $adv != true) continue;
+        if ($adv == true && ($picksheet['outstanding'] > -0.01 && $picksheet['outstanding'] < 0.01)) continue;
         $picksheet['credited'] = totalValueCreditedOnInvoiceID($picksheet['id']);
         $picksheet['hasReturns'] = doesInvoiceHaveReturns($picksheet['id']);
+        $picksheet['creditNotes'] = getInvoiceCreditNotes($picksheet['id']);
         $picksheet['hasCreditNote'] = doesInvoiceHaveCreditNote($picksheet['id']);
 
         $estimated_delivery_date = strtotime(str_replace('/', '-', $picksheet['estimated_delivery_date']));

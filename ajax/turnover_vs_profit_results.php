@@ -272,7 +272,8 @@
         <?php
             $credit_value = 0;
             $credit_qty = 0;
-
+            $weightReturned = 0;
+            $cost_value = 0;
             $invoice_id = $invoice['pick_id'];
             
             $payment_ids = [];
@@ -282,11 +283,11 @@
             {
                 $payment_ids = implode(',', $payment_ids);
 
-            
+                
                 $credit_items = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
                 while($credit_item = mysqli_fetch_array($credit_items)){
                     $returned_product_id = $credit_item['product_id'];
-
+                    
 
                     $real_cut_id = $invoice['cut_id'];
 
@@ -294,12 +295,13 @@
 
                     $returned_product_count = mysqli_num_rows($returned_product_result);
                     if($returned_product_count > 0){
-                        $creditNoteCheck = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE product_id='$returned_product_id'");
+                        $creditNoteCheck = mysqli_query($conn, "SELECT `credit_note_items`.*,`product`.cost FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id'");
                         
                         while($creditItem = mysqli_fetch_array($creditNoteCheck)){
                             $weight = weightFromProductIDArray([$returned_product_id]);
+                            $weightReturned += $weight;
                             $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
-                            
+                            $cost_value += number_format((float)$creditItem['cost'] * $weight, 2, '.', '');
                             $credit_qty += $creditItem['quantity'];
                         }
                     }
@@ -344,20 +346,20 @@
                     }
                 ?>
             </td>
-            <td style="color:red;"><?php echo $weight_total; ?> kg</td>
+            <td style="color:red;"><?php echo $weightReturned; ?> kg</td>
             <td style="color:red;">
                 <?php
-                    $sell_formatted = number_format($total_product_sell, 2);
+                    $sell_formatted = number_format($credit_value, 2);
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
                 £<?php echo $sell_formatted; ?></td>
             </td>
             <td style="color:red;">
-                £<?php echo number_format($total_product_cost, 2); ?>
+                £<?php echo number_format($cost_value, 2); ?>
             </td>
             <td style="color:red;">
             <?php
-                $profit = $total_product_cost - $total_product_sell;
+                $profit = $cost_value - $credit_value;
             ?>
                 <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>
