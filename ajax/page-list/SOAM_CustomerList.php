@@ -4,6 +4,7 @@
     require('../customer_soa_results_function.php');
     $name = $_POST['searchterm'];
 	$showBal = false;
+	$rollingTotal = 0;
 	if (isset($_POST['showBal']) && $_POST['showBal'] == 1) $showBal = true;
 ?>
 	<div class="cutsContainer">
@@ -37,6 +38,8 @@
 	}
 	foreach($workingSet as $customer)
 	{
+		if ($customer['balance'] == 0) continue;
+		$rollingTotal = $rollingTotal + $customer['balance'];
 	?>
 	<table width="100%">
 		<tr><td align="center" class="pos">
@@ -54,10 +57,24 @@
 				</table>
 			</a>
 		</td></tr>
-	</table>
 	<?php
 	}
-	?></div><?php
+	?>
+	<tr><td align="center" class="pos">
+			<a href="#" class="intake">
+				<table width="100%" border="0">
+				<tr>
+					<td width="100" align="left"></td>
+					<td align="center" style="font-size: 18px;">Total: </td>
+					<td width="100" align="right">
+						<?php if ($showBal) {
+							echo "£".number_format($rollingTotal,2);								 
+						}?></td>
+				</tr>
+				</table>
+			</a>
+		</td></tr>
+	</table></div><?php
 
 
 ?>

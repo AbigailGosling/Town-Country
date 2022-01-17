@@ -49,7 +49,7 @@ if (!empty($paymentID)) {
         <tbody>
         <?php
 
-        $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
+        $invoicePayments = mysqli_query($conn, "SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = $invoiceID");
 
         $runningBalance = $invoiceAmount;
         $i = 0;
@@ -147,9 +147,8 @@ if (!empty($paymentID)) {
 
             $queryBits .= ' id = ' . $weightid . ' || ';
         }
-        $kg = 0;
         foreach($productIDArray as $productID){
-
+            $kg = 0;
             $x1 = "SELECT * FROM `product` WHERE id='$productID'";
             $y1 = mysqli_query($conn, $x1);
             $product = mysqli_fetch_array($y1);
@@ -308,7 +307,7 @@ if (!empty($paymentID)) {
                 $payment_id = $selectedPaymentData['id'];
 
                 
-                $creditNoteResult = mysqli_query($conn, "SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=$payment_id");
+                $creditNoteResult = mysqli_query($conn, "SELECT GROUP_CONCAT(product_id) as product_ids FROM `vc` WHERE payment_id=$payment_id");
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
 
@@ -551,6 +550,6 @@ if (!empty($paymentID)) {
     }
 
     function isNumber(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n) && n > 0;
+        return !isNaN(parseFloat(n)) && isFinite(n);
     }
 </script>
