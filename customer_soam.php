@@ -243,7 +243,7 @@ $serverRoot = $_SERVER["SERVER_NAME"];
 <div class="clearfix"></div>
 <script type="text/javascript">
 var invoiceCount = 0;
-var crCount = 0;                 
+var crCount = -1;                 
 var renderCompleted = false;
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -362,11 +362,17 @@ function isNumber(n) {
     }
     function getInvoices() {
         $('.loadingContainer').show();
-        if (dataParsed[invoiceCount].creditNotes.length == crCount)
+        if (crCount == -1 && invoiceCount < dataParsed.length)
         {
-            invoiceCount++;
+            crCount = 0;
+            $.get("invoice.php", {
+                id: dataParsed[invoiceCount].id,
+                adv: "Y"
+            },
+            getInvoicesResp);
+            return;
         }
-        else
+        else if (dataParsed[invoiceCount] && dataParsed[invoiceCount].hasOwnProperty("creditNotes") && dataParsed[invoiceCount].creditNotes.length > crCount)
         {
 
             $.get("/ajax/generatePDFcreditnote.php", {
@@ -378,23 +384,24 @@ function isNumber(n) {
             getInvoicesResp);
             crCount++;
             return;
-        }
-        if (invoiceCount < dataParsed.length)
-        {
-            crCount = 0;
-            $.get("invoice.php", {
-                id: dataParsed[invoiceCount].id,
-                adv: "Y"
-            },
-            getInvoicesResp);
-        }
+        }      
         else
-        { 
-            $('.loadingContainer').hide();
-            $('.noprint').show();
-            console.log("Finished Rendering");
-            renderCompleted = true;
+        {
+            
+            invoiceCount++;
+            crCount = -1;
+            if (invoiceCount < dataParsed.length)
+            {
+                getInvoices();
+            }
+            else
+            {
+                $('.loadingContainer').hide();
+                $('.noprint').show();
+                renderCompleted = true;
+            }
         }
+        
     }
     function getInvoicesResp(data, status) {
         $('#invoiceZone').append(data);
@@ -431,7 +438,6 @@ function isNumber(n) {
         getRender();
     }
     function logResponse(data, status){
-        console.log(data);
         $('.loadingContainer').hide();
     }
     //Function that generates a PDF of the invoice using MPDF and stores it in '/PDF/Statement_{ID}_{Datestamp}.pdf'

@@ -45,27 +45,31 @@ function check_customer_outstanding_cache($customer_id)
     else $cacheRow['newRow'] = false;
 
     $cacheRow['outdated'] = false;
-
-    $check = mysqli_query($conn, "SELECT MAX(id) as max_id,GROUP_CONCAT(id) as list FROM pickerSheets WHERE customer_id = $customer_id");
-    $check = mysqli_fetch_assoc($check);
-    $invoiceList = $check['list'];
-    $check = $check['max_id'];
-    
+    $invoiceList = array();
+    $check = mysqli_query($conn, "SELECT id FROM pickerSheets WHERE customer_id = $customer_id ORDER BY `pickerSheets`.`id` DESC");
+    $row = mysqli_fetch_assoc($check);
+    $invoiceList[] = $row['id'];
+    $highest = $row['id'];
+    while($row = mysqli_fetch_assoc($check))
+    {
+        $invoiceList[] = $row['id'];
+    }
+    $check = $highest;
+    $invoiceList = implode(",",$invoiceList);
     if (array_key_exists('pickersheet_id',$cacheRow) == false || $check != $cacheRow['pickersheet_id']) 
     {
         $cacheRow['pickersheet_id'] = $check;
-        $cacheRow['outdated'] = true;
+        $cacheRow['pickersheet_id_outdated'] = $cacheRow['outdated'] = true;
     }
 
-    $check = mysqli_query($conn, "SELECT MAX(id) as id FROM invoice_payments WHERE invoice_id IN ($invoiceList)");
-    $check = mysqli_fetch_assoc($check)['id'];
-    
+    $check = mysqli_query($conn, "SELECT MAX(id) as id FROM invoice_payments WHERE invoice_id IN (".$invoiceList.")");
+    $check = mysqli_fetch_assoc($check);
+    $check = $check['id'];
     if (array_key_exists('invoice_payment_id',$cacheRow) == false || $check != $cacheRow['invoice_payment_id']) 
     {
         $cacheRow['invoice_payment_id'] = $check;
-        $cacheRow['outdated'] = true;
+        $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
-
     return $cacheRow;
 }
 function update_customer_outstanding_cache($cacheRow)

@@ -2060,3 +2060,22 @@ textarea {
 	position: sticky; 
 	background: #e2e2e2;
 }
+.mail-selector{
+	background: #fff;
+	margin: 0 auto;
+	margin-top: 7px;
+	padding: 0 10px 0 10px;
+	display: block;
+	clear: both;
+	color: #3faddd;
+	font-size: 14px;
+	line-height: 40px;
+	text-align: left;
+	text-decoration: none;
+	text-transform: capitalize;
+	font-family: 'OpenSans_Semibold';
+	transition: all .15s ease-in-out;
+	border: 1px #3faddd solid;
+	cursor: pointer;
+	position: relative;
+}

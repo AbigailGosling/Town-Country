@@ -31,7 +31,7 @@ function generate_uuid() {
 
 //This function renders a PDF document from a string using mPDF
 function renderPDF($customerID){
-
+	global $conn;
 	$statementDate = time();
 	$filename2 = 'Statement_'.$customerID.'_'.$statementDate.'.pdf';
 	$filename = '../PDF/' . $filename2;
@@ -52,7 +52,6 @@ function renderPDF($customerID){
 					document.querySelector("#loginform").submit();
 				})()'
 			)->waitForPageReload();
-
 		$page->navigate('http://localhost/customer_soam.php?id='.$customerID)->waitForNavigation();
 		$hasResult = false;
 		$start = time();
@@ -62,9 +61,9 @@ function renderPDF($customerID){
 			{
 				$evaluation = $page->evaluate(
 					'(() => {
-							return renderComplete;
+							return renderComplete();
 						})()'
-					)->getReturnValue(500);
+					)->getReturnValue(10);
 				
 			}
 			catch (Exception $e) {}
@@ -77,10 +76,10 @@ function renderPDF($customerID){
 			{
 				break;
 			}
-			usleep(100000);
+			sleep(1);
 		}
 		// pdf
-		if (!$hasResult) die('error');
+		if (!$hasResult) die("error");
 		$out= $page->pdf(['printBackground' => false]);
 		$out->saveToFile($filename,500000);
 		$page->navigate('http://localhost/logout.php')->waitForNavigation();
@@ -88,16 +87,31 @@ function renderPDF($customerID){
 		// bye
 		$browser->close();
 	}
+	$customerQueryResult = mysqli_query($conn, "SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
+	$customer = mysqli_fetch_assoc($customerQueryResult);
+	if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
+	{
+		$customer_emails = explode(";",$customer['accounts_email']);
+	}
+	else
+	{
+		$customer_emails = explode(";",$customer['internal_email']);
+	}
+	
 	//SOCKETLABS CONFIG//
 	$SocketID = 42191;
 	$APIKey = "Kr86CiGz24Bes9F7Wyk5";
 	//Set up the socketlabs client
 	$client = new SocketLabsClient($SocketID, $APIKey);
 	$message = new BasicMessage();
-	$message->subject = "TEST EMAIL: Statement of Account from Town and Country Meats";
-	$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group.</html>";
-	$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk");
-	$message->addToAddress("andrew.gosling@tang.solutions");
+	$message->subject = "Statement of Account from Town and Country Meats";
+	$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
+	$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
+
+	foreach($customer_emails as $email)
+	{
+		$message->addToAddress($email);
+	}
     
 	$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . DIRECTORY_SEPARATOR .$filename, $filename2, "PDF", "Statement of Account");
 	$message->attachments[] = $attachment;
