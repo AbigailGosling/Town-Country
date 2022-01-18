@@ -2,11 +2,11 @@
     require('../functions.php');
     $customerPicksheets = json_decode($_POST['picksheet'],true);
     $customer_id = $_POST['customer_id'];
-    $showAll = ($_POST['showAll'] == 1);
+    $showAll = ($_POST['showAll'] == "Y");
     $picksheet = null;
     for ($i = 0; $i < count($customerPicksheets);$i++) {
         $picksheet = $customerPicksheets[$i];
-        if(!$showAll && $picksheet['outstanding'] == 0) continue;
+        if(!$showAll && ($picksheet['outstanding'] > -0.01 && $picksheet['outstanding'] < 0.01)) continue;
     ?>
     <tr class="<?php if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">  
         <td data-order="<?php echo $picksheet['id']; ?>"><a href="/invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>

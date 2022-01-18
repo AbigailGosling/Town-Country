@@ -22,14 +22,14 @@
 	<h1>Town &amp; Country</h1>
 	<div id="login">
 		<h2>Welcome</h2>
-		<form method="post" action="script_login.php">
-			<input type="text" name="email" placeholder="Email">
-			<input type="password" name="password" placeholder="Password">
+		<form method="post" id="loginform" action="script_login.php">
+			<input type="text" name="email" id="email" placeholder="Email">
+			<input type="password" name="password" id="password" placeholder="Password">
 			<div id="remember">
 				<span>Stayed Signed In</span>
 				<input type="checkbox" name="remember">
 			</div>
-			<input type="submit" name="submit" value="Sign In">
+			<input type="submit" name="btnsubmit" value="Sign In">
 		</form>
 	</div>
 </main>

@@ -1549,65 +1549,53 @@
                 
 		$outpalletCount = mysqli_num_rows($outpalletResult2);
 
-
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
 			$weightids = explode(',', $outpallet['weight_ids']);
- 
-			$productIDArray = array();
 						
-			foreach($weightids as $weightid){
-				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
-				$y = mysqli_query($conn, $x);
-				$weight = mysqli_fetch_array($y);
+			$x = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).")";
+            $y = mysqli_query($conn, $x);	
+			$products = [];
+			$pickerItems = [];
+			while($weightRow = mysqli_fetch_array($y)){
+				$productID = $weightRow['product_id'];
+
+				if (array_key_exists($productID,$products) == false)
+				{
+					$x1 = "SELECT * FROM `product` WHERE id=".$productID;
+					$y1 = mysqli_query($conn, $x1);
+					$products[$productID] = mysqli_fetch_array($y1);	
+				}	
+				$product = $products[$productID];
 				
-				if(!in_array($weight['product_id'], $productIDArray)){
-					array_push($productIDArray, $weight['product_id']);
+				if (array_key_exists($pickersheet_id . "-" . $productID,$pickerItems) == false)
+				{
+					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
+					$howManyY = mysqli_query($conn, $howManyX);
+					$pickerItems[$pickersheet_id . "-" . $productID] = mysqli_fetch_array($howManyY);
 				}
-
-				$queryBits .= ' id = ' . $weightid . ' || ';
-			}
-
-			foreach($productIDArray as $productID){
-				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
-				$y1 = mysqli_query($conn, $x1);
-				$product = mysqli_fetch_array($y1);
-					
-
-				$x2 = "SELECT * FROM `weights` WHERE ";
-				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
-				$y2 = mysqli_query($conn, $x2);
-				$count = mysqli_num_rows($y2);
-
-								
-				$productID = $product['id'];
-				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
-				$howManyY = mysqli_query($conn, $howManyX);
-				$pickerItem = mysqli_fetch_array($howManyY);
-						
+				$pickerItem = $pickerItems[$pickersheet_id . "-" . $productID];
+				
 				$kg = 0;
-						
-				while($weightRow = mysqli_fetch_array($y2)){
-					
-					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-						$tw = $weightRow['weight_gross'];
-					}else{
-						$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
-					}
-					
-					$kg = $kg + $tw;
-					
-					$kg = number_format($kg, 3, '.', '');
-				}
-						
-				if($product['unit'] == 'PPC'){
-					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+				
+				if($weightRow['weight_tear'] == $weightRow['weight_gross']){
+					$tw = $weightRow['weight_gross'];
 				}else{
-					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+					$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
 				}
-			}
+				
+				$kg = $kg + round($tw,3,PHP_ROUND_HALF_DOWN);
+				
+				$kg = number_format($kg, 3, '.', '');
+
+				if($product['unit'] == 'PPC'){
+					$totalPrice += (float) $pickerItem['price'];
+				}else{
+					$totalPrice += (float)$kg * $pickerItem['price'];
+				}
+			}			
 		}
         
-		return $totalPrice;
+		return (float) round($totalPrice,2,PHP_ROUND_HALF_UP);
 	}
 
 	function getInvoiceCreditNoteTotal($invoice_id){
@@ -1735,10 +1723,10 @@
 		
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
 			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
-				$price += $creditNoteItem['price'] * $creditNoteItem['quantity'];
+				$price += floorDec($creditNoteItem['price'] * $creditNoteItem['quantity']);
 			}else{
 				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
-				$price += ($creditNoteItem['price'] * $weight);
+				$price += floorDec(($creditNoteItem['price'] * $weight));
 			}
 		}
 		
@@ -1772,7 +1760,67 @@
 		return true;
 	}
 
+	function getInvoiceCreditNotes($invoice_id){
+		global $conn;
 
+		$result = mysqli_query($conn, "SELECT * FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id='$invoice_id'");
+		$array = array();
+		while ($row = mysqli_fetch_assoc($result))
+		{	
+			$row['noteItems'] = array();
+			$cnq = mysqli_query($conn, 
+				"SELECT 
+					`credit_note_items`.id AS 'credit_note_items_id',
+					`credit_note_items`.payment_id AS 'credit_note_items_payment_id',
+					`credit_note_items`.product_id AS 'credit_note_items_product_id',
+					`credit_note_items`.quantity AS 'credit_note_items_quantity',
+					`credit_note_items`.price AS 'credit_note_items_price',
+					`credit_note_items`.description AS 'credit_note_items_description',
+					product.id AS 'product_id',
+					product.pallet_id AS 'product_pallet_id',
+					product.cut_id AS 'product_cut_id',
+					product.brand_id AS 'product_brand_id',
+					product.nationality_id AS 'product_nationality_id',
+					product.cooling_id AS 'product_cooling_id',
+					product.status AS 'product_status',
+					product.range_from AS 'product_range_from',
+					product.range_to AS 'product_range_to',
+					product.ubbb AS 'product_ubbb',
+					product.unit AS 'product_unit',
+					product.comments AS 'product_comments',
+					product.best_by AS 'product_best_by',
+					product.pricetype AS 'product_pricetype',
+					product.cost AS 'product_cost',
+					product.price AS 'product_price',
+					product.box_id AS 'product_box_id',
+					product.weightnote AS 'product_weightnote',
+					product.product_temp AS 'product_product_temp'
+				FROM `credit_note_items`
+				INNER JOIN `product` ON `credit_note_items`.product_id = product.id WHERE credit_note_items.payment_id = ".$row['id']);
+			
+				while ($cnr = mysqli_fetch_assoc($cnq))
+				{
+					if($cnr['product_id'] == 0 || weightTypeOfProduct($cnr['product_id']) == 'PPC'){ # bespoke credit note, not attached product
+						$cnr['finalValue'] = floorDec($cnr['credit_note_items_price'] * $cnr['credit_note_items_quantity']);
+					}else{
+						$weight = weightFromProductIDArray([$cnr['product_id']]);
+						$cnr['finalValue'] = floorDec(($cnr['credit_note_items_price'] * $weight));
+					}
+					$row['noteItems'][] = $cnr;
+				}
+			$array[] = $row;
+		}
+
+   		return $array;
+	}
+	function floorDec($val, $precision = 2) {
+		if ($precision < 0) { $precision = 0; }
+		$numPointPosition = intval(strpos($val, '.'));
+		if ($numPointPosition === 0) { //$val is an integer
+			return $val;
+		}
+		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
+	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
 
 	

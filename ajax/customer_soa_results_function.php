@@ -3,11 +3,11 @@ function get_customer_soa_results($customer_id,$adv)
 {
     global $conn;
     $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
-
     $ret = [];
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
+
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
-        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
+        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_UP);
 
         $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
         $picksheet['date'] = date('d/m/Y', strtotime($picksheet['date']));
@@ -21,9 +21,10 @@ function get_customer_soa_results($customer_id,$adv)
         }
 	        
 	    $picksheet['outstanding'] = (float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'];
-        if ($picksheet['outstanding'] == 0 && $adv != true) continue;
+        if ($adv == true && ($picksheet['outstanding'] > -0.01 && $picksheet['outstanding'] < 0.01)) continue;
         $picksheet['credited'] = totalValueCreditedOnInvoiceID($picksheet['id']);
         $picksheet['hasReturns'] = doesInvoiceHaveReturns($picksheet['id']);
+        $picksheet['creditNotes'] = getInvoiceCreditNotes($picksheet['id']);
         $picksheet['hasCreditNote'] = doesInvoiceHaveCreditNote($picksheet['id']);
 
         $estimated_delivery_date = strtotime(str_replace('/', '-', $picksheet['estimated_delivery_date']));
@@ -31,6 +32,7 @@ function get_customer_soa_results($customer_id,$adv)
         $ret[] = $picksheet;
 
     }
+
     return $ret;
 }
 function check_customer_outstanding_cache($customer_id)
@@ -43,27 +45,31 @@ function check_customer_outstanding_cache($customer_id)
     else $cacheRow['newRow'] = false;
 
     $cacheRow['outdated'] = false;
-
-    $check = mysqli_query($conn, "SELECT MAX(id) as max_id,GROUP_CONCAT(id) as list FROM pickerSheets WHERE customer_id = $customer_id");
-    $check = mysqli_fetch_assoc($check);
-    $invoiceList = $check['list'];
-    $check = $check['max_id'];
-    
+    $invoiceList = array();
+    $check = mysqli_query($conn, "SELECT id FROM pickerSheets WHERE customer_id = $customer_id ORDER BY `pickerSheets`.`id` DESC");
+    $row = mysqli_fetch_assoc($check);
+    $invoiceList[] = $row['id'];
+    $highest = $row['id'];
+    while($row = mysqli_fetch_assoc($check))
+    {
+        $invoiceList[] = $row['id'];
+    }
+    $check = $highest;
+    $invoiceList = implode(",",$invoiceList);
     if (array_key_exists('pickersheet_id',$cacheRow) == false || $check != $cacheRow['pickersheet_id']) 
     {
         $cacheRow['pickersheet_id'] = $check;
-        $cacheRow['outdated'] = true;
+        $cacheRow['pickersheet_id_outdated'] = $cacheRow['outdated'] = true;
     }
 
-    $check = mysqli_query($conn, "SELECT MAX(id) as id FROM invoice_payments WHERE invoice_id IN ($invoiceList)");
-    $check = mysqli_fetch_assoc($check)['id'];
-    
+    $check = mysqli_query($conn, "SELECT MAX(id) as id FROM invoice_payments WHERE invoice_id IN (".$invoiceList.")");
+    $check = mysqli_fetch_assoc($check);
+    $check = $check['id'];
     if (array_key_exists('invoice_payment_id',$cacheRow) == false || $check != $cacheRow['invoice_payment_id']) 
     {
         $cacheRow['invoice_payment_id'] = $check;
-        $cacheRow['outdated'] = true;
+        $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
-
     return $cacheRow;
 }
 function update_customer_outstanding_cache($cacheRow)
