@@ -289,7 +289,6 @@ function isNumber(n) {
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
         dataParsed = JSON.parse(data);   
-        console.log(dataParsed);  
         getRender();
     }
     function getRender(){

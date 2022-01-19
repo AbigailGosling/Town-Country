@@ -8,6 +8,7 @@ require_once '../vendor/autoload.php';
 use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;
 use Socketlabs\Message\EmailAddress;
+use Socketlabs\Message\BulkRecipient;
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Page;
 
@@ -101,24 +102,22 @@ function renderPDF($customerID){
 	//SOCKETLABS CONFIG//
 	$SocketID = 42191;
 	$APIKey = "Kr86CiGz24Bes9F7Wyk5";
+	$client = new SocketLabsClient($SocketID, $APIKey);
 	//Set up the socketlabs client
+	$message = new BasicMessage();
+	$message->subject = "Statement of Account from Town and Country Meats";
+	$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
+	$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
 	foreach($customer_emails as $email)
-	{
-		$client = new SocketLabsClient($SocketID, $APIKey);
-		$message = new BasicMessage();
-		$message->subject = "Statement of Account from Town and Country Meats";
-		$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
-		$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-
-		$message->addToAddress(new EmailAddress(trim($email)));
-	
-		$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . DIRECTORY_SEPARATOR .$filename, $filename2, "PDF", "Statement of Account");
-		$message->attachments[] = $attachment;
-		//Generate a Unique Identifier for this Email
-		$message->messageId = generate_uuid();
-		echo $message->messageId . ";";
-		$response = $client->send($message);
+	{	
+		$message->addToAddress(new BulkRecipient(trim($email)));
 	}
+
+	$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . DIRECTORY_SEPARATOR .$filename, $filename2, "PDF", "Statement of Account");
+	$message->attachments[] = $attachment;
+	//Generate a Unique Identifier for this Email
+	$message->messageId = generate_uuid();
+	$response = $client->send($message);
     return "done";
 
 	
