@@ -1549,53 +1549,65 @@
                 
 		$outpalletCount = mysqli_num_rows($outpalletResult2);
 
+
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
 			$weightids = explode(',', $outpallet['weight_ids']);
+ 
+			$productIDArray = array();
 						
-			$x = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).")";
-            $y = mysqli_query($conn, $x);	
-			$products = [];
-			$pickerItems = [];
-			while($weightRow = mysqli_fetch_array($y)){
-				$productID = $weightRow['product_id'];
-
-				if (array_key_exists($productID,$products) == false)
-				{
-					$x1 = "SELECT * FROM `product` WHERE id=".$productID;
-					$y1 = mysqli_query($conn, $x1);
-					$products[$productID] = mysqli_fetch_array($y1);	
-				}	
-				$product = $products[$productID];
+			foreach($weightids as $weightid){
+				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
+				$y = mysqli_query($conn, $x);
+				$weight = mysqli_fetch_array($y);
 				
-				if (array_key_exists($pickersheet_id . "-" . $productID,$pickerItems) == false)
-				{
-					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
-					$howManyY = mysqli_query($conn, $howManyX);
-					$pickerItems[$pickersheet_id . "-" . $productID] = mysqli_fetch_array($howManyY);
+				if(!in_array($weight['product_id'], $productIDArray)){
+					array_push($productIDArray, $weight['product_id']);
 				}
-				$pickerItem = $pickerItems[$pickersheet_id . "-" . $productID];
-				
+
+				$queryBits .= ' id = ' . $weightid . ' || ';
+			}
+
+			foreach($productIDArray as $productID){
+				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
+				$y1 = mysqli_query($conn, $x1);
+				$product = mysqli_fetch_array($y1);
+					
+
+				$x2 = "SELECT * FROM `weights` WHERE ";
+				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
+				$y2 = mysqli_query($conn, $x2);
+				$count = mysqli_num_rows($y2);
+
+								
+				$productID = $product['id'];
+				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
+				$howManyY = mysqli_query($conn, $howManyX);
+				$pickerItem = mysqli_fetch_array($howManyY);
+						
 				$kg = 0;
-				
-				if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-					$tw = $weightRow['weight_gross'];
-				}else{
-					$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+						
+				while($weightRow = mysqli_fetch_array($y2)){
+					
+					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
+						$tw = $weightRow['weight_gross'];
+					}else{
+						$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+					}
+					
+					$kg = $kg + $tw;
+					
+					$kg = number_format($kg, 3, '.', '');
 				}
-				
-				$kg = $kg + round($tw,3,PHP_ROUND_HALF_DOWN);
-				
-				$kg = number_format($kg, 3, '.', '');
-
+						
 				if($product['unit'] == 'PPC'){
-					$totalPrice += (float) $pickerItem['price'];
+					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 				}else{
-					$totalPrice += (float)$kg * $pickerItem['price'];
+					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
 				}
-			}			
+			}
 		}
         
-		return (float) round($totalPrice,2,PHP_ROUND_HALF_UP);
+		return $totalPrice;
 	}
 
 	function getInvoiceCreditNoteTotal($invoice_id){

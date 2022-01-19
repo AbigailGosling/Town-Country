@@ -7,7 +7,7 @@ function get_customer_soa_results($customer_id,$adv)
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
 
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
-        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_UP);
+        $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
 
         $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
         $picksheet['date'] = date('d/m/Y', strtotime($picksheet['date']));
@@ -20,8 +20,8 @@ function get_customer_soa_results($customer_id,$adv)
             $picksheet['invoicePaid'] = true;
         }
 	        
-	    $picksheet['outstanding'] = (float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'];
-        if ($adv == true && ($picksheet['outstanding'] > -0.01 && $picksheet['outstanding'] < 0.01)) continue;
+	    $picksheet['outstanding'] = round((float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'],2,PHP_ROUND_HALF_DOWN);
+        if ($adv == true && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
         $picksheet['credited'] = totalValueCreditedOnInvoiceID($picksheet['id']);
         $picksheet['hasReturns'] = doesInvoiceHaveReturns($picksheet['id']);
         $picksheet['creditNotes'] = getInvoiceCreditNotes($picksheet['id']);

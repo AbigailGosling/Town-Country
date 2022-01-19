@@ -8,7 +8,7 @@
     //Check if due days is a string if so strip out the numbers
     for ($i = 0; $i < count($customerPicksheets);$i++) {
         $picksheet = $customerPicksheets[$i];
-        if(!$showAll && ($picksheet['outstanding'] > -0.01 && $picksheet['outstanding'] < 0.01)) continue;
+        //if(!$showAll && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
     ?>
     <tr class="<?php if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">  
         <td <?php if ($i != 0) { ?>style="border-top:1px solid lightgray"<?php } ?> data-order="<?php echo $picksheet['id']; ?>"><?php echo "IN: ".$picksheet['id']; ?>
