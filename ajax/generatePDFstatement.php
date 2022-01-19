@@ -102,23 +102,23 @@ function renderPDF($customerID){
 	$SocketID = 42191;
 	$APIKey = "Kr86CiGz24Bes9F7Wyk5";
 	//Set up the socketlabs client
-	$client = new SocketLabsClient($SocketID, $APIKey);
-	$message = new BasicMessage();
-	$message->subject = "Statement of Account from Town and Country Meats";
-	$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
-	$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-
 	foreach($customer_emails as $email)
 	{
-		$message->addToAddress($email);
-	}
-    
-	$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . DIRECTORY_SEPARATOR .$filename, $filename2, "PDF", "Statement of Account");
-	$message->attachments[] = $attachment;
-	//Generate a Unique Identifier for this Email
-	$message->messageId = generate_uuid();
+		$client = new SocketLabsClient($SocketID, $APIKey);
+		$message = new BasicMessage();
+		$message->subject = "Statement of Account from Town and Country Meats";
+		$message->htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
+		$message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
 
-	$response = $client->send($message);
+		$message->addToAddress(new EmailAddress(trim($email)));
+	
+		$attachment = \Socketlabs\Message\Attachment::createFromPath(__DIR__ . DIRECTORY_SEPARATOR .$filename, $filename2, "PDF", "Statement of Account");
+		$message->attachments[] = $attachment;
+		//Generate a Unique Identifier for this Email
+		$message->messageId = generate_uuid();
+		echo $message->messageId . ";";
+		$response = $client->send($message);
+	}
     return "done";
 
 	
