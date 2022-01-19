@@ -108,6 +108,23 @@
 			xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     $('#intakeAjax').html(this.responseText);
+					$('i.img-mail-selector').hide();
+					$('a.mail-selector').click(function(e) {
+							var t = $( "#img-"+this.id);
+							var s = this.id.replace("mail-selector-","");
+							var i = toSend.indexOf(s);
+							if ($(t).is(":hidden"))
+							{
+								if (i == -1) toSend.push(s);											
+								t.show();
+							}
+							else
+							{
+								if (i > -1) toSend.splice(i,1);
+								t.hide();
+							}
+							
+						});
                 }
             };
 

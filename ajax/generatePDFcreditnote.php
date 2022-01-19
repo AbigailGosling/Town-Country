@@ -466,7 +466,7 @@
 		echo "<div class='printme'>";
 		
 		echo $header;
-		if ($_GET['count'] <= 1)echo "<style type='text/css'>$css</style>"; 
+		echo "<style type='text/css'>$css</style>"; 
 		 for($i = 0; $i < count($pageArray); $i++){
 			$page = $pageArray[$i];
 			if ($i != 0) echo $footer;
