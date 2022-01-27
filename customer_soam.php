@@ -288,7 +288,8 @@ function isNumber(n) {
 
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
-        dataParsed = JSON.parse(data);   
+        dataParsed = JSON.parse(data);
+        console.log(dataParsed);
         getRender();
     }
     function getRender(){
@@ -439,6 +440,8 @@ function isNumber(n) {
         getRender();
     }
     function logResponse(data, status){
+        console.log(status);
+        console.log(data);
         $('.loadingContainer').hide();
     }
     //Function that generates a PDF of the invoice using MPDF and stores it in '/PDF/Statement_{ID}_{Datestamp}.pdf'

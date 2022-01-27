@@ -24,7 +24,7 @@
 			$cache_check = check_customer_outstanding_cache($customer['id']);
 			if ($cache_check['outdated'] == true)
 			{
-				$cache_check['outstanding2'] = $cache_check['outstanding'];
+				$cache_check['outstanding_old'] = $cache_check['outstanding'];
 				$cache_check['outstanding'] = (float)totalOutstandingForCustomer($customer['id']);
 				update_customer_outstanding_cache($cache_check);
 			}

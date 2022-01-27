@@ -1724,26 +1724,13 @@
 
 	function totalValueCreditedOnInvoiceID($invoice_id){
 		global $conn;
-		
-		$paymentsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) AS ids FROM `invoice_payments` WHERE invoice_id='$invoice_id'");
-		$paymentData = mysqli_fetch_array($paymentsResult);
-
-		$payment_ids = $paymentData['ids'];
-		
 		$price = 0;
-		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
-		
-		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
-			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
-				$price += floorDec($creditNoteItem['price'] * $creditNoteItem['quantity']);
-			}else{
-				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
-				$price += floorDec(($creditNoteItem['price'] * $weight));
-			}
-		}
-		
-		return $price;
-	
+		$paymentsResult = mysqli_query($conn, "SELECT id FROM `invoice_payments` WHERE invoice_id='$invoice_id'");
+		while ($paymentData = mysqli_fetch_assoc($paymentsResult))
+		{
+			$price = $price + creditNoteTotal($paymentData['id']);
+		}		
+		return $price;	
  	}
 
 	function doesInvoiceHaveReturns($invoice_id){
@@ -1808,7 +1795,7 @@
 					product.weightnote AS 'product_weightnote',
 					product.product_temp AS 'product_product_temp'
 				FROM `credit_note_items`
-				INNER JOIN `product` ON `credit_note_items`.product_id = product.id WHERE credit_note_items.payment_id = ".$row['id']);
+				LEFT JOIN `product` ON `credit_note_items`.product_id = product.id WHERE credit_note_items.payment_id = ".$row['id']);
 			
 				while ($cnr = mysqli_fetch_assoc($cnq))
 				{

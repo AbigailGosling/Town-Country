@@ -70,7 +70,7 @@
 	$contactnumber = mysqli_real_escape_string($conn, $_POST['contactnumber']);
 	
 	
-	$customer_email = mysqli_real_escape_string($conn, $_POST['customer_email']);
+	$customer_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['customer_email']));
 	
 	$companyregno = mysqli_real_escape_string($conn, $_POST['companyregno']);
 	
@@ -94,7 +94,7 @@
 	$tel_number = mysqli_real_escape_string($conn, $_POST['tel_number']);
 	
 		
-	$internal_email = mysqli_real_escape_string($conn, $_POST['internal_email']);
+	$internal_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['internal_email']));
 
 	
 	$credit_terms = mysqli_real_escape_string($conn, $_POST['credit_terms']);
@@ -116,7 +116,7 @@
 	$current_outstanding = (float) $current_outstanding - (float) $payment_received;
 	
 
-	$accounts_email = mysqli_real_escape_string($conn, $_POST['accounts_email']);
+	$accounts_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['accounts_email']));
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	
 	$default_salesman_id = mysqli_real_escape_string($conn, $_POST['default_salesman_id']);

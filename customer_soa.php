@@ -50,7 +50,7 @@ include('includes/frontHeader.php');
                 <tr class="heading">
                     <th align="left" class="sticky-header">Invoice ID</th>
                     <th align="left" class="sticky-header">Add Payment</th>
-                    <th align="left" data-orderable="false" class="sticky-header">Due Date</th>
+                    <th align="left" data-orderable="false" class="sticky-header">Delv. Date</th>
                     <th align="left" data-orderable="false" class="sticky-header">Date</th>
                     <th align="right" class="sticky-header">Value</th>
                     <th align="right" class="sticky-header">Paid</th>

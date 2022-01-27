@@ -30,10 +30,10 @@
             <?php
                 echo $picksheet['estimated_delivery_date'];
 
-                if (strtotime($picksheet['estimated_delivery_date']) < time()) { 
+                /*if (strtotime($picksheet['estimated_delivery_date']) < time()) { 
                     echo '<div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div>';
                     
-                }
+                }*/
             ?>
             </td>
 

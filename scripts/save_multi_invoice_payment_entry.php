@@ -14,7 +14,8 @@
         header('Location: /multi_invoice_payments.php?customer_id=' .$customerID);
         die();
     }
-
+    $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = $customerID";
+    $y = mysqli_query($conn, $x);
     $currentUser = $_SESSION['USER'];
     
     foreach($paymentData as $payment){

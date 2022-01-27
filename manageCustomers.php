@@ -183,7 +183,7 @@
 				
 				<tr>
 					<td class="label"><label>Email</label></td>
-					<td><input type="text" class="input" name="customer_email" value="<?php echo $data['customer_email']; ?>"></td>
+					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="customer_email"><?php echo $data['customer_email']; ?></textarea></td>
 				</tr>
 				
 			</table>
@@ -214,7 +214,7 @@
 				<tr style="vertical-align: top;">
 					<td class="label"><label>Accounts Email</label></td>
 					<td>
-						<input type="email" class="input" name="accounts_email" value="<?php echo $data['accounts_email']; ?>"><br/>
+						<textarea type="email" style="resize: none; width: 169px; height: 47px;" class="input" name="accounts_email"><?php echo $data['accounts_email']; ?></textarea><br/>
  					</td>
 				</tr>
 
@@ -237,7 +237,7 @@
 				</tr>
 				<tr>
 					<td class="label"><label>Email</label></td>
-					<td><input type="text" class="input" name="internal_email" value="<?php echo $data['internal_email']; ?>"></td>
+					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="internal_email"><?php echo $data['internal_email']; ?></textarea></td>
 				</tr>
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>
@@ -435,7 +435,13 @@
 </main>
 
 <script type="text/javascript">
-	
+	$(document).ready(function() {
+		$("[name$=_email]").keypress(function(event) {
+			if(event.which == '13') {				
+				return false;
+			}
+		});
+		});
 	$('#address2').click(function(){
 		$('#address2container').show();
 		$('#address2containerPostcode').show();
