@@ -295,9 +295,10 @@
 
                     $returned_product_count = mysqli_num_rows($returned_product_result);
                     if($returned_product_count > 0){
-                        $creditNoteCheck = mysqli_query($conn, "SELECT `credit_note_items`.*,`product`.cost FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id'");
+                        $creditNoteCheck = mysqli_query($conn, "SELECT `credit_note_items`.*,`product`.cost,`product`.pallet_id FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id' AND `product`.original_pallet_id = ".$invoice['pallet_id']);
                         
                         while($creditItem = mysqli_fetch_array($creditNoteCheck)){
+                            $creditItempallet_id = $creditItem['pallet_id'];
                             $weight = weightFromProductIDArray([$returned_product_id]);
                             $weightReturned += $weight;
                             $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
@@ -328,7 +329,7 @@
             <td style="color:red;"><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
             <td style="color:red;"><?php echo $cell_customer_name; ?> </td>
             <td style="color:red;"><?php echo $row_intake_id; ?></td>
-            <td style="color:red;"><?php echo $invoice['pallet_id']; ?></td>
+            <td style="color:red;"><?php echo $creditItempallet_id; ?></td>
             <td style="color:red;"><?php echo $cell_nationality ?></td>
             <td style="color:red;"><?php echo $cell_temp; ?></td>
             <td style="color:red;"><?php echo $cell_cutgroup; ?></td>

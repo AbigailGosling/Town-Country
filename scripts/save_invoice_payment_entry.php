@@ -19,6 +19,8 @@
     $currentUser = $_SESSION['USER'];
     
     if(empty($paymentID)){
+        $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = $customerID";
+	    $y = mysqli_query($conn, $x);
         if($paymentMethod == 'CREDIT_NOTE'){
             $amount = 0;
         }

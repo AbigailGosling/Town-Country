@@ -60,8 +60,8 @@
         <td data-sort=""></td>
         <td align="right" width="100" value=""></td>
         <td align="right" width="100" value=""></td>
-        <td align="right" style="color:red;" class="digit_credit" value="<?php echo number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ""); ?>"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
-        <td align="right" width="100" class="digit_outstanding" value="<?php echo number_format($picksheet['outstanding'], 2, ".", ""); ?>" <?php if($picksheet['outstanding'] < 0) { echo 'style="color:red;"'; } ?> ><?php if(number_format($picksheet['outstanding'], 2, ".", ",") != 0){ echo '£' . number_format($picksheet['outstanding'], 2, ".", ","); } ?></td>
+        <td align="right" style="color:red;" class="digit_credit" value="<?php echo number_format(creditNoteTotal($creditnote['id']), 2, ".", ""); ?>"><?php if(creditNoteTotal($creditnote['id'])){ echo '£' . number_format(creditNoteTotal($creditnote['id']), 2, ".", ","); }?></td>
+        <td align="right" width="100" class="digit_outstanding" value="<?php if ($j == count($picksheet['creditNotes']) -1) echo number_format($picksheet['outstanding'], 2, ".", ""); else echo 0;?>" <?php if($picksheet['outstanding'] < 0) { echo 'style="color:red;"'; } ?> ><?php if($j == count($picksheet['creditNotes']) -1 && number_format($picksheet['outstanding'], 2, ".", ",") != 0){ echo '£' . number_format($picksheet['outstanding'], 2, ".", ","); } ?></td>
     </tr>
                 <?php
             }

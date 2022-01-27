@@ -57,8 +57,7 @@
 
         if($customer['address3_4']){ $address .= ',&#13;'; }
         $address .= $customer['address3_4'];
-    }
-# 
+    } 
 ?>
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
@@ -71,7 +70,11 @@
 	</div>
 	<div align="right">
 		<h3>Invoice No: <?php echo str_pad($picksheet_id, 6, '0', STR_PAD_LEFT); ?></h3>
-		<a href="javascript:;" class="printhide" onclick="printStuff()">Print</a>
+		<div align="right" class="printhide">
+		<a href="javascript:;" onclick="printStuff()">Print</a>
+		|
+		<a href="javascript:;" onclick="emailStuff()">Email</a>
+		</div>
 	</div>
 </div>
 
@@ -267,7 +270,8 @@
 	setTimeout(() => {
 		$('#customer').val('<?php echo $customer['businessname']; ?>');
 		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
-		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');
+		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');	
+		renderCompleted = true;
 	}, 500);
 	
 	$('#customer').keyup(function(){
@@ -286,7 +290,7 @@
 		xhttp.send("searchterm=" + val);
 	
 	});
-
+	var renderCompleted = false;
 	function setCustomerDetails(customer_id, addressid, empty='false'){
 		customerID = customer_id;
 		console.log(' setCustomerDetails()');
@@ -295,6 +299,7 @@
 			$('#address').html(data);
 			$('.rating').fadeIn();
 		});
+		
 	}
 
 	function addToList(id){
@@ -391,14 +396,23 @@
 <script type="text/javascript">
 	
 	function printStuff(){
-
+		window.print();
+	}
+	function beforePrint() {
 		$('.printhide').hide();
 		$('.printenable').show();
 		$('.delivery_address_container').hide();
 
-		window.print();
-	}
+    }
 
+	function emailStuff(){
+
+		$.post("ajax/generatePDFsaleconfirm.php", {id: <?php echo $picksheet_id; ?>});
+		alert("Sent");
+	}
+	function renderComplete(){
+		return renderCompleted;
+	}
 	function printCompleted(){
 		$('.printhide').show();
 		$('.printenable').hide();
