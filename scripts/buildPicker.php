@@ -46,7 +46,7 @@
 	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note) VALUES ('$picker_id','$user_from_id','$customer_id','$estimated_delivery_date','$orderReferenceNumber','$today','$addressid','$picksheet_note')";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
-	$pickersheet_id = mysqli_insert_id($conn);
+	$_POST['id'] = $pickersheet_id = mysqli_insert_id($conn);
 	
 	$index = 0;
 	foreach ($_POST['basketRow'] as $key => $value) {
@@ -75,8 +75,9 @@
 	 
 		$index++;
 	}
+	require_once('../ajax/generatePDFsaleconfirm.php');
 	
 ?>
 <script type="text/javascript">
-	window.location.href = "<?php echo $domain; ?>/menu.php?msg=Pick Form Sent!&pickerSheets=<?php echo $pickersheet_id; ?>";
+	window.location.href = "<?php echo $domain; ?>menu.php?msg=Pick Form Sent!&pickerSheets=<?php echo $pickersheet_id; ?>";
 </script>

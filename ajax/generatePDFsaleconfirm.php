@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 //This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
 require_once('../functions.php');
 require_once('../scripts/PDFRenderer.php');
