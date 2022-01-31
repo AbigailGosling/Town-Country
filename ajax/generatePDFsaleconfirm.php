@@ -1,7 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 //This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
 require_once('../functions.php');
 require_once('../scripts/PDFRenderer.php');
@@ -29,9 +26,13 @@ function renderPDF($saleID){
 		
 	$customer_id = $picksheet['customer_id'];
 
-	$customerQueryResult = mysqli_query($conn, "SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = $customer_id");
+	$customerQueryResult = mysqli_query($conn, "SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = $customer_id");
 	$customer = mysqli_fetch_assoc($customerQueryResult);
-	if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
+	if ($customer['customer_email']!= null && $customer['customer_email']!= "")
+	{
+		$customer_emails = explode(";",$customer['customer_email']);
+	}
+	else if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
 	{
 		$customer_emails = explode(";",$customer['accounts_email']);
 	}

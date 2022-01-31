@@ -407,8 +407,10 @@
 
 	function emailStuff(){
 
-		$.post("ajax/generatePDFsaleconfirm.php", {id: <?php echo $picksheet_id; ?>});
-		alert("Sent");
+		$.post("ajax/generatePDFsaleconfirm.php", {id: <?php echo $picksheet_id; ?>},getRenderResp);
+	}
+	function getRenderResp(data, status){
+        alert("Sent");
 	}
 	function renderComplete(){
 		return renderCompleted;
