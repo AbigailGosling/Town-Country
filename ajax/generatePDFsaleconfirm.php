@@ -41,7 +41,7 @@ function renderPDF($saleID){
 		$customer_emails = explode(";",$customer['internal_email']);
 	}
 	$subject = "Sale Confirmation ".$saleID." from Town and Country Meats";
-	$htmlBody = "<html>Please find attached a sale confiramtion from Town and Country Meats Group for ".$customer['businessname']." Invoice No: ".$saleID.".</html>";
+	$htmlBody = "<html>Please find attached a sale confirmation from Town and Country Meats Group for ".$customer['businessname']." Invoice No: ".$saleID.".</html>";
 
 	$x = "UPDATE `pickerSheets` SET sent=1 WHERE id=$saleID";
 	
