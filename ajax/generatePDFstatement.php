@@ -33,7 +33,7 @@ function renderPDF($customerID){
 	$subject = "Statement of Account from Town and Country Meats";
 	$htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
 
-	return SLabsEmailer::send_email($customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
+	return SLabsEmailer::send_email($customerID,"STATEMENT",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
 	
 }
 //Main Decleration

@@ -406,11 +406,11 @@
     }
 
 	function emailStuff(){
-
 		$.post("ajax/generatePDFsaleconfirm.php", {id: <?php echo $picksheet_id; ?>},getRenderResp);
+		alert("Sent");
 	}
 	function getRenderResp(data, status){
-        alert("Sent");
+        
 	}
 	function renderComplete(){
 		return renderCompleted;
