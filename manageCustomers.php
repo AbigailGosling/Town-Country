@@ -242,7 +242,7 @@
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>
 					<td class="label"><label>Credit Terms</label></td>
-					<td><input type="number" class="input" name="credit_terms" min="-1" value="<?php echo $data['credit_terms']; ?>"></td>
+					<td><input type="text" class="input" name="credit_terms" value="<?php echo $data['credit_terms']; ?>"></td>
 				</tr>
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>

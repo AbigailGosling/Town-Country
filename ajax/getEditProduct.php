@@ -28,10 +28,6 @@
 	$xtest = "SELECT * FROM `weights` WHERE product_id='$product_id'";
 	$ytest = mysqli_query($conn, $xtest);
 	$weightCount = mysqli_num_rows($ytest);
-
-	$x4 = "SELECT * FROM intake WHERE id='$intake_id'";
-	$y4 = mysqli_query($conn, $x4);
-	$intake = mysqli_fetch_array($y4);
 			
 ?>	
 <a href="javascript:;" id="closeAddPalletEditForm" class="close closeAddPalletEditForm"></a>
@@ -165,17 +161,6 @@
 		<div id="SingleWeightDiv">
 			<label>Weight <?php if($productRow['akg'] != ''){ echo ' ['. $productRow['quantity'] . '  Cases Advised KG] ';  } ?> </label>
 			<input type="number" name="single_weight_val" value="<?php echo $weightRow['weight_gross']; ?>" id="single_weight_val">
-		</div>
-		<?php } ?>
-		<?php if($intake['returned'] == 1){ ?>
-		<div>
-			<label>Original Intake ID</label>
-			<input type="number" name="original_intake_id" id="original_intake_id" value="<?php echo $productRow['original_intake_id']; ?>">
-		</div>
-
-		<div>
-			<label>Original Pallet ID</label>
-			<input type="number" name="original_pallet_id" id="original_pallet_id" value="<?php echo $productRow['original_pallet_id']; ?>">
 		</div>
 		<?php } ?>
 		

@@ -1,10 +1,6 @@
 <?php
     require('../../functions.php');
-    ini_set('display_errors', '1');
-    ini_set('display_startup_errors', '1');
-    error_reporting(E_ALL);
-    require('../../scripts/SLabsEmailer.php');
-    use InternalScripts\SLabsEmailerStatus;
+    
     $toSkip = $_POST['toSkip'];
     $limit = 80;
 
@@ -52,20 +48,10 @@
                     </tr>
                 </table>
             </a>
- <?php
-        $mailResult = mysqli_query($conn, "SELECT `status` FROM `mail_tracking` WHERE document_id = ".$picksheet['id']." AND `type` = 'SALES_CONFIRMATION' AND `customer_id` = $customer_id ORDER BY `id` DESC limit 1");
-        $style = ""; 
-        if (mysqli_num_rows($queryResult) > 0)
-        {
-            $mailData = mysqli_fetch_assoc($mailResult);
-            if ($mailData['status']!=null) $style = "background-color:".SLabsEmailerStatus::getTrafficStatus($mailData['status']);
-        }
-         
-
-?>
+                
             
 
-            <div class="sendcontainer" <?php echo 'style="'.$style.'"'; ?>>
+            <div class="sendcontainer">
                 <div class="active" picksheetid="<?php echo $picksheet['id']; ?>" <?php if($picksheet['sent'] == 0){ echo 'style="display:none;"'; }?>>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>

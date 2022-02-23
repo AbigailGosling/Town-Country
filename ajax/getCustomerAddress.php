@@ -1,7 +1,6 @@
 <?php
 
-	require_once('../functions.php');
-	require_once('customer_soa_results_function.php');
+	require('../functions.php');
 
 	$customer_id = $_GET['id'];
 	$address_id = $_GET['address_id'];
@@ -10,14 +9,10 @@
 	$y = mysqli_query($conn, $x);
 	
 	$row = mysqli_fetch_array($y);
-	$creditCheck = precredit_check($row['id']);
+	
+	
 ?>
-<script type="text/javascript">
-	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
-	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
-	warningMessage		= "<?php echo $creditCheck['message']; ?>";
-	console.log(<?php echo json_encode($creditCheck); ?>);
-</script>
+
 <div class="col">
 	<div class="row">
 	<div class="col">
