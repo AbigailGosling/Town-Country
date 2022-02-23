@@ -31,11 +31,15 @@
 	$palletx = "UPDATE `pallet` SET storage_location='$storage_location' WHERE id='$pallet_id'";
 	$pallety = mysqli_query($conn, $pallet);
 	
+	$cost = mysqli_real_escape_string($conn, $_POST['cost']);
+	$price = mysqli_real_escape_string($conn, $_POST['price']);
 	
 	$single_weight_val = mysqli_real_escape_string($conn, $_POST['single_weight_val']);
 	
-	
-	$x = "UPDATE `product` SET pallet_id='$pallet_id', best_by='$best_by', cut_id='$cut_id', brand_id='$brand_id',nationality_id='$nationality_id',cooling_id='$temperature_id',status='0',range_from='$best_by_range_from',range_to='$best_by_range_to', ubbb='$ubbb',unit='$unit',comments='$comments'";
+	$original_intake_id = mysqli_real_escape_string($conn, $_POST['original_intake_id']);
+	$original_pallet_id = mysqli_real_escape_string($conn, $_POST['original_pallet_id']);
+
+	$x = "UPDATE `product` SET original_intake_id = $original_intake_id, original_pallet_id = $original_pallet_id, pallet_id='$pallet_id', best_by='$best_by', cut_id='$cut_id', brand_id='$brand_id',nationality_id='$nationality_id',cooling_id='$temperature_id',status='0',range_from='$best_by_range_from',range_to='$best_by_range_to', ubbb='$ubbb',unit='$unit',comments='$comments'";
 	
 	if($cost != NULL){
 		$x .= ", cost='$cost', price='$price'";
