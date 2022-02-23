@@ -3,6 +3,9 @@
 	
 	$intake_id = mysqli_real_escape_string($conn, $_GET['intake_id']);
 	$pallet_id = mysqli_real_escape_string($conn, $_GET['pallet_id']);
+	$x = "SELECT * FROM intake WHERE id='$intake_id'";
+	$y = mysqli_query($conn, $x);
+	$intake = mysqli_fetch_array($y);
 ?>
 
 <a href="javascript:;" id="closeAddPallet2" class="close closeAddPallet"></a>
@@ -126,7 +129,7 @@
 		<label>HOW MANY UNITS</label>
 		<input type="number" class="quantityWeight" onChange="updateForm()" id="quantityWeight" name="quantity">
 		</div>
-		
+
 		<div class="hideIfPacket">
 			<div class="indiweights" style="display:none;">
 			<label>Standard or catch weights?</label>
