@@ -10,7 +10,8 @@ function get_customer_soa_results($customer_id,$adv)
         $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
 
         $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
-        $picksheet['date'] = date('d/m/Y', strtotime($picksheet['date']));
+        $picksheet['datetime'] = strtotime($picksheet['date']);
+        $picksheet['date'] = date('d/m/Y', $picksheet['datetime']);
 
 	    $picksheet['paid'] = (float) round($picksheet['paid'],2,PHP_ROUND_HALF_DOWN);
         $picksheet['invoicePaid'] = false;
@@ -85,5 +86,47 @@ function update_customer_outstanding_cache($cacheRow)
         $sql = "UPDATE customer_outstanding_cache SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = ".$cacheRow['invoice_payment_id'].", `outstanding` = '".(float)$cacheRow['outstanding']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
     }
     $x = mysqli_query($conn, $sql);
+}
+function precredit_check($customer_id)
+{
+    $returningObj = mysqli_query($conn, "SELECT * FROM `customers` WHERE `id` = $customer_id");
+    $returningObj = mysqli_fetch_assoc($returningObj);
+    $returningObj['showWarning'] = false;
+    $returningObj['saleAllowed'] = true;
+
+    if ($returningObj['credit_terms'] < 0)
+    {
+        $returningObj['saleAllowed'] = false;
+        $returningObj['message'] = "Customer has been suspended, contact administrator";
+    }
+    else
+    {
+        $beyondDate = strtotime("-".$returningObj['credit_terms']);
+        $oldest = strtotime("now");
+        $outstanding = 0;
+        $details = get_customer_soa_results($customer_id,true);
+        foreach ($details as $detail)
+        {
+            if ($oldest > $detail['datetime']) $oldest = $detail['datetime'];
+            $outstanding = $outstanding + $detail['outstanding'];
+        }
+        if ($oldest < $beyondDate) 
+        {
+            $returningObj['saleAllowed'] = false;
+            $returningObj['message'] = "Customer has outstanding invoices outside of agreed credit, contact administrator";
+        }
+        else if ($outstanding > $returningObj['credit_rating']) 
+        {
+            $returningObj['saleAllowed'] = false;
+            $returningObj['message'] = "Customer is over their allowed credit limit, contact administrator";
+        }
+        else if ($outstanding > $returningObj['flaguplimit']) 
+        {
+            $returningObj['showWarning'] = true;
+            $returningObj['message'] = "Customer is approaching their allowed credit limit, contact administrator";
+        }
+
+    }
+    return $returningObj;
 }
 ?>
