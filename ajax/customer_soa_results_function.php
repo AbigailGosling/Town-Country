@@ -89,41 +89,45 @@ function update_customer_outstanding_cache($cacheRow)
 }
 function precredit_check($customer_id)
 {
-    $returningObj = mysqli_query($conn, "SELECT * FROM `customers` WHERE `id` = $customer_id");
-    $returningObj = mysqli_fetch_assoc($returningObj);
+    global $conn;
+    $customerQ = mysqli_query($conn, "SELECT * FROM `customers` WHERE `id` = $customer_id");
+    $custR = mysqli_fetch_assoc($customerQ);
     $returningObj['showWarning'] = false;
     $returningObj['saleAllowed'] = true;
 
-    if ($returningObj['credit_terms'] < 0)
+    if ($custR['credit_terms'] < 0)
     {
         $returningObj['saleAllowed'] = false;
         $returningObj['message'] = "Customer has been suspended, contact administrator";
     }
     else
     {
-        $beyondDate = strtotime("-".$returningObj['credit_terms']);
+        $beyondDate = strtotime("-".$custR['credit_terms']." days");
         $oldest = strtotime("now");
         $outstanding = 0;
         $details = get_customer_soa_results($customer_id,true);
         foreach ($details as $detail)
         {
-            if ($oldest > $detail['datetime']) $oldest = $detail['datetime'];
+            if ($oldest > $detail['datetime'] && $detail['outstanding'] > 0) $oldest = $detail['datetime'];
             $outstanding = $outstanding + $detail['outstanding'];
         }
+        $returningObj['oldest'] = $oldest;
+        $returningObj['beyondDate'] = $beyondDate;
         if ($oldest < $beyondDate) 
         {
             $returningObj['saleAllowed'] = false;
-            $returningObj['message'] = "Customer has outstanding invoices outside of agreed credit, contact administrator";
+            $returningObj['message'] = "Customer is over credit limit or terms, contact administration";
         }
-        else if ($outstanding > $returningObj['credit_rating']) 
+        else if ($outstanding > $custR['credit_rating']) 
         {
             $returningObj['saleAllowed'] = false;
-            $returningObj['message'] = "Customer is over their allowed credit limit, contact administrator";
+            $returningObj['message'] = "Customer is over credit limit or terms, contact administration";
+            $returningObj['overcredit'] = true;
         }
-        else if ($outstanding > $returningObj['flaguplimit']) 
+        else if ($outstanding > $custR['flaguplimit']) 
         {
             $returningObj['showWarning'] = true;
-            $returningObj['message'] = "Customer is approaching their allowed credit limit, contact administrator";
+            $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
         }
 
     }
