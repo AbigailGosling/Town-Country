@@ -11,10 +11,7 @@
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
 <div class="container container--pt">
-	<div class="row" id="warning" style="display: none">
-
-	</div>	  
-	<div class="row">
+	<div class="row" style="padding-top: 15px;">
 		<div class="col">
 			<label>Customer</label><br/>
 			<input class="form-control" type="text" id="customer" class="inputbox" required>
@@ -64,6 +61,7 @@
 		<div class="col"></div>
 	</div>
 	<?php } ?>
+	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
 </div>
 
 <div class="rightPanel">
@@ -523,10 +521,22 @@ function checkStock(){
 			$('#addresspostcode').prop('readonly', true);
 			$('#deliverynumber').prop('readonly', true);
 
-			if (transactionAllowed || !showWarning)
+			if (!transactionAllowed || showWarning)
 			{
-				$('#sendfake').attr('disabled', true);
-				$('#searcher').attr('disabled', true);
+				if (!showWarning)
+				{
+					$('#sendfake').attr('disabled', true);
+					$('#searcher').attr('disabled', true);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+				}
+				else
+				{
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					$('#warning').css('background', "#ffc266");
+					$('#warning').css('border', "2px solid #ff9900");
+				}
 				$('#warning').css('display', "inline-block");
 				$('#warning').html(warningMessage);
 			}

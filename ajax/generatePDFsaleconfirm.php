@@ -47,7 +47,7 @@ function renderPDF($saleID){
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 
-	return SLabsEmailer::send_email($customer_id,"SALES_CONFIRMATION",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
+	return SLabsEmailer::send_email($customer_id,"SALES_CONFIRMATION",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$saleID);
 	
 }
 //Main Decleration

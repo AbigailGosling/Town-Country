@@ -31,6 +31,7 @@ class SLabsEmailer {
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
         global $conn;
+        if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
@@ -48,7 +49,7 @@ class SLabsEmailer {
         $fullExplainedPath = "NULL";
         if ($pathToFile != '' && $fileName !='')
         {
-            $fullExplainedPath = join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName));
+            $fullExplainedPath = "'".join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName))."'";
             $attachment = \Socketlabs\Message\Attachment::createFromPath(
                 join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)), 
                 $fileName,
@@ -60,10 +61,12 @@ class SLabsEmailer {
         $mid = self::generate_uuid();
         $message->messageId = $mid;
         $response = $client->send($message);
-
         foreach($toEmails as $email)
         {	
-            mysqli_query($conn, "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$email', '$mid', '$type', '".SLabsEmailerStatus::Sending."', '$fullExplainedPath', NOW())") or die(mysqli_error($conn));
+            
+            $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$email', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
+            mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
+            
         }
 
         return "done";
@@ -115,6 +118,7 @@ abstract class SLabsEmailerType
 {
     const Statment  = 'STATEMENT';
     const Sales     = 'SALES_CONFIRMATION';
+    const CrdtAlert = 'CREDIT_ALERT';
 }
 abstract class SLabsEmailerStatus
 {
@@ -149,16 +153,20 @@ abstract class SLabsEmailerStatus
         return $trafficColour;
     }
     static function getTextStatus($status,$secondary_code){
+        global $conn;
         $returningValue = null;
         switch ($status){
             case SLabsEmailerStatus::Sending:          
             case SLabsEmailerStatus::Sent:
                 $returningValue = "Sending";
                 break;
+            case SLabsEmailerStatus::Received:
+                $returningValue = "Received but Unopened";
+                break;
         }
         if ($returningValue == null)
         {
-            $q = mysqli_query($conn, "SELECT `value` FROM `mail_tracking_code` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
+            $q = mysqli_query($conn, "SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
             $returningValue = mysqli_fetch_assoc($q);
             $returningValue = $returningValue['value'];
         }

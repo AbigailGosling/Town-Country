@@ -10,7 +10,7 @@
 	$y = mysqli_query($conn, $x);
 	
 	$row = mysqli_fetch_array($y);
-	$creditCheck = precredit_check($row['id']);
+	$creditCheck = precredit_check($customer_id);
 ?>
 <script type="text/javascript">
 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
