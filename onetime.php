@@ -19,6 +19,6 @@ while ($customer = mysqli_fetch_assoc($erroronous))
             $credit_terms = "-1";
         }
     }
-    mysqli_query($conn,"UPDATE `customers` SET `credit_terms` = $credit_terms WHERE id =".$customer['id']);
+    mysqli_query($conn,"UPDATE `customers` SET `credit_terms` = $credit_terms, `override` = 1 WHERE id =".$customer['id']);
 }
 ?>
