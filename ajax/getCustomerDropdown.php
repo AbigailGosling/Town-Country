@@ -6,7 +6,7 @@
 
 	$name = $_POST['searchterm'];
 
-	$x = "SELECT * FROM `customers` WHERE businessname LIKE '$name%' || businessname LIKE '%$name%' || businessname LIKE '$name%' || REPLACE(businessname, ' ', '') LIKE '$name%' || REPLACE(businessname, ' ', '') = '$name'";
+	$x = "SELECT * FROM `customers` WHERE (businessname LIKE '$name%' || businessname LIKE '%$name%' || businessname LIKE '$name%' || REPLACE(businessname, ' ', '') LIKE '$name%' || REPLACE(businessname, ' ', '') = '$name') AND (`credit_terms` > -1 || `override` = 1)";
 	$y = mysqli_query($conn, $x);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php

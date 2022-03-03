@@ -1,6 +1,9 @@
 <?php
 	include('includes/frontHeader.php');
-	
+	require_once("ajax/customer_soa_results_function.php");
+	require_once("scripts/SLabsEmailer.php");
+	use InternalScripts\SLabsEmailer;
+	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = $_GET['id'];
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id='$pickersheet_id'";
@@ -23,6 +26,8 @@
 
 		header('Location: deliverynote.php?id=' . $pickersheet_id);
 	}
+
+	$creditCheck = precredit_check($customer_id);
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -33,11 +38,34 @@
 </script>
 	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
 <main class="int int--extra-padding">	
+<?php
+	if ($creditCheck['overcredit']) {
+		$admin_email = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE document_id = $pickersheet_id AND `type` = '".SLabsEmailerType::CrdtAlert."'") or die(mysqli_error($conn));
+		if (mysqli_num_rows($admin_email) == 0)
+		{
+			$admin_email = mysqli_query($conn, "SELECT `key_value` FROM `system_settings` WHERE `key_name` = 'CREDIT_ALERT_EMAIL'") or die(mysqli_error($conn));
+			
+			$admin_email = mysqli_fetch_assoc($admin_email);
+			$admin_email = $admin_email['key_value'];
+			$subject = "CREDIT ALERT: ".$customerRow['businessname']." cannot progress with delivery $pickersheet_id.";
+			$htmlBody= $customerRow['businessname']." has passed there credit limit and a block has been placed on delivery $pickersheet_id";
+			die(SLabsEmailer::send_email($customer_id,SLabsEmailerType::CrdtAlert,array($admin_email),$subject,$htmlBody,'','',$pickersheet_id));
+		}
+?>
+	<div class="row custom-warning-box" id="warning" style="background:#ff6666; border: 2px solid #ff0000">
+		<?php echo $creditCheck['message']; ?>
+	</div>
+<?php
+	} else {
+?>
 	<div class="formBackButton" style="float:right;font-size:22px;">
 		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|
 		<a href="javascript:;" onclick="printStuff()">Print &nbsp;</a>|
 		<a href="javascript:;" onclick="generatePDF()">PDF Copy</a>
 	</div>
+	<?php
+	}
+?>
 	<div id="print">
 	<div class="topheading">
 		<a href="#" id="sample" style="display:none;">test</a>

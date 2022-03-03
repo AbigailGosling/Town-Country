@@ -242,7 +242,7 @@
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>
 					<td class="label"><label>Credit Terms</label></td>
-					<td><input type="text" class="input" name="credit_terms" value="<?php echo $data['credit_terms']; ?>"></td>
+					<td><input type="number" class="input" name="credit_terms" min="-1" value="<?php echo $data['credit_terms']; ?>"></td>
 				</tr>
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>
@@ -288,7 +288,7 @@
 					<td class="label"><label>Current outstanding</label></td>
 					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']); ?>"></td>
 				</tr>
-				<tr>
+				<!--<tr>
 					<td class="label"><label>Payments received</label></td>
 					<td><input type="text" class="input" name="payment_received"></td>
 				</tr>
@@ -307,7 +307,7 @@
 							}
 						?>
 					</td>
-				</tr>
+				</tr>-->
 			</table>
 		</div>
 		
@@ -316,9 +316,8 @@
 				<tr>
 					<td class="label"><label>Commercial decision</label></td>
 					<td>
-						<a href="javascript:;" onclick="overrideSales(this,<?php echo $id; ?> )" class="override">Override & allow sales</a>
+						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"><?php if($data['override'] == 1){ ?>Apply Credit Checking <?php } else { ?>Override Credit Check<?php } ?></a>
 						
-						<div class="override-enabled"  style="<?php if($data['override'] == 1){ ?>display:block;<?php }?>">Enabled</div>
 					</td>
 				</tr>
 				<tr height="140"><td colspan="2"></td></tr> 
@@ -516,8 +515,11 @@
 			id: id,
 		},
 		function(data, status){
-			alert('done!');
 			$('.override-enabled').fadeIn();
+			var q = $('#overrider');
+			console.log(q.text());
+			if (q.text() != "Apply Credit Checking") q.text("Apply Credit Checking");
+			else q.text("Override Credit Check");
 		});
  	}
 	

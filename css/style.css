@@ -2079,3 +2079,8 @@ textarea {
 	cursor: pointer;
 	position: relative;
 }
+.custom-warning-box{
+	width: 100%; 
+	padding: 15px; 
+	border-radius: 15px;
+}

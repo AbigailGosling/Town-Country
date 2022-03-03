@@ -22,12 +22,6 @@
 		if ($showBal == true)
 		{
 			$cache_check = check_customer_outstanding_cache($customer['id']);
-			if ($cache_check['outdated'] == true)
-			{
-				$cache_check['outstanding_old'] = $cache_check['outstanding'];
-				$cache_check['outstanding'] = (float)totalOutstandingForCustomer($customer['id']);
-				update_customer_outstanding_cache($cache_check);
-			}
 			$customer['cache'] = $cache_check;
 			$customer['balance'] = (float) $cache_check['outstanding'];
 		}

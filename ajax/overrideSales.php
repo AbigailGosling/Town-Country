@@ -7,7 +7,7 @@
 	
 	if($id != ''){
 		
-		$x = "UPDATE `customers` SET override='1' WHERE id='$id' LIMIT 1";
+		$x = "UPDATE `customers` SET `override` = IF(`override` = 1,0,1) WHERE id='$id' LIMIT 1";
 		$y = mysqli_query($conn, $x);
 		
 	}
