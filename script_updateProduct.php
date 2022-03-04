@@ -1,8 +1,6 @@
 <?php
 	include('functions.php');
 	
-	
-	
 	$intake_id = mysqli_real_escape_string($conn, $_POST['intake_id']);	
 	$pallet_id = mysqli_real_escape_string($conn, $_POST['pallet_id']);	
 	$product_id = mysqli_real_escape_string($conn, $_POST['product_id']);	
@@ -39,15 +37,14 @@
 	$original_intake_id = mysqli_real_escape_string($conn, $_POST['original_intake_id']);
 	$original_pallet_id = mysqli_real_escape_string($conn, $_POST['original_pallet_id']);
 
-	$x = "UPDATE `product` SET original_intake_id = $original_intake_id, original_pallet_id = $original_pallet_id, pallet_id='$pallet_id', best_by='$best_by', cut_id='$cut_id', brand_id='$brand_id',nationality_id='$nationality_id',cooling_id='$temperature_id',status='0',range_from='$best_by_range_from',range_to='$best_by_range_to', ubbb='$ubbb',unit='$unit',comments='$comments'";
+	$x = "UPDATE `product` SET original_intake_id = '$original_intake_id', original_pallet_id = '$original_pallet_id', pallet_id='$pallet_id', best_by='$best_by', cut_id='$cut_id', brand_id='$brand_id',nationality_id='$nationality_id',cooling_id='$temperature_id',status='0',range_from='$best_by_range_from',range_to='$best_by_range_to', ubbb='$ubbb',unit='$unit',comments='$comments'";
 	
 	if($cost != NULL){
 		$x .= ", cost='$cost', price='$price'";
 	}
 	
 	$x .= " WHERE id='$product_id'";
-	
-	$y = mysqli_query($conn, $x);
+	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
 	
 	
