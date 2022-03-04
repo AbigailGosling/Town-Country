@@ -11,8 +11,8 @@
  
 	$addressid = $_POST['addressid'];
 	
-	$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
-	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
+	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
+	//$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 
 	$addressline1 = mysqli_real_escape_string($conn, $_POST['addressline1']);
 	$addressline2 = mysqli_real_escape_string($conn, $_POST['addressline2']);
