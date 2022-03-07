@@ -22,7 +22,12 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 		$historyQuery = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE customer_id = ".$customer['id']." AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC LIMIT 1");
 		if (mysqli_num_rows($historyQuery) > 0)
 		{
-			$history = mysqli_fetch_assoc($historyQuery);
+			$history = null;
+            while ($tmpD = mysqli_fetch_assoc($historyQuery))
+            {
+                $history = $tmpD;
+                if (strpos($tmpD['addressee'],"townandcountrymeats.co.uk") == -1) break;
+            }
 			$style = 'style="background-color:'.SLabsEmailerStatus::getTrafficStatus($history['status'],$history['secondary_code']).'"';
 			$title = 'title="'.SLabsEmailerStatus::getTextStatus($history['status'],$history['secondary_code']).'"';
 		}

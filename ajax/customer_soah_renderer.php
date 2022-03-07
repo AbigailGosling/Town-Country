@@ -9,6 +9,7 @@
     while ($email = mysqli_fetch_assoc($customerSTMemails)) {
         $trafficColour = SLabsEmailerStatus::getTrafficStatus($email['status']);
         $tooltip = SLabsEmailerStatus::getTextStatus($email['status'],$email['secondary_code']);
+        if (strpos($email['addressee'],"townandcountrymeats.co.uk") == -1) break;
     ?>
     <tr>
         <td align="left" value=""><?php echo $email['addressee'] ?></td>
