@@ -73,7 +73,6 @@ class SLabsEmailer {
     }
     public static function process_notification($data) {
         global $conn;
-        mysqli_query($conn, "INSERT INTO `tandc_live`.`dump` (`dump`) VALUES ('".mysqli_real_escape_string($conn,json_encode($data))."')") or die(mysqli_error($conn));
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
         $secondary_code = (isset($data['FailureCode']))?$data['FailureCode']:0;
