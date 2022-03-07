@@ -53,12 +53,17 @@
                 </table>
             </a>
  <?php
-        $mailResult = mysqli_query($conn, "SELECT `status`,`secondary_code` FROM `mail_tracking` WHERE document_id = ".$picksheet['id']." AND `type` = 'SALES_CONFIRMATION' AND `customer_id` = $customer_id ORDER BY `id` DESC limit 1");
+        $mailResult = mysqli_query($conn, "SELECT `status`,`secondary_code`,`addressee` FROM `mail_tracking` WHERE document_id = ".$picksheet['id']." AND `type` = 'SALES_CONFIRMATION' AND `customer_id` = $customer_id ORDER BY `id` DESC limit 1");
         $style = ""; 
         $title = "";
         if (mysqli_num_rows($queryResult) > 0)
         {
-            $mailData = mysqli_fetch_assoc($mailResult);
+            $mailData = null;
+            while ($tmpD = mysqli_fetch_assoc($mailResult))
+            {
+                $mailData = $tmpD;
+                if (strpos($tmpD['addressee'],"townandcountrymeats.co.uk") == -1) break;
+            }
             if ($mailData['status']!=null) 
             {
                 $title = 'title="'.SLabsEmailerStatus::getTextStatus($mailData['status'],$mailData['secondary_code']).'"';
