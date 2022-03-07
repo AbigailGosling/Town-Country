@@ -19,7 +19,7 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 	$style = "";
 	if (isset($_POST['history']))
 	{
-		$historyQuery = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE customer_id = ".$customer['id']." AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC LIMIT 1");
+		$historyQuery = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE customer_id = ".$customer['id']." AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC");
 		if (mysqli_num_rows($historyQuery) > 0)
 		{
 			$history = null;
