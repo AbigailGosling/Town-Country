@@ -316,7 +316,7 @@
 				<tr>
 					<td class="label"><label>Commercial decision</label></td>
 					<td>
-						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"><?php if($data['override'] == 1){ ?>Apply Credit Checking <?php } else { ?>Override Credit Check<?php } ?></a>
+						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"><?php if($data['override'] == 1){ ?>Apply Credit Checking<?php } else { ?>Override Credit Check<?php } ?></a>
 						
 					</td>
 				</tr>
@@ -509,18 +509,21 @@
 			}
 		}
 	}
-
+	var allowOverride = true;
 	function overrideSales(ele, id){
-		$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
-			id: id,
-		},
-		function(data, status){
-			$('.override-enabled').fadeIn();
+		if (allowOverride == true)
+		{
+			allowOverride = false;	
 			var q = $('#overrider');
-			console.log(q.text());
 			if (q.text() != "Apply Credit Checking") q.text("Apply Credit Checking");
 			else q.text("Override Credit Check");
-		});
+			$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
+				id: id,
+			},
+			function(data, status){
+				allowOverride = true;
+			});
+		}
  	}
 	
 </script>
