@@ -11,17 +11,12 @@
 	
 	
 	$pString = '';
-	
+	$palletID = array();
 	while($pallet = mysqli_fetch_array($py)){
-		$palletID = $pallet['id'];
-		
-		// $pString .= " pallet_id='$palletID' && status='1' || ";
-		$pString .= " pallet_id='$palletID' || ";
+		$palletID[] = $pallet['id'];
+
 	}
-	
-	$pString = substr($pString, 0, -3);
-	
-	$x = "SELECT * FROM `product` WHERE$pString";
+	$x = "SELECT * FROM `product` WHERE pallet_id IN (".implode(",",$palletID).")";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
 	while($product = mysqli_fetch_array($y)){	 

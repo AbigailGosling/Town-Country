@@ -400,13 +400,7 @@
 									
 									$kg = 0;
 									
-									foreach($weightids as $weightid){
-										$qBit .= " id = '$weightid' && product_id='$productID' || ";
-									}
-
-									$qBit = rtrim($qBit," || ");
-									
-									$xxWeight = "SELECT * FROM `weights` WHERE $qBit";
+									$xxWeight = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
 									$yyWeight = mysqli_query($conn, $xxWeight);
 									
 									while($weightRow = mysqli_fetch_array($yyWeight)){

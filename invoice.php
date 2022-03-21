@@ -304,13 +304,8 @@
                             $ext = ' kg';
                         }
 
-                        $x2 = "SELECT * FROM `weights` WHERE ";
+                        $x2 = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
 
-                        foreach($weightids as $weightid){
-                            $x2 .= "product_id='$productID' && id='$weightid' || ";
-                        }
-
-                        $x2 = rtrim($x2," || ");
                         $y2 = mysqli_query($conn, $x2);
                         $count = mysqli_num_rows($y2);
 
@@ -379,14 +374,8 @@
                                 $qBit = '';
                                 
                                 $kg = 0;
-                                
-                                foreach($weightids as $weightid){
-                                    $qBit .= " id = '$weightid' && product_id='$productID' || ";
-                                }
 
-                                $qBit = rtrim($qBit," || ");
-                                
-                                $xxWeight = "SELECT * FROM `weights` WHERE $qBit";
+                                $xxWeight = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
                                 $yyWeight = mysqli_query($conn, $xxWeight);
                                 
                                 while($weightRow = mysqli_fetch_array($yyWeight)){
