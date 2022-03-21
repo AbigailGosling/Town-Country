@@ -144,9 +144,9 @@
             // loop though all the users 
             while($user = mysqli_fetch_array($usersResult)){
                 $user_id = $user['id'];
-                $total_outstanding_user = 0;
+                $total_charged_user = 0;
                 $total_paid_user = 0;
-
+                $total_sales = 0;
                 $myCustomersResult = mysqli_query($conn, "SELECT id FROM `customers` WHERE default_salesman_id='$user_id'");
 
                 $customer_ids = [];
@@ -169,33 +169,32 @@
                         <tr>
                             <th align="left">Customer</th>
                             <th align="right">Total Sales</th>
-                            <th align="right">Total Outstanding</th>
+                            <th align="right">Total Charged</th>
                             <th align="right">Total Received</th>
                         </tr>
                         
                             <?php
 
                                 
-                                $picksheetsResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` WHERE completed=1 && customer_id IN ($customer_ids) $dateQueryPiece GROUP BY customer_id");
+                                $picksheetsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) as id,customer_id FROM `pickerSheets` WHERE completed=1 && customer_id IN ($customer_ids) $dateQueryPiece GROUP BY customer_id");
                                 
                                 $i=0;
                                 while($picksheet = mysqli_fetch_array($picksheetsResult)){
                                     $i++;
                                     $customer = getCustomer($picksheet['customer_id']);
-                                    $num_of_sales = countCustomerSalesBySalesman($picksheet['customer_id'], $user_id);
+                                    $num_of_sales = count(explode(",",$picksheet['id']));
+                                    $total_charged_picksheet = getChargedPicksheetTotalList(explode(",",$picksheet['id']));
+                                    $total_paid_picksheet = getPaidPicksheetTotalList(explode(",",$picksheet['id']));
                                     
-                                    $total_outstanding_picksheet = getOutstandingPicksheetTotal($picksheet['id']);
-                                    $total_paid_picksheet = getTotalPaidByCustomerIDForUserWithinDates($picksheet['customer_id'], $user['id'], $date_start, $date_end);
-                                    
-
-                                    $total_outstanding_user += $total_outstanding_picksheet;
-                                    $total_paid_user += $total_paid_picksheet;
+                                    $total_sales += $num_of_sales;
+                                    $total_charged_user += (float)$total_charged_picksheet;
+                                    $total_paid_user += (float)$total_paid_picksheet;
 
                                 ?>
                                 <tr class="<?php if($i % 2 == 0){ echo 'even'; }else{ echo 'odd'; } ?>">
                                     <td align="left"><?php echo $customer['businessname']; ?></td>
                                     <td align="right"><?php echo $num_of_sales; ?></td>
-                                    <td align="right" width="200">£<?php echo number_format($total_outstanding_picksheet); ?></td>
+                                    <td align="right" width="200">£<?php echo number_format($total_charged_picksheet, 2); ?></td>
                                     <td align="right" width="200">£<?php echo number_format($total_paid_picksheet, 2); ?></td>
                                 </tr>
                                 <?php
@@ -203,9 +202,9 @@
                             ?>
                             <tr>
                                 <td><b>Total:</b></td>
-                                <td></td>
-                                <td align="right" width="200"><b>£<?php echo number_format($total_outstanding_user); ?></b></td>
-                                <td align="right" width="200"><b>£<?php echo number_format($total_paid_user); ?></b></td>
+                                <td align="right" width="200"><b><?php echo $total_sales; ?></b></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_charged_user,2); ?></b></td>
+                                <td align="right" width="200"><b>£<?php echo number_format($total_paid_user,2); ?></b></td>
                             </tr>
                     </table>
                     <?php

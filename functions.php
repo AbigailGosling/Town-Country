@@ -1084,6 +1084,29 @@
 		return $totalOutstanding;
 	}
 
+	function getChargedPicksheetTotalList($picksheet_ids){
+		global $conn;
+
+		$customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id IN (".implode(",",$picksheet_ids).")) GROUP by pickerSheets.id");
+
+		$this_price = 0.00;
+
+		while($picksheet = mysqli_fetch_array($customerPicksheets))
+		{
+			$this_price = $this_price + (float) invoiceTotal($picksheet['id']);
+		}
+
+		return $this_price;
+	}
+	function getPaidPicksheetTotalList($picksheet_ids){
+		global $conn;
+		$picksheetsResult = mysqli_query($conn, "SELECT SUM(amount) as paid FROM `invoice_payments` WHERE invoice_id IN (".implode(",",$picksheet_ids).")");
+		$data = mysqli_fetch_array($picksheetsResult);
+
+		if($data['paid'] == null){ return 0; }
+
+		return $data['paid'];
+	}
 	function getTotalPaidByCustomerIDForUserID($customer_id, $user_id){
 		global $conn;
 
@@ -1098,8 +1121,9 @@
 
 	function getTotalPaidByCustomerIDForUserWithinDates($customer_id, $user_id, $date_start, $date_end){
 		global $conn;
-		
-		$dateQueryPiece = " && pickerSheets.date_completed >= '$date_start' && pickerSheets.date_completed <= '$date_end'";
+		$dateQueryPiece = "";
+		if ($date_start != "") $dateQueryPiece .= " && pickerSheets.date_completed >= '$date_start'";
+		if ($date_end   != "") $dateQueryPiece .= " && pickerSheets.date_completed <= '$date_end'";
 
 		$picksheetsResult = mysqli_query($conn, "SELECT GROUP_CONCAT(id) as ids FROM `pickerSheets` WHERE completed=1 && customer_id=$customer_id $dateQueryPiece");
 		$picksheetData = mysqli_fetch_array($picksheetsResult);

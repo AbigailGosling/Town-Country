@@ -60,7 +60,7 @@ class SLabsEmailer {
         //Generate a Unique Identifier for this Email
         $mid = self::generate_uuid();
         $message->messageId = $mid;
-        if ($_SERVER['SERVER_NAME'] != "tcdev.tang.solutions")$response = $client->send($message);
+        $response = $client->send($message);
         foreach($toEmails as $email)
         {	
             
