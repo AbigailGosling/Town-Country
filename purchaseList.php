@@ -63,22 +63,26 @@
 			// load initial 80 rows
 			loadRows();
 
-			$('#instantSearch').keyup(function(){
+			$('#instantSearch').heydown(function(event){
+				if (event.keyCode === 13)
+				{
+					var val = $('#instantSearch').val();
+					console.log(val);
 
-				var val = $('#instantSearch').val();
-				console.log(val);
+					var xhttp = new XMLHttpRequest();
+					xhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						$('#intakeAjax').html(this.responseText);
+					}
+					};
 
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-					$('#intakeAjax').html(this.responseText);
-				}
-				};
+					xhttp.open("POST", "/ajax/purchasePageList.php", true);
+					xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xhttp.send("searchterm=" + val);
 
-				xhttp.open("POST", "/ajax/purchasePageList.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val);
-			
+					event.preventDefault();
+					return false;
+				}	
 			});
 			
 			

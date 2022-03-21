@@ -108,14 +108,4 @@
 </main>
 <div id="btm"></div>
 </body>
-<?php
-	if($_GET['msg'] != ''){
-	?>
-	<script type="text/javascript">
-		alert('<?php echo $_GET['msg']?>');
-	</script>
-	<?php
-	}
-?>
-
 </html>

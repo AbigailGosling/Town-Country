@@ -197,8 +197,7 @@
 	function removeFromList(id, pallet_id, product_id){
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
-		
-		console.log('trying to delete cookie ' + COOKIE_NAME);
+
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
@@ -214,11 +213,7 @@ function checkStock(){
             var quantity_wanted = bits[1];
 
             $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
- 				console.log('Type Before: ' + typeof num);
 				var product_stock_count = parseInt(num);
-				console.log('Type After: ' + typeof product_stock_count);
-
-				console.log('We wanted ' + quantity_wanted + ' there are ' + product_stock_count);
 				
                 if(quantity_wanted <= product_stock_count){
  
@@ -454,43 +449,41 @@ function checkStock(){
 			dateEntered = false;
  			$('#estimated_delivery_date').css('border','1px solid red');
 		}
-
-		$('.price').each(function(){
- 			var value = $(this).val();
-			
+		var overOnce = false;
+		var underOnce = false;
+		$('.price').each(function(index,element){
+ 			var value = $(element).val();
 			if(parseFloat(value) && value > 0){
 				priceEntered = true;
 				pricedCorrectly = true;
 
 				if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
-					$(this).css('border','1px solid red');
-					pricedCorrectly = true;
-					$(this).css('border-color', '#f2f2f2');
-					/*if(confirm('Are you sure? the price is less than the cost')){
-						pricedCorrectly = true;
-						$(this).css('border-color', '#f2f2f2');
-					}else{
-						pricedCorrectly = false;
-					}*/
+					$(element).css('border','1px solid red');
+					if (!underOnce)
+					{
+						underOnce = true;
+						if(!confirm('Are you sure? the price is less than the cost')){
+							pricedCorrectly = false;
+						}
+					}					
 				}
-
-
-				if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
- 					$(this).css('border','1px solid red');
-					pricedCorrectly = true;
-					$(this).css('border-color', '#f2f2f2');
-					/*if(confirm('Are you sure? the price is more than double the cost')){
-						pricedCorrectly = true;
-						$(this).css('border-color', '#f2f2f2');
-					}else{
-						pricedCorrectly = false;
-					}*/
+				else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+ 					$(element).css('border','1px solid red');
+					if (!overOnce)
+					{
+						overOnce = true;
+						if(!confirm('Are you sure? the price is more than double the cost')){
+							pricedCorrectly = false;
+						}
+					}
+					
 				}
-
-  
+				else{
+					$(element).css('border-color', '#f2f2f2');
+				}
 			}else{
 				priceEntered = false;
-				$(this).css('border','1px solid red');
+				$(element).css('border','1px solid red');
 			}
 		});
 
@@ -508,7 +501,6 @@ function checkStock(){
 	
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
-		console.log(' setCustomerDetails()');
 		
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
@@ -590,8 +582,6 @@ function checkStock(){
 	});
 	
 	function setCustomer(customer_id, text){
-		console.log('customer_id: ' + customer_id);
-		console.log('text: ' + text);
 		$('#customer_search_results').fadeOut();
 		$('#customer_id').val(customer_id);
 		$('#customer').val(text);
@@ -629,7 +619,6 @@ function checkStock(){
 
  
 	function doSearch(){
-		console.log('Searching..');
 		var cut = $('#SearchCut').val();
 		var palletID = $('#SearchPallet').val();
 		var species = $('#SearchSpecies').val();
@@ -674,27 +663,31 @@ function checkStock(){
 			}
 		});
 	});
-	
-	$('#customer').keyup(function(){
-		var val = $('#customer').val();
-		$('#customer_search_results').fadeIn();
-		
-		var request = $.ajax({
-			type: "POST",
-			url: "ajax/getCustomerDropdown.php",
-			data: {
-				searchterm: val
-			},
-			dataType: "html"
-		});
+	$('#customer').keydown(function(event){
+		var val = $('#customer').val();		
+		if (event.keyCode === 13)
+		{		
+			$('#customer_search_results').fadeIn();
+			
+			var request = $.ajax({
+				type: "POST",
+				url: "ajax/getCustomerDropdown.php",
+				data: {
+					searchterm: val
+				},
+				dataType: "html"
+			});
 
-		request.done(function(data) {
-			$('#customer_search_results').html(data);
- 		});
+			request.done(function(data) {
+				$('#customer_search_results').html(data);
+			});
 
-		request.fail(function(jqXHR, textStatus) {
-			// alert( "Request failed: " + textStatus );
-		});
+			request.fail(function(jqXHR, textStatus) {
+				// alert( "Request failed: " + textStatus );
+			});
+			event.preventDefault();
+			return false;
+		}
 	
 	});
 		

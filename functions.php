@@ -1844,7 +1844,36 @@
 		}
 		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
 	}
-	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
+	function fuzzyCustomerSearch($name)
+	{
+		global $conn;
+		$tests = array(
+			$name,
+			str_replace(" ","",$name),
+			str_replace(" & "," and ",$name),
+			str_replace("&"," & ",$name)
+		);
+		$queries = array(
+			"SELECT * FROM `customers` WHERE businessname LIKE '%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessname = '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)"
+		);
 
-	
+		foreach ($tests as $test)
+		{
+			foreach ($queries as $query)
+			{
+				$x = sprintf($query,$test);
+				$y = mysqli_query($conn, $x);
+				$count = mysqli_num_rows($y);
+				if ($count > 0 && $count < 20)
+				{
+					break 2;
+				}
+			}
+		}
+		return $y;
+	}
+	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>
