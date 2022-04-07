@@ -1575,42 +1575,42 @@
 
 
 		while($outpallet = mysqli_fetch_array($outpalletResult2)){
-			$weightids = explode(',', $outpallet['weight_ids']);
- 
+
 			$productIDArray = array();
-						
-			foreach($weightids as $weightid){
-				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
-				$y = mysqli_query($conn, $x);
-				$weight = mysqli_fetch_array($y);
-				
-				if(!in_array($weight['product_id'], $productIDArray)){
-					array_push($productIDArray, $weight['product_id']);
-				}
+			$weights = array();
 
-				$queryBits .= ' id = ' . $weightid . ' || ';
+			$x = "SELECT `weights`.`id`,`weights`.`product_id`,`weights`.`weight_gross`,`weights`.`weight_tear`,`product`.`unit` FROM `weights` INNER JOIN `product` ON `weights`.`product_id` = `product`.`id` WHERE `weights`.id IN (".$outpallet['weight_ids'].")";
+			$y = mysqli_query($conn, $x);
+			
+			$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id'";
+			$howManyY = mysqli_query($conn, $howManyX);
+			$pickerItems = mysqli_fetch_all($howManyY,MYSQLI_ASSOC);
+
+			while($t = mysqli_fetch_assoc($y)){
+				if (!in_array($t['product_id'],$productIDArray))$productIDArray[] = $t['product_id'];
+				$weights[] = $t;
 			}
-
 			foreach($productIDArray as $productID){
-				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
-				$y1 = mysqli_query($conn, $x1);
-				$product = mysqli_fetch_array($y1);
-					
+				$productsWeights = array();
+				foreach($weights as $weight)
+				{
+					if ($weight['product_id'] == $productID) $productsWeights[] = $weight; 
+				}
+				$count = count($productsWeights);
 
-				$x2 = "SELECT * FROM `weights` WHERE ";
-				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
-				$y2 = mysqli_query($conn, $x2);
-				$count = mysqli_num_rows($y2);
-
-								
-				$productID = $product['id'];
-				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
-				$howManyY = mysqli_query($conn, $howManyX);
-				$pickerItem = mysqli_fetch_array($howManyY);
+				$pickerItem = array();
+				foreach($pickerItems as $pi)
+				{
+					if($pi['product_id'] == $productID)
+					{
+						$pickerItem = $pi;
+						break;
+					}
+				}
 						
 				$kg = 0;
 						
-				while($weightRow = mysqli_fetch_array($y2)){
+				foreach ($productsWeights as $weightRow){
 					
 					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 						$tw = $weightRow['weight_gross'];
@@ -1623,7 +1623,7 @@
 					$kg = number_format($kg, 3, '.', '');
 				}
 						
-				if($product['unit'] == 'PPC'){
+				if($weightRow['unit'] == 'PPC'){
 					$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
 				}else{
 					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
@@ -1844,7 +1844,36 @@
 		}
 		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
 	}
-	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
+	function fuzzyCustomerSearch($name)
+	{
+		global $conn;
+		$tests = array(
+			$name,
+			str_replace(" ","",$name),
+			str_replace(" & "," and ",$name),
+			str_replace("&"," & ",$name)
+		);
+		$queries = array(
+			"SELECT * FROM `customers` WHERE businessname LIKE '%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessname = '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)"
+		);
 
-	
+		foreach ($tests as $test)
+		{
+			foreach ($queries as $query)
+			{
+				$x = sprintf($query,$test);
+				$y = mysqli_query($conn, $x);
+				$count = mysqli_num_rows($y);
+				if ($count > 0 && $count < 20)
+				{
+					break 2;
+				}
+			}
+		}
+		return $y;
+	}
+	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>
