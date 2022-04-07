@@ -184,34 +184,27 @@
 		});
 		
 		
-		$('#customer').keydown(function(event){
-			if (event.keyCode === 13)
-			{
-				var val = $('#customer').val();
-				// $('#test2d').text(val);
-				if(val != ''){
-					$('#customer_search_results').fadeIn();
-				}else{
-					$('#customer_search_results').fadeOut();
-				}
-				
-				var species = $('#species_id').val();
-				
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				// document.getElementById("demo").innerHTML = this.responseText;
-				$('#customer_search_results').html(this.responseText);
-				}
-				};
-				xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val + "&species_id=" + species);
-
-				event.preventDefault();
-				return false;
+		$('#customer').keyup(function(){
+			var val = $('#customer').val();
+			// $('#test2d').text(val);
+			if(val != ''){
+				$('#customer_search_results').fadeIn();
+			}else{
+				$('#customer_search_results').fadeOut();
 			}
-
+			
+			var species = $('#species_id').val();
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  // document.getElementById("demo").innerHTML = this.responseText;
+			  $('#customer_search_results').html(this.responseText);
+			}
+			};
+			xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("searchterm=" + val + "&species_id=" + species);
 		
 		});
 		
