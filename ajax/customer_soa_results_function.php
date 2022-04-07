@@ -85,7 +85,6 @@ function check_customer_outstanding_cache($customer_id)
         $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
     
-    $cacheRow['debug'] = "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ".$customer_id." AND (pickerSheets.id >= ".$oldest." OR invoice_payments.id > ".$lastpayment.") ORDER BY `pickerSheets`.`id` ASC";
     $checkQ = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = $customer_id AND (pickerSheets.id >= $oldest OR invoice_payments.id > $lastpayment) ORDER BY `pickerSheets`.`id` ASC");
     $cacheRow['pending'] = null;
     $lastRow = null;
@@ -122,7 +121,7 @@ function check_customer_outstanding_cache($customer_id)
         }
     }
 
-    if ($cacheRow['invoice_payment_id_outdated'] == true || $cacheRow['pickersheet_id_outdated'] == true)
+    if ($cacheRow['outdated'] == true)
     {
         $cacheRow['outstanding_old'] = $cacheRow['outstanding'];
         $cacheRow['outstanding'] = (float)totalOutstandingForCustomer($customer_id);
