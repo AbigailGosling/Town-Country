@@ -106,7 +106,7 @@
     <select id="SearchCutgroups" name="cutgroup_id" style="width:322px;height:40px;">
             <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
             <?php
-                $x = "SELECT * FROM `cutgroups` WHERE id != 93";
+                $x = "SELECT * FROM `cutgroups`";
                 $y = mysqli_query($conn, $x);
                 
                 $i=0;
@@ -428,12 +428,9 @@ function checkStock(){
 		var customer_id = $('#customer_id').val();
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
-		
 
-		customerEntered = false;
 		dateEntered = false;
-		priceEntered = false;
-		pricedCorrectly = true;
+		
 		if (customer_id != undefined) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
@@ -451,44 +448,44 @@ function checkStock(){
 		}
 		var overOnce = false;
 		var underOnce = false;
+		var ustomerEntered = true;
+		var priceEntered = true;
+		var pricedCorrectly = true;
+		var userOKd = true;
+		
 		$('.price').each(function(index,element){
  			var value = $(element).val();
-			if(parseFloat(value) && value > 0){
-				priceEntered = true;
-				pricedCorrectly = true;
-
-				if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
-					$(element).css('border','1px solid red');
-					if (!underOnce)
-					{
-						underOnce = true;
-						if(!confirm('Are you sure? the price is less than the cost')){
-							pricedCorrectly = false;
-						}
-					}					
-				}
-				else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
- 					$(element).css('border','1px solid red');
-					if (!overOnce)
-					{
-						overOnce = true;
-						if(!confirm('Are you sure? the price is more than double the cost')){
-							pricedCorrectly = false;
-						}
-					}
-					
-				}
-				else{
-					$(element).css('border-color', '#f2f2f2');
-				}
-			}else{
+			$(element).css('border-color', '#f2f2f2');
+			if(!(parseFloat(value) && value > 0)){
 				priceEntered = false;
 				$(element).css('border','1px solid red');
 			}
+			else if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
+				$(element).css('border','1px solid red');
+				if (!underOnce)
+				{
+					underOnce = true;
+					if(!confirm('Are you sure? the price is less than the cost')){
+						userOKd = false;
+					}
+				}					
+			}
+			else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+				$(element).css('border','1px solid red');
+				if (!overOnce)
+				{
+					overOnce = true;
+					if(!confirm('Are you sure? the price is more than double the cost')){
+						userOKd = false;
+					}
+				}
+				
+			}
 		});
 
-		if(customerEntered && dateEntered && priceEntered && pricedCorrectly){
+		if(customerEntered && dateEntered && priceEntered && userOKd){
 			checkStock();
+			return false;
 		}else{
 			if(!customerEntered || !dateEntered || !priceEntered){
 				alert('Please complete the missing fields');
@@ -613,7 +610,7 @@ function checkStock(){
 
     $('#SearchCutgroups').change(function(){
         var id = $(this).val();
-
+		
         //doSearch();
     });
 

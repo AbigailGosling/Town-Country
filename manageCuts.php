@@ -218,6 +218,7 @@
 	function toggleOptions(){
 
 		var thisval = $("#SearchSpecies").val();
+		var selectedCG = $("#SearchCutgroups").val();
         $('#SearchCutgroups option.allsoption').hide();
         $('#SearchCutgroups option.header').show();
         $('#SearchCutgroups option.s'+thisval).show();
@@ -233,7 +234,7 @@
 		$('#SearchCutgroups option.allsoption').wrap('<span/>');
 		$('#SearchCutgroups option.s'+thisval).unwrap();
 		$('#SearchCutgroups option.s'+thisval+"[selected]").attr('selected','selected');
-				
+		$("#SearchCutgroups").val(selectedCG);		
         var id = $("#SearchSpecies").val();
 	}
 	$('#SearchSpecies').change(toggleOptions);

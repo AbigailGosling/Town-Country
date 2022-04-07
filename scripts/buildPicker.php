@@ -88,3 +88,7 @@
 	require_once('../ajax/generatePDFsaleconfirm.php');
 	
 ?>
+<script>
+	alert("Done!");
+	window.location = '../menu.php';
+</script>

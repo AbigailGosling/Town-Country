@@ -1578,39 +1578,39 @@
 			$weightids = explode(',', $outpallet['weight_ids']);
  
 			$productIDArray = array();
-						
-			foreach($weightids as $weightid){
-				$x = "SELECT * FROM `weights` WHERE id='$weightid'";
-				$y = mysqli_query($conn, $x);
-				$weight = mysqli_fetch_array($y);
-				
+			
+			$x = "SELECT * FROM `weights` WHERE id IN (".$outpallet['weight_ids'].")";
+			$y = mysqli_query($conn, $x);
+			$weightsByProductID = array();
+			while($weight = mysqli_fetch_array($y))
+			{
 				if(!in_array($weight['product_id'], $productIDArray)){
 					array_push($productIDArray, $weight['product_id']);
+					$weightsByProductID[$weight['product_id']] = array();
 				}
-
-				$queryBits .= ' id = ' . $weightid . ' || ';
+				$weightsByProductID[$weight['product_id']][] = $weight;
 			}
-
+			$pickerItemByProductID = array();	
 			foreach($productIDArray as $productID){
 				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
 				$y1 = mysqli_query($conn, $x1);
 				$product = mysqli_fetch_array($y1);
-					
 
-				$x2 = "SELECT * FROM `weights` WHERE ";
-				$x2 .= "id IN (".implode(",",$weightids).") AND product_id = ".$productID;
-				$y2 = mysqli_query($conn, $x2);
-				$count = mysqli_num_rows($y2);
-
+				$count = count($weightsByProductID[$productID]);
 								
 				$productID = $product['id'];
-				$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' AND product_id='$productID'";
-				$howManyY = mysqli_query($conn, $howManyX);
-				$pickerItem = mysqli_fetch_array($howManyY);
+				$sheetproduct = $pickersheet_id . "_" . $productID;
+				if(!array_key_exists($sheetproduct, $weightsByProductID)){
+					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=$pickersheet_id AND product_id=$productID LIMIT 1";
+					$howManyY = mysqli_query($conn, $howManyX);
+					$pickerItemByProductID[$sheetproduct] = mysqli_fetch_array($howManyY);
+				}
+				
+				$pickerItem = $pickerItemByProductID[$sheetproduct];
 						
 				$kg = 0;
 						
-				while($weightRow = mysqli_fetch_array($y2)){
+				foreach($weightsByProductID[$productID] as $weightRow){
 					
 					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 						$tw = $weightRow['weight_gross'];
@@ -1680,7 +1680,7 @@
 		global $conn;
 
 		$price = 0;
-		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id ='$invoice_payment_id'");
+		$creditNoteResult = mysqli_query($conn, "SELECT * FROM `credit_note_items` WHERE payment_id =$invoice_payment_id");
 
 		while($creditNoteItem = mysqli_fetch_array($creditNoteResult)){
 			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
