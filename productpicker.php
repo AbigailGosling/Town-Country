@@ -462,24 +462,24 @@ function checkStock(){
 			}
 			else if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
 				$(element).css('border','1px solid red');
-				if (!underOnce)
+				/*if (!underOnce)
 				{
 					underOnce = true;
 					if(!confirm('Are you sure? the price is less than the cost')){
 						userOKd = false;
 					}
-				}					
+				}	*/				
 			}
 			else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
 				$(element).css('border','1px solid red');
-				if (!overOnce)
+				/*if (!overOnce)
 				{
 					overOnce = true;
 					if(!confirm('Are you sure? the price is more than double the cost')){
 						userOKd = false;
 					}
 				}
-				
+				*/
 			}
 		});
 
