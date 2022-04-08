@@ -1,15 +1,28 @@
 <?php
     require('../../functions.php');
-    ini_set('display_errors', '1');
-    ini_set('display_startup_errors', '1');
-    error_reporting(E_ALL);
     require('../../scripts/SLabsEmailer.php');
     use InternalScripts\SLabsEmailerStatus;
     $toSkip = $_POST['toSkip'];
     $limit = 80;
+    $searchterm = $_POST['searchterm'];
+	
+	if($searchterm != ''){      
+        # Check if any customer names match the search input
+        $customerIDs = [];
+        $customerResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '$searchterm%' || businessname LIKE '%$searchterm%' || businessname LIKE '$searchterm%' || REPLACE(businessname, ' ', '') LIKE '$searchterm%' || REPLACE(businessname, ' ', '') = '$searchterm'");
+        while($customer = mysqli_fetch_array($customerResult)){ array_push($customerIDs, $customer['id']); }
 
-    $queryResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` ORDER BY date DESC LIMIT $toSkip, $limit") or die(mysqli_error($conn));
+        $x = "SELECT * FROM `pickerSheets` WHERE id = '$searchterm' || id LIKE '$searchterm%'";
 
+        if(count($customerIDs) > 0){
+            $customerIDs = implode(',', $customerIDs);
+            $x .= " || customer_id IN ($customerIDs)";
+        }
+        $x .= " ORDER BY date DESC";
+        $queryResult = mysqli_query($conn, $x);
+    }else{
+        $queryResult = mysqli_query($conn, "SELECT * FROM `pickerSheets` ORDER BY date DESC LIMIT $toSkip, $limit");
+    }
     $count = mysqli_num_rows($queryResult);
     
     $newSkipCount = ($toSkip + $count);
@@ -70,17 +83,12 @@
                 $style = "background-color:".SLabsEmailerStatus::getTrafficStatus($mailData['status']);
             }
         }
-         
-
 ?>
-            
-
             <div class="sendcontainer" <?php echo 'style="'.$style.'" '.$title; ?>>
                 <div class="active" picksheetid="<?php echo $picksheet['id']; ?>" <?php if($picksheet['sent'] == 0){ echo 'style="display:none;"'; }?>>
                     <i class="fa fa-check" aria-hidden="true"></i>
                 </div>
             </div>
-
         </td></tr>
         <?php
     }

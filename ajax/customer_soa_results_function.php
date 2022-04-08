@@ -20,7 +20,6 @@ function get_customer_soa_results($customer_id,$adv)
         if(($picksheet['price'] - $picksheet['paid']) <= $epsilon){
             $picksheet['invoicePaid'] = true;
         }
-	        
 	    $picksheet['outstanding'] = round((float) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'],2,PHP_ROUND_HALF_DOWN);
         if ($adv == true && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
         $picksheet['credited'] = totalValueCreditedOnInvoiceID($picksheet['id']);
@@ -39,7 +38,6 @@ function get_customer_soa_results($customer_id,$adv)
 function check_customer_outstanding_cache($customer_id)
 {
     global $conn;
-
     $cacheRow = mysqli_query($conn, "SELECT * FROM customer_outstanding_cache WHERE customer_id = $customer_id");
     $cacheRow = mysqli_fetch_assoc($cacheRow);
     if ($cacheRow == null) 
@@ -54,13 +52,20 @@ function check_customer_outstanding_cache($customer_id)
         $cacheRow['newRow'] = false;
         $oldest = $cacheRow['oldest_unpaid_id'];
         $lastpayment = $cacheRow['invoice_payment_id'];
+        
         $cacheRow['outdated'] = false;
     }
     
-
+    
     $invoiceList = array();
     $check = mysqli_query($conn, "SELECT id FROM pickerSheets WHERE customer_id = $customer_id ORDER BY `pickerSheets`.`id` DESC");
     $row = mysqli_fetch_assoc($check);
+    if ($row == null)
+    {
+        $cacheRow['outstanding_old'] = $cacheRow['outstanding'] = $cacheRow['oldest_unpaid_id'] = $cacheRow['pickersheet_id'] = $cacheRow['invoice_payment_id'] = 0;
+        $cacheRow['oldest_unpaid_date'] = strtotime('0');
+        return $cacheRow;
+    }
     $invoiceList[] = $row['id'];
     $highest = $row['id'];
     while($row = mysqli_fetch_assoc($check))
@@ -74,8 +79,8 @@ function check_customer_outstanding_cache($customer_id)
         $cacheRow['pickersheet_id'] = $check;
         $cacheRow['pickersheet_id_outdated'] = $cacheRow['outdated'] = true;
     }
-
-
+    
+    
     $check = mysqli_query($conn, "SELECT MAX(id) as id FROM invoice_payments WHERE invoice_id IN (".$invoiceList.")");
     $check = mysqli_fetch_assoc($check);
     $check = $check['id'];
@@ -85,6 +90,7 @@ function check_customer_outstanding_cache($customer_id)
         $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
     
+    $cacheRow['debug'] = "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ".$customer_id." AND (pickerSheets.id >= ".$oldest." OR invoice_payments.id > ".$lastpayment.") ORDER BY `pickerSheets`.`id` ASC";
     $checkQ = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = $customer_id AND (pickerSheets.id >= $oldest OR invoice_payments.id > $lastpayment) ORDER BY `pickerSheets`.`id` ASC");
     $cacheRow['pending'] = null;
     $lastRow = null;
@@ -101,14 +107,14 @@ function check_customer_outstanding_cache($customer_id)
     if ($cacheRow['pending'] != null)
     {
         $row = $cacheRow['pending'];
-
+        
         if ($row['outstanding'] > 0) $cacheRow['oldest_unpaid_date'] = strtotime($row['date']);
         else $cacheRow['oldest_unpaid_date'] = strtotime("now");
-
+        
         if (array_key_exists('oldest_unpaid_id',$cacheRow) == false || $row['id'] != $cacheRow['oldest_unpaid_id']) 
         {      
             $cacheRow['oldest_unpaid_id'] = $row['id'];
-            $cacheRow['oldest_unpaid_id_outdated'] = $cacheRow['outdated'] = true;
+            $cacheRow['outdated'] = true;
         }
     }
     else 
@@ -117,14 +123,19 @@ function check_customer_outstanding_cache($customer_id)
         if ($lastRow != null && $cacheRow['oldest_unpaid_id'] != $lastRow['id'])
         {
             $cacheRow['oldest_unpaid_id'] = $lastRow['id'];
-            $cacheRow['oldest_unpaid_id_outdated'] = $cacheRow['outdated'] = true;
+            $cacheRow['outdated'] = true;
         }
     }
-
     if ($cacheRow['outdated'] == true)
     {
         $cacheRow['outstanding_old'] = $cacheRow['outstanding'];
-        $cacheRow['outstanding'] = (float)totalOutstandingForCustomer($customer_id);
+        $outstanding = 0;      
+        $cacheRow['picksheets'] = $qq = get_customer_soa_results($customer_id,false);
+        foreach ($qq as $pick)
+        {
+            $outstanding = $outstanding + $pick['outstanding'];
+        }
+        $cacheRow['outstanding'] = $outstanding;
         update_customer_outstanding_cache($cacheRow);
     }
     return $cacheRow;

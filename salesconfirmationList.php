@@ -68,29 +68,27 @@
 			// load initial 80 rows
 			loadRows();
 
-			$('#instantSearch').keyup(function(){
+			$('#instantSearch').keypress(function(){
+				if (event.keyCode === 13)
+				{
+					var val = $('#instantSearch').val();
+					var request = $.ajax({
+						type: "POST",
+						url: "ajax/page-list/salesConfirmationList.php",
+						data: {
+							searchterm: val
+						},
+						dataType: "html"
+					});
 
-				var val = $('#instantSearch').val();
-				console.log(val);
+					request.done(function(data) {
+						$('#intakeAjax').html(data);
+					});
 
-
-				var request = $.ajax({
-					type: "POST",
-					url: "ajax/salesConfirmationList.php",
-					data: {
-						searchterm: val
-					},
-					dataType: "html"
-				});
-
-				request.done(function(data) {
-					$('#intakeAjax').html(data);
-				});
-
-				request.fail(function(jqXHR, textStatus) {
-					// alert( "Request failed: " + textStatus );
-				});
-			
+					request.fail(function(jqXHR, textStatus) {
+						// alert( "Request failed: " + textStatus );
+					});
+				}			
 			});
 			
 			
@@ -189,7 +187,7 @@
 			}
 			};
 
-			xhttp.open("POST", "/ajax/salesConfirmationListDate.php", true);
+			xhttp.open("POST", "/ajax/page-list/salesConfirmationListDate.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.send("month=" + month + '&year=' + year);
 
