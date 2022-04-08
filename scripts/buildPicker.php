@@ -8,9 +8,22 @@
 	$orderReferenceNumber = $_POST['orderReferenceNumber'];
 	$weightnote = $_POST['weightnote'];
 	$picksheet_note = $_POST['picksheet_note'];
- 
+
+	//$user_from_id = $_SESSION['USER'];
+	$user_from_id = $_POST['sales_person'];
 	$addressid = $_POST['addressid'];
 	
+	if ($user_from_id == "" || $customer_id == 0 || $customer_id == "")
+	{
+?>
+	<script type="text/javascript">
+		alert("An Error Occurred! Could not complete sale!");
+		window.location.href = "<?php echo $domain; ?>productpicker.php";
+	</script>
+<?php
+		die();
+	}
+
 	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
 	//$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 
@@ -38,10 +51,7 @@
 
 		
 	$today = date('Y-m-d');
-	
-	
-	//$user_from_id = $_SESSION['USER'];
-	$user_from_id = $_POST['sales_person'];
+
 	
 	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note) VALUES ('$picker_id','$user_from_id','$customer_id','$estimated_delivery_date','$orderReferenceNumber','$today','$addressid','$picksheet_note')";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
@@ -78,6 +88,7 @@
 	require_once('../ajax/generatePDFsaleconfirm.php');
 	
 ?>
-<script type="text/javascript">
-	window.location.href = "<?php echo $domain; ?>menu.php?msg=Pick Form Sent!&pickerSheets=<?php echo $pickersheet_id; ?>";
+<script>
+	alert("Done!");
+	window.location = '../menu.php';
 </script>
