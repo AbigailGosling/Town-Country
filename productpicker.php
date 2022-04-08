@@ -660,31 +660,27 @@ function checkStock(){
 			}
 		});
 	});
-	$('#customer').keydown(function(event){
-		var val = $('#customer').val();		
-		if (event.keyCode === 13)
-		{		
-			$('#customer_search_results').fadeIn();
-			
-			var request = $.ajax({
-				type: "POST",
-				url: "ajax/getCustomerDropdown.php",
-				data: {
-					searchterm: val
-				},
-				dataType: "html"
-			});
+	
+	$('#customer').keyup(function(){
+		var val = $('#customer').val();
+		$('#customer_search_results').fadeIn();
+		
+		var request = $.ajax({
+			type: "POST",
+			url: "ajax/getCustomerDropdown.php",
+			data: {
+				searchterm: val
+			},
+			dataType: "html"
+		});
 
-			request.done(function(data) {
-				$('#customer_search_results').html(data);
-			});
+		request.done(function(data) {
+			$('#customer_search_results').html(data);
+ 		});
 
-			request.fail(function(jqXHR, textStatus) {
-				// alert( "Request failed: " + textStatus );
-			});
-			event.preventDefault();
-			return false;
-		}
+		request.fail(function(jqXHR, textStatus) {
+			// alert( "Request failed: " + textStatus );
+		});
 	
 	});
 		
