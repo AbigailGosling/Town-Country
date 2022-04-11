@@ -202,34 +202,27 @@
 			format:'d/m/Y H:i',
 		});
 		
-		$('#supplier_search').keydown(function(event){
-			if (event.keyCode === 13)
-			{
-				var val = $('#supplier_search').val();
-				// $('#test2d').text(val);
-				if(val != ''){
-					$('#supplier_search_results').fadeIn();
-				}else{
-					$('#supplier_search_results').fadeOut();
-				}
-				
-				var species = $('#species_id').val();
-				
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				// document.getElementById("demo").innerHTML = this.responseText;
-				$('#supplier_search_results').html(this.responseText);
-				}
-				};
-				xhttp.open("POST", "/ajax/getSupplierDropdown.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.send("searchterm=" + val + "&species_id=" + species);
-
-				event.preventDefault();
-				return false;
-			}	
-
+		$('#supplier_search').keyup(function(){
+			var val = $('#supplier_search').val();
+			// $('#test2d').text(val);
+			if(val != ''){
+				$('#supplier_search_results').fadeIn();
+			}else{
+				$('#supplier_search_results').fadeOut();
+			}
+			
+			var species = $('#species_id').val();
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  // document.getElementById("demo").innerHTML = this.responseText;
+			  $('#supplier_search_results').html(this.responseText);
+			}
+			};
+			xhttp.open("POST", "/ajax/getSupplierDropdown.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.send("searchterm=" + val + "&species_id=" + species);
 		
 		});
 		
