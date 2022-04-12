@@ -131,7 +131,7 @@
 	<div id="loadResults" class="resultsContainer"></div>
 </div>
 
-
+<script type="text/javascript" src="js/modal-dialog.js"></script>  
 <div class="clearfix"></div>
 <?php 
 	if($_GET['msg'] != ''){
@@ -203,6 +203,7 @@
 
 	
 function checkStock(){
+	modalDialog.showMask();
     var readyToSubmit = 1;
 
     var group = $('input[name="basketRow[]"]');
@@ -239,9 +240,25 @@ function checkStock(){
 
 				$('#sendfake').prop('disabled', false);
 			}else{
-				$('#sendreal').trigger('click');
+				if (showPriceCheck)
+				{
+					modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale)
+				}
+				else
+				{
+					$('#sendreal').trigger('click');
+				}
 			}
 		}, 2000);
+}
+function completeSale()
+{
+	modalDialog.showMask();
+	$('#sendreal').trigger('click');
+}
+function cancelSale()
+{
+	$('#sendfake').prop('disabled', false);
 }
 </script>
 
@@ -416,6 +433,7 @@ function checkStock(){
 	var transactionAllowed = false;
 	var showWarning = false;
 	var warningMessage = "";
+	var showPriceCheck = false;
     setTimeout(function(){
         $('.select2-container').css('display', 'none');
         $('.select2-container').first().css('display', 'inline-block');
@@ -424,7 +442,7 @@ function checkStock(){
 	$('#sendfake').click(function(){
 
 		$(this).prop('disabled', true);
-
+		showPriceCheck = false;
 		var customer_id = $('#customer_id').val();
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
@@ -451,9 +469,9 @@ function checkStock(){
 		var ustomerEntered = true;
 		var priceEntered = true;
 		var pricedCorrectly = true;
-		var userOKd = true;
-		
+		var doneOnce = false;
 		$('.price').each(function(index,element){
+			doneOnce = true;
  			var value = $(element).val();
 			$(element).css('border-color', '#f2f2f2');
 			if(!(parseFloat(value) && value > 0)){
@@ -462,28 +480,15 @@ function checkStock(){
 			}
 			else if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
 				$(element).css('border','1px solid red');
-				/*if (!underOnce)
-				{
-					underOnce = true;
-					if(!confirm('Are you sure? the price is less than the cost')){
-						userOKd = false;
-					}
-				}	*/				
+				showPriceCheck = true;
 			}
 			else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
 				$(element).css('border','1px solid red');
-				/*if (!overOnce)
-				{
-					overOnce = true;
-					if(!confirm('Are you sure? the price is more than double the cost')){
-						userOKd = false;
-					}
-				}
-				*/
+				showPriceCheck = true;
 			}
 		});
-
-		if(customerEntered && dateEntered && priceEntered && userOKd){
+		
+		if(doneOnce && customerEntered && dateEntered && priceEntered){
 			checkStock();
 			return false;
 		}else{
