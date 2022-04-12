@@ -1854,7 +1854,6 @@
 			str_replace("&"," & ",$name)
 		);
 		$queries = array(
-			"SELECT * FROM `customers` WHERE businessname LIKE '%s%%' AND (`credit_terms` > -1 || `override` = 1)",
 			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
 			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)",
 			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') AND (`credit_terms` > -1 || `override` = 1)",
