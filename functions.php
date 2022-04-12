@@ -1855,16 +1855,15 @@
 		);
 		$queries = array(
 			"SELECT * FROM `customers` WHERE businessname LIKE '%s%%' AND (`credit_terms` > -1 || `override` = 1)",
-			"SELECT * FROM `customers` WHERE businessname = '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)",
 			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') AND (`credit_terms` > -1 || `override` = 1)",
-			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)"
 		);
-
 		foreach ($tests as $test)
 		{
 			foreach ($queries as $query)
 			{
-				$x = sprintf($query,$test);
+				$x = sprintf($query,$test);			
 				$y = mysqli_query($conn, $x);
 				$count = mysqli_num_rows($y);
 				if ($count > 0 && $count < 20)
