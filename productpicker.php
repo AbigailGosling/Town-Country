@@ -478,11 +478,11 @@ function cancelSale()
 				priceEntered = false;
 				$(element).css('border','1px solid red');
 			}
-			else if(parseFloat(value) < parseFloat($('.price').attr('cost'))){
+			else if(parseFloat(value) < parseFloat($(element).attr('cost'))){
 				$(element).css('border','1px solid red');
 				showPriceCheck = true;
 			}
-			else if(parseFloat(value) >= (parseFloat($('.price').attr('cost'))) * 2){
+			else if(parseFloat(value) >= (parseFloat($(element).attr('cost'))) * 2){
 				$(element).css('border','1px solid red');
 				showPriceCheck = true;
 			}
