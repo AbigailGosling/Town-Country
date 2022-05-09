@@ -178,7 +178,7 @@ function precredit_check($customer_id)
         $returningObj['oldest'] = $oldest = $details['oldest_unpaid_date'];
         $outstanding = $details['outstanding'];
         $returningObj['beyondDate'] = $beyondDate;
-        if ($oldest < $beyondDate) 
+        if ($oldest != "" && $oldest < $beyondDate) 
         {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer is over credit limit or terms, contact administration";
