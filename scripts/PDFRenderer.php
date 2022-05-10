@@ -8,13 +8,12 @@ class PDFRenderer{
     public static function generatePDFfromWeb($targetURL,$pathToFile,$fileName){
 
         global $domain;
-
+        
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
         
         $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
-
         // starts headless chrome
         $browser = $browserFactory->createBrowser();
         try {
@@ -40,8 +39,8 @@ class PDFRenderer{
                         '(() => {
                                 return renderComplete();
                             })()'
-                        )->getReturnValue(100);
-                    
+                        )->getReturnValue(10000);
+                    echo var_dump($evaluation);
                 }
                 catch (Exception $e) {}
                 if ($evaluation)
@@ -49,7 +48,7 @@ class PDFRenderer{
                     $hasResult = true;
                     break;
                 }
-                if (time() - $start > 500)
+                if (time() - $start > 50000)
                 {
                     break;
                 }
@@ -60,6 +59,8 @@ class PDFRenderer{
             $out= $page->pdf(['printBackground' => false]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
             $page->navigate('https:'.$domain.'logout.php')->waitForNavigation();
+        } catch (Exception $e) {
+            die($e->getMessage());
         } finally {
             // bye
             $browser->close();
