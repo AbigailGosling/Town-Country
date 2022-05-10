@@ -147,6 +147,8 @@
 
 		}
 		function looper(data, status){
+			console.log(data);
+			console.log(status);
 			processToSend();
 		}
 	</script>
