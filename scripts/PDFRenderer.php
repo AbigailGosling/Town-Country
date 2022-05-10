@@ -40,7 +40,6 @@ class PDFRenderer{
                                 return renderComplete();
                             })()'
                         )->getReturnValue(10000);
-                    echo var_dump($evaluation);
                 }
                 catch (Exception $e) {}
                 if ($evaluation)
