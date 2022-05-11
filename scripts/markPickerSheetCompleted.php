@@ -3,7 +3,7 @@
 	$id = mysqli_real_escape_string($conn, $_GET['id']);
 	$pickersheet_id = mysqli_real_escape_string($conn, $_GET['id']);
 	$type = mysqli_real_escape_string($conn, $_POST['sheet_type']);
-	mysqli_query($conn, "DELETE FROM customer_outstanding_cache WHERE customer_id = ".$customer_id);
+
 	/* START - Get all product IDs on the picksheet */
 	$product_ids = array();
 	$result_product = mysqli_query($conn, "SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$pickersheet_id' GROUP BY product_id");
@@ -36,7 +36,7 @@
 	$picksheetResult = mysqli_query($conn,  "SELECT * FROM pickerSheets WHERE id='$pickersheet_id' LIMIT 1");
 	$picksheet = mysqli_fetch_array($picksheetResult);
 	$customer_id = $picksheet['customer_id'];
-	
+	mysqli_query($conn, "DELETE FROM customer_outstanding_cache WHERE customer_id = ".$customer_id);
 	if($picksheet['completed_frozen'] == 1 && $picksheet['completed_fresh'] == 1){
 		
 		$updateStatusQuery = "UPDATE `pickerSheets` SET completed='1' WHERE id='$pickersheet_id'";

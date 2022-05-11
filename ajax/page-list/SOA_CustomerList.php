@@ -26,9 +26,9 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
             while ($tmpD = mysqli_fetch_assoc($historyQuery))
             {
                 $history = $tmpD;
-                if (strpos($tmpD['addressee'],"townandcountrymeats.co.uk") == -1) break;
+                if (strpos($tmpD['addressee'],"townandcountrymeats.co.uk") === FALSE) break;
             }
-			$style = 'style="background-color:'.SLabsEmailerStatus::getTrafficStatus($history['status'],$history['secondary_code']).'"';
+			$style = 'style="background-color:'.SLabsEmailerStatus::getTrafficStatus($history['status']).'"';
 			$title = 'title="'.SLabsEmailerStatus::getTextStatus($history['status'],$history['secondary_code']).'"';
 		}
 	}

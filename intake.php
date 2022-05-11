@@ -657,10 +657,10 @@
 			<?php
                 
                 
-				$x = "SELECT * FROM product WHERE original_intake_id='$intake_id' GROUP BY cut_id";		 
+				$x = "SELECT * FROM product WHERE original_intake_id='$intake_id'";		 
 
 				$y = mysqli_query($conn, $x);
-				$count = mysqli_num_rows($y);
+				$count = $counting;
 				
 				$totalCases = 0;
 				$totalWeight = 0;
@@ -675,15 +675,13 @@
                     $yo = mysqli_query($conn, $xo);
                     $countPallets = mysqli_num_rows($yo);
                     
-                    $qPallets = '';
+                    $qPallets = array();
                     
                     while($roow = mysqli_fetch_array($yo)){
                         $rowid = $roow['id'];
-                        
-                        $qPallets .= " pallet_id = '$rowid' OR";
+                        $qPallets[] = $rowid;
                     }
                     
-                    $qPallets = substr($qPallets, 0, -2);
 
 					$c++;
 					$product_id = $row['id'];
@@ -691,22 +689,19 @@
 					$rowcutid = $row['cut_id'];
 					
 					if($countPallets >= 1){
-						$x2 = "SELECT id FROM product WHERE (" . $qPallets . ") AND cut_id='$rowcutid'";
+						$x2 = "SELECT id FROM product WHERE pallet_id IN (" . implode(",",$qPallets) . ") AND cut_id='$rowcutid'";
 					}else{ $x2 = "SELECT id FROM product WHERE id = 0"; }
 				
 					$y2 = mysqli_query($conn, $x2);
 					
 					 
 					$weightthing = 0;
-					while($row2 = mysqli_fetch_array($y2)){
-						
-                        $rowid = $row2['id'];
-                        if(weightFromProductID($rowid) != 1){
-						$weightthing += weightFromProductID($rowid);
-						$totalWeight += weightFromProductID($rowid);
-						$qAppend2 .= " product_id = '$rowid' OR";
-                        }
-                    }
+					$rowid = $row['id'];
+					if(weightFromProductID($rowid) != 1){
+					$weightthing += weightFromProductID($rowid);
+					$totalWeight += weightFromProductID($rowid);
+					$qAppend2 .= " product_id = '$rowid' OR";
+					}
 					 
 					$qAppend2 = substr($qAppend2, 0, -2);
 					$count2 = mysqli_num_rows($y2);
