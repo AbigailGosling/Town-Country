@@ -1,38 +1,31 @@
 <?php
     require('functions.php');
-
-
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=data.csv');
-
-    $output = fopen('php://output', 'w');
-
     $headings = array();
    
     array_push($headings, 'Intake ID');
     array_push($headings, 'Pallet ID');
+    array_push($headings, 'Storage Location');
     array_push($headings, 'Unit');
     array_push($headings, 'Chill/Frz');
     array_push($headings, 'Species');
+    array_push($headings, 'Cut Group');
     array_push($headings, 'Product Name');
     array_push($headings, 'Nationalities');
     array_push($headings, 'Brands');
     array_push($headings, 'Date Range');
     array_push($headings, 'Volume');
-    array_push($headings, 'Cost');
-    array_push($headings, 'RRP');
-    fputcsv($output, $headings);
+    $final_array = array();
+    $final_array[] = $headings;
 
-
-
-    $productsX = "SELECT *, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
+    JOIN `cutgroups` ON cuts.cutgroup_id = cutgroups.id
     JOIN `nationality` ON product.nationality_id = nationality.id
     JOIN `brands` ON product.brand_id = brands.id
     JOIN `species` ON cuts.species_id = species.id
-    WHERE weights.status_id != 1
-    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY species.name, cuts.name ASC";
+    WHERE weights.status_id != 1 GROUP BY product.id
+    ORDER BY species.name, cuts.name ASC";
     
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
@@ -44,9 +37,9 @@
     $TOTAL_PRICE = 0;
 
     
-    $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
+    //$products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     
-    foreach($products as $productsRow){
+    while($productsRow = mysqli_fetch_assoc($productsY)){
         $single_row = array();
 
         $pallet_id = $productsRow['pallet_id'];
@@ -59,6 +52,7 @@
         $local = $productsRow['local'];
         $brandname = $productsRow['brandname'];
         $cut = $productsRow['cutname'];
+        $cutgroup = $productsRow['cutgroup'];
         $species_name = getSpecies($productsRow['species_id']);
         if($ubbb == 0){
             $ubtext = 'UB';
@@ -97,6 +91,7 @@
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
+                array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
 
                 // $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
@@ -116,20 +111,15 @@
         $uniqueTemperatures = count(array_unique($product2_temperatures));
         $uniqueDateranges = count(array_unique($product2_dateranges));
 
-        $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
+        $quantityTotal = numWeightsAvailableFromProductID($productsRow['productid']);
         
         if($quantityTotal < 1){continue;}
         ###
-       
-        $totalW += weightSoldFromProductID($productsRow['productid']);           
-        $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
-       
-        
+          
         array_push($single_row, $intake_id);
         array_push($single_row, $pallet_id);
+        array_push($single_row, $productsRow['storage_location']);
         array_push($single_row, $quantityTotal);
-
-        $TOTAL_QUANTITY += $quantityTotal;
 
         if($uniqueTemperatures > 1){
             array_push($single_row, 'Mixed');
@@ -138,6 +128,7 @@
         }
 
         array_push($single_row, $species_name);
+        array_push($single_row, $cutgroup);
         array_push($single_row, $cut);
 
         if($uniqueNationalities > 1){
@@ -165,29 +156,34 @@
 
 
         if($productsRow['unit'] == 'PPC'){
+            $this_total_cost = (float)$productsRow['cost']*$quantityTotal;
             array_push($single_row, 'PPC');
         }else{
             if($productsRow['akg'] != ''){
                 $weight_value = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
-                array_push($single_row, $weight_value . 'kg');
             }else{
                 $weight_value = totalWeightOfProduct($product2_productids);
-                array_push($single_row, $weight_value . 'kg');
+                
             }
-            $TOTAL_WEIGHT += $weight_value;
+            if ($weight_value > 0.9)
+            {
+                $this_total_cost = (float)$productsRow['cost']*$weight_value;
+                array_push($single_row, $weight_value . 'kg');
+                $TOTAL_WEIGHT += $weight_value;
+                $TOTAL_QUANTITY += $quantityTotal;
+            }
+            else
+            {
+                continue;
+            }
         }
 
-        $TOTAL_COST += (float)$productsRow['cost'];
-        $TOTAL_PRICE += (float)$productsRow['price'];
-
-        array_push($single_row, '' . number_format((float)$productsRow['cost'], 2, '.', ''));
-        array_push($single_row, '' . number_format((float)$productsRow['price'], 2, '.', ''));
-        
-
-        fputcsv($output, $single_row);
+        $TOTAL_COST += $this_total_cost;
+        $final_array[] = $single_row;
     }
 
     $final_row = array();
+    array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, $TOTAL_QUANTITY);
@@ -197,9 +193,13 @@
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');
+    array_push($final_row, '');
     array_push($final_row, number_format($TOTAL_WEIGHT, 3, '.', ',') . 'kg');
-    array_push($final_row, $TOTAL_COST);
-    array_push($final_row, $TOTAL_PRICE);
-    fputcsv($output, $final_row);
+    $final_array[] = $final_row;
 
+    require('vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');
+    use Shuchkin\SimpleXLSXGen;
+
+    $xlsx = Shuchkin\SimpleXLSXGen::fromArray( $final_array );
+    $xlsx->downloadAs('data.xlsx');
 ?>
