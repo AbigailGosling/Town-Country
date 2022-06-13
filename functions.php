@@ -18,10 +18,14 @@
 	$pageName = $_SERVER['REQUEST_URI'];
 	
 	$exit = 1;
-	if($pageName == '/' || $pageName == '/index.php' || $pageName == '/script_login.php'){
-		$exit = 0;
+	switch ($pageName)
+	{
+		case '/':
+		case '/index.php':
+		case '/script_login.php':
+		case '/ajax/generatePDFstatement2.php':
+			$exit = 0;
 	}
-	
 	
 	if(!$_SESSION['USER'] && $exit == 1){ header('location:index.php'); }
 	
