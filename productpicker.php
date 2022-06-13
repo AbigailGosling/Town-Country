@@ -446,7 +446,8 @@ function cancelSale()
 		var customer_id = $('#customer_id').val();
 		var customer = $('#customer').val();
 		var date = $('#estimated_delivery_date').val();
-
+		var sellAsUser = $('#sales_person').val();
+		var UserSet = false;
 		dateEntered = false;
 		
 		if (customer_id != undefined) {
@@ -455,6 +456,13 @@ function cancelSale()
 		} else{
 			customerEntered = false;
  			$('#customer').css('border','1px solid red');
+		}
+		if (sellAsUser != undefined) {
+			UserSet = true;
+			$('#sales_person').css('border-color', '#f2f2f2');
+		} else{
+			UserSet = false;
+ 			$('#sales_person').css('border','1px solid red');
 		}
 		
 		if (date != '') {
@@ -470,6 +478,7 @@ function cancelSale()
 		var priceEntered = true;
 		var pricedCorrectly = true;
 		var doneOnce = false;
+		
 		$('.price').each(function(index,element){
 			doneOnce = true;
  			var value = $(element).val();
@@ -488,11 +497,11 @@ function cancelSale()
 			}
 		});
 		
-		if(doneOnce && customerEntered && dateEntered && priceEntered){
+		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet){
 			checkStock();
 			return false;
 		}else{
-			if(!customerEntered || !dateEntered || !priceEntered){
+			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
 
@@ -584,6 +593,7 @@ function cancelSale()
 	});
 	
 	function setCustomer(customer_id, text){
+		console.log("customer set to '"+customer_id+"'");
 		$('#customer_search_results').fadeOut();
 		$('#customer_id').val(customer_id);
 		$('#customer').val(text);

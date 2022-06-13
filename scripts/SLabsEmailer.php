@@ -37,15 +37,15 @@ class SLabsEmailer {
         set_time_limit(1800); //seconds
 
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
+        foreach($toEmails as $email)
+        {	
         //Set up the socketlabs client
         $message = new BasicMessage();
         $message->subject = $subject;
         $message->htmlBody = $htmlBody;
         $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-        foreach($toEmails as $email)
-        {	
             $message->addToAddress(new BulkRecipient(trim($email)));
-        }
+    
         $fullExplainedPath = "NULL";
         if ($pathToFile != '' && $fileName !='')
         {
@@ -61,9 +61,6 @@ class SLabsEmailer {
         $mid = self::generate_uuid();
         $message->messageId = $mid;
         $response = $client->send($message);
-        foreach($toEmails as $email)
-        {	
-            
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$email', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
             mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
             
