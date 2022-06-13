@@ -1,42 +1,14 @@
 <?php
-//This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
 require_once('../functions.php');
-require_once('../scripts/PDFRenderer.php');
-require_once('../scripts/SLabsEmailer.php');
-
-use InternalScripts\SLabsEmailer;
-use InternalScripts\PDFRenderer;
-
-//---POST DATA---//
-$customerID = $_POST["id"];
-
-//This function renders a PDF document from a string using mPDF
-function renderPDF($customerID){
-	global $conn; 
-
-	$statementDate = time();
-	$fileName = 'Statement_'.$customerID.'_'.$statementDate.'.pdf';
-	$pathToFile = 'PDF';
-
-	PDFRenderer::generatePDFfromWeb('customer_soam.php?id='.$customerID,$pathToFile,$fileName);
-	
-	$customerQueryResult = mysqli_query($conn, "SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
-	$customer = mysqli_fetch_assoc($customerQueryResult);
-	if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
+if (isset($_POST["ids"]))
+{
+	foreach($_POST["ids"] as $customerID)
 	{
-		$customer_emails = explode(";",$customer['accounts_email']);
+		mysqli_query($conn, "INSERT INTO mail_queue (customer_id) VALUES ($customerID)");
 	}
-	else
-	{
-		$customer_emails = explode(";",$customer['internal_email']);
-	}
-	$subject = "Statement of Account from Town and Country Meats";
-	$htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
-
-	return SLabsEmailer::send_email($customerID,"STATEMENT",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
-	
+	putenv("SHELL=/bin/bash");
+	print `echo /usr/bin/php -q generatePDFstatement2.php | at now 2>&1`;
 }
-//Main Decleration
-echo renderPDF($customerID);
+
 
 ?>
