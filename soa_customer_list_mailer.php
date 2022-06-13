@@ -87,7 +87,6 @@
 								if (i > -1) toSend.splice(i,1);
 								t.hide();
 							}
-							
 						});
 					}else{
 						$('.loadMoreBtn').show();
@@ -133,11 +132,14 @@
             xhttp.send("searchterm=" + value + "&showBal=1");
         }
 		function processToSend(){
+			
 			if (toSend.length > 0){
-				var c = toSend[0];
-				$('#img-mail-selector-'+c).hide();
-				toSend.splice(0,1);
-				$.post("ajax/generatePDFstatement.php", {id: c},looper);
+				
+				$.post("ajax/generatePDFstatement.php", {ids: toSend},looper);
+				for (const element of toSend) {
+					$('#img-mail-selector-'+element).hide();
+				}
+				toSend = [];
 			}
 			else
 			{
@@ -147,9 +149,8 @@
 
 		}
 		function looper(data, status){
-			console.log(data);
-			console.log(status);
-			processToSend();
+			$('#intakeAjax').show();
+			$('.loadMoreBtn').hide();
 		}
 	</script>
 </body>
