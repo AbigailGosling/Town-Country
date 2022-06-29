@@ -24,6 +24,7 @@
 		case '/index.php':
 		case '/script_login.php':
 		case '/ajax/generatePDFstatement2.php':
+		case '/scripts/SLabsNotifier.php':
 			$exit = 0;
 	}
 	
