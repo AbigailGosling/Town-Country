@@ -10,7 +10,6 @@ if ($data['SecretKey'] != SLabsEmailer::NotifcationAPIKey)
 }
 else
 {
-    http_response_code(200);
     SLabsEmailer::process_notification($data);
 }
 ?>
