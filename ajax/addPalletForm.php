@@ -68,7 +68,7 @@
 		<input name="product_temp" id="product_temp" type="text" required>
 		</div>
 		<label>Location</label>
-		<select name="storage_location">
+		<select name="storage_location" id="storage_location">
 				<option></option>
 				<option value="Unit 11 - 14">Unit 11 - 14</option>
 				<option value="Unit 23">Unit 23</option>
@@ -447,7 +447,7 @@
 				}
 			});
 		}
-		if($('#storage_location').val() == ''){
+		if($('#storage_location').val() == undefined || $('#storage_location').val() == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#storage_location').css('border','2px solid red');
 			good = 0;
@@ -693,7 +693,14 @@
 		}else{
 			$('#nationality').css('border','1px solid grey');
 		}
-				
+			
+		if($('#storage_location').val() == undefined || $('#storage_location').val() == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('#storage_location').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#storage_location').css('border','1px solid grey');
+		}
 		$('#msgNotice2').html(msg);
 		
 		if(good == 1){
@@ -937,7 +944,6 @@
 			}
 		}
 		
-		console.log(totalWeights);
 		var totalWeightRounded = round(totalWeights, 5)
 		$('#totalCatchWeight').html(totalWeightRounded + 'kg');
 	}
