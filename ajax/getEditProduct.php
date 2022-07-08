@@ -92,7 +92,34 @@
 			?>
 		</select>
 		<label>Location</label>
-		<textarea name="storage_location" ><?php echo $palletRow['storage_location']; ?></textarea>
+		<?php
+			switch ($palletRow['storage_location'])
+			{
+				case "Unit 11 - 14":
+					$unit11 = " selected";
+					break;
+				case "Unit 23":
+					$unit23 = " selected";
+					break;
+				case "Gatwick":
+					$unitGatwick = " selected";
+					break;
+				case "Dry Store":
+					$unitDry = " selected";
+					break;
+				case "Unit 15 - 17":
+					$unit15 = " selected";
+					break;
+			}
+		?>
+		<select name="storage_location" id ="storage_location">
+			<option></option>
+			<option value="Unit 11 - 14" <?php echo $unit11; ?>>Unit 11 - 14</option>
+			<option value="Unit 23" <?php echo $unit23; ?>>Unit 23</option>
+			<option value="Gatwick" <?php echo $unitGatwick; ?>>Gatwick</option>
+			<option value="Dry Store" <?php echo $unitDry; ?>>Dry Store</option>
+			<option value="Unit 15 - 17" <?php echo $unit15; ?>>Unit 15 - 17</option>
+		</select>
 		
 		<label>comments</label>
 		<textarea name="comments" ><?php echo $productRow['comments']; ?></textarea>
@@ -345,7 +372,7 @@
 		if(ubbb != 2){
 		
 			if(best_by_range_from == ''){
-				msg = "The highlighted fields cannot be blank!";
+				msg = "The highlighted fields cannot be blank!9";
 				$('#best_by_range_from').css('border','2px solid red');
 				good = 0;
 			}else{
@@ -353,7 +380,7 @@
 			}
 			
 			if(best_by_range_to == ''){
-				msg = "The highlighted fields cannot be blank!";
+				msg = "The highlighted fields cannot be blank!8";
 				$('#best_by_range_to').css('border','2px solid red');
 				good = 0;
 			}else{
@@ -363,7 +390,7 @@
 		}
 		
 		if(brand_id == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!7";
 			$('#brand_id').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -371,7 +398,7 @@
 		}
 		
 		if(species_id == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!6";
 			$('#species_id').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -379,7 +406,7 @@
 		}
 		
 		if(cut_id == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!5";
 			$('#cut_id').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -387,7 +414,7 @@
 		}
 		
 		if(unit == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!4";
 			$('#unit').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -396,7 +423,7 @@
 		
 		
 		if(quantityWeight == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!3";
 			$('#quantityWeight').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -404,13 +431,19 @@
 		}
 
 		if(nationality == ''){
-			msg = "The highlighted fields cannot be blank!";
+			msg = "The highlighted fields cannot be blank!2";
 			$('#nationality').css('border','2px solid red');
 			good = 0;
 		}else{
 			$('#nationality').css('border','1px solid grey');
 		}
-		
+		if($('#storage_location').val() == ''){
+			msg = "The highlighted fields cannot be blank!1";
+			$('#storage_location').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#storage_location').css('border','1px solid grey');
+		}
 		$('#msgNotice2').html(msg);
 		
 		if(good == 1){

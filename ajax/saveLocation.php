@@ -2,9 +2,8 @@
 
 	require('../functions.php');
 
-	
-	$pallet = $_GET['pallet'];
-	$location = $_GET['location'];
+	$pallet = mysqli_real_escape_string($conn,$_GET['pallet']);
+	$location = trim(mysqli_real_escape_string($conn,$_GET['location']));
 	
 	
 	$x = "UPDATE `pallet` SET storage_location='$location' WHERE id='$pallet'";

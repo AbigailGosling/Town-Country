@@ -42,10 +42,14 @@
 			
 			// load initial 80 rows
 			loadRows();
-
-			$('#instantSearch').keyup(function(){
-
-				var val = $('#instantSearch').val();
+			$('#instantSearch').on('keypress',function(e) {
+				if(e.which == 13) {
+					doSearch();
+				}
+			});
+        });
+		function doSearch(){
+			var val = $('#instantSearch').val();
 				console.log(val);
 
 				var request = $.ajax({
@@ -65,10 +69,7 @@
 					// alert( "Request failed: " + textStatus );
 				});
 			
-
-			});
-        });
-
+		}
 		function loadRows(){
 			
 			var toSkip = $('#toSkipCount').val();

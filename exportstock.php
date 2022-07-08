@@ -121,11 +121,9 @@
         array_push($single_row, $productsRow['storage_location']);
         array_push($single_row, $quantityTotal);
 
-        if($uniqueTemperatures > 1){
-            array_push($single_row, 'Mixed');
-        }else{
-            array_push($single_row, getTemp($product2_temperatures[0]));
-        }
+
+        array_push($single_row, getTemp($product2_temperatures[count($product2_temperatures)-1]));
+
 
         array_push($single_row, $species_name);
         array_push($single_row, $cutgroup);
@@ -162,8 +160,7 @@
             if($productsRow['akg'] != ''){
                 $weight_value = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
             }else{
-                $weight_value = totalWeightOfProduct($product2_productids);
-                
+                $weight_value = totalWeightOfProduct(array($productsRow['productid'])) ;
             }
             if ($weight_value > 0.9)
             {

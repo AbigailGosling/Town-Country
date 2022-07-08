@@ -58,7 +58,7 @@
 	>
 				<table border="0" style="min-height: 46px;">
 					<tr>
-						<td min_ align="center" style="font-size: 18px;"><i id="img-mail-selector-<?php echo $customer['id']?>" class="fa fa-check img-mail-selector"></i></td>
+						<td align="center" style="font-size: 18px;"><i id="img-mail-selector-<?php echo $customer['id']?>" class="fa fa-check img-mail-selector"></i></td>
 					</tr>
 				</table>
 			</a>
