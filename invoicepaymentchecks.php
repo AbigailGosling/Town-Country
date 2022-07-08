@@ -1,7 +1,6 @@
 <?php
 include_once('includes/frontHeader.php');
 include_once('functions.php');
-
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
 <style id="mainStyle">
@@ -139,23 +138,6 @@ include_once('functions.php');
 
 <div class="logocontainer" style="text-align: center; line-height: 13px; font-size: 10px; padding-top:10px;">
         </div>
-        <div>
-    <table id="hisTable" class="table" width="100%" style="font-size:10pt;border-spacing: 0;border-color: grey;">
-        <thead>     
-            <tr class="heading">
-                <td width="10%" align="left">Created</td>
-                <td width="20%" colspan="2" align="center">Date Range</td>
-                <td width="05%" align="center">Invoice Range</td>
-                <td width="05%" align="center"></td>
-                <td width="10%" align="left">Sales Value</td>
-                <td width="10%" align="left">Payment Value</td>
-                <td width="1%" align="left"></td>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    </div>
         <div style="width: 300px;float: right;">
             <table>
                 <tr><td style="text-align: right;">Start Date:</td><td><input class="form-control" type="text" class="inputbox" id="startdate" name="startdate" placeholder=""/></td></tr>
@@ -170,18 +152,24 @@ include_once('functions.php');
         <table id="soaTable" class="table" width="100%" style="font-size:10pt;border-spacing: 0;border-color: grey;">
             <thead>
                 <tr class="heading">
-                    <th width="33%" align="left"></th>
-                    <th width="33%" align="left"></th>
-                    <th width="33%" align="right"></th>
+                    <th width="10%" align="left"></th>
+                    <th width="20%" align="left"></th>
+                    <th width="20%" align="left"></th>
+                    <th width="20%" align="right"></th>
+                    <th width="20%" align="right"></th>
+                    <th width="10%" align="right"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td></td><td>Set your desired Date range than press go.</td><td></td></tr>
+                <tr><td></td><td></td><td></td><td>Set your desired Date range than press go.</td><td></td><td></td></tr>
             </tbody>
             <tfoot class="last">
                 <tr>
                     <th align="left"></th>
                     <th align="left"></th>
+                    <th align="left"></th>
+                    <th align="right"></th>
+                    <th align="right"></th>
                     <th align="right"></th>
                 </tr>
             </tfoot>
@@ -189,66 +177,26 @@ include_once('functions.php');
 
             </tbody>
         </table>
-        <input style="width: 55px;" type ="button" onclick = "save()" value = "Save"/>
         </div>
 </div>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
-$(document).ready(function(){  
-    $("#startdate").datepicker({
-        dateFormat: 'yy-mm-dd'
-    });
-    $("#enddate").datepicker({
-        dateFormat: 'yy-mm-dd'
-    });
-    $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
-    /*
-    $("#starttime").timepicker({
-        dateFormat: 'dd/mm/yy'
-    });
-    $("#endtime").timepicker({
-        dateFormat: 'dd/mm/yy'
-    });*/
-});
 var startInv;
 var start;
 var end;
 var endInv;
 var d;
 var selectedID;
-function selectHist(id){
-    if (selectedID != null)
-    {
-        $("#hist_"+selectedID).css("background-color", "");
-    }
-    if (id != selectedID)
-    {
-        selectedID = id;
-        $("#hist_"+selectedID).css("background-color", "#afeeee");
-        $("#startinvoice").val(parseInt($("#hist_"+selectedID+"_end_invoice_id").html())+1);
-        $("#startdate").val("");
-        $("#enddate").val("");
-    }
-    else 
-    {
-        $("#startinvoice").val('');
-        selectedID = null;
-    }
-    
-}
-function hist_results(data,status){
-    console.log(data);
-    $("#hisTable > tbody").empty();
-    $("#hisTable > tbody").html(data);
-}
-function deleteHist(id){
-    $.post("/ajax/deleteHistoricFinancialReport.php", {id:id}, del_results);
-}
-function del_results(data,status){
-    $("#hisTable > tbody").empty();
-    $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
-}
+$(document).ready(function(){ 
+    $("#startdate").datepicker({
+        dateFormat: 'yy-mm-dd'
+    });
+    $("#enddate").datepicker({
+        dateFormat: 'yy-mm-dd'
+    });
+});
+
 function fetchResults(){
     $('#soaTable').DataTable().destroy();
     $("#soaTable > tbody").empty();
@@ -288,72 +236,29 @@ function fetchResults(){
         $("#startdate").css({"border-color":"#bfbfbf"});
     }
     $("#soaTable").append("<tr><td></td><td>Loading Please Wait...</td><td></td></tr>");
-    $.post("/ajax/generateFinancialReport.php", { 'start':start, 'startInv':startInv, 'end':end, 'endInv':endInv, 'previous_id':selectedID }, results);
+    $.post("/ajax/generateInvoicePaymentCheck.php", { 'start':start, 'startInv':startInv, 'end':end, 'endInv':endInv, 'previous_id':selectedID }, results);
 }
 function results(data, status){
     $("#soaTable > tbody").empty();
-    console.log(data);
-    d = JSON.parse(data);
-
-    if (d.abort_id > 0)
-    {
-        
-        $('#warning').css('background', "#ffc266");
-        $('#warning').css('border', "2px solid #ff9900");
-        $('#warning').css('display', "inline-block");
-        $('#warning').html("Invoice "+d.abort_id+" is not picked! Processing stopped!");
-    }
-    else
-    {
-        $('#warning').css('display', "none");
-    }
-
-    $("#soaTable > thead").css('display', "none");
-    $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Processed Invoices</td><td></td><td></td></tr>");
-    if (d.hasOwnProperty("previous") && d.previous != null)
-    {
-        $("#soaTable").append("<tr><td>Previous Range:</td><td></td><td align=\"right\">"+d.previous.start_invoice_id+" - "+d.previous.end_invoice_id+"</td></tr>");
-    }
-    else
-    {
-        $("#soaTable").append("<tr><td></td><td></td><td align=\"right\"></td></tr>");
-    }
- 
-    $("#soaTable").append("<tr><td>This Range:</td><td></td><td align=\"right\">"+d.start_invoice_id+" - "+d.end_invoice_id+"</td></tr>");
-    $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td></td><td></td><td></td></tr>");
-    if (d.hasOwnProperty("previous") && d.previous != null && d.previous.hasOwnProperty('rolTotal')) 
-    {
-        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+Number(d.previous.rolTotal).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    }
-    else 
-    {
-        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+(0).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    }
-    $("#soaTable").append("<tr><td>Total Sales Value \"This Period\"</td><td></td><td align=\"right\">£"+d.sales.toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    if (d.hasOwnProperty("previous") && d.previous != null && d.previous.hasOwnProperty('rolTotal')) 
-    {
-        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(Number(d.sales)+Number(d.previous.rolTotal)).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    }
-    else
-    {
-        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(d.sales).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    }
-    $("#soaTable").append("<tr><td></td><td></td><td></td></tr>");
-    $("#soaTable").append("<tr><td>Total Payments this Period: </td><td></td><td align=\"right\">£"+(d.payments).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Total: </td><td></td><td align=\"right\">£"+d.rolTotal.toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+    $("#soaTable").append(data);
 }
-function save()
+function ticked(e)
 {
-    $('#warning').css('display', "none");
-    $.post("/ajax/saveFinancialReport.php", {'input': d},debug);
+    var ticked = $('#img-mail-selector-'+e);
+    var stater;
+    if (ticked.is(":visible"))
+    {
+        ticked.hide();
+        stater = 0;
+    }
+    else
+    {
+        ticked.show();
+        stater = 1;
+    }
+    $.post("/ajax/setInvoicePaymentCheck.php", { 'id':e, 'state':stater }, debug);
 }
 function debug(data, status)
 {
-    console.log(data);
-    $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
-    $('#warning').css('background', "#CFFDBC");
-    $('#warning').css('border', "2px solid #6EFA32");
-    $('#warning').css('display', "inline-block");
-    $('#warning').html("Saved!");
 }
 </script>

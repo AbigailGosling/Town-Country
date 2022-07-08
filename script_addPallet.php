@@ -130,7 +130,9 @@
 			
 		}
 	}
-	
+	$storage_location = mysqli_real_escape_string($conn, $_POST['storage_location']);
+	$palletx = "UPDATE `pallet` SET `storage_location`='$storage_location' WHERE `id`='$pallet_id'";
+	$pallety = mysqli_query($conn, $palletx);
 	if($_GET['dupe'] == 'true'){
 		echo $pallet_id;	
 	}else{

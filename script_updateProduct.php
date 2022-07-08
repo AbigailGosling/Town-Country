@@ -19,15 +19,15 @@
 	$nationality_id = mysqli_real_escape_string($conn, $_POST['nationality_id']);	
 	$brand_id = mysqli_real_escape_string($conn, $_POST['brand_id']);	
 	$species_id = mysqli_real_escape_string($conn, $_POST['species_id']);
-	$storage_location = mysqli_real_escape_string($conn, $_POST['storage_location']);
-	
+
 	$unit = mysqli_real_escape_string($conn, $_POST['unit']);
 	
 	$cost = mysqli_real_escape_string($conn, $_POST['cost']);
 	$price = mysqli_real_escape_string($conn, $_POST['price']);
 	
-	$palletx = "UPDATE `pallet` SET storage_location='$storage_location' WHERE id='$pallet_id'";
-	$pallety = mysqli_query($conn, $pallet);
+	$storage_location = mysqli_real_escape_string($conn, $_POST['storage_location']);
+	$palletx = "UPDATE `pallet` SET `storage_location`='$storage_location' WHERE `id`='$pallet_id'";
+	$pallety = mysqli_query($conn, $palletx);
 	
 	$cost = mysqli_real_escape_string($conn, $_POST['cost']);
 	$price = mysqli_real_escape_string($conn, $_POST['price']);
