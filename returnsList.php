@@ -24,7 +24,7 @@
 <main>
 	<div id="intakelist">
 		<h1 class="int">Returns Intake LIST</h1>
-		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
+		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go">
 		
 		<a href="returnsList.php" class="resetBtn">Clear</a>
 		<div class="datesearchcontainer">

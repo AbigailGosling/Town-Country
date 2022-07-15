@@ -47,7 +47,8 @@
 	$temperatureID = $_GET['temperatureID'];
 	$pallet_id = $_GET['palletID'];
 	$intake_id = $_GET['intakeID'];
-    
+    $brand =  $_GET['brandID'];
+    $nationality =  $_GET['nationalityID'];
     $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
@@ -99,14 +100,15 @@
 
         array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
-
+    if ($brand != '' && $brand != null && $brand != 'null'){
+        array_push($whereArray, "product.brand_id = ". $brand ."");
+    }
+    if ($nationality != '' && $nationality != null && $nationality != 'null'){
+        array_push($whereArray, "product.nationality_id = ". $nationality ."");
+    }
     array_push($whereArray, "weights.status_id != 1");
     
-    foreach($whereArray as $where){
-        $whereString .= $where . ' && ';
-    }
-    $whereString = substr($whereString, 0, -3);
-
+    $whereString = implode(' && ',$whereArray);
 
     $productsX = "SELECT *, product.comments as productcomments, product.id as productid, cuts.name as cutname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
@@ -114,7 +116,7 @@
     JOIN `nationality` ON product.nationality_id = nationality.id
     WHERE $whereString
     GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
-    
+
     $productsY = mysqli_query($conn, $productsX);
     $productsCount = mysqli_num_rows($productsY);
      
@@ -163,7 +165,7 @@
         $product2_nationalities = array();
         $product2_temperatures = array();
         $product2_dateranges = array();
-
+        $totalWeightOfProduct = 0;
         array_map(
             function($product2) {
                 global $product2_palletids;
@@ -173,13 +175,14 @@
                 global $product2_nationalities;
                 global $product2_temperatures;
                 global $product2_dateranges;
+                global $totalWeightOfProduct;
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
 
                 $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
-
+                $totalWeightOfProduct = $totalWeightOfProduct + $numOfWeights;
                 if($numOfWeights > 0){
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
@@ -203,8 +206,6 @@
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
-
-        $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
 
         if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         ?>

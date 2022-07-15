@@ -27,7 +27,7 @@
 <main>
 	<div id="intakelist">
 		<h1 class="int">Invoice List</h1>
-		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;">
+		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go">
 		<input type="hidden" id="toSkipCount" value="0">
 		<input type="hidden" id="totalRowsCount" value="0">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">

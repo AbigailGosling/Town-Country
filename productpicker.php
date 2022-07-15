@@ -91,7 +91,7 @@
 
 <div class="leftPanel" style="position:relative;">
     <form id="searchForm">
-	<select id="SearchSpecies" style="width:322px;height:40px;">
+	<select id="SearchSpecies" style="width:300px;height:40px;">
         <option value="" disabled selected>Select species..</option>
 		<?php
 			$x = "SELECT * FROM `species`";
@@ -103,7 +103,7 @@
 		?>
 	</select>
     
-    <select id="SearchCutgroups" name="cutgroup_id" style="width:322px;height:40px;">
+    <select id="SearchCutgroups" name="cutgroup_id" style="width:300px;height:40px;">
             <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
             <?php
                 $x = "SELECT * FROM `cutgroups`";
@@ -120,7 +120,29 @@
                         ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if($_POST['acutgroup_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                     }
             ?>
-        </select>
+	</select>
+	<select id="SearchBrand" style="width:300px;height:40px;">
+        <option value="" disabled selected>Select Brand..</option>
+		<?php
+			$x = "SELECT * FROM `brands` ORDER BY `name`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
+	<select id="SearchNationality" style="width:300px;height:40px;">
+        <option value="" disabled selected>Select Nationality..</option>
+		<?php
+			$x = "SELECT * FROM `nationality` ORDER BY `name`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
     &nbsp;&nbsp;&nbsp;
     <input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
     <input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
@@ -635,6 +657,8 @@ function cancelSale()
 		var palletID = $('#SearchPallet').val();
 		var species = $('#SearchSpecies').val();
 		var cutgroup_id = $('#SearchCutgroups').val();
+		var brand = $('#SearchBrand').val();
+		var nationality = $('#SearchNationality').val();
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
@@ -642,12 +666,14 @@ function cancelSale()
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			
-			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID, function(data, status){
+			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality, function(data, status){
 				$('#loadResults').html(data);
+				console.log(data);
 				
 			});
 
-
+			$('#SearchBrand').prop('selectedIndex',0);
+			$('#SearchNationality').prop('selectedIndex',0);
 			$('#SearchSpecies').prop('selectedIndex',0);
 			$('#SearchCutgroups').prop('selectedIndex',0);
 			$('#IntakeID').val('');

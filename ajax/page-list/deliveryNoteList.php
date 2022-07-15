@@ -34,13 +34,11 @@
         <table width="100%" border="0">
             <tr>
                 <td width="25%" align="left">ID: 0000<?php echo $row['id']; ?></td>
-                <td align="left" style="font-size: 18px;"><?php echo $row2['businessname']; ?> 
-                    <?php if($row['deliverynote_printed'] == 1){ ?>
-                        <div class="printedLabel">Printed</div>
-                    <?php } ?>
-                </td>
+                <td align="left" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
 
-                <td width="25%" align="right"><?php echo $row['estimated_delivery_date']; ?></td>
+                <td width="25%" align="right"><?php if($row['deliverynote_printed'] == 1){ ?>
+                        <div class="printedLabel">Printed</div>
+                    <?php } ?><?php echo $row['estimated_delivery_date']; ?></td>
             </tr>
         </table>
     </a>
