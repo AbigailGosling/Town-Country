@@ -27,7 +27,7 @@
 <main>
 	<div id="intakelist">
 		<h1 class="int">Completed Picksheets</h1>
-		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;display:none;">
+		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;display:none;" enterkeyhint="go">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="intakeAjax">
 			<?php
 			

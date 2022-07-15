@@ -75,6 +75,8 @@
 				<option value="Gatwick">Gatwick</option>
 				<option value="Dry Store">Dry Store</option>
 				<option value="Unit 15 - 17">Unit 15 - 17</option>
+				<option value="Direct Drop">Direct Drop</option>
+				<option value="Other">Other</option>
 		</select>
 		
 		<label>comments</label>

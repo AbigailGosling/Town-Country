@@ -209,7 +209,7 @@
 											<?php
 										}else{
 										?>
-										<td><?php if($unit == 'PP'){ echo $howManyCases . ' Cases'; } else{ echo number_format(weightFromProductID($product_id), 3, '.', ''); } ?></td>
+										<td><?php if($unit == 'PP'){ echo $howManyCases . ' Cases'; } else{ echo number_format(numWeightsAvailableFromProductID($product_id), 3, '.', ''); } ?></td>
 										<?php
 										}
 									?>

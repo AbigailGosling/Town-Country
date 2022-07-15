@@ -121,15 +121,23 @@
                                 case "Unit 15 - 17":
                                     $unit15 = " selected";
                                     break;
+                                case "Direct Drop":
+                                    $DirectDelivery = " selected";
+                                    break;
+                                case "Other":
+                                    $otherLoc = " selected";
+                                    break;
                             }
                         ?>
-                        <select name="location">
+                        <select style="width:100%" name="location">
                                 <option></option>
                                 <option <?php echo $unit11; ?>>Unit 11 - 14</option>
                                 <option <?php echo $unit23; ?>>Unit 23</option>
                                 <option <?php echo $unitGatwick; ?>>Gatwick</option>
                                 <option <?php echo $unitDry; ?>>Dry Store</option>
-                                <option <?php echo $unit15; ?>>Unit 15 - 17</option>
+                                <option <?php echo $unit15; ?>>Unit 15 - 17</option>			
+                                <option <?php echo $DirectDelivery; ?>>Direct Drop</option>
+			                    <option <?php echo $otherLoc; ?>>Other</option>
                         </select>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
                         </form>
