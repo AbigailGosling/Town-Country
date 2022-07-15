@@ -12,7 +12,9 @@
     array_push($headings, 'Product Name');
     array_push($headings, 'Nationalities');
     array_push($headings, 'Brands');
-    array_push($headings, 'Date Range');
+    array_push($headings, 'Date');
+    array_push($headings, 'Range');
+    array_push($headings, '');
     array_push($headings, 'Volume');
     $final_array = array();
     $final_array[] = $headings;
@@ -28,6 +30,7 @@
     ORDER BY species.name, cuts.name ASC";
     
     $productsY = mysqli_query($conn, $productsX);
+    
     $productsCount = mysqli_num_rows($productsY);
      
     $totalW = 0;
@@ -144,11 +147,17 @@
  
         if($uniqueDateranges > 1){
             array_push($single_row, '--');
+            array_push($single_row, '--');
+            array_push($single_row, '--');
         }else{
             if($ubbb != 2){
-                array_push($single_row, $ubtext . ' ' . $product2_dateranges[0]);
+                array_push($single_row, $ubtext);
+                array_push($single_row, explode('-',$product2_dateranges[0])[0]);
+                array_push($single_row, explode('-',$product2_dateranges[0])[1]);
             }else{
                 array_push($single_row, $ubtext);
+                array_push($single_row, '');
+                array_push($single_row, '');
             }
         }
 
@@ -184,6 +193,8 @@
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, $TOTAL_QUANTITY);
+    array_push($final_row, '');
+    array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');

@@ -77,11 +77,11 @@ class SLabsEmailer {
         $t = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
         if (mysqli_num_rows($t) == 0 && $_SERVER['SERVER_NAME'] != "13.40.103.56")
         {
-            ob_start();
+            /*ob_start();
             header('Location: https://tcdev.tang.solutions//scripts/SLabsNotifier.php');
             ob_end_flush();
             die();
-            exit();
+            exit();*/
         }
         http_response_code(200);
         $secondary_code = (isset($data['FailureCode']))?$data['FailureCode']:0;

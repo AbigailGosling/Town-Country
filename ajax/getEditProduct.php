@@ -110,6 +110,12 @@
 				case "Unit 15 - 17":
 					$unit15 = " selected";
 					break;
+				case "Direct Drop":
+					$DirectDelivery = " selected";
+					break;
+				case "Other":
+					$otherLoc = " selected";
+					break;
 			}
 		?>
 		<select name="storage_location" id ="storage_location">
@@ -119,6 +125,9 @@
 			<option value="Gatwick" <?php echo $unitGatwick; ?>>Gatwick</option>
 			<option value="Dry Store" <?php echo $unitDry; ?>>Dry Store</option>
 			<option value="Unit 15 - 17" <?php echo $unit15; ?>>Unit 15 - 17</option>
+			<option value="Direct Drop" <?php echo $DirectDelivery; ?>>Direct Drop</option>
+			<option value="Other" <?php echo $otherLoc; ?>>Other</option>
+			
 		</select>
 		
 		<label>comments</label>
