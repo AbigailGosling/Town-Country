@@ -165,7 +165,7 @@
         $product2_nationalities = array();
         $product2_temperatures = array();
         $product2_dateranges = array();
-        $totalWeightOfProduct = 0;
+
         array_map(
             function($product2) {
                 global $product2_palletids;
@@ -175,14 +175,13 @@
                 global $product2_nationalities;
                 global $product2_temperatures;
                 global $product2_dateranges;
-                global $totalWeightOfProduct;
 
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
 
                 $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
-                $totalWeightOfProduct = $totalWeightOfProduct + $numOfWeights;
+
                 if($numOfWeights > 0){
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
@@ -206,6 +205,8 @@
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
+
+        $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
 
         if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         ?>
