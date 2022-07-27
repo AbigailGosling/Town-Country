@@ -1085,8 +1085,8 @@
 		}else{
 			$totalOutstanding = (float) $this_price - $picksheet['paid'];
 		}
-
-		return $totalOutstanding;
+		
+		return number_format((float)$totalOutstanding, 2, '.', '');
 	}
 
 	function getChargedPicksheetTotalList($picksheet_ids){
