@@ -156,16 +156,17 @@ include_once('functions.php');
         </tbody>
     </table>
     </div>
-        <div style="width: 300px;float: right;">
+        <div style="width: 350px;float: right;">
             <table>
                 <tr><td style="text-align: right;">Start Date:</td><td><input class="form-control" type="text" class="inputbox" id="startdate" name="startdate" placeholder=""/></td></tr>
-                <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="text" class="inputbox" id="startinvoice" name="startinvoice" placeholder=""/></td></tr>
+                <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="number" class="inputbox" id="startinvoice" name="startinvoice" placeholder=""/></td></tr>
                 <tr><td style="text-align: right;">End Date:</td><td><input class="form-control" type="text" class="inputbox" id="enddate" name="enddate" placeholder=""/></td></tr>
-                <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="text" class="inputbox" id="endinvoice" name="endinvoice" placeholder=""/></td></tr>
-                <tr><td style="text-align: right;"></td><td style="float: right;" width="55"><input type ="button" style="width: 55px;"  onclick= "fetchResults()" value = "Go"></td></tr> 
+                <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="number" class="inputbox" id="endinvoice" name="endinvoice" placeholder=""/></td></tr>
+                <tr><td style="text-align: right;">Previous £:</td><td><input class="form-control" type="number" step=".01" class="inputbox" id="overridevalue" name="overridevalue" placeholder=""/></td></tr>
+                <tr><td style="text-align: right;"></td><td style="float: right;" width="55"><input type="button" style="width: 55px;"  onclick="fetchResults()" value="Go"></td></tr> 
             </table>
         </div>
-        <div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
+        <div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>
 <div class="mainstatement">
         <table id="soaTable" class="table" width="100%" style="font-size:10pt;border-spacing: 0;border-color: grey;">
             <thead>
@@ -197,10 +198,10 @@ include_once('functions.php');
 <script type="text/javascript">
 $(document).ready(function(){  
     $("#startdate").datepicker({
-        dateFormat: 'yy-mm-dd'
+        dateFormat: 'dd/mm/yy'
     });
     $("#enddate").datepicker({
-        dateFormat: 'yy-mm-dd'
+        dateFormat: 'dd/mm/yy'
     });
     $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
     /*
@@ -215,6 +216,7 @@ var startInv;
 var start;
 var end;
 var endInv;
+var previousValue;
 var d;
 var selectedID;
 function selectHist(id){
@@ -229,16 +231,19 @@ function selectHist(id){
         $("#startinvoice").val(parseInt($("#hist_"+selectedID+"_end_invoice_id").html())+1);
         $("#startdate").val("");
         $("#enddate").val("");
+        var lSaleVal = parseFloat($("#hist_"+selectedID+"_sales").html().substring(1)).toFixed(2);
+        var lPayVal = parseFloat($("#hist_"+selectedID+"_payments").html().substring(1)).toFixed(2);
+        $("#overridevalue").val(parseFloat(lSaleVal - lPayVal).toFixed(2));
     }
     else 
     {
         $("#startinvoice").val('');
+        $("#overridevalue").val('');
         selectedID = null;
     }
     
 }
 function hist_results(data,status){
-    console.log(data);
     $("#hisTable > tbody").empty();
     $("#hisTable > tbody").html(data);
 }
@@ -257,6 +262,11 @@ function fetchResults(){
     start = $("#startdate").val();
     end = $("#enddate").val();
     endInv = $("#endinvoice").val();
+    previousValue = $("#overridevalue").val();
+    if (previousValue != null && previousValue != "")
+    {
+        previousValue = parseFloat(previousValue).toFixed(2);
+    }
     if ((end == null || end == "") && (endInv == null || endInv == ""))
     {
         $("#endinvoice").css({"border-color":"#FF0000"});
@@ -288,7 +298,7 @@ function fetchResults(){
         $("#startdate").css({"border-color":"#bfbfbf"});
     }
     $("#soaTable").append("<tr><td></td><td>Loading Please Wait...</td><td></td></tr>");
-    $.post("/ajax/generateFinancialReport.php", { 'start':start, 'startInv':startInv, 'end':end, 'endInv':endInv, 'previous_id':selectedID }, results);
+    $.post("/ajax/generateFinancialReport.php", { 'start':start, 'startInv':startInv, 'end':end, 'endInv':endInv, 'previous_id':selectedID , 'previous_value':previousValue}, results);
 }
 function results(data, status){
     $("#soaTable > tbody").empty();
@@ -323,24 +333,24 @@ function results(data, status){
     $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td></td><td></td><td></td></tr>");
     if (d.hasOwnProperty("previous") && d.previous != null && d.previous.hasOwnProperty('rolTotal')) 
     {
-        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+Number(d.previous.rolTotal).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+Number(d.previous.rolTotal).toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
     }
     else 
     {
-        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+(0).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+        $("#soaTable").append("<tr><td>Total \"Previous\" Outstanding</td><td></td><td align=\"right\">£"+(0).toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
     }
-    $("#soaTable").append("<tr><td>Total Sales Value \"This Period\"</td><td></td><td align=\"right\">£"+d.sales.toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+    $("#soaTable").append("<tr><td>Total Sales Value \"This Period\"</td><td></td><td align=\"right\">£"+d.sales.toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
     if (d.hasOwnProperty("previous") && d.previous != null && d.previous.hasOwnProperty('rolTotal')) 
     {
-        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(Number(d.sales)+Number(d.previous.rolTotal)).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(Number(d.sales)+Number(d.previous.rolTotal)).toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
     }
     else
     {
-        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(d.sales).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+        $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Sub-total: </td><td></td><td align=\"right\">£"+(d.sales).toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
     }
     $("#soaTable").append("<tr><td></td><td></td><td></td></tr>");
-    $("#soaTable").append("<tr><td>Total Payments this Period: </td><td></td><td align=\"right\">£"+(d.payments).toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
-    $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Total: </td><td></td><td align=\"right\">£"+d.rolTotal.toLocaleString('en-US', {minimumFractionDigits: 2})+"</td></tr>");
+    $("#soaTable").append("<tr><td>Total Payments this Period: </td><td></td><td align=\"right\">£"+(d.payments).toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
+    $("#soaTable").append("<tr style=\"background: #e2e2e2;\"><td>Total: </td><td></td><td align=\"right\">£"+d.rolTotal.toLocaleString('en', {minimumFractionDigits: 2})+"</td></tr>");
 }
 function save()
 {
