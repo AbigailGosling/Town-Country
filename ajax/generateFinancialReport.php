@@ -3,19 +3,19 @@ require_once('../functions.php');
 
 if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
-    $start = $_POST['start'];
-    $end  = $_POST['end'];
+    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
+    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
     $sql = "SELECT * FROM pickerSheets WHERE (`date_completed` BETWEEN '".$start."' AND '".$end."') ORDER BY id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
     $start = $_POST['startInv'];
-    $end  = $_POST['end'];
+    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
     $sql = "SELECT * FROM pickerSheets WHERE id >= ".$start." AND `date_completed` < '".$end."' ORDER BY id ASC";
 }
 else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
-    $start = $_POST['start'];
+    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
     $end  = $_POST['endInv'];
     $sql = "SELECT * FROM pickerSheets WHERE `date_completed` >= ".$start." AND `id` < '".$end."' ORDER BY id ASC";
 }
@@ -29,7 +29,6 @@ else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['en
 $totPrevOut = 0;
 $rolSaleVal = 0;
 $rolPayment = 0;
-
 $res = mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
 $list = mysqli_fetch_all($res, MYSQLI_ASSOC);
 
@@ -80,6 +79,14 @@ $output['end_date'] = date('d/m/Y H:i:s', strtotime($end_date));
 if (isset($_POST['previous_id']) && $_POST['previous_id'] != null)
 {
     $output['previous'] = get_previous($_POST['previous_id']);
+}
+else if (isset($_POST['previous_value']) && $_POST['previous_value'] != null && $_POST['previous_value'] != "" && $_POST['previous_value'] != 0 && $_POST['previous_value'] != "0")
+{
+    $output['previous'] = array(
+        'rolTotal'=>$_POST['previous_value'],
+        'start_invoice_id'=>0,
+        'end_invoice_id'=>0
+    );
 }
 if (array_key_exists('previous',$output) && $output['previous'] != null && array_key_exists('rolTotal',$output['previous'])) 
 {
