@@ -24,8 +24,8 @@
                     <?php
                         $productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
                     ?>
-                    <td width="30%" align="left">
-                        ID: I-0000<?php echo $intake['id'];?></td>
+                    <td width="10%" align="left">
+                        ID: I-<?php echo $intake['id'];?></td>
                     <td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
                         <?php
 
@@ -44,6 +44,16 @@
                             if($intake['returned'] == '1'){ echo ' <small class="return-highlight">return entry</small>'; }
 
                             
+                        ?>
+                    </td>
+                    <td width="15%" align="right">
+                        <?php 
+                            if (strlen($intake['notes']) < 20) {
+                                echo $intake['notes']; 
+                            }
+                            else {
+                                echo substr($intake['notes'],0,20-3)."..."; 
+                            }
                         ?>
                     </td>
                     <td width="30">

@@ -83,6 +83,7 @@
 		
 		<label>Fresh/Frozen</label>
 		<select name="temperature_id">
+			<option disabled></option>
 			<?php
 				$x = "SELECT * FROM temperature";
 				$y = mysqli_query($conn, $x);

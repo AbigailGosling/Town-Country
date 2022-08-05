@@ -50,7 +50,7 @@
 					<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 						<table width="100%" border="0">
 							<tr>
-								<td width="35%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+								<td width="35%" align="left">ID: <?php echo $row['id']; ?></td>
 								<td align="left" style="font-size: 16px;">
 									<?php if($row['direct_drop'] == 1){ echo '<span style="font-size:12px;">[direct drop]</span>'; } ?>
 										<?php echo supplierName($row['supplier_id']); ?>
@@ -103,7 +103,7 @@
 				<a href="createPurchase.php?id=<?php echo $row['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="35%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+							<td width="35%" align="left">ID: <?php echo $row['id']; ?></td>
 							<td align="left" style="font-size: 16px;">
 								<?php if($row['direct_drop'] == 1){ echo '<span style="font-size:12px;">[direct drop]</span>'; } ?>
 									<?php echo supplierName($row['supplier_id']); ?>

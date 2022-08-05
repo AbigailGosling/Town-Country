@@ -55,6 +55,7 @@
 		 
 		<label>Chilled/Frozen</label>
 		<select name="temperature_id">
+			<option selected="true" disabled></option>
 			<?php
 				$x = "SELECT * FROM temperature";
 				$y = mysqli_query($conn, $x);
@@ -69,7 +70,7 @@
 		</div>
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
-				<option></option>
+				<option selected="true" disabled></option>
 				<option value="Unit 11 - 14">Unit 11 - 14</option>
 				<option value="Unit 23">Unit 23</option>
 				<option value="Gatwick">Gatwick</option>
@@ -456,6 +457,13 @@
 		}else{
 			$('#storage_location').css('border','1px solid grey');
 		}
+		if($('[name="temperature_id"]').val() == undefined || $('[name="temperature_id"]').val() == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('[name="temperature_id"]').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('[name="temperature_id"]').css('border','1px solid grey');
+		}
 		$('#msgNotice2').html(msg);
 		
 		if(good == 1){
@@ -702,6 +710,15 @@
 			good = 0;
 		}else{
 			$('#storage_location').css('border','1px solid grey');
+		}
+		$('#msgNotice2').html(msg);
+
+		if($('[name="temperature_id"]').val() == undefined || $('[name="temperature_id"]').val() == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('[name="temperature_id"]').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('[name="temperature_id"]').css('border','1px solid grey');
 		}
 		$('#msgNotice2').html(msg);
 		

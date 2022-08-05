@@ -406,8 +406,7 @@
 					<td><?php echo getCut($row['cut_id']);?></td>
 					<td align="center"><?php 
 							$cut_id = $row['cut_id'];
-							
-							$xk = "SELECT id FROM `weights` WHERE " . $qAppend2;
+							$xk = "SELECT id FROM `weights` WHERE weight_gross > 0 AND (" . $qAppend2 . ")";
 							$yk = mysqli_query($conn, $xk);
  							
 							$qAppend2 = '';
@@ -427,7 +426,8 @@
                                 echo $t_count . '<br/><span style="font-size:12px">Advised KG</span>';
                                 $totalCases = $totalCases + $t_count;
                             }else{
-                                echo $count = mysqli_num_rows($yk);
+								$count = mysqli_num_rows($yk);
+                                echo $count;
                                 $totalCases = $totalCases + $count;
                             }
                               

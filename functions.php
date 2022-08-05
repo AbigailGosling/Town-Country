@@ -1759,7 +1759,7 @@
 		{
 			$price = $price + creditNoteTotal($paymentData['id']);
 		}		
-		return round($price,2,PHP_ROUND_HALF_DOWN);	
+		return floorDec($price,2);	
  	}
 
 	function doesInvoiceHaveReturns($invoice_id){

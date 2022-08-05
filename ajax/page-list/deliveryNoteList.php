@@ -33,7 +33,7 @@
     <a href="deliverynote.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
         <table width="100%" border="0">
             <tr>
-                <td width="25%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+                <td width="25%" align="left">ID: <?php echo $row['id']; ?></td>
                 <td align="left" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
 
                 <td width="25%" align="right"><?php if($row['deliverynote_printed'] == 1){ ?>

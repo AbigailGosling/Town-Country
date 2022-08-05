@@ -55,7 +55,7 @@
 				<a href="viewCompletedPickSheet.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
 					<table width="100%" border="0">
 						<tr>
-							<td width="35%" align="left">ID: 0000<?php echo $row['id']; ?></td>
+							<td width="35%" align="left">ID: <?php echo $row['id']; ?></td>
 							<td align="left" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
                             <td width="35%" align="right"><?php
                             $date = str_replace('/', '-', $row['date_completed']);
