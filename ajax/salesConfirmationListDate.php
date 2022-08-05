@@ -34,7 +34,7 @@
                 <a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
                     <table width="100%" border="0">
                         <tr>
-                            <td width="25%" align="left">ID: P-00<?php echo $picksheet['id']; ?> </td>
+                            <td width="25%" align="left">ID: <?php echo $picksheet['id']; ?> </td>
                             <td align="left" style="font-size: 14px;">
                                 <?php
                                 

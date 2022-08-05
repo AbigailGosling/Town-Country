@@ -150,7 +150,14 @@
         }
 
         
-        $productsX2 = "SELECT product.cut_id, product.range_from, product.range_to, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
+        $productsX2 = "SELECT * , product.id productid
+        FROM `product` 
+        INNER JOIN `pallet` 
+        ON product.pallet_id=pallet.id 
+        WHERE pallet.intake_id='$intake_id' 
+        && product.cut_id = '$cut_id'
+		&& product.nationality_id='$nationality_id'
+        ORDER BY product.cut_id DESC";
         $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
         $products2Count = mysqli_num_rows($productsY2);
         
@@ -165,9 +172,10 @@
         $product2_nationalities = array();
         $product2_temperatures = array();
         $product2_dateranges = array();
-
+        $product2_quantity = 0;
         array_map(
             function($product2) {
+                global $intake_id;
                 global $product2_palletids;
                 global $product2_cutids;
                 global $product2_productids;
@@ -175,13 +183,22 @@
                 global $product2_nationalities;
                 global $product2_temperatures;
                 global $product2_dateranges;
-
+                global $product2_quantity;
                 array_push($product2_palletids, $product2['pallet_id']);
                 array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
-
                 $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
 
+                if($product2['akg'] != ''){
+                    $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id);
+                }else{
+                    $this_row_weight = weightSoldFromProductID($product2['productid']);
+                }
+                if($product2['grosspallet'] == 1){
+                    if($this_row_weight != 0){ 
+                        $product2_quantity = $product2_quantity + $numOfWeights;
+                     }
+                }
                 if($numOfWeights > 0){
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
@@ -197,11 +214,12 @@
         $uniqueTemperatures = count(array_unique($product2_temperatures));
         $uniqueDateranges = count(array_unique($product2_dateranges));
 
-        $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
+        if($product2_quantity != 0) $quantityTotal = $product2_quantity;
+        else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
         if($quantityTotal < 1){continue;}
         ###
-       
+        
         $totalW += weightSoldFromProductID($productsRow['productid']);           
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);

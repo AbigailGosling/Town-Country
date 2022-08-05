@@ -67,7 +67,7 @@
         <a href="invoice.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
             <table width="100%" border="0">
                 <tr>
-                    <td width="100" align="left">ID: 0000<?php echo $row['id']; ?></td>
+                    <td width="100" align="left">ID: <?php echo $row['id']; ?></td>
                     <td align="center" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
                     <td width="100" align="right"><?php echo $row['estimated_delivery_date']; ?></td>
                 </tr>

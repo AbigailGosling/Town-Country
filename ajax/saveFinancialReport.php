@@ -6,6 +6,7 @@ $val = array();
 if (isset($_POST['input']['previous'])) unset($_POST['input']['previous']);
 foreach ($_POST['input'] as $key => $value)
 {
+    if (strpos($key,"date") !== false) $value = DateTime::createFromFormat("d/m/Y H:i:s",$value)->format('Y-m-d H:i:s');
     $col[] = "`".$key."`";
     $val[] = "'".mysqli_real_escape_string($mysqli,$value)."'";
 }
