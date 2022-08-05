@@ -43,7 +43,7 @@
 <main>
     <h1 class="int">Your Pick Sheets</h1>	
     <br/><br/>
-	<div id="menu_wrasp" style="width:90%;">
+	<div id="menu_wrasp">
  		<?php
 		
 			session_start();
@@ -53,13 +53,13 @@
  			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%y') ASC";
 			$y = mysqli_query($conn, $x);
 			
-			while($row = mysqli_fetch_assoc($y)){
+			while($row = mysqli_fetch_array($y)){
                 $product_ids = array();
                 
                 $picksheetid = $row['id'];
 
                 $result_product = mysqli_query($conn, "SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$picksheetid' GROUP BY product_id");
-                while($product = mysqli_fetch_assoc($result_product)){
+                while($product = mysqli_fetch_array($result_product)){
                     array_push($product_ids, $product['product_id']);
                 } 
 
@@ -68,13 +68,6 @@
                 // 1 is fresh
                 $result_fresh = mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
                 $count_fresh = mysqli_num_rows($result_fresh);
-                
-                if ($count_fresh>0)
-                {
-                    $result_location_fresh= mysqli_query($conn, "SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (1) LIMIT 1");
-                    $location_fresh = mysqli_fetch_assoc($result_location_fresh);
-                    $location_fresh = $location_fresh["loc"];
-                }
 
                 // 2 is frozen
                 // 3 is fresh/frozen
@@ -82,64 +75,46 @@
                 $result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN (2,3) LIMIT 1");
                 $count_frozen = mysqli_num_rows($result_frozen);
                 
-                if ($count_frozen>0)
-                {
-                    $result_location_frozen= mysqli_query($conn, "SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (2,3) LIMIT 1");
-                   $location_frozen = mysqli_fetch_assoc($result_location_frozen);
-                    $location_frozen = $location_frozen["loc"];
-                }
-               
+                
                 $customer_id = $row['customer_id'];
 				
 				$date = $row['date'];
 				
 				$date=date_create($date);
-				$date = date_format($date,"d/m/Y");
+				$date = date_format($date,"d.m.Y");
 				
 				
 				$x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";
 				$y2 = mysqli_query($conn, $x2);
 				
-				$row2 = mysqli_fetch_assoc($y2);
+				$row2 = mysqli_fetch_array($y2);
 				
             ?>
-            <?php if($count_fresh == 1 && $row['completed_fresh'] == '0'){ rowprinter(false,$row,$row2,$date,explode(",",$location_fresh));?>
-
+            <?php if($count_fresh == 1 && $row['completed_fresh'] == '0'){ ?>
+                <div class="menuItem">
+                    <div class="tag fresh">FRESH</div>
+                    <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
+                    <div class="actions">
+                        <a href="/viewPickSheet.php?type=fresh&id=<?php echo $row['id']; ?>" class="icon"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                    </div>
+                </div>
             <?php } ?>
 
-            <?php if($count_frozen == 1 && $row['completed_frozen'] == '0'){ rowprinter(true,$row,$row2,$date,explode(",",$location_frozen)); ?>
-                
+            <?php if($count_frozen == 1 && $row['completed_frozen'] == '0'){ ?>
+                <div class="menuItem">
+                    <div class="tag frozen">FROZEN</div>
+                    <div class="text">[Ord Nr. 0000<?php echo $row['id']; ?>]&nbsp;&nbsp;<?php echo $row2['businessname'] . '&nbsp;&nbsp;(date created ' . $date.')&nbsp;&nbsp;(Delivery Date ' . $row['estimated_delivery_date'].')';?></div>
+                    <div class="actions">
+                        <a href="/viewPickSheet.php?type=frozen&id=<?php echo $row['id']; ?>" class="icon"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                    </div>
+                </div>
             <?php } ?>
 
 
             <?php
 			}
-            function rowprinter($isFrozen,$row,$row2,$date,$locs)
-            {
-                $t = "FRESH";
-                if ($isFrozen == true) $t = "FROZEN";
-                if (count($locs) > 1) $loc = "Various";
-                else $loc = $locs[0];
-            ?>
-              <div class="menuItem">
-                    <div>
-                        <table style="width:95%;height:52px;">
-                            <tr style="height:52px;">
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" align="left" style="width:90px;"><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:12px;width:72px">Ord: <?php echo $row['id']; ?></td>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;"><?php echo $row2['businessname'];?></td>
-                                <td align="right" style="height:52px;font-size:10px;">(Created <?php echo $date;?>)</td>
-                                <td align="center" style="width:25%;height:52px;font-size: 15px;">(Delv Date  <?php echo $row['estimated_delivery_date'];?>)</td>
-                                <td align="right" style="height:52px;font-size:10px;width:75px"><?php echo $loc;?></td>
-                            </tr>
-                        </table>
-                    </div>
-                     <div class="actions">
-                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
-                    </div>
-                </div>
-            <?php
-            }
         ?>
          
         
