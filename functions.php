@@ -1759,7 +1759,7 @@
 		{
 			$price = $price + creditNoteTotal($paymentData['id']);
 		}		
-		return floorDec($price,2);	
+		return ceilDec($price,2);	
  	}
 
 	function doesInvoiceHaveReturns($invoice_id){
@@ -1849,6 +1849,13 @@
 		}
 		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
 	}
+	function ceilDec ( $value, $precision = 2 ) { 
+		$offset = 0.5;
+		if ($precision !== 0)
+			$offset /= pow(10, $precision);
+		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
+		return ($final == -0 ? 0 : $final);
+	} 
 	function fuzzyCustomerSearch($name)
 	{
 		global $conn;

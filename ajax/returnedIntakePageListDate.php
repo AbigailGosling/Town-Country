@@ -26,7 +26,7 @@
                             <?php
                                 $customer = getCustomer($intake['supplier_id']);
                             ?>
-							<td width="100" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+							<td width="100" align="left">ID: I-<?php echo $intake['id']; ?></td>
                             <td align="center" style="font-size: 18px;">
                             <?php
                                 echo $customer['businessname'];

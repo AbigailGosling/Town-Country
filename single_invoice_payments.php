@@ -74,7 +74,7 @@ if (!empty($paymentID)) {
                 </td>
                 <td align="center">
                 <form method="POST" action="/scripts/_deleteInvoicePayment.php">
-                    <input type="hidden" name="return_url" value="<?php echo "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?>">
+                    <input type="hidden" name="return_url" value="<?php echo "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"; ?>">
                     <input type="hidden" name="invoice_id" value="<?php echo $invoicePayment['id']; ?>">
 
                     <button type="submit" style="border:0px;background:none;"><i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px !important"></i></button>
