@@ -37,7 +37,7 @@
 								<?php
 									$customer = getCustomer($returnedIntake['supplier_id']);
 								?>
-								<td width="100" align="left">ID: I-0000<?php echo $returnedIntake['id']; ?></td>
+								<td width="100" align="left">ID: I-<?php echo $returnedIntake['id']; ?></td>
 								<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
 								<td width="100" align="right"><?php echo $date_received; ?></td>
 							</tr>
@@ -63,7 +63,7 @@
 							<?php
 								$customer = getCustomer($returnedIntake['supplier_id']);
 							?>
-							<td width="100" align="left">ID: I-0000<?php echo $returnedIntake['id']; ?></td>
+							<td width="100" align="left">ID: I-<?php echo $returnedIntake['id']; ?></td>
 							<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
 							<td width="100" align="right"><?php echo $date_received; ?></td>
 						</tr>

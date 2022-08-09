@@ -408,12 +408,7 @@
 							$cut_id = $row['cut_id'];
 							$xk = "SELECT id FROM `weights` WHERE weight_gross > 0 AND (" . $qAppend2 . ")";
 							$yk = mysqli_query($conn, $xk);
- 							
-							$qAppend2 = '';
-                            
-                            
-                           
-                             
+              
                             if($row['akg'] != ''){
                                 $countQuery = mysqli_query($conn, "SELECT * FROM product WHERE " . $qPallets);
                                 $theCount = mysqli_num_rows($countQuery);
@@ -427,10 +422,16 @@
                                 $totalCases = $totalCases + $t_count;
                             }else{
 								$count = mysqli_num_rows($yk);
+								if ($count == 0)
+								{
+									$xk2 = "SELECT id FROM `weights` WHERE $qAppend2";
+									$yk2 = mysqli_query($conn, $xk2);
+									$count =mysqli_num_rows($yk2);
+								}
                                 echo $count;
                                 $totalCases = $totalCases + $count;
                             }
-                              
+							$qAppend2 = '';
 							
 							 
  			

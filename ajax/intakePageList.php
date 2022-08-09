@@ -52,7 +52,7 @@
 								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
 							?>
 							<td width="30%" align="left">
-								ID: I-0000<?php echo $intake['id'];?></td>
+								ID: I-<?php echo $intake['id'];?></td>
 							<td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
 								<?php
 
@@ -99,7 +99,7 @@
 				<a href="intake.php?id=<?php echo $intake['id']; ?>" class="intake">
 					<table width="100%" border="0">
 						<tr>
-							<td width="30%" align="left">ID: I-0000<?php echo $intake['id']; ?></td>
+							<td width="30%" align="left">ID: I-<?php echo $intake['id']; ?></td>
                             <td align="left" style="font-size: 18px;">
 							<?php
 								if($intake['returned'] == '1'){

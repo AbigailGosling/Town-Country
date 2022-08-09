@@ -28,7 +28,7 @@
 								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
 							?>
 							<td width="30%" align="left">
-								ID: I-0000<?php echo $intake['id'];?></td>
+								ID: I-<?php echo $intake['id'];?></td>
 							<td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
 								<?php
 

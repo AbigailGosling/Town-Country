@@ -29,7 +29,6 @@
 <html class="int">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Town &amp; Country</title>
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="css/font-awesome.css" rel="stylesheet" type="text/css">
@@ -43,7 +42,7 @@
 <main>
     <h1 class="int">Your Pick Sheets</h1>	
     <br/><br/>
-	<div id="menu_wrasp" style="width:90%;">
+	<div id="menu_wrasp" style="width:95%;">
  		<?php
 		
 			session_start();
@@ -125,12 +124,12 @@
                     <div>
                         <table style="width:95%;height:52px;">
                             <tr style="height:52px;">
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" align="left" style="width:90px;"><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:12px;width:72px">Ord: <?php echo $row['id']; ?></td>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;"><?php echo $row2['businessname'];?></td>
-                                <td align="right" style="height:52px;font-size:10px;">(Created <?php echo $date;?>)</td>
-                                <td align="center" style="width:25%;height:52px;font-size: 15px;">(Delv Date  <?php echo $row['estimated_delivery_date'];?>)</td>
-                                <td align="right" style="height:52px;font-size:10px;width:75px"><?php echo $loc;?></td>
+                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" align="left" style="width:85px;white-space: nowrap;"><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
+                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;">Ord: <?php echo $row['id']; ?></td>
+                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:18px;white-space: nowrap;"><?php echo $row2['businessname'];?></td>
+                                <td align="right" style="height:52px;font-size:8px;width:50px;white-space: nowrap;">(Created <?php echo $date;?>)</td>
+                                <td align="center" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $row['estimated_delivery_date'];?>)</td>
+                                <td align="right" style="height:52px;font-size:12px;width:60px;white-space: nowrap;"><?php echo $loc;?></td>
                             </tr>
                         </table>
                     </div>
