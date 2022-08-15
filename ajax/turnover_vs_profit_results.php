@@ -1,7 +1,7 @@
 <?php
    	require('../functions.php');
 
-    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''){
+    if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''  || $_POST['brand_id'] != '' || $_POST['nationality_id'] != ''){
         
         $INVOICE_ID = mysqli_real_escape_string($conn, $_POST['invoice_id']);
         $INTAKE_ID = mysqli_real_escape_string($conn, $_POST['intake_id']);
@@ -11,6 +11,8 @@
         $SPECIES_ID = mysqli_real_escape_string($conn, $_POST['species_id']);
         $CUTGROUP_ID = mysqli_real_escape_string($conn, $_POST['cutgroup_id']);
         $COOLING_ID = mysqli_real_escape_string($conn, $_POST['cooling_id']);
+        $BRAND_ID = mysqli_real_escape_string($conn, $_POST['brand_id']);
+        $NATIONALITY_ID = mysqli_real_escape_string($conn, $_POST['nationality_id']);
 
         if($_POST['date_start'] != ''){
             $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
@@ -48,6 +50,18 @@
             $coolingQueryPiece = "";
         }
         
+        if($BRAND_ID != 0){
+            $brandQueryPiece = " && product.brand_id ='$BRAND_ID'";
+        }else{
+            $brandQueryPiece = "";
+        }
+
+        if($NATIONALITY_ID != 0){
+            $nationQueryPiece = " && product.nationality_id ='$NATIONALITY_ID'";
+        }else{
+            $nationQueryPiece = "";
+        }
+
         if($INTAKE_ID != ''){
             $picksheet_ids = array();
 
@@ -112,14 +126,14 @@
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pick_id, pickerItems.product_id";
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece GROUP BY pick_id, pickerItems.product_id";
         }else{
 
             $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
+                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
                         
         }
 

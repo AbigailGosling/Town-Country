@@ -106,8 +106,11 @@
                         <?php
                             switch ($productsRow2['storage_location'])
                             {
-                                case "Unit 11 - 14":
+                                case "Unit 11":
                                     $unit11 = " selected";
+                                    break;
+                                case "Unit 13 - 14":
+                                    $unit13 = " selected";
                                     break;
                                 case "Unit 23":
                                     $unit23 = " selected";
@@ -127,16 +130,21 @@
                                 case "Other":
                                     $otherLoc = " selected";
                                     break;
+                                case "Coldstore":
+                                    $coldstore = " selected";
+                                    break;
                             }
                         ?>
                         <select style="width:100%" name="location">
                                 <option></option>
-                                <option <?php echo $unit11; ?>>Unit 11 - 14</option>
+                                <option <?php echo $unit11; ?>>Unit 11</option>
+                                <option <?php echo $unit13; ?>>Unit 13 - 14</option>
                                 <option <?php echo $unit23; ?>>Unit 23</option>
                                 <option <?php echo $unitGatwick; ?>>Gatwick</option>
                                 <option <?php echo $unitDry; ?>>Dry Store</option>
                                 <option <?php echo $unit15; ?>>Unit 15 - 17</option>			
                                 <option <?php echo $DirectDelivery; ?>>Direct Drop</option>
+                                <option <?php echo $coldstore; ?>>Coldstore</option>
 			                    <option <?php echo $otherLoc; ?>>Other</option>
                         </select>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">

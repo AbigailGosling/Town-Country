@@ -13,7 +13,7 @@
 
 		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '%$name%' || id = '$name'");
 	}else{
-		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers`");
+		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE `disabled`=0");
 	}
 	$workingSet = [];				
 	while($customer = mysqli_fetch_assoc($customerQueryResult)){

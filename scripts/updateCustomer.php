@@ -120,6 +120,8 @@
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	
 	$default_salesman_id = mysqli_real_escape_string($conn, $_POST['default_salesman_id']);
+
+	$disabled = (isset($_POST['disabled']) && $_POST['disabled'] == "1")?"1":"0";
 	
 	$x = "UPDATE `customers` SET businessname='$businessname', tradingas='$tradingas', address1_1='$address1_1', address1_2='$address1_2', address1_3='$address1_3'
 	, address1_4='$address1_4', postcode_1='$postcode_1', address2_1='$address2_1', address2_2='$address2_2', address2_3='$address2_3', address2_4='$address2_4'
@@ -128,7 +130,7 @@
 	, accounts_address_2='$accounts_address_2', accounts_address_3='$accounts_address_3', accounts_address_4='$accounts_address_4', accounts_contact='$accounts_contact'
 	, tel_number='$tel_number', internal_email='$internal_email', credit_terms='$credit_terms', pricedefault='$pricedefault', credit_rating='$credit_rating', flaguplimit='$flaguplimit'
 	, current_outstanding='$current_outstanding',address1_number='$address1_number',address2_number='$address2_number',address3_number='$address3_number'
-	, accounts_email='$accounts_email', accounts_comments='$accounts_comments', default_salesman_id='$default_salesman_id' WHERE id='$id' LIMIT 1";
+	, accounts_email='$accounts_email', accounts_comments='$accounts_comments', default_salesman_id='$default_salesman_id', `disabled`=$disabled WHERE id='$id' LIMIT 1";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 ?>

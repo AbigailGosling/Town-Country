@@ -16,10 +16,11 @@
     array_push($headings, 'Range');
     array_push($headings, '');
     array_push($headings, 'Volume');
+    array_push($headings, 'Cost Per Unit');
     $final_array = array();
     $final_array[] = $headings;
 
-    $productsX = "SELECT *, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.range_from, product.range_to, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `cutgroups` ON cuts.cutgroup_id = cutgroups.id
@@ -39,7 +40,7 @@
     $TOTAL_COST = 0;
     $TOTAL_PRICE = 0;
 
-    
+    $types = Array('UB','BB','N/A','PB','EX');
     //$products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     
     while($productsRow = mysqli_fetch_assoc($productsY)){
@@ -47,7 +48,7 @@
 
         $pallet_id = $productsRow['pallet_id'];
         $cut_id = $productsRow['cut_id'];
-        $ubbb = $productsRow['ubbb'];
+        $ubbb = $types[$productsRow['ubbb']]; ;
 
 
         $intake_id = $productsRow['intake_id'];
@@ -57,21 +58,8 @@
         $cut = $productsRow['cutname'];
         $cutgroup = $productsRow['cutgroup'];
         $species_name = getSpecies($productsRow['species_id']);
-        if($ubbb == 0){
-            $ubtext = 'UB';
-        }else if($ubbb == 1){
-            $ubtext = 'BB';
-        }else{
-            $ubtext = 'N/A';
-        }
 
-        
-        $productsX2 = "SELECT product.cut_id, product.range_from, product.range_to, product.cooling_id, product.brand_id, product.pallet_id, product.id productid FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id WHERE pallet.intake_id='$intake_id' && product.cut_id = '$cut_id' && product.nationality_id='$nationality_id' ORDER BY product.cut_id DESC";
-        $productsY2 = mysqli_query($conn, $productsX2) or die(mysqli_error($conn));
-        $products2Count = mysqli_num_rows($productsY2);
-        
-        
-        $products2 =  mysqli_fetch_all($productsY2, MYSQLI_ASSOC);
+        $ubtext = $ubbb;
 
         $product2_palletids = array();
         $product2_cutids = array();
@@ -80,34 +68,6 @@
         $product2_nationalities = array();
         $product2_temperatures = array();
         $product2_dateranges = array();
-
-         
-        array_map(
-            function($product2) {
-                global $product2_palletids;
-                global $product2_cutids;
-                global $product2_productids;
-                global $product2_brands;
-                global $product2_nationalities;
-                global $product2_temperatures;
-                global $product2_dateranges;
-
-                array_push($product2_palletids, $product2['pallet_id']);
-                array_push($product2_cutids, $product2['cut_id']);
-                array_push($product2_cutids, $product2['cut_id']);
-                array_push($product2_productids, $product2['productid']);
-
-                // $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
-
-                // if($numOfWeights > 0){
-                    array_push($product2_brands, $product2['brand_id']);
-                    array_push($product2_nationalities, $product2['nationality_id']);
-                    array_push($product2_temperatures, $product2['cooling_id']);
-                    array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
-                // }
-
-            },
-        $products2);
         
         $uniqueBrands = count(array_unique($product2_brands));
         $uniqueNationalities = count(array_unique($product2_nationalities));
@@ -143,24 +103,11 @@
         }else{
             array_push($single_row, $brandname);
         }
-
- 
-        if($uniqueDateranges > 1){
-            array_push($single_row, '--');
-            array_push($single_row, '--');
-            array_push($single_row, '--');
-        }else{
-            if($ubbb != 2){
-                array_push($single_row, $ubtext);
-                array_push($single_row, explode('-',$product2_dateranges[0])[0]);
-                array_push($single_row, explode('-',$product2_dateranges[0])[1]);
-            }else{
-                array_push($single_row, $ubtext);
-                array_push($single_row, '');
-                array_push($single_row, '');
-            }
-        }
-
+        $range_from = ($productsRow['range_from'] != '')?$productsRow['range_from']:'N/A';
+        $range_to = ($productsRow['range_to'] != '')?$productsRow['range_to']:'N/A';
+        array_push($single_row, $ubtext);
+        array_push($single_row, $range_from);
+        array_push($single_row, $range_to);
 
         if($productsRow['unit'] == 'PPC'){
             $this_total_cost = (float)$productsRow['cost']*$quantityTotal;
@@ -183,7 +130,7 @@
                 continue;
             }
         }
-
+        array_push($single_row, "£" . number_format($productsRow['cost'], 2, '.', ','));
         $TOTAL_COST += $this_total_cost;
         $final_array[] = $single_row;
     }
@@ -203,6 +150,7 @@
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, number_format($TOTAL_WEIGHT, 3, '.', ',') . 'kg');
+    array_push($final_row, "£" . number_format(floorDec($TOTAL_COST), 2, '.', ','));
     $final_array[] = $final_row;
 
     require('vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');

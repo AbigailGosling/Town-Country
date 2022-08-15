@@ -61,8 +61,24 @@
         </div>
         <?php if($pickerSheet['completedby_userid'] != ''){ ?>
         <h4 class="completedby-tag">
+        <?php 
+            	$pickersQ = "SELECT GROUP_CONCAT(picker_ids) as pickers FROM `palletsOut` WHERE pickersheet_id ='$picksheetid'";
+                $pickersR = mysqli_query($conn, $pickersQ);
+                
+                $pickersA = mysqli_fetch_assoc($pickersR);
+                $pickersA = explode(",",$pickersA['pickers']);
+                $pickersA[] = $pickerSheet['completedby_userid'];
+                $pickersA = array_unique($pickersA);
+                $pickersB = array();
+                foreach ($pickersA as $picker)
+                {
+                    $pickersB[] = getUsername($picker);
+                }
+        ?>
             <i class="fa fa-check" aria-hidden="true" style="margin-right:10px;"></i>
-            Picksheet completed by: <?php echo getUsername($pickerSheet['completedby_userid']); ?></h4>
+            Picksheet completed by: <?php echo getUsername($pickerSheet['completedby_userid']); ?></br></br>
+            Pickers: <?php echo implode(", ",$pickersB); ?></h4>
+            
         <?php } ?>
     </div>
 

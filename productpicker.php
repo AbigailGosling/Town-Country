@@ -662,7 +662,6 @@ function cancelSale()
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
-		
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			

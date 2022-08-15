@@ -70,6 +70,9 @@
     }else if(($species_id != 'null' && !empty($species_id)) && empty($cutgroup_id)){
         array_push($whereArray, "cuts.species_id = ".$species_id);
     }
+    else{
+        array_push($whereArray, "cuts.species_id NOT IN (11,12,14)");
+    }
 
     if($pallet_id != ''){ # if this is posted then theyve entered a pallet id
 

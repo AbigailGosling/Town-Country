@@ -91,8 +91,12 @@
             }
 
             if(!empty($grossTareArray)){
+                $pickers = explode(",",$outPallet['picker_ids']);
+                $pickers[] = $userid;
+                $pickers = array_unique($pickers);
+                $pickers = implode(",",$pickers);
                 $weightString = implode(',', $grossTareArray);		
-                $x = "UPDATE `palletsOut` SET weight_ids='$weightString' WHERE id='$outPalletID'";
+                $x = "UPDATE `palletsOut` SET weight_ids='$weightString', picker_ids = '$pickers' WHERE id='$outPalletID'";
                 $y = mysqli_query($conn, $x) or die(mysqli_error($conn));
             }
             # END NORMAL WEIGHT
@@ -145,7 +149,7 @@
         
         if($grosstareEmpty == false){
             $weightString = implode(',', $grossTareArray);		
-		    $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName) VALUES ('$pickersheet_id','$weightString','#')";
+		    $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName,picker_ids) VALUES ('$pickersheet_id','$weightString','#',$userid)";
             $y = mysqli_query($conn, $x) or die(mysqli_error($conn));
         }
 
@@ -172,7 +176,7 @@
 
         if(!empty($weightArray)){
             $exploded_weightArray = implode(',', $weightArray);		
-		    $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName) VALUES ('$pickersheet_id','$exploded_weightArray','#')";
+		    $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName,picker_ids) VALUES ('$pickersheet_id','$exploded_weightArray','#',$userid)";
             $y = mysqli_query($conn, $x) or die(mysqli_error($conn));
         }
         # END NORMAL WEIGHT

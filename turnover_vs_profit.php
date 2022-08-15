@@ -71,7 +71,28 @@
                 }
         ?>
 	</select>
-
+	<select id="SearchBrand" name="SearchBrand" style="width:152px;height:40px;">
+        <option value="" disabled selected>Select Brand..</option>
+		<?php
+			$x = "SELECT * FROM `brands` ORDER BY `name`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
+	<select id="SearchNationality" name="SearchNationality" style="width:152px;height:40px;">
+        <option value="" disabled selected>Select Nationality..</option>
+		<?php
+			$x = "SELECT * FROM `nationality` ORDER BY `name`";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
     <select name="cooling_id" id="cooling_id" style="width:152px;height:40px;">
         <option value="0" selected>Select option..</option>
         <?php
@@ -121,11 +142,11 @@
             $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
         }
     ?>
-    <input type="button" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
     <b>BETWEEN</b>
     <input class="datepicker" name="date_start" id="date_start" placeholder="START DATE" value="<?php echo $uk_date_start; ?>" style="height:34px;width:100px;">
     <b>AND</b>
     <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" value="<?php echo $uk_date_end; ?>" style="height:34px;width:100px;">
+    <input type="button" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
     </form>
  	
 	<div id="loadResults" class="resultsContainer">
@@ -155,7 +176,8 @@
         var pallet_id = $('#pallet_id').val();
         var user_id = $('#user_id').val();
         var customer_id = $('#customer_id').val();
-
+        var brand_id = $('#SearchBrand').val();
+        var nationality_id = $('#SearchNationality').val();
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
 
@@ -173,6 +195,8 @@
             customer_id: customer_id,
             date_start: date_start,
             date_end: date_end,
+            brand_id: brand_id,
+            nationality_id: nationality_id
         },
         function(data, status){
             $('#loadingContainer').hide();
