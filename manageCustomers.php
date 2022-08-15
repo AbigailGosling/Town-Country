@@ -1,5 +1,10 @@
 <?php
 	include('functions.php');
+	$showDisabled = 0;
+	if (isset($_GET['showDisabled']))
+	{
+		$showDisabled = $_GET['showDisabled'];
+	}
 ?>
 <!doctype html>
 <html class="int">
@@ -186,6 +191,10 @@
 					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="customer_email"><?php echo $data['customer_email']; ?></textarea></td>
 				</tr>
 				
+				<tr>
+					<td class="label"><label>Disable Customer</label></td>
+					<td><input type="checkbox" name="disabled" value="1" <?php echo ($data['disabled'] == 1)?"checked":""; ?>></td>
+				</tr>				
 			</table>
 		</div>
 		
@@ -362,13 +371,22 @@
  
 		<h1 class="int">CUSTOMER LIST</h1>
 
-		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go">
-
+		<div>
+			<table>
+				<tr>
+					<td><input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go"/></td>
+					<td style="width:90%"></td>
+					<td><input type="button" value="<?php echo ($showDisabled == 1)?"Hide":"Show"; ?> Disabled" style="width:110px;height:30px;"
+						onclick='window.location.href = window.location.href.split("?")[0] + "?showDisabled=" + <?php echo ($showDisabled == 1)?0:1; ?>'/></td>
+				</tr>
+			</table>
+			
+		</div>
 		<div id="cutAjax">
 
 		<?php
 
-			$x = "SELECT * FROM `customers` ORDER BY id ASC";
+			$x = "SELECT * FROM `customers` WHERE `disabled`=$showDisabled ORDER BY id ASC";
 
 			$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 

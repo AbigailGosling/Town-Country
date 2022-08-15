@@ -71,12 +71,14 @@
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<option value="Unit 11 - 14">Unit 11 - 14</option>
+				<option value="Unit 11">Unit 11</option>
+				<option value="Unit 13 - 14">Unit 13 - 14</option>
 				<option value="Unit 23">Unit 23</option>
 				<option value="Gatwick">Gatwick</option>
 				<option value="Dry Store">Dry Store</option>
 				<option value="Unit 15 - 17">Unit 15 - 17</option>
 				<option value="Direct Drop">Direct Drop</option>
+				<option value="Coldstore">Coldstore</option>
 				<option value="Other">Other</option>
 		</select>
 		

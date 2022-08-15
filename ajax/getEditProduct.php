@@ -35,7 +35,8 @@
 			
 ?>	
 <a href="javascript:;" id="closeAddPalletEditForm" class="close closeAddPalletEditForm"></a>
-<h1 class="int">Edit Product</h1>
+<h1 class="int">Edit Pallet #<?php echo $pallet_id; ?></h1>
+<h1 class="int">Edit Product #<?php echo $product_id; ?></h1>
 <form method="POST" id="addPalletForm" action="script_updateProduct.php">
 	<div class="float">
 		<div id="msgNotice2" style="color:white;"></div>
@@ -92,12 +93,19 @@
 				}
 			?>
 		</select>
+		<div>
+		<label>Product Temp (°C)</label>
+		<input name="product_temp" id="product_temp" type="text" required value="<?php echo $productRow['product_temp'];?>"></input>
+		</div>
 		<label>Location</label>
 		<?php
 			switch ($palletRow['storage_location'])
 			{
-				case "Unit 11 - 14":
+				case "Unit 11":
 					$unit11 = " selected";
+					break;
+				case "Unit 13 - 14":
+					$unit13 = " selected";
 					break;
 				case "Unit 23":
 					$unit23 = " selected";
@@ -117,16 +125,21 @@
 				case "Other":
 					$otherLoc = " selected";
 					break;
+				case "Coldstore":
+					$coldstore = " selected";
+					break;
 			}
 		?>
 		<select name="storage_location" id ="storage_location">
 			<option></option>
-			<option value="Unit 11 - 14" <?php echo $unit11; ?>>Unit 11 - 14</option>
+			<option value="Unit 11" <?php echo $unit11; ?>>Unit 11</option>
+			<option value="Unit 13 - 14" <?php echo $unit13; ?>>Unit 13 - 14</option>
 			<option value="Unit 23" <?php echo $unit23; ?>>Unit 23</option>
 			<option value="Gatwick" <?php echo $unitGatwick; ?>>Gatwick</option>
 			<option value="Dry Store" <?php echo $unitDry; ?>>Dry Store</option>
 			<option value="Unit 15 - 17" <?php echo $unit15; ?>>Unit 15 - 17</option>
-			<option value="Direct Drop" <?php echo $DirectDelivery; ?>>Direct Drop</option>
+			<option value="Direct Drop" <?php echo $DirectDelivery; ?>>Direct Drop</option>			
+			<option value="Coldstore" <?php echo $coldstore; ?>>Coldstore</option>
 			<option value="Other" <?php echo $otherLoc; ?>>Other</option>
 			
 		</select>
@@ -398,7 +411,14 @@
 			}
 			
 		}
-		
+		var product_temp = species_id = $('#product_temp').val();
+		if(product_temp == ''){
+			msg = "The highlighted fields cannot be blank!7";
+			$('#product_temp').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#product_temp').css('border','1px solid grey');
+		}
 		if(brand_id == ''){
 			msg = "The highlighted fields cannot be blank!7";
 			$('#brand_id').css('border','2px solid red');
@@ -585,8 +605,6 @@
 				totalWeights += parseFloat(tig); 
 			}
 		}
-		
-		console.log(totalWeights);
 		var totalWeightRounded = round(totalWeights, 5)
 		$('#totalCatchWeight').html(totalWeightRounded + 'kg');
 	}
