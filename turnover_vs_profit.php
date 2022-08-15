@@ -146,7 +146,7 @@
     <input class="datepicker" name="date_start" id="date_start" placeholder="START DATE" value="<?php echo $uk_date_start; ?>" style="height:34px;width:100px;">
     <b>AND</b>
     <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" value="<?php echo $uk_date_end; ?>" style="height:34px;width:100px;">
-    <input type="button" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
+    <input type="button" name="search" id="search" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
     </form>
  	
 	<div id="loadResults" class="resultsContainer">
@@ -166,8 +166,15 @@
 <div class="clearfix"></div>
  
 <script type="text/javascript">
-    
+    var req = null;
     function loadData(reset){    
+        if (req){
+            req.abort();
+            req = null;
+            $('#loadingContainer').hide();
+            $("#search").prop('value', 'Search');
+            return;
+        }
         var invoice_id = $('#invoice_id').val();
         var species_id = $('#species_id').val();
         var cutgroup_id = $('#cutgroup_id').val();
@@ -183,7 +190,7 @@
 
         $('#loadingContainer').fadeIn();
 
-        $.post("/ajax/turnover_vs_profit_results.php",
+        req = $.post("/ajax/turnover_vs_profit_results.php",
         {
             invoice_id: invoice_id,
             species_id: species_id,
@@ -199,6 +206,7 @@
             nationality_id: nationality_id
         },
         function(data, status){
+            $("#search").prop('value', 'Search');
             $('#loadingContainer').hide();
             $('#resultsTable').html(data);
             
@@ -241,6 +249,7 @@
         
 
         });
+        $("#search").prop('value', 'Abort');
     }
 
     function formatNumber(num) {

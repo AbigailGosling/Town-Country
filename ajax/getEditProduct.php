@@ -35,7 +35,8 @@
 			
 ?>	
 <a href="javascript:;" id="closeAddPalletEditForm" class="close closeAddPalletEditForm"></a>
-<h1 class="int">Edit Product</h1>
+<h1 class="int">Edit Pallet #<?php echo $pallet_id; ?></h1>
+<h1 class="int">Edit Product #<?php echo $product_id; ?></h1>
 <form method="POST" id="addPalletForm" action="script_updateProduct.php">
 	<div class="float">
 		<div id="msgNotice2" style="color:white;"></div>
@@ -92,6 +93,10 @@
 				}
 			?>
 		</select>
+		<div>
+		<label>Product Temp (°C)</label>
+		<input name="product_temp" id="product_temp" type="text" required value="<?php echo $productRow['product_temp'];?>"></input>
+		</div>
 		<label>Location</label>
 		<?php
 			switch ($palletRow['storage_location'])
@@ -406,7 +411,14 @@
 			}
 			
 		}
-		
+		var product_temp = species_id = $('#product_temp').val();
+		if(product_temp == ''){
+			msg = "The highlighted fields cannot be blank!7";
+			$('#product_temp').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#product_temp').css('border','1px solid grey');
+		}
 		if(brand_id == ''){
 			msg = "The highlighted fields cannot be blank!7";
 			$('#brand_id').css('border','2px solid red');
@@ -593,8 +605,6 @@
 				totalWeights += parseFloat(tig); 
 			}
 		}
-		
-		console.log(totalWeights);
 		var totalWeightRounded = round(totalWeights, 5)
 		$('#totalCatchWeight').html(totalWeightRounded + 'kg');
 	}

@@ -165,7 +165,7 @@
 								if($counter == 1){ ?>
 								<thead>
 									<tr>
-										<th>id</th>
+										<th>product id</th>
 										<th>Quantity</th>
 										<th>species</th>
 										<th>cut</th>
