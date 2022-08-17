@@ -104,6 +104,15 @@
                     <td colspan="1">
                         <form method="post">
                         <?php
+                            $unit11 = "";
+                            $unit13 = "";
+                            $unit23 = "";
+                            $unitGatwick = "";
+                            $unitDry = "";
+                            $DirectDelivery = "";
+                            $otherLoc = "";
+                            $coldstore = "";
+                            
                             switch ($productsRow2['storage_location'])
                             {
                                 case "Unit 11":
