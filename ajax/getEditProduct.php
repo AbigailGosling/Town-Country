@@ -99,6 +99,14 @@
 		</div>
 		<label>Location</label>
 		<?php
+			$unit11 = "";
+			$unit13 = "";
+			$unit23 = "";
+			$unitGatwick = "";
+			$unitDry = "";
+			$DirectDelivery = "";
+			$otherLoc = "";
+			$coldstore = "";
 			switch ($palletRow['storage_location'])
 			{
 				case "Unit 11":
