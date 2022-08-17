@@ -117,19 +117,20 @@
             {
                 $t = "FRESH";
                 if ($isFrozen == true) $t = "FROZEN";
-                if (count($locs) > 1) $loc = "Various";
+                if (count($locs) > 3) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
+                else if (count($locs) > 2) $loc = implode("<br/>",$locs);
                 else $loc = $locs[0];
             ?>
               <div class="menuItem">
                     <div>
                         <table style="width:95%;height:52px;">
                             <tr style="height:52px;">
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" align="left" style="width:85px;white-space: nowrap;"><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;">Ord: <?php echo $row['id']; ?></td>
-                                <td onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"align="left" style="height:52px;font-size:18px;white-space: nowrap;"><?php echo $row2['businessname'];?></td>
-                                <td align="right" style="height:52px;font-size:8px;width:50px;white-space: nowrap;">(Created <?php echo $date;?>)</td>
-                                <td align="center" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $row['estimated_delivery_date'];?>)</td>
-                                <td align="right" style="height:52px;font-size:12px;width:60px;white-space: nowrap;"><?php echo $loc;?></td>
+                                <td align="left" style="width:85px;white-space: nowrap;" onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" ><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
+                                <td align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;" onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';">Ord: <?php echo $row['id']; ?></td>
+                                <td align="left" style="width:460px;height:52px;font-size:18px;white-space: nowrap;" onclick="location.href='/viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"><?php echo $row2['businessname'];?></td>
+                                <td align="left" style="height:52px;font-size:8px;width:50px;white-space: nowrap;">(Created <?php echo $date;?>)</td>
+                                <td align="left" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $row['estimated_delivery_date'];?>)</td>
+                                <td align="right" style="height:52px;font-size:12px;width:70px;white-space: nowrap;line-height:1"><?php echo $loc;?></td>
                             </tr>
                         </table>
                     </div>
@@ -147,7 +148,6 @@
 <div id="btm"></div>
 <style>
     .tag{
-        position:absolute;
         left:10px;
         padding:2px 5px;
         color:#fff;

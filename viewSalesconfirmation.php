@@ -1,6 +1,9 @@
 <?php
-	include('includes/frontHeader.php');
-	
+	$adv = array_key_exists("adv",$_GET);
+
+	if ($adv == false) include_once('includes/frontHeader.php');
+	else require_once('functions.php');
+
 	
 	$picksheet_id = $_GET['id'];
 
@@ -58,12 +61,16 @@
         if($customer['address3_4']){ $address .= ',&#13;'; }
         $address .= $customer['address3_4'];
     } 
+	if ($adv == false)
+	{
 ?>
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout.php" id="logout">LOGOUT</a>
 </div>
-
+<?php
+	}
+?>
 <div class="container container--pt flex space-between">
 	<div>
 		<h2>Sales Confirmation</h2>

@@ -135,9 +135,9 @@ include_once('functions.php');
     <a href="menu.php" id="menu">MENU</a>
     <a href="logout.php" id="logout">LOGOUT</a>
 </div>
-
-<div class="logocontainer" style="text-align: center; line-height: 13px; font-size: 10px; padding-top:10px;">
-        </div>
+ 
+<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
+<div class="mainstatement">
         <div style="width: 300px;float: right;">
             <table>
                 <tr><td style="text-align: right;">Start Date:</td><td><input class="form-control" type="text" class="inputbox" id="startdate" name="startdate" placeholder=""/></td></tr>
@@ -147,8 +147,9 @@ include_once('functions.php');
                 <tr><td style="text-align: right;"></td><td style="float: right;" width="55"><input type ="button" style="width: 55px;"  onclick= "fetchResults()" value = "Go"></td></tr> 
             </table>
         </div>
-        <div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
-<div class="mainstatement">
+        <div>
+            <div style="padding-top:195px;padding-left:5px;"><input type ="button" id="print" name="print" style="width: 110px;"  onclick= "print()" value = "Print" disabled></div>
+        </div>
         <table id="soaTable" class="table" width="100%" style="font-size:10pt;border-spacing: 0;border-color: grey;">
             <thead>
                 <tr class="heading">
@@ -238,9 +239,14 @@ function fetchResults(){
     $("#soaTable").append("<tr><td></td><td>Loading Please Wait...</td><td></td></tr>");
     $.post("/ajax/generateInvoicePaymentCheck.php", { 'start':start, 'startInv':startInv, 'end':end, 'endInv':endInv, 'previous_id':selectedID }, results);
 }
+var printArray = null;
 function results(data, status){
+    printArray = JSON.parse(data);
     $("#soaTable > tbody").empty();
-    $("#soaTable").append(data);
+    $("#soaTable").append(printArray.pop());
+    
+    $( "#print" ).prop( "disabled", false );
+    console.log(printArray);
 }
 function ticked(e)
 {
@@ -258,7 +264,34 @@ function ticked(e)
     }
     $.post("/ajax/setInvoicePaymentCheck.php", { 'id':e, 'state':stater }, debug);
 }
+function print()
+{
+    $( "#print" ).prop( "disabled", true );
+    $( "#print" ).prop( "value", "Downloading..." );
+    $.get("/ajax/generateInvoicePaymentPrintout.php", { 'data':printArray.toString() }, download);
+}
 function debug(data, status)
 {
+    console.log(data);
+}
+function download (data1) {
+    $( "#print" ).prop( "value", "Print" );
+    $.ajax({
+        url: data1,
+        method: 'GET',
+        xhrFields: {
+            responseType: 'blob'
+        },
+        success: function (data) {
+            var a = document.createElement('a');
+            var url = window.URL.createObjectURL(data);
+            a.href = url;
+            a.download = data1.replace("PDF/","");
+            document.body.append(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+    });
 }
 </script>
