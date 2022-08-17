@@ -27,7 +27,8 @@ else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']
 }
 $res = mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
 $list = mysqli_fetch_all($res, MYSQLI_ASSOC);
-
+$output = "";
+$tracker=array();
 foreach ($list as $item)
 {
     $id = $item['id'];
@@ -41,12 +42,16 @@ foreach ($list as $item)
     if ($item['admin_approved'] == 1) $showHide = '';
     if ($item['completed'] == 1)
     {
-        $href = 'invoice.php?id='.$id;
+        $href = 'invoice.php?id='.$id.'&or=1';
         $status = "Completed";
+        $tracker[]= $id;
+        $tracker[]= 'i';
     }
     else
     {
-        $href = 'viewSalesconfirmation.php?id='.$id;
+        $href = 'viewSalesconfirmation.php?id='.$id.'&or=1';
+        $tracker[]= $id;
+        $tracker[]= 's';
         if ($item['deleted'] == 1)
         {
             $status = "VOID";
@@ -58,6 +63,8 @@ foreach ($list as $item)
             $rowStyle = ' style="background-color: #bebebe;"';
         }
     }
-    echo "<tr$rowStyle><td align='center'><a href='$href' target='_blank'>$id</a></td><td align='left'>$status</td><td align='left'>$customername</td><td align='right'>$assembledate</td><td align='right'>£$value</td><td align='center' style='font-size: 18px;'><div onclick='ticked($id)' style='margin: 0 10px 0 10px; height: 32px; width: 32px; border: 1px solid black;'><i id='img-mail-selector-$id' class='fa fa-check img-mail-selector' style='height:100%; margin-top: 5px;$showHide'></i></div></td></tr>";
+    $output .= "<tr$rowStyle><td align='center'><a href='$href' target='_blank'>$id</a></td><td align='left'>$status</td><td align='left'>$customername</td><td align='right'>$assembledate</td><td align='right'>£$value</td><td align='center' style='font-size: 18px;'><div onclick='ticked($id)' style='margin: 0 10px 0 10px; height: 32px; width: 32px; border: 1px solid black;'><i id='img-mail-selector-$id' class='fa fa-check img-mail-selector' style='height:100%; margin-top: 5px;$showHide'></i></div></td></tr>";
 }
+$tracker[]=$output;
+echo json_encode($tracker);
 ?>

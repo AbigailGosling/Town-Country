@@ -66,5 +66,38 @@ class PDFRenderer{
         }
         return true;
     }
+    public static function getHTML($targetURL){
+
+        global $domain;
+        
+        //---PHP CONFIG---//
+        ini_set('memory_limit', '1024M');
+        set_time_limit(1800); //seconds
+        
+        $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
+        // starts headless chrome
+        $browser = $browserFactory->createBrowser();
+        try {
+            // creates a new page and navigate to an URL
+            $page = $browser->createPage();
+            $page->navigate('https:'.$domain)->waitForNavigation();   
+            //login
+            $evaluation = $page->evaluate(
+                '(() => {
+                        document.querySelector("#email").value = "php-pdf-generator@tang.solutions";
+                        document.querySelector("#password").value = "{CY_}TD87q&)fUqp";
+                        document.querySelector("#loginform").submit();
+                    })()'
+                )->waitForPageReload();
+            $page->navigate('https:'.$domain.$targetURL)->waitForNavigation();
+            $output = $page->getHtml();
+        } catch (Exception $e) {
+            die($e->getMessage());
+        } finally {
+            // bye
+            $browser->close();
+        }
+        return $output;
+    }
 }
 ?>
