@@ -122,7 +122,7 @@
                 <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
                 <select id="changeIntakeSupplier" style="height:30px;outline:none;border:0px;width: 100%;" name="supplier_id">
                     <?php
-                        $y = mysqli_query($conn, "SELECT * FROM `customers` WHERE `disabled`=0 OR `id` = ".$customer['id']." ORDER BY businessname ASC");
+                        $y = mysqli_query($conn, "SELECT * FROM `customers` WHERE `disabled`=0 OR `id` = ".$intake['supplier_id']." ORDER BY businessname ASC");
 
                         while($customer = mysqli_fetch_array($y)){
                         ?><option value="<?php echo $customer['id']; ?>" <?php if($customer['id'] == $intake['supplier_id']){ echo 'selected'; } ?>><?php echo $customer['businessname']; ?></option>
