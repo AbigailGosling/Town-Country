@@ -117,8 +117,8 @@
             {
                 $t = "FRESH";
                 if ($isFrozen == true) $t = "FROZEN";
-                if (count($locs) > 3) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
-                else if (count($locs) > 2) $loc = implode("<br/>",$locs);
+                if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
+                else if (count($locs) > 1) $loc = implode("<br/>",$locs);
                 else $loc = $locs[0];
             ?>
               <div class="menuItem">
