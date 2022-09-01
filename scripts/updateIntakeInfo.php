@@ -12,6 +12,7 @@
 	
 	$x = "UPDATE `intake` SET date_received='$date', vehicle_reg='$vehicle_reg', vehicle_temperature='$vehicle_temp', product_temperature='$product_temp', delivery_note_number='$delivery_note_number' WHERE id = '$id'";
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
+	loggedDataChange("intake",$id,$delivery_note_number);
 ?>
 <script>
 	window.location = '../intake.php?id=<?php echo $id; ?>';

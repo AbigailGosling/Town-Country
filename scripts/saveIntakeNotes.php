@@ -7,7 +7,7 @@
 	
 	$x = "UPDATE `intake` SET notes='$notes' WHERE id ='$intakeID'";
 	$y = mysqli_query($conn, $x);
-	
+	loggedDataChange("intake",$intakeID,$notes);
 ?>
 
 <script type="text/javascript">

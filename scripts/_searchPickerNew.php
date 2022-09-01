@@ -8,6 +8,12 @@
 	$class = $_GET['class'];
 	$nationality_id = $_GET['nationality_id'];
     $ubbb = $_GET['ubbb'];
+    if ($_GET['locked'] == "y"){
+        $locked = true;
+    }
+    else {
+        $locked = false;
+    }
     
     if(!empty($pallet_id)){
         $palletFilter = 'product.pallet_id = '.$pallet_id;
@@ -72,7 +78,12 @@
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
-                    
+                    if ($productsRow2['storage_location'] == "Coldstore" || $locked){
+                        $class = $_GET['class'] . " searchAccordTitle locked";
+                    }
+                    else {
+                        $class = $_GET['class'];
+                    }
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = $productsRow2['range_from'];
                     $largestDate = $productsRow2['range_to'];
@@ -99,6 +110,9 @@
                     ?>
                     <tr class="subrow <?php echo $class; ?>">
                     <td colspan="1">
+                    <?php if($productsRow2['storage_location'] == "Coldstore" || $locked){ ?>
+                        <i class="fa fa-lock"></i>
+                    <?php } ?>
                         <?php echo $numInPicking; ?>
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
                     <td colspan="1">
@@ -193,7 +207,11 @@
                     ?></td>
                     <td></td>
                     <td></td>
-                    <td><a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a></td>
+                    <td>
+                    <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
+                        <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
+                    <?php } ?>                    
+                    </td>
                 </tr>
                 <?php
               }

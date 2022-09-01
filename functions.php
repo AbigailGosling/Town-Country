@@ -289,7 +289,7 @@
 		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 		
 		$id = mysqli_insert_id($conn);
-		
+
 		return $id;
 		
 	}
@@ -1884,6 +1884,13 @@
 			}
 		}
 		return $y;
+	}
+	function loggedDataChange($type,$entity_id,$body){
+		global $conn;
+		global $userid;
+		$body = mysqli_real_escape_string($conn,$body);
+		$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES ('$type',$userid,$entity_id,'$body')";			
+		$y = mysqli_query($conn, $x);
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>
