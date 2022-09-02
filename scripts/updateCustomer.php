@@ -116,6 +116,9 @@
 	$current_outstanding = (float) $current_outstanding - (float) $payment_received;
 	
 
+	$credit_grace = mysqli_real_escape_string($conn, $_POST['credit_grace']);
+	$due_warning = mysqli_real_escape_string($conn, $_POST['due_warning']);
+
 	$accounts_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['accounts_email']));
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	
@@ -130,7 +133,7 @@
 	, accounts_address_2='$accounts_address_2', accounts_address_3='$accounts_address_3', accounts_address_4='$accounts_address_4', accounts_contact='$accounts_contact'
 	, tel_number='$tel_number', internal_email='$internal_email', credit_terms='$credit_terms', pricedefault='$pricedefault', credit_rating='$credit_rating', flaguplimit='$flaguplimit'
 	, current_outstanding='$current_outstanding',address1_number='$address1_number',address2_number='$address2_number',address3_number='$address3_number'
-	, accounts_email='$accounts_email', accounts_comments='$accounts_comments', default_salesman_id='$default_salesman_id', `disabled`=$disabled WHERE id='$id' LIMIT 1";
+	, accounts_email='$accounts_email', accounts_comments='$accounts_comments', default_salesman_id='$default_salesman_id', `disabled`=$disabled,`due_warning`=$due_warning,`credit_grace`=$credit_grace WHERE id='$id' LIMIT 1";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 ?>

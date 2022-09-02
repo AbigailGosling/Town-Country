@@ -248,10 +248,18 @@
 					<td class="label"><label>Email</label></td>
 					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="internal_email"><?php echo $data['internal_email']; ?></textarea></td>
 				</tr>
-				<tr height="40"><td colspan="2"></td></tr>	
+				<tr height="40"><td colspan="2"></td></tr>
 				<tr>
-					<td class="label"><label>Credit Terms</label></td>
+					<td class="label"><label>Due Warning</label></td>
+					<td><input type="number" class="input" name="due_warning" min="-1" value="<?php echo $data['due_warning']; ?>"></td>
+				</tr>	
+				<tr>
+					<td class="label"><label>Insurance Terms</label></td>
 					<td><input type="number" class="input" name="credit_terms" min="-1" value="<?php echo $data['credit_terms']; ?>"></td>
+				</tr>
+				<tr>
+					<td class="label"><label>Grace Period</label></td>
+					<td><input type="number" class="input" name="credit_grace" min="-1" value="<?php echo $data['credit_grace']; ?>"></td>
 				</tr>
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>

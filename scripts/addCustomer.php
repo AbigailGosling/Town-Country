@@ -116,10 +116,12 @@
 	
 	$default_salesman_id = mysqli_real_escape_string($conn, $_POST['default_salesman_id']);
 	
- 	
-	$x = "INSERT INTO `customers` (`businessname`, `tradingas`, `address1_1`, `address1_2`, `address1_3`, `address1_4`, `postcode_1`, `address2_1`, `address2_2`, `address2_3`, `address2_4`, `postcode_2`, `address3_1`, `address3_2`, `address3_3`, `address3_4`, `postcode_3`, `nameofbuyer`, `contactnumber`, `customer_email`, `companyregno`, `accounts_address_1`, `accounts_address_2`, `accounts_address_3`, `accounts_address_4`, `accounts_contact`, `tel_number`, `internal_email`, `credit_terms`, `pricedefault`, `credit_rating`, `flaguplimit`, `current_outstanding`,`address1_number`,`address2_number`,`address3_number`,`accounts_email`,`accounts_comments`,`default_salesman_id`) 
+	$credit_grace = mysqli_real_escape_string($conn, $_POST['credit_grace']);
+	$due_warning = mysqli_real_escape_string($conn, $_POST['due_warning']);
+
+	$x = "INSERT INTO `customers` (`businessname`, `tradingas`, `address1_1`, `address1_2`, `address1_3`, `address1_4`, `postcode_1`, `address2_1`, `address2_2`, `address2_3`, `address2_4`, `postcode_2`, `address3_1`, `address3_2`, `address3_3`, `address3_4`, `postcode_3`, `nameofbuyer`, `contactnumber`, `customer_email`, `companyregno`, `accounts_address_1`, `accounts_address_2`, `accounts_address_3`, `accounts_address_4`, `accounts_contact`, `tel_number`, `internal_email`, `credit_terms`, `pricedefault`, `credit_rating`, `flaguplimit`, `current_outstanding`,`address1_number`,`address2_number`,`address3_number`,`accounts_email`,`accounts_comments`,`default_salesman_id`,`due_warning`,`credit_grace`) 
 	VALUES
-	('$businessname','$tradingas','$address1_1','$address1_2','$address1_3','$address1_4','$postcode_1','$address2_1','$address2_2','$address2_3','$address2_4','$postcode_2','$address3_1','$address3_2','$address3_3','$address3_4','$postcode_3','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$address1_number','$address2_number','$address3_number','$accounts_email','$accounts_comments','$default_salesman_id');";
+	('$businessname','$tradingas','$address1_1','$address1_2','$address1_3','$address1_4','$postcode_1','$address2_1','$address2_2','$address2_3','$address2_4','$postcode_2','$address3_1','$address3_2','$address3_3','$address3_4','$postcode_3','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$address1_number','$address2_number','$address3_number','$accounts_email','$accounts_comments','$default_salesman_id','$due_warning','$credit_grace');";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
