@@ -1,7 +1,6 @@
 <?php
 	require('../functions.php');
 
-	
     $addressid = mysqli_real_escape_string($conn, $_POST['addressid']);
     $customerid = mysqli_real_escape_string($conn, $_POST['customerid']);
     $picksheetid = mysqli_real_escape_string($conn, $_POST['picksheetid']);
@@ -20,45 +19,17 @@
 
     
     $estimated_delivery_date = mysqli_real_escape_string($conn, $_POST['estimated_delivery_date']); #picksheet
-    
-
-   echo 'Updating..';
-
+ 
     $y = mysqli_query($conn, "UPDATE `pickerSheets` SET user_from_id='$user_from_id', estimated_delivery_date='$estimated_delivery_date', orderReferenceNumber='$orderReferenceNumber', addressid='$addressid',picksheet_note='$picksheet_note' WHERE id='$picksheetid' LIMIT 1");
 
-
-    if($addressid == 1){
-        $y = mysqli_query($conn, "UPDATE `customers` SET
-        address1_1='$addressline1',
-        address1_2='$addressline2',
-        address1_3='$addressline3',
-        address1_4='$addressline4',
-        postcode_1='$addresspostcode',
-        address1_number='$deliverynumber'
+    $y = mysqli_query($conn, "UPDATE `customers` SET
+        address{$addressid}_1='$addressline1',
+        address{$addressid}_2='$addressline2',
+        address{$addressid}_3='$addressline3',
+        address{$addressid}_4='$addressline4',
+        postcode_{$addressid}='$addresspostcode',
+        address{$addressid}_number='$deliverynumber'
         WHERE id = $customerid LIMIT 1");
-    }else if($addressid == 2){
-        $y = mysqli_query($conn, "UPDATE `customers` SET
-        address2_1='$addressline1',
-        address2_2='$addressline2',
-        address2_3='$addressline3',
-        address2_4='$addressline4',
-        postcode_2='$addresspostcode',
-        address2_number='$deliverynumber'
-
-        WHERE id = $customerid LIMIT 1");
-    }else if($addressid == 3){
-        $y = mysqli_query($conn, "UPDATE `customers` SET
-        address3_1='$addressline1',
-        address3_2='$addressline2',
-        address3_3='$addressline3',
-        address3_4='$addressline4',
-        postcode_3='$addresspostcode',
-        address3_number='$deliverynumber'
-
-        WHERE id = $customerid LIMIT 1");
-    }
-
-
 
 ?>
 

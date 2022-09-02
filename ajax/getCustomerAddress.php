@@ -38,35 +38,14 @@
 
 <?php
 	if($address_id != ''){
-		if($address_id == 1){
-			
-			$addressNumber = $row['address1_number'];
-			
-			$addressline1 = $row['address1_1'];
-			$addressline2 = $row['address1_2'];
-			$addressline3 = $row['address1_3'];
-			$addressline4 = $row['address1_4'];
-			$addresspostcode = $row['postcode_1'];						
-					
-		}else if($address_id == 2){
-			$addressNumber = $row['address2_number'];
-			
-			$addressline1 = $row['address2_1'];
-			$addressline2 = $row['address2_2'];
-			$addressline3 = $row['address2_3'];
-			$addressline4 = $row['address2_4'];
-			$addresspostcode = $row['postcode_2'];	
-			
-		}else if($address_id == 3){
-			$addressNumber = $row['address3_number'];
-			
-			$addressline1 = $row['address3_1'];
-			$addressline2 = $row['address3_2'];
-			$addressline3 = $row['address3_3'];
-			$addressline4 = $row['address3_4'];
-			$addresspostcode = $row['postcode_3'];	
-			
-		}
+
+		$addressNumber = $row['address'.$address_id.'_number'];	
+		$addressline1 = $row['address'.$address_id.'_1'];
+		$addressline2 = $row['address'.$address_id.'_2'];
+		$addressline3 = $row['address'.$address_id.'_3'];
+		$addressline4 = $row['address'.$address_id.'_4'];
+		$addresspostcode = $row['postcode_'.$address_id];	
+
 	}else{
 		$addressNumber = $row['address1_number'];
 		
@@ -163,60 +142,28 @@
 </div>
 <div id="changeAddress" class="row lity-hide">
 	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
-	
-	<?php 
-		
-		if($row['address1_1'] == '' && $row['postcode_1'] == ''){
-			$addressOneEmpty = true;
-		}else{
-			$addressOneEmpty = false;
-		}
-
-		if($row['address2_1'] == '' && $row['postcode_2'] == ''){
-			$addressTwoEmpty = true;
-		}else{
-			$addressTwoEmpty = false;
-		}
-
-		if($row['address3_1'] == '' && $row['postcode_3'] == ''){
-			$addressThreeEmpty = true;
-		}else{
-			$addressThreeEmpty = false;
-		}
-		
-	?>
-
 	<div class="addresses">
+		<?php
+			for ($u = 1;$u < 10;$u++)
+			{
+				if($row['address'.$u.'_1'] == '' && $row['postcode_'.$u] == ''){
+					$addressOneEmpty = true;
+				}else{
+					$addressOneEmpty = false;
+				}
+		?>
 		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', 1)">
 			<span><?php
 				if($addressOneEmpty){
 					echo 'Empty';
 				}else{
-					echo $row['address1_1'] . ' ' . $row['postcode_1'];
+					echo $row['address'.$u.'_1'] . ' ' . $row['postcode_'.$u];
 				}
 			?></span>
 		</div>
-		
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', 2)">
-			<span><?php
-				if($addressTwoEmpty){
-					echo 'Empty';
-				}else{
-					echo $row['address2_1'] . ' ' . $row['postcode_2'];
-				}
-			?></span>
-		</div>
-
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', 3)">
-			<span><?php
-				if($addressThreeEmpty){
-					echo 'Empty';
-				}else{
-					echo $row['address3_1'] . ' ' . $row['postcode_3'];
-				}
-			?></span>
-		</div>
-
+		<?php
+			}
+		?>
 	</div>
 
 	

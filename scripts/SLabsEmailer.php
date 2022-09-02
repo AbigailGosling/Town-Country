@@ -35,7 +35,7 @@ class SLabsEmailer {
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
-
+        $toEmails = array('andrew.gosling@tang.solutions','thecyanangel@gmail.com');
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
         foreach($toEmails as $email)
         {	

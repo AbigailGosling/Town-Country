@@ -7,62 +7,7 @@
 	
 	
 	$tradingas = mysqli_real_escape_string($conn, $_POST['tradingas']);
-	
-	
-	
-	
-	$address1_1 = mysqli_real_escape_string($conn, $_POST['address1_1']);
-	
-	
-	$address1_2 = mysqli_real_escape_string($conn, $_POST['address1_2']);
-	
-	
-	$address1_3 = mysqli_real_escape_string($conn, $_POST['address1_3']);
-	
-	
-	$address1_4 = mysqli_real_escape_string($conn, $_POST['address1_4']);
-	
 
-	$postcode_1 = mysqli_real_escape_string($conn, $_POST['postcode_1']);
-	
-	
-	
-	
-	
-	
-	$address2_1 = mysqli_real_escape_string($conn, $_POST['address2_1']);
-	
-	
-	$address2_2 = mysqli_real_escape_string($conn, $_POST['address2_2']);
-	
-	
-	$address2_3 = mysqli_real_escape_string($conn, $_POST['address2_3']);
-	
-	
-	$address2_4 = mysqli_real_escape_string($conn, $_POST['address2_4']);
-	
-
-	$postcode_2 = mysqli_real_escape_string($conn, $_POST['postcode_2']);
-	
-	
-
-
-	$address3_1 = mysqli_real_escape_string($conn, $_POST['address3_1']);
-	
-	
-	$address3_2 = mysqli_real_escape_string($conn, $_POST['address3_2']);
-	
-	
-	$address3_3 = mysqli_real_escape_string($conn, $_POST['address3_3']);
-	
-	
-	$address3_4 = mysqli_real_escape_string($conn, $_POST['address3_4']);
-	
-
-	$postcode_3 = mysqli_real_escape_string($conn, $_POST['postcode_3']);
-	
-	
-	
 		
 	$nameofbuyer = mysqli_real_escape_string($conn, $_POST['nameofbuyer']);
 	
@@ -107,10 +52,6 @@
 				
 	$current_outstanding = mysqli_real_escape_string($conn, $_POST['current_outstanding']);
 	
-	$address1_number = mysqli_real_escape_string($conn, $_POST['address1_number']);
-	$address2_number = mysqli_real_escape_string($conn, $_POST['address2_number']);
-	$address3_number = mysqli_real_escape_string($conn, $_POST['address3_number']);
-	
 	$payment_received = mysqli_real_escape_string($conn, $_POST['payment_received']);
 	
 	$current_outstanding = (float) $current_outstanding - (float) $payment_received;
@@ -122,15 +63,46 @@
 	$default_salesman_id = mysqli_real_escape_string($conn, $_POST['default_salesman_id']);
 
 	$disabled = (isset($_POST['disabled']) && $_POST['disabled'] == "1")?"1":"0";
-	
-	$x = "UPDATE `customers` SET businessname='$businessname', tradingas='$tradingas', address1_1='$address1_1', address1_2='$address1_2', address1_3='$address1_3'
-	, address1_4='$address1_4', postcode_1='$postcode_1', address2_1='$address2_1', address2_2='$address2_2', address2_3='$address2_3', address2_4='$address2_4'
-	, postcode_2='$postcode_2', address3_1='$address3_1', address3_2='$address3_2', address3_3='$address3_3', address3_4='$address3_4', postcode_3='$postcode_3'
-	, nameofbuyer='$nameofbuyer', contactnumber='$contactnumber', customer_email='$customer_email', companyregno='$companyregno', accounts_address_1='$accounts_address_1'
-	, accounts_address_2='$accounts_address_2', accounts_address_3='$accounts_address_3', accounts_address_4='$accounts_address_4', accounts_contact='$accounts_contact'
-	, tel_number='$tel_number', internal_email='$internal_email', credit_terms='$credit_terms', pricedefault='$pricedefault', credit_rating='$credit_rating', flaguplimit='$flaguplimit'
-	, current_outstanding='$current_outstanding',address1_number='$address1_number',address2_number='$address2_number',address3_number='$address3_number'
-	, accounts_email='$accounts_email', accounts_comments='$accounts_comments', default_salesman_id='$default_salesman_id', `disabled`=$disabled WHERE id='$id' LIMIT 1";
+	$colNames = array();
+	for ($u=1;$u<10;$u++)
+	{
+		$colNames[] = "`address".$u."_1` = '".mysqli_real_escape_string($conn, $_POST['address'.$u.'_1'])."'";
+
+		$colNames[] = "`address".$u."_2` = '".mysqli_real_escape_string($conn, $_POST['address'.$u.'_2'])."'";
+		
+		$colNames[] = "`address".$u."_3` = '".mysqli_real_escape_string($conn, $_POST['address'.$u.'_3'])."'";
+
+		$colNames[] = "`address".$u."_4` = '".mysqli_real_escape_string($conn, $_POST['address'.$u.'_4'])."'";
+
+		$colNames[] = "`postcode_".$u."` = '".mysqli_real_escape_string($conn, $_POST['postcode_'.$u])."'";
+
+		$colNames[] = "`address".$u."_number` = '".mysqli_real_escape_string($conn, $_POST['address'.$u.'_number'])."'";
+	}
+	$x = "UPDATE `customers` SET 
+		businessname='$businessname', 
+		tradingas='$tradingas', 
+		nameofbuyer='$nameofbuyer', 
+		contactnumber='$contactnumber', 
+		customer_email='$customer_email', 
+		companyregno='$companyregno', 
+		accounts_address_1='$accounts_address_1', 
+		accounts_address_2='$accounts_address_2', 
+		accounts_address_3='$accounts_address_3', 
+		accounts_address_4='$accounts_address_4', 
+		accounts_contact='$accounts_contact',
+		tel_number='$tel_number', 
+		internal_email='$internal_email',
+		credit_terms='$credit_terms', 
+		pricedefault='$pricedefault', 
+		credit_rating='$credit_rating', 
+		flaguplimit='$flaguplimit', 
+		current_outstanding='$current_outstanding',
+		accounts_email='$accounts_email', 
+		accounts_comments='$accounts_comments', 
+		default_salesman_id='$default_salesman_id',
+		`disabled`=$disabled,
+		".implode(",",$colNames)."
+		 WHERE id='$id' LIMIT 1";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 ?>
