@@ -3,6 +3,7 @@
     $customerPicksheets = json_decode($_POST['picksheet'],true);
     $customer_id = $_POST['customer_id'];
     $due_days = $_POST['duedays'];
+    $due_warning = $_POST['due_warning'];
     $showAll = ($_POST['showAll'] == "Y");
     $picksheet = null;
     //Check if due days is a string if so strip out the numbers
@@ -37,6 +38,10 @@
         if (date('Ymd',strtotime(str_replace('/','-', $picksheet['date']) . "+ " . $due_days . "days")) < date('Ymd')) {
             echo "background-color:red;color:white;'>Overdue: ";
         }
+        else if (date('Ymd',strtotime(str_replace('/','-', $picksheet['date']) . "+ " . $due_warning . "days")) < date('Ymd')) {
+            echo "background-color:orange;'>Due soon: ";
+        }
+        
         else {
             echo "'>";
         }
@@ -54,7 +59,7 @@
                 $creditnote = $picksheet['creditNotes'][$j]
                 ?>
     <tr>  
-        <td data-order="<?php echo $creditnote['id']; ?>"><?php if ($j == count($picksheet['creditNotes']) -1) {echo "╚═";} else {echo "╠═";} echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CN: ". $creditnote['id']; ?>
+        <td data-order="<?php echo $creditnote['id']; ?>"><?php if ($j == count($picksheet['creditNotes']) -1) {echo "╚═";} else {echo "╠═";} echo "&nbsp;&nbsp;&nbsp;&nbsp;CN: ". $creditnote['id']; ?>
         </td>
         <td data-sort=""></td>
         <td data-sort=""></td>

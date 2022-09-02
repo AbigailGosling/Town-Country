@@ -251,12 +251,16 @@ function isNumber(n) {
 
     var toSkip = 0;
     var due_days = "<?php echo $customer['credit_terms']?>";
+    var due_warning = "<?php echo $customer['due_warning']?>";
     due_days=due_days.replace(/\D/g,'');
+    due_warning=due_warning.replace(/\D/g,'');
 
     if(!isNumber(due_days)){
         due_days =0;
     }
-
+    if(!isNumber(due_warning)){
+        due_warning = 0;
+    }
     var customer_id = <?php echo $_GET['id']; ?>;
     var date_from = '<?php echo $_GET['date_from']; ?>';
     var date_to = '<?php echo $_GET['date_to']; ?>';
@@ -295,6 +299,7 @@ function isNumber(n) {
         $.post("ajax/customer_soam_row_renderer.php", {
                 picksheet: JSON.stringify(dataParsed),
                 duedays: due_days,
+                due_warning: due_warning,
                 customer_id: customer_id,
                 showAll: showAll?"Y":"N"
             },
