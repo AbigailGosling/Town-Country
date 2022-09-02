@@ -57,6 +57,9 @@
 	$current_outstanding = (float) $current_outstanding - (float) $payment_received;
 	
 
+	$credit_grace = mysqli_real_escape_string($conn, $_POST['credit_grace']);
+	$due_warning = mysqli_real_escape_string($conn, $_POST['due_warning']);
+
 	$accounts_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['accounts_email']));
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	
@@ -101,6 +104,8 @@
 		accounts_comments='$accounts_comments', 
 		default_salesman_id='$default_salesman_id',
 		`disabled`=$disabled,
+		`due_warning`=$due_warning,
+		`credit_grace`=$credit_grace
 		".implode(",",$colNames)."
 		 WHERE id='$id' LIMIT 1";
 	
