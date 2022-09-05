@@ -550,7 +550,7 @@ function cancelSale()
 
 			if (!transactionAllowed || showWarning)
 			{
-				if (!showWarning || showHigherWarning)
+				if (!showWarning)
 				{
 					$('#sendfake').attr('disabled', true);
 					$('#searcher').attr('disabled', true);
