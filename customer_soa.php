@@ -1,5 +1,6 @@
 <?php
 include('includes/frontHeader.php');
+include_once('ajax/customer_soa_results_function.php');
 ?>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
@@ -16,6 +17,30 @@ include('includes/frontHeader.php');
     if ($_GET['id'] != '') {
 
         $customer = getCustomer($_GET['id']);
+        $creditCheck = precredit_check($_GET['id']);
+		$title = "";
+		if ($creditCheck['saleAllowed'] == true)
+		{
+			if ($creditCheck['showWarning'] == true)
+			{
+				$bg = '#ffc266';
+                $bor= '#ff9900';
+			}
+		}
+		else
+		{
+            $bg = '#ff6666';
+            $bor= '#ff0000';
+			
+		}
+        if ($creditCheck['saleAllowed'] == false || $creditCheck['showWarning'] == true)
+        {
+    ?>
+        <div class="row custom-warning-box" id="warning" style="background:<?php echo $bg;?>; border: 2px solid <?php echo $bor;?>">
+		    <?php echo $creditCheck['messageLong']; ?>
+	    </div>
+    <?php
+        }
     ?>
         <h2>Statement of account for <?php echo $customer['businessname']; ?>
             <?php

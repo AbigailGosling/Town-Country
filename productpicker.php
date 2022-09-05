@@ -167,6 +167,7 @@
 <script type="text/javascript">
 	var transactionAllowed = false;
 	var showWarning = false;
+	var showHigherWarning = false;
 	var warningMessage = "";
     $(document).ready(function() {
         var formHasChanged = false;
@@ -454,6 +455,7 @@ function cancelSale()
 	var customerID = null;
 	var transactionAllowed = false;
 	var showWarning = false;
+	var showHigherWarning = false;
 	var warningMessage = "";
 	var showPriceCheck = false;
     setTimeout(function(){
@@ -548,7 +550,7 @@ function cancelSale()
 
 			if (!transactionAllowed || showWarning)
 			{
-				if (!showWarning)
+				if (!showWarning || showHigherWarning)
 				{
 					$('#sendfake').attr('disabled', true);
 					$('#searcher').attr('disabled', true);

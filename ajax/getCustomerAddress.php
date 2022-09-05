@@ -15,8 +15,8 @@
 <script type="text/javascript">
 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
 	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
+	showHigherWarning 		= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
 	warningMessage		= "<?php echo $creditCheck['message']; ?>";
-	console.log(<?php echo json_encode($creditCheck); ?>);
 </script>
 <div class="col">
 	<div class="row">

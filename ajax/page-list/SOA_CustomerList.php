@@ -35,21 +35,24 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 	else
 	{
 		$creditCheck = precredit_check($customer['id']);
-		echo "<script>console.log(".json_encode($creditCheck).");</script>";
+		$title = "";
 		if ($creditCheck['saleAllowed'] == true)
 		{
 			if ($creditCheck['showWarning'] == true)
 			{
 				$style = 'style="background-color:orange"';
+				$title = $creditCheck['message'];
 			}
 			else
 			{
 				$style = 'style="background-color:green"';
+				$title = "";
 			}
 		}
 		else
 		{
 			$style = 'style="background-color:red"';
+			$title = $creditCheck['message'];
 		}
 	}
 ?>
@@ -61,7 +64,7 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 				<tr>
 					<td width="100" align="left">ID: <?php echo $customer['id']; ?></td>
 					<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
-					<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?>></td>
+					<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?> title="<?php echo $title; ?>"></td>
 				</tr>
 			</table>
 		</a>

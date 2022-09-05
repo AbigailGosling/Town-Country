@@ -779,6 +779,16 @@
  	<?php } ?>
 	
 	<br/>
+	<div id="printShow">
+		<table style="height:100px;width:100%;">
+			<tr>
+				<td style="border: 1px dashed black;"></td><td style="border: 1px dashed black;"></td><td style="border: 1px dashed black;"></td>
+			</tr>
+			<tr>
+				<td style="border: 1px dashed black;"></td><td style="border: 1px dashed black;"></td><td style="border: 1px dashed black;"></td>
+			</tr>
+		</table>
+	</div>
 	<a href="javascript:;" class="add_product" onclick="openAddPallet(<?php echo $intake_id; ?>);">Add a Pallet</a>
  	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
 	 <a href="printAllPallets.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print all pallets</a>
@@ -816,9 +826,18 @@
 	
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
+		$('#printShow').hide();
 		$('.aWeight').each(function() { totalIntakeWeight = parseFloat(totalIntakeWeight) + parseFloat($(this).val()); });
 		var xxD = parseFloat(<?php echo $totalWeight; ?>).toFixed(3);
 		$('#intakeTotalWeightA').text(xxD + ' KG');
+		$(window).on({
+			'beforeprint': () => {
+				$('#printShow').show();
+			},
+			'afterprint': () => {
+				$('#printShow').hide();
+			}
+});
 	});
 	
 	function editWeight(intake_id, pallet_id, product_id, weight_id){

@@ -1,6 +1,5 @@
 <?php
 include_once('includes/frontHeader.php');
-include_once('functions.php');
 
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
