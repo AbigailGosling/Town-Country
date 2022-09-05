@@ -180,7 +180,7 @@ function precredit_check($customer_id)
         $returningObj['oldest'] = $oldest = $details['oldest_unpaid_date'];
         $outstanding = $details['outstanding'];
         $returningObj['beyondDate'] = $beyondDate;
-        if ($oldest != "" && $oldest < $closeToOverdue)
+        if ($oldest != "" && $oldest < $gracePeriod)
         {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
@@ -212,12 +212,6 @@ function precredit_check($customer_id)
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
-        }
-        else if ($oldest != "" && $oldest < $closeToOverdue)
-        {
-            $returningObj['showWarning'] = true;
-            $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
-            $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
         }
 
     }
