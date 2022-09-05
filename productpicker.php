@@ -557,6 +557,13 @@ function cancelSale()
 					$('#warning').css('background', "#ff6666");
 					$('#warning').css('border', "2px solid #ff0000");
 				}
+				else if (showHigherWarning)
+				{
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+				}
 				else
 				{
 					$('#sendfake').attr('disabled', false);
