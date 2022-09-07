@@ -2,14 +2,14 @@
 function get_customer_soa_results($customer_id,$adv)
 {
     global $conn;
-    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
+    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date_completed, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
     $ret = [];
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
 
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
         $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
 
-        $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
+        $picksheet['date'] = str_replace('/', '-', $picksheet['date_completed']);
         $picksheet['datetime'] = strtotime($picksheet['date']);
         $picksheet['date'] = date('d/m/Y', $picksheet['datetime']);
 
@@ -180,7 +180,7 @@ function precredit_check($customer_id)
         $returningObj['oldest'] = $oldest = $details['oldest_unpaid_date'];
         $outstanding = $details['outstanding'];
         $returningObj['beyondDate'] = $beyondDate;
-        if ($oldest != "" && $oldest < $closeToOverdue)
+        if ($oldest != "" && $oldest < $gracePeriod)
         {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
@@ -212,12 +212,6 @@ function precredit_check($customer_id)
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
-        }
-        else if ($oldest != "" && $oldest < $closeToOverdue)
-        {
-            $returningObj['showWarning'] = true;
-            $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
-            $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
         }
 
     }
