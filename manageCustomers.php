@@ -479,7 +479,7 @@
 		$('#address3containerNumber').show();
 	});
 	
-	$('#instantSearch').keydown(function(){
+	$('#instantSearch').on('input',function(e){
 
 		var val = $('#instantSearch').val();
 
@@ -487,30 +487,12 @@
 
 		console.log(val);
 
-		
-
-			var xhttp = new XMLHttpRequest();
-
-			xhttp.onreadystatechange = function() {
-
-			if (this.readyState == 4 && this.status == 200) {
-
-			  // document.getElementById("demo").innerHTML = this.responseText;
-
-			  $('#cutAjax').html(this.responseText);
-
+		$.post('/ajax/customersPageList.php',{'searchterm':val},function(data,status) {
+			if (status == "success") {
+				
+				$('#cutAjax').html(data);
 			}
-
-			};
-
-			xhttp.open("POST", "/ajax/customersPageList.php", true);
-
-			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-			xhttp.send("searchterm=" + val);
-
-		
-
+		});
 	});
 	
 	$('.transferPopup-container').click(function(e){

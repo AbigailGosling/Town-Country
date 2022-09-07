@@ -91,10 +91,10 @@
 $(document).ready(function(){ 
     console.log("t");
     $("#date_start").datepicker({
-        dateFormat: 'yy/mm/dd'
+        dateFormat: 'dd/mm/yy'
     });
     $("#date_end").datepicker({
-        dateFormat: 'yy/mm/dd'
+        dateFormat: 'dd/mm/yy'
     });
     console.log("t");
 });
