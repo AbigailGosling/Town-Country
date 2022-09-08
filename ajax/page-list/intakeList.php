@@ -24,14 +24,19 @@
             $date_paid_name = "date_paid_".$intake['id'];
         ?>
         <td align="left" class="pos">
-            <table width="100%" border="0">
+            <table width="100%" border="0" style="margin-top: 8px;">
                 <tr>
                     <td width="10%" align="left">
-                        <input class="datepicker" name="<?php echo $date_paid_name; ?>" id="<?php echo $date_paid_name; ?>" placeholder="UNPAID" style="height:34px;width:100px;"></input>
+                        <input class="datepicker" name="<?php echo $date_paid_name; ?>" id="<?php echo $date_paid_name; ?>" placeholder="UNPAID" style="height:42px;width:75px;"></input>
                         <script>
                             var date_paid_name ="#<?php echo $date_paid_name; ?>";
+                            var date_paid_enabled = <?php if ($intake['date_paid'] != null && $intake['date_paid'] != ""){ echo "false";}else{ echo "true";}?>;
                             $(date_paid_name).datepicker({onSelect:date_paid_changed,dateFormat: 'dd/mm/yy'});
                             $(date_paid_name).val("<?php if ($intake['date_paid'] != null && $intake['date_paid'] != "")echo date('d/m/Y', strtotime($intake['date_paid'])); ?>");
+                            if (date_paid_enabled == false)
+                            {
+                                $(date_paid_name).datepicker('disable');
+                            }
                         </script>
                     </td>
                 </tr>
@@ -70,7 +75,7 @@
                             
                         ?>
                     </td>
-                    <td width="15%" align="right">
+                    <td align="right">
                         <?php 
                             if (strlen($intake['notes']) < 20) {
                                 echo $intake['notes']; 
