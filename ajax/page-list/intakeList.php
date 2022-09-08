@@ -27,7 +27,7 @@
             <table width="100%" border="0" style="margin-top: 8px;">
                 <tr>
                     <td width="10%" align="left">
-                        <input class="datepicker" name="<?php echo $date_paid_name; ?>" id="<?php echo $date_paid_name; ?>" placeholder="UNPAID" style="height:42px;width:75px;"></input>
+                        <input class="datepicker" name="<?php echo $date_paid_name; ?>" id="<?php echo $date_paid_name; ?>" placeholder="..." style="height:42px;width:75px;"></input>
                         <script>
                             var date_paid_name ="#<?php echo $date_paid_name; ?>";
                             var date_paid_enabled = <?php if ($intake['date_paid'] != null && $intake['date_paid'] != ""){ echo "false";}else{ echo "true";}?>;
