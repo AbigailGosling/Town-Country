@@ -75,8 +75,6 @@
 		$colNames[] = '`address'.$u.'_number`';
 		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_number'])."'";
 	}
-
-
 	$accounts_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['accounts_email']));
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	

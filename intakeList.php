@@ -186,6 +186,20 @@
 				}
 			});
 		}
+		<?php
+		$ucheck = mysqli_query($conn, "SELECT `user_type` FROM `users` WHERE `id` = $userid");
+		$ucheck = mysqli_fetch_assoc($ucheck);
+        if ($ucheck['user_type'] == "A")
+        {
+		?>
+		function date_paid_changed(dateText,inst)
+		{
+			var id = inst.id.toString().replace("date_paid_","");
+			$.post( "ajax/updateIntakeDatePaid.php", { date: dateText, id: id } );
+		}
+		<?php
+        }
+    	?>
 	</script>
 </body>
 </html>

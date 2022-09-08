@@ -105,10 +105,9 @@
 		default_salesman_id='$default_salesman_id',
 		`disabled`=$disabled,
 		`due_warning`=$due_warning,
-		`credit_grace`=$credit_grace
+		`credit_grace`=$credit_grace,
 		".implode(",",$colNames)."
 		 WHERE id='$id' LIMIT 1";
-	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 ?>
 <script>
