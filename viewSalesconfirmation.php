@@ -18,49 +18,18 @@
 	$y1 = mysqli_query($conn, $x1) or die(mysqli_error($conn));
 	$customer = mysqli_fetch_array($y1);
 	
-	$addressNumber = $row['address1_number'];
+	$addressNumber = $row['address'.$picksheet['addressid'].'_number'];
 	
-	 
+	$address = $customer['address'.$picksheet['addressid'].'_1'];
+	if($customer['address'.$picksheet['addressid'].'_2']){ $address .= ',&#13;'; }
+	$address .= $customer['address'.$picksheet['addressid'].'_2'];
+	
+	if($customer['address'.$picksheet['addressid'].'_3']){ $address .= ',&#13;'; }
+	$address .= $customer['address'.$picksheet['addressid'].'_3'];
 
-    if($picksheet['addressid'] == 1){
+	if($customer['address'.$picksheet['addressid'].'_4']){ $address .= ',&#13;'; }
+	$address .= $customer['address'.$picksheet['addressid'].'_4'];
 
-        $address = $customer['address1_1'];
-        if($customer['address1_2']){ $address .= ',&#13;'; }
-        $address .= $customer['address1_2'];
-        
-        if($customer['address1_3']){ $address .= ',&#13;'; }
-        $address .= $customer['address1_3'];
-
-        if($customer['address1_4']){ $address .= ',&#13;'; }
-        $address .= $customer['address1_4'];
-    }
-
-    if($picksheet['addressid'] == 2){
-
-        $address = $customer['address2_1'];
-        if($customer['address2_2']){ $address .= ',&#13;'; }
-        $address .= $customer['address2_2'];
-        
-        if($customer['address2_3']){ $address .= ',&#13;'; }
-        $address .= $customer['address2_3'];
-
-        if($customer['address2_4']){ $address .= ',&#13;'; }
-        $address .= $customer['address2_4'];
-    }
-
-    
-    if($picksheet['addressid'] == 3){
-
-        $address = $customer['address3_1'];
-        if($customer['address3_2']){ $address .= ',&#13;'; }
-        $address .= $customer['address3_2'];
-        
-        if($customer['address3_3']){ $address .= ',&#13;'; }
-        $address .= $customer['address3_3'];
-
-        if($customer['address3_4']){ $address .= ',&#13;'; }
-        $address .= $customer['address3_4'];
-    } 
 	if ($adv == false)
 	{
 ?>

@@ -2,14 +2,14 @@
 function get_customer_soa_results($customer_id,$adv)
 {
     global $conn;
-    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date_completed, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
+    $customerPicksheets = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=$customer_id) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC");
     $ret = [];
     while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
 
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
         $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
 
-        $picksheet['date'] = str_replace('/', '-', $picksheet['date_completed']);
+        $picksheet['date'] = str_replace('/', '-', $picksheet['estimated_delivery_date']);
         $picksheet['datetime'] = strtotime($picksheet['date']);
         $picksheet['date'] = date('d/m/Y', $picksheet['datetime']);
 
