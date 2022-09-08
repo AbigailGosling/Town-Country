@@ -9,7 +9,7 @@ function get_customer_soa_results($customer_id,$adv)
         $picksheet['credit'] = (float) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
         $picksheet['price'] = (float) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
 
-        $picksheet['date'] = str_replace('/', '-', $picksheet['date']);
+        $picksheet['date'] = str_replace('/', '-', $picksheet['estimated_delivery_date']);
         $picksheet['datetime'] = strtotime($picksheet['date']);
         $picksheet['date'] = date('d/m/Y', $picksheet['datetime']);
 

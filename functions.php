@@ -1856,34 +1856,39 @@
 		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
 		return ($final == -0 ? 0 : $final);
 	} 
-	function fuzzyCustomerSearch($name)
+	function fuzzyCustomerSearch($name,$allSearch=false)
 	{
 		global $conn;
 		$tests = array(
 			$name,
 			str_replace(" ","",$name),
 			str_replace(" & "," and ",$name),
+			str_replace(" and "," & ",$name),
 			str_replace("&"," & ",$name)
 		);
+		$allSearchControl = "";
+		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `override` = 1)";
 		$queries = array(
-			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' AND (`credit_terms` > -1 || `override` = 1)",
-			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') AND (`credit_terms` > -1 || `override` = 1)",
-			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') AND (`credit_terms` > -1 || `override` = 1)",
+			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' $allSearchControl",
+			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl",
+			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl",
 		);
+		$lastBestCount = PHP_INT_MAX / 2;
 		foreach ($tests as $test)
 		{
 			foreach ($queries as $query)
 			{
-				$x = sprintf($query,$test);			
+				$x = sprintf($query,$test);	
 				$y = mysqli_query($conn, $x);
 				$count = mysqli_num_rows($y);
-				if ($count > 0 && $count < 20)
+				if ($count > 0 && $count < $lastBestCount)
 				{
-					break 2;
+					$lastBest = $y;
 				}
 			}
 		}
-		return $y;
+
+		return $lastBest;
 	}
 	function loggedDataChange($type,$entity_id,$body){
 		global $conn;

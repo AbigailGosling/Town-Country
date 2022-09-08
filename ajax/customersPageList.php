@@ -10,7 +10,7 @@
 		<div class="cutsContainer">
 		<?php
 		
-		$customerQueryResult = mysqli_query($conn, "SELECT * FROM `customers` WHERE businessname LIKE '%$name%'");
+		$customerQueryResult = fuzzyCustomerSearch($name,true);
 		
 		while($customer = mysqli_fetch_array($customerQueryResult)){
 

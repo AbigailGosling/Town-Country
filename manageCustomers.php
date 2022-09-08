@@ -106,76 +106,36 @@
 					<td class="label"><label>Trading as</label></td>
 					<td><input type="text" class="input" name="tradingas" value="<?php echo $data['tradingas']; ?>"></td>
 				</tr>
+				<?php
+					for ($u=1;$u<10;$u++)
+					{
+						if ($u>1)$style1 = "display:none;";
+				?>
 				<tr style="vertical-align: top;">
-					<td class="label"><label>Delivery Address 1</label></td>
+					<td class="label"><label>Delivery Address <?php echo $u; ?></label></td>
 					<td>
-						<input type="text" class="input" name="address1_1" value="<?php echo $data['address1_1']; ?>"><br/>
-						<input type="text" class="input" name="address1_2" value="<?php echo $data['address1_2']; ?>"><br/>
-						<input type="text" class="input" name="address1_3" value="<?php echo $data['address1_3']; ?>"><br/>
-						<input type="text" class="input" name="address1_4" value="<?php echo $data['address1_4']; ?>">
- 					</td>
-				</tr>
-				<tr>
-					<td class="label"><label>Postcode</label></td>
-					<td><input type="text" class="input postcode" name="postcode_1" value="<?php echo $data['postcode_1']; ?>"></td>
-				</tr>
-				
-				<tr>
-					<td class="label"><label>Delivery Contact No.</label></td>
-					<td><input type="text" class="input" name="address1_number" value="<?php echo $data['address1_number']; ?>"></td>
-				</tr>
-				
-				<tr height="40"><td colspan="2"></td></tr>
-				
-				<tr style="vertical-align: top;">
-					<td class="label"><label>Delivery Address 2</label></td>
-					<td>
-						<input type="text" class="input" id="address2" name="address2_1" value="<?php echo $data['address2_1']; ?>">
-						<div style="display:none;" id="address2container">
- 							<input type="text" class="input" name="address2_2" value="<?php echo $data['address2_2']; ?>"><br/>
-							<input type="text" class="input" name="address2_3" value="<?php echo $data['address2_3']; ?>"><br/>
-							<input type="text" class="input" name="address2_4" value="<?php echo $data['address2_4']; ?>">
+						<input type="text" class="input" id="address<?php echo $u; ?>" name="address<?php echo $u; ?>_1" value="<?php echo $data['address'.$u.'_1']; ?>">
+						<div style="<?php echo $style1; ?>" id="address<?php echo $u; ?>container">
+ 							<input type="text" class="input" name="address<?php echo $u; ?>_2" value="<?php echo $data['address'.$u.'_2']; ?>"><br/>
+							<input type="text" class="input" name="address<?php echo $u; ?>_3" value="<?php echo $data['address'.$u.'_3']; ?>"><br/>
+							<input type="text" class="input" name="address<?php echo $u; ?>_4" value="<?php echo $data['address'.$u.'_4']; ?>">
 						</div>
 						
 					</td>
 				</tr>
-				<tr id="address2containerPostcode" style="display:none;">
+				<tr id="address<?php echo $u; ?>containerPostcode" style="<?php echo $style1; ?>">
 					<td class="label"><label>Postcode</label></td>
-					<td><input type="text" class="input postcode" name="postcode_2" value="<?php echo $data['postcode_2']; ?>"></td>
+					<td><input type="text" class="input postcode" name="postcode_<?php echo $u; ?>" value="<?php echo $data['postcode_'.$u]; ?>"></td>
 				</tr>
-				<tr id="address2containerNumber" style="display:none;">
+				<tr id="address<?php echo $u; ?>containerNumber" style="<?php echo $style1; ?>">
 					<td class="label"><label>Delivery Contact No.</label></td>
-					<td><input type="text" class="input" name="address2_number" value="<?php echo $data['address2_number']; ?>"></td>
-				</tr>
-				
-				
-				<tr style="vertical-align: top;">
-					<td class="label"><label>Delivery Address 3</label></td>
-					<td>
-						<input type="text" class="input" id="address3" name="address3_1" value="<?php echo $data['address3_1']; ?>">
-						<div style="display:none;" id="address3container">
- 							<input type="text" class="input" name="address3_2" value="<?php echo $data['address3_2']; ?>"><br/>
-							<input type="text" class="input" name="address3_3" value="<?php echo $data['address3_3']; ?>"><br/>
-							<input type="text" class="input" name="address3_4" value="<?php echo $data['address3_4']; ?>">
-						</div>
-					</td>
-				</tr>
-				
- 
-								
-				<tr id="address3containerPostcode" style="display:none;">
-					<td class="label"><label>Postcode</label></td>
-					<td><input type="text" class="input postcode" name="postcode_3" value="<?php echo $data['postcode_3']; ?>"></td>
-				</tr>
-				
-				<tr id="address3containerNumber" style="display:none;">
-					<td class="label"><label>Delivery Contact No.</label></td>
-					<td><input type="text" class="input" name="address3_number" value="<?php echo $data['address3_number']; ?>"></td>
+					<td><input type="text" class="input" name="address<?php echo $u; ?>_number" value="<?php echo $data['address'.$u.'_number']; ?>"></td>
 				</tr>
 				
 				<tr height="40"><td colspan="2"></td></tr>
-
-				
+				<?php
+					}
+				?>
 				<tr>
 					<td class="label"><label>Name of buyer</label></td>
 					<td><input type="text" class="input" name="nameofbuyer" value="<?php echo $data['nameofbuyer']; ?>"></td>
@@ -467,19 +427,16 @@
 			}
 		});
 		});
-	$('#address2').click(function(){
-		$('#address2container').show();
-		$('#address2containerPostcode').show();
-		$('#address2containerNumber').show();
-	});
+	for (var u=2;u<10;u++){
+		$('#address'+u.toString()).click(function(){
+			var v = $(this).attr('name').toString().replace('address','').toString().substring(0, 1);
+			$('#address'+v.toString()+'container').show();
+			$('#address'+v.toString()+'containerPostcode').show();
+			$('#address'+v.toString()+'containerNumber').show();
+		});
+	}
 	
-	$('#address3').click(function(){
-		$('#address3container').show();
-		$('#address3containerPostcode').show();
-		$('#address3containerNumber').show();
-	});
-	
-	$('#instantSearch').keydown(function(){
+	$('#instantSearch').on('input',function(e){
 
 		var val = $('#instantSearch').val();
 
@@ -487,30 +444,12 @@
 
 		console.log(val);
 
-		
-
-			var xhttp = new XMLHttpRequest();
-
-			xhttp.onreadystatechange = function() {
-
-			if (this.readyState == 4 && this.status == 200) {
-
-			  // document.getElementById("demo").innerHTML = this.responseText;
-
-			  $('#cutAjax').html(this.responseText);
-
+		$.post('/ajax/customersPageList.php',{'searchterm':val},function(data,status) {
+			if (status == "success") {
+				
+				$('#cutAjax').html(data);
 			}
-
-			};
-
-			xhttp.open("POST", "/ajax/customersPageList.php", true);
-
-			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-			xhttp.send("searchterm=" + val);
-
-		
-
+		});
 	});
 	
 	$('.transferPopup-container').click(function(e){

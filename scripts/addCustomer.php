@@ -5,57 +5,6 @@
 	
 	$tradingas = mysqli_real_escape_string($conn, $_POST['tradingas']);
 	
-	
-	
-	$address1_1 = mysqli_real_escape_string($conn, $_POST['address1_1']);
-	
-	$address1_2 = mysqli_real_escape_string($conn, $_POST['address1_2']);
-	
-	$address1_3 = mysqli_real_escape_string($conn, $_POST['address1_3']);
-	
-	$address1_4 = mysqli_real_escape_string($conn, $_POST['address1_4']);
-	
-	$postcode_1 = mysqli_real_escape_string($conn, $_POST['postcode_1']);
-	
-	
-	
-	
-	
-	
-	$address2_1 = mysqli_real_escape_string($conn, $_POST['address2_1']);
-	
-	
-	$address2_2 = mysqli_real_escape_string($conn, $_POST['address2_2']);
-	
-	
-	$address2_3 = mysqli_real_escape_string($conn, $_POST['address2_3']);
-	
-	
-	$address2_4 = mysqli_real_escape_string($conn, $_POST['address2_4']);
-	
-
-	$postcode_2 = mysqli_real_escape_string($conn, $_POST['postcode_2']);
-	
-	
-
-
-	$address3_1 = mysqli_real_escape_string($conn, $_POST['address3_1']);
-	
-	
-	$address3_2 = mysqli_real_escape_string($conn, $_POST['address3_2']);
-	
-	
-	$address3_3 = mysqli_real_escape_string($conn, $_POST['address3_3']);
-	
-	
-	$address3_4 = mysqli_real_escape_string($conn, $_POST['address3_4']);
-	
-
-	$postcode_3 = mysqli_real_escape_string($conn, $_POST['postcode_3']);
-	
-	
-	
-		
 	$nameofbuyer = mysqli_real_escape_string($conn, $_POST['nameofbuyer']);
 	
 		
@@ -104,13 +53,28 @@
 	
 				
 	$current_outstanding = mysqli_real_escape_string($conn, $_POST['current_outstanding']);
-	
-		
-	$address1_number = mysqli_real_escape_string($conn, $_POST['address1_number']);
-	$address2_number = mysqli_real_escape_string($conn, $_POST['address2_number']);
-	$address3_number = mysqli_real_escape_string($conn, $_POST['address3_number']);
+	$colNames = array();
+	$colValue = array();
+	for ($u=1;$u<10;$u++)
+	{
+		$colNames[] = '`address'.$u.'_1`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_1'])."'";
 
+		$colNames[] = '`address'.$u.'_2`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_2'])."'";
 
+		$colNames[] = '`address'.$u.'_3`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_3'])."'";
+
+		$colNames[] = '`address'.$u.'_4`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_4'])."'";
+
+		$colNames[] = '`postcode_'.$u.'`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['postcode_'.$u])."'";
+
+		$colNames[] = '`address'.$u.'_number`';
+		$colValue[] = "'".mysqli_real_escape_string($conn, $_POST['address'.$u.'_number'])."'";
+	}
 	$accounts_email = str_replace(array("\r", "\n"), '', mysqli_real_escape_string($conn, $_POST['accounts_email']));
 	$accounts_comments = mysqli_real_escape_string($conn, $_POST['accounts_comments']);
 	
@@ -119,9 +83,9 @@
 	$credit_grace = mysqli_real_escape_string($conn, $_POST['credit_grace']);
 	$due_warning = mysqli_real_escape_string($conn, $_POST['due_warning']);
 
-	$x = "INSERT INTO `customers` (`businessname`, `tradingas`, `address1_1`, `address1_2`, `address1_3`, `address1_4`, `postcode_1`, `address2_1`, `address2_2`, `address2_3`, `address2_4`, `postcode_2`, `address3_1`, `address3_2`, `address3_3`, `address3_4`, `postcode_3`, `nameofbuyer`, `contactnumber`, `customer_email`, `companyregno`, `accounts_address_1`, `accounts_address_2`, `accounts_address_3`, `accounts_address_4`, `accounts_contact`, `tel_number`, `internal_email`, `credit_terms`, `pricedefault`, `credit_rating`, `flaguplimit`, `current_outstanding`,`address1_number`,`address2_number`,`address3_number`,`accounts_email`,`accounts_comments`,`default_salesman_id`,`due_warning`,`credit_grace`) 
+	$x = "INSERT INTO `customers` (`businessname`, `tradingas`, `nameofbuyer`, `contactnumber`, `customer_email`, `companyregno`, `accounts_address_1`, `accounts_address_2`, `accounts_address_3`, `accounts_address_4`, `accounts_contact`, `tel_number`, `internal_email`, `credit_terms`, `pricedefault`, `credit_rating`, `flaguplimit`, `current_outstanding`,`accounts_email`,`accounts_comments`,`default_salesman_id`,`due_warning`,`credit_grace`, ".implode(",",$colNames).") 
 	VALUES
-	('$businessname','$tradingas','$address1_1','$address1_2','$address1_3','$address1_4','$postcode_1','$address2_1','$address2_2','$address2_3','$address2_4','$postcode_2','$address3_1','$address3_2','$address3_3','$address3_4','$postcode_3','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$address1_number','$address2_number','$address3_number','$accounts_email','$accounts_comments','$default_salesman_id','$due_warning','$credit_grace');";
+	('$businessname','$tradingas','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$accounts_email','$accounts_comments','$default_salesman_id','$due_warning','$credit_grace', ".implode(",",$colNames).");";
 	
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	

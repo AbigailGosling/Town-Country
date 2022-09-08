@@ -34,17 +34,7 @@
 	$addresspostcode = mysqli_real_escape_string($conn, $_POST['addresspostcode']);
 	$deliverynumber = mysqli_real_escape_string($conn, $_POST['deliverynumber']);
 		
-	switch ($addressid) {
-		case 1:
-			$addressQuery = "address1_1='$addressline1', address1_2='$addressline2', address1_3='$addressline3', address1_4='$addressline4', postcode_1='$addresspostcode', address1_number='$deliverynumber'";
-			break;
-		case 2:
-			$addressQuery = "address2_1='$addressline1', address2_2='$addressline2', address2_3='$addressline3', address2_4='$addressline4', postcode_2='$addresspostcode', address2_number='$deliverynumber'";
-			break;
-		case 3:
-			$addressQuery = "address3_1='$addressline1', address3_2='$addressline2', address3_3='$addressline3', address3_4='$addressline4', postcode_3='$addresspostcode', address3_number='$deliverynumber'";
-			break;
-	}
+	$addressQuery = "address{$addressid}_1='$addressline1', address{$addressid}_2='$addressline2', address{$addressid}_3='$addressline3', address{$addressid}_4='$addressline4', postcode_{$addressid}='$addresspostcode', address{$addressid}_number='$deliverynumber'";
 
 	$addressUpdateQuery = mysqli_query($conn, "UPDATE `customers` SET $addressQuery WHERE id='$customer_id' LIMIT 1 ");
 

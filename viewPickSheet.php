@@ -79,27 +79,10 @@
 						
 						if($pickerSheet['addressid'] == ''){ $pickerSheet['addressid'] = 1; }
 
-                        if($pickerSheet['addressid'] == 1){
-                            echo $customer['address1_1'] . '<br/>';
-                            echo $customer['address1_2'] . '<br/>';
-                            echo $customer['address1_3'] . '<br/>';
-                            echo $customer['postcode_1'] . '<br/>';
-                        }
-                        
-                        if($pickerSheet['addressid'] == 2){
-                            echo $customer['address2_1'] . '<br/>';
-                            echo $customer['address2_2'] . '<br/>';
-                            echo $customer['address2_3'] . '<br/>';
-                            echo $customer['postcode_2'] . '<br/>';
-                        }
-                        
-                        if($pickerSheet['addressid'] == 3){
-                            echo $customer['address3_1'] . '<br/>';
-                            echo $customer['address3_2'] . '<br/>';
-                            echo $customer['address3_3'] . '<br/>';
-                            echo $customer['postcode_3'] . '<br/>';
-                        }
-						
+						echo $customer['address'.$pickerSheet['addressid'].'_1'] . '<br/>';
+						echo $customer['address'.$pickerSheet['addressid'].'_2'] . '<br/>';
+						echo $customer['address'.$pickerSheet['addressid'].'_3'] . '<br/>';
+						echo $customer['postcode_'.$pickerSheet['addressid'].''] . '<br/>';
 					?>
 					
 				</p>
