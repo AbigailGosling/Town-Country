@@ -206,7 +206,7 @@ $serverRoot = $_SERVER["SERVER_NAME"];
             <thead>
                 <tr class="heading">
                     <th align="left" >Invoice ID</th>
-                    <th align="left" data-orderable="false" >Assembly Date</th>
+                    <th align="left" data-orderable="false" >Delivery Date</th>
                     <th align="left" data-orderable="false" >Due Date</th>
                     <th align="right" >Value</th>
                     <th align="right" >Paid</th>

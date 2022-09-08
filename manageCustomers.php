@@ -436,13 +436,11 @@
 		});
 	}
 	
-	$('#instantSearch').on('input',function(e){
-
+	$('#instantSearch').on('keypress',function(e){
+		if(e.which != 13) {
+			return;
+		}
 		var val = $('#instantSearch').val();
-
-		// $('#test2d').text(val);
-
-		console.log(val);
 
 		$.post('/ajax/customersPageList.php',{'searchterm':val},function(data,status) {
 			if (status == "success") {

@@ -32,9 +32,14 @@ function get_customer_soa_results($customer_id,$adv)
         $ret[] = $picksheet;
 
     }
-
+    if ($adv)usort($ret,'date_compare');
     return $ret;
 }
+function date_compare($element1, $element2) {
+    $datetime1 = $element1['datetime'];
+    $datetime2 = $element2['datetime'];
+    return $datetime2 - $datetime1;
+} 
 function check_customer_outstanding_cache($customer_id)
 {
     global $conn;
