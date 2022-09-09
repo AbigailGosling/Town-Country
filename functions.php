@@ -1863,7 +1863,6 @@
 			$name,
 			str_replace(" ","",$name),
 			str_replace(" & "," and ",$name),
-			str_replace(" and "," & ",$name),
 			str_replace("&"," & ",$name)
 		);
 		$allSearchControl = "";
@@ -1873,22 +1872,20 @@
 			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl",
 			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl",
 		);
-		$lastBestCount = PHP_INT_MAX / 2;
 		foreach ($tests as $test)
 		{
 			foreach ($queries as $query)
 			{
-				$x = sprintf($query,$test);	
+				$x = sprintf($query,$test);			
 				$y = mysqli_query($conn, $x);
 				$count = mysqli_num_rows($y);
-				if ($count > 0 && $count < $lastBestCount)
+				if ($count > 0 && $count < 20)
 				{
-					$lastBest = $y;
+					break 2;
 				}
 			}
 		}
-
-		return $lastBest;
+		return $y;
 	}
 	function loggedDataChange($type,$entity_id,$body){
 		global $conn;
