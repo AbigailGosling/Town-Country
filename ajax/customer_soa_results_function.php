@@ -95,8 +95,8 @@ function check_customer_outstanding_cache($customer_id)
         $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
     
-    $cacheRow['debug'] = "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ".$customer_id." AND (pickerSheets.id >= ".$oldest." OR invoice_payments.id > ".$lastpayment.") ORDER BY `pickerSheets`.`id` ASC";
-    $checkQ = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = $customer_id AND (pickerSheets.id >= $oldest OR invoice_payments.id > $lastpayment) ORDER BY `pickerSheets`.`id` ASC");
+    $cacheRow['debug'] = "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets, pickerSheets.estimated_delivery_date LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ".$customer_id." AND (pickerSheets.id >= ".$oldest." OR invoice_payments.id > ".$lastpayment.") ORDER BY `pickerSheets`.`id` ASC";
+    $checkQ = mysqli_query($conn, "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = $customer_id AND (pickerSheets.id >= $oldest OR invoice_payments.id > $lastpayment) ORDER BY `pickerSheets`.`id` ASC");
     $cacheRow['pending'] = null;
     $lastRow = null;
     while($row = mysqli_fetch_assoc($checkQ))
@@ -112,8 +112,9 @@ function check_customer_outstanding_cache($customer_id)
     if ($cacheRow['pending'] != null)
     {
         $row = $cacheRow['pending'];
-        
-        if ($row['outstanding'] > 0) $cacheRow['oldest_unpaid_date'] = strtotime($row['date']);
+        $myDateTime = DateTime::createFromFormat('d/m/Y', $row['estimated_delivery_date']);
+        $newDateString = $myDateTime->format('Y-m-d');
+        if ($row['outstanding'] > 0) $cacheRow['oldest_unpaid_date'] = strtotime($newDateString);
         else $cacheRow['oldest_unpaid_date'] = strtotime("now");
         
         if (array_key_exists('oldest_unpaid_id',$cacheRow) == false || $row['id'] != $cacheRow['oldest_unpaid_id']) 
