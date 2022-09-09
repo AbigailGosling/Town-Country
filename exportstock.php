@@ -85,7 +85,7 @@
         array_push($single_row, $quantityTotal);
 
 
-        array_push($single_row, getTemp($product2_temperatures[count($product2_temperatures)-1]));
+        array_push($single_row, getTemp($productsRow['cooling_id']));
 
 
         array_push($single_row, $species_name);
