@@ -33,10 +33,6 @@
                             var date_paid_enabled = <?php if ($intake['date_paid'] != null && $intake['date_paid'] != ""){ echo "false";}else{ echo "true";}?>;
                             $(date_paid_name).datepicker({onSelect:date_paid_changed,dateFormat: 'dd/mm/yy'});
                             $(date_paid_name).val("<?php if ($intake['date_paid'] != null && $intake['date_paid'] != "")echo date('d/m/Y', strtotime($intake['date_paid'])); ?>");
-                            if (date_paid_enabled == false)
-                            {
-                                $(date_paid_name).datepicker('disable');
-                            }
                         </script>
                     </td>
                 </tr>
