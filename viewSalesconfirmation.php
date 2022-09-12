@@ -269,8 +269,6 @@
 	var renderCompleted = false;
 	function setCustomerDetails(customer_id, addressid, empty='false'){
 		customerID = customer_id;
-		console.log(' setCustomerDetails()');
-		
 		$.get( "ajax/getCustomerAddress.php?src=salesconfirmation&address_id=" + addressid + "&id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
 			$('.rating').fadeIn();
@@ -290,14 +288,12 @@
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
 		
-		console.log('trying to delete cookie ' + COOKIE_NAME);
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
 	function changeAddress(customer_id, address_id){
 
 		$('#addressid').val(address_id);
-
 
 		$.get("/ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
