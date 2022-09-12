@@ -54,6 +54,6 @@ $res = mysqli_query($conn,$sql);
 while ($row = mysqli_fetch_assoc($res))
 {
     $date = DateTime::createFromFormat("Y-m-d H:i:s" , $row['datetime']);
-    echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y')."</td></tr>";
+    echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
 }
 ?>

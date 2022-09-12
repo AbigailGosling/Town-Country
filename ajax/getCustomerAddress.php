@@ -153,7 +153,7 @@
 					$addressOneEmpty = false;
 				}
 		?>
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', 1)">
+		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?= $u ?>)">
 			<span><?php
 				if($addressOneEmpty){
 					echo 'Empty';
