@@ -452,7 +452,7 @@ function isNumber(n) {
     $('#generatepdf').click(function() {
         
         $('.loadingContainer').show();
-        $.post("ajax/generatePDFstatement.php", {id: customer_id},logResponse);
+        $.post("ajax/generatePDFstatement.php", {ids: [customer_id]},logResponse);
         
     });
 
