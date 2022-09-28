@@ -33,7 +33,7 @@ include_once('ajax/customer_soa_results_function.php');
             $bor= '#ff0000';
 			
 		}
-        if ($creditCheck['saleAllowed'] == false || $creditCheck['showWarning'] == true)
+        if ($creditCheck['hideOnStmt'] == false && ($creditCheck['saleAllowed'] == false || $creditCheck['showWarning'] == true))
         {
     ?>
         <div class="row custom-warning-box" id="warning" style="background:<?php echo $bg;?>; border: 2px solid <?php echo $bor;?>">

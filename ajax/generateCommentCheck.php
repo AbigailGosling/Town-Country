@@ -38,7 +38,8 @@ else
         $queryArray[] = "`comment_logging`.`datetime` <= '".$date_end."'";
     }
 }
-$sql = "SELECT `comment_logging`.`entity_id`, 
+$sql = "SELECT `comment_logging`.`id`,
+        `comment_logging`.`entity_id`, 
         `comment_logging`.`type`, 
         `comment_logging`.`user_id`, 
         `comment_logging`.`body`,

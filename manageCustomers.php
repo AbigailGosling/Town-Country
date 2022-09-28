@@ -291,10 +291,17 @@
 		<div class="fullbox controls">
 			<table width="100%">
 				<tr>
-					<td class="label"><label>Commercial decision</label></td>
+					<td class="label"><label>Credit Checking</label></td>
 					<td>
-						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"><?php if($data['override'] == 1){ ?>Apply Credit Checking<?php } else { ?>Override Credit Check<?php } ?></a>
+						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override"><?php if($data['credit_enabled'] == 0){ ?>Enable Credit Check<?php } else { ?>Disable Credit Check<?php } ?></a>
 						
+					</td>
+				</tr>
+				<tr height="140"><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Override Credit Check</label></td>
+					<td>
+						<input type="button" style="width:170px; height:40px; background:#228fbf; border-radius: 4px; border: 0px; font-size: 16px;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" value="<?php if($data['override'] == 0){ ?>Override Credit Check<?php } else { ?>Remove Override<?php } ?>"></input>						
 					</td>
 				</tr>
 				<tr height="140"><td colspan="2"></td></tr> 
@@ -472,22 +479,22 @@
 			}
 		}
 	}
-	var allowOverride = true;
 	function overrideSales(ele, id){
-		if (allowOverride == true)
-		{
-			allowOverride = false;	
-			var q = $('#overrider');
-			if (q.text() != "Apply Credit Checking") q.text("Apply Credit Checking");
-			else q.text("Override Credit Check");
-			$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
-				id: id,
-			},
-			function(data, status){
-				allowOverride = true;
-			});
-		}
+		var q = $('#overrider');
+		if (q.text() != "Override Credit Check") q.text("Override Credit Check");
+		else q.text("Remove Override");
+		$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
+			id: id,
+		});
  	}
+	 function creditChecking(ele, id){
+		var q = $('#credit_enabled');
+		if (q.text() != "Enable Credit Checking") q.text("Enable Credit Checking");
+		else q.text("Disable Credit Check");
+		$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
+			id: id,
+		});
+	}
 	
 </script>
 

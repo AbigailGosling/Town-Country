@@ -209,7 +209,7 @@
                     <td></td>
                     <td>
                     <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
-                        <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
+                        <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                     <?php } ?>                    
                     </td>
                 </tr>

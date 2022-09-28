@@ -56,7 +56,7 @@
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>
 	<td><?php echo getNationality($nationality_id); ?></td>
 	<td><?php echo getBrand($brand_id); ?></td>
-	 
+	<td id="ubDate"><?php echo $_GET['date']; ?></td>
 	<td><?php echo $q; ?></td>
 	<td>
 		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">

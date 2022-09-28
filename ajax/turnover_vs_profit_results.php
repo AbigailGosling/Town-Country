@@ -13,6 +13,7 @@
         $COOLING_ID = mysqli_real_escape_string($conn, $_POST['cooling_id']);
         $BRAND_ID = mysqli_real_escape_string($conn, $_POST['brand_id']);
         $NATIONALITY_ID = mysqli_real_escape_string($conn, $_POST['nationality_id']);
+        $SUPPLIER_ID = mysqli_real_escape_string($conn, $_POST['supplier_id']);
 
         if($_POST['date_start'] != ''){
             $date_start = mysqli_real_escape_string($conn, $_POST['date_start']);
@@ -58,6 +59,12 @@
 
         if($NATIONALITY_ID != 0){
             $nationQueryPiece = " && product.nationality_id ='$NATIONALITY_ID'";
+        }else{
+            $nationQueryPiece = "";
+        }
+
+        if($SUPPLIER_ID != 0){
+            $supplierQueryPiece = " && intake.supplier_id ='$SUPPLIER_ID'";
         }else{
             $nationQueryPiece = "";
         }
@@ -122,18 +129,20 @@
                 $cut_ids = implode(',', $cut_ids);
             }
                         
-            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece GROUP BY pick_id, pickerItems.product_id";
+                        JOIN `intake` ON pallet.intake_id = intake.id
+                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece $supplierQueryPiece GROUP BY pick_id, pickerItems.product_id";
         }else{
 
-            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id FROM `pickerSheets`
+            $searchQueryString = "SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
-                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
+                        JOIN `intake` ON pallet.intake_id = intake.id
+                        WHERE pickerSheets.completed=1 $invoiceQueryPiece $intakeQueryPiece $coolingQueryPiece $palletQueryPiece $userQueryPiece $dateQueryPiece $customerQueryPiece $nationQueryPiece $brandQueryPiece $supplierQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id";
                         
         }
 
@@ -153,6 +162,7 @@
     <th align="left">Category</th>
     <th align="left">Product</th>
     <th align="left">Brand</th>
+    <th align="left">Supplier</th>
     <th align="left">Qty</th>
     <th align="left">Unit</th>
     <th align="left">kg</th>
@@ -231,6 +241,7 @@
         $cell_cutgroup = getCutGroupNameFromCut($invoice['cut_id']);
         $cell_product = getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']);
         $cell_brand = getBrand($invoice['brand_id']);
+        $cell_supplier = getSupplier($invoice['supplier_id'])['name'];
 
         ?>
         <tr class="result">
@@ -245,6 +256,7 @@
             <td><?php echo $cell_cutgroup; ?></td>
             <td><?php echo $cell_product; ?></td>
             <td><?php echo $cell_brand; ?></td>
+            <td><?php echo $cell_supplier; ?></td>
             <td>
                 <input type="hidden" class="quantityValue" value="<?php echo $quantity; ?>">
                 <?php echo $quantity; ?>
@@ -385,6 +397,7 @@
     }
 ?>
   <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
+    <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>

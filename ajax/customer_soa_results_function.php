@@ -167,7 +167,7 @@ function precredit_check($customer_id)
     $custR = mysqli_fetch_assoc($customerQ);
     $returningObj['showWarning'] = false;
     $returningObj['saleAllowed'] = true;
-    if ($custR['override'] == 1)
+    if ($custR['override'] == 1 || $custR['credit_enabled'] == 1)
     {
         return $returningObj;
     }
@@ -186,13 +186,15 @@ function precredit_check($customer_id)
         $returningObj['oldest'] = $oldest = $details['oldest_unpaid_date'];
         $outstanding = $details['outstanding'];
         $returningObj['beyondDate'] = $beyondDate;
+        $returningObj['gracePeriod'] = $gracePeriod;
+        $returningObj['closeToOverdue'] = $closeToOverdue;
+        $returningObj['hideOnStmt'] = false;
         if ($oldest != "" && $oldest < $gracePeriod)
         {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
-        }
-     
+        } 
         else if ($oldest != "" && $oldest < $beyondDate) 
         {
             $returningObj['showHigherWarning'] = true;
@@ -202,6 +204,7 @@ function precredit_check($customer_id)
         }
         else if ($oldest != "" && $oldest < $closeToOverdue)
         {
+            $returningObj['hideOnStmt'] = true;
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
