@@ -3,14 +3,14 @@ include_once('../functions.php');
 $sql = "SELECT `pickerSheets`.*,`customers`.`businessname` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
 if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
-    $start = $_POST['start'];
-    $end =  $_POST['end'];
+    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
+    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
     $sql .= "(`pickerSheets`.`estimated_delivery_date` BETWEEN '".$start."' AND '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
     $start = $_POST['startInv'];
-    $end =  $_POST['end'];
+    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
     $sql .= "(`pickerSheets`.`id` >= ".$start." AND `pickerSheets`.`estimated_delivery_date` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
@@ -21,7 +21,7 @@ else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['en
 }
 else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
-    $start = $_POST['start'];
+    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
     $end =  $_POST['endInv'];
     $sql .= "(`pickerSheets`.`estimated_delivery_date` > ".$start." AND `pickerSheets`.`id` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
