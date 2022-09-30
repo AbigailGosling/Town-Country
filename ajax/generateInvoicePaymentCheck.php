@@ -3,14 +3,14 @@ include_once('../functions.php');
 $sql = "SELECT `pickerSheets`.*,`customers`.`businessname` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
 if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
-    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
-    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
+    $start = DateTime::createFromFormat('Y-m-d',$_POST['start'])->format("d/m/Y");
+    $end  = DateTime::createFromFormat('Y-m-d',$_POST['end'])->format("d/m/Y");
     $sql .= "(`pickerSheets`.`estimated_delivery_date` BETWEEN '".$start."' AND '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
     $start = $_POST['startInv'];
-    $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
+    $end  = DateTime::createFromFormat('Y-m-d',$_POST['end'])->format("d/m/Y");
     $sql .= "(`pickerSheets`.`id` >= ".$start." AND `pickerSheets`.`estimated_delivery_date` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
@@ -21,7 +21,7 @@ else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['en
 }
 else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
-    $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
+    $start = DateTime::createFromFormat('Y-m-d',$_POST['start'])->format("d/m/Y");
     $end =  $_POST['endInv'];
     $sql .= "(`pickerSheets`.`estimated_delivery_date` > ".$start." AND `pickerSheets`.`id` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
