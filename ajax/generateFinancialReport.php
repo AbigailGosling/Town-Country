@@ -5,25 +5,25 @@ if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['end']) && $_P
 {
     $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
     $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
-    $sql = "SELECT * FROM pickerSheets WHERE (`estimated_delivery_date` BETWEEN '".$start."' AND '".$end."') ORDER BY id ASC";
+    $sql = "SELECT * FROM pickerSheets WHERE (STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN '".$start."' AND '".$end."') ORDER BY id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
     $start = $_POST['startInv'];
     $end  = DateTime::createFromFormat("d/m/Y",$_POST['end'])->format('Y-m-d');
-    $sql = "SELECT * FROM pickerSheets WHERE id >= ".$start." AND `estimated_delivery_date` < '".$end."' ORDER BY id ASC";
+    $sql = "SELECT * FROM pickerSheets WHERE id >= ".$start." AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')< '".$end."' ORDER BY id ASC";
 }
 else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
     $start = DateTime::createFromFormat("d/m/Y",$_POST['start'])->format('Y-m-d');
     $end  = $_POST['endInv'];
-    $sql = "SELECT * FROM pickerSheets WHERE `estimated_delivery_date` >= ".$start." AND `id` < '".$end."' ORDER BY id ASC";
+    $sql = "SELECT * FROM pickerSheets WHERE STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') >= ".$start." AND `id` < '".$end."' ORDER BY id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
     $start = $_POST['startInv'];
     $end  = $_POST['endInv'];
-    $sql = "SELECT * FROM pickerSheets WHERE id >= ".$start." AND `estimated_delivery_date` < '".$end."' ORDER BY id ASC";
+    $sql = "SELECT * FROM pickerSheets WHERE id >= ".$start." AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') < '".$end."' ORDER BY id ASC";
 }
 
 $totPrevOut = 0;
