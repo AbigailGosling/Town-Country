@@ -1,9 +1,14 @@
 <?php
 require_once('functions.php');
-require_once('ajax/customer_soa_results_function.php');
-$erroronous = mysqli_query($conn,"SELECT `id`,`override` FROM `customers`");
-while ($customer = mysqli_fetch_assoc($erroronous))
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+$erroronous = mysqli_query($conn,"SELECT * FROM `comment_logging` WHERE `type` = 'product_weightnote'");
+while ($log = mysqli_fetch_assoc($erroronous))
 {   
-    mysqli_query($conn,"UPDATE `customers` SET `override` = 0, `credit_enabled` = ".$customer['override']." WHERE id = ".$customer['id']);
+    $t = mysqli_query($conn,"SELECT `pallet_id` FROM `product` WHERE `id` = ".$log['entity_id']);
+    $pallet = mysqli_fetch_assoc($t);
+    $pallet_id = $pallet['pallet_id'];
+    mysqli_query($conn,"UPDATE `comment_logging` SET `type` = 'pallet',`entity_id` = '$pallet_id' WHERE `id` = ".$log['id']);
 }
 ?>

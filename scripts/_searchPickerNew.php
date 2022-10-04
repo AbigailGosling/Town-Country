@@ -245,7 +245,7 @@
                     var pallet = $(this).parent().find('[name="pallet_id"]').val();
                     console.log(location);
                     console.log(pallet);
-                    $.post("/ajax/logComment.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
+                    $.post("/ajax/loggedDataChange.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
                         console.log(data);
                     });
                 }
