@@ -86,11 +86,11 @@
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
-			<tr><td align="center"><h1 class="int"><?php if($_GET['id'] != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> SUPPLIER</h1></td></tr>
+			<tr><td colspan="3"><h1 class="int"><?php if($_GET['id'] != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> SUPPLIER</h1></td></tr>
 
 			<tr>
 
-				<td>
+				<td style="width:49%">
 
 					<label>Name</label>
 
@@ -99,16 +99,18 @@
 					<input type="text" id="supname" name="name" value="<?php echo $data['name']; ?>" required>
 
 				</td>
-
+				<td style="width:20px">
+				</td>
+				<td style="width:49%"></td>
 			</tr>
 
 			<tr>
 
 				<td>
 
-					<label>Postcode</label>
+					<label>Address</label>
 
-					<input type="text" name="postcode" value="<?php echo $data['postcode']; ?>">
+					<textarea style="height:200px;width:98%;" name="postcode"><?php echo $data['postcode']; ?></textarea>
 
 				</td>
 
@@ -118,9 +120,43 @@
 
 				<td>
 
+					<label>Contact Name</label>
+
+					<input type="text" name="contact_name" value="<?php echo $data['contact_name']; ?>">
+
+				</td>
+				<td style="width:20px">
+				</td>
+				<td>
 					<label>Contact Number</label>
 
-					<input type="text" name="contact" value="<?php echo $data['contact_number']; ?>">
+					<input type="text" name="contact_number" value="<?php echo $data['contact_number']; ?>">
+
+				</td>
+
+			</tr>
+			
+			<tr>
+
+				<td>
+
+					<label>Town & Country Contact</label>
+					<select name="user_id" style="height:29px;">
+						<option disabled selected>Select a salesman</option>
+						<?php
+							$usersResult = mysqli_query($conn, "SELECT id,`name` FROM users");
+							while($user = mysqli_fetch_array($usersResult)){
+						?>
+						<option value="<?php echo $user['id']; ?>" <?php if($_GET['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
+						<?php } ?>
+					</select>
+				</td>
+				<td style="width:20px">
+				</td>
+				<td>
+					<label>Number</label>
+
+					<input type="text" name="internal_number" value="<?php echo $data['internal_number']; ?>">
 
 				</td>
 
@@ -128,8 +164,8 @@
 
 			<tr>
 
-				<td>
-
+				<td colspan="3">
+				<input type="submit" disabled style="display: none" aria-hidden="true" />
 					<?php
 
 					if($_GET['id'] != ''){

@@ -5,13 +5,13 @@ if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['end']) && $_P
 {
     $start = $_POST['start'];
     $end =  $_POST['end'];
-    $sql .= "(`pickerSheets`.`date_completed` BETWEEN '".$start."' AND '".$end."') ORDER BY `pickerSheets`.id ASC";
+    $sql .= "(STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN '".$start."' AND '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end']!="") 
 {
     $start = $_POST['startInv'];
     $end =  $_POST['end'];
-    $sql .= "(`pickerSheets`.`id` >= ".$start." AND `pickerSheets`.`date_completed` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
+    $sql .= "(`pickerSheets`.`id` >= ".$start." AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 else if (isset($_POST['startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv']!="") 
 {
@@ -23,7 +23,7 @@ else if (isset($_POST['start']) && $_POST['start']!="" && isset($_POST['endInv']
 {
     $start = $_POST['start'];
     $end =  $_POST['endInv'];
-    $sql .= "(`pickerSheets`.`date_completed` > ".$start." AND `pickerSheets`.`id` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
+    $sql .= "(STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') > ".$start." AND `pickerSheets`.`id` <= '".$end."') ORDER BY `pickerSheets`.id ASC";
 }
 $res = mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
 $list = mysqli_fetch_all($res, MYSQLI_ASSOC);
@@ -33,7 +33,7 @@ foreach ($list as $item)
 {
     $id = $item['id'];
     $customername = $item['businessname'];
-    $assembledate = date('d/m/Y H:i:s', strtotime($item['date_completed']));
+    $assembledate = $item['estimated_delivery_date'];
     $value = number_format((float)invoiceTotal($item['id']), 2, '.', '');
     $href = '';
     $status = '';
