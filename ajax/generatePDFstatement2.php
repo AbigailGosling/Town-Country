@@ -19,13 +19,21 @@ function renderPDF($customerID){
 	
 	$customerQueryResult = mysqli_query($conn, "SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
 	$customer = mysqli_fetch_assoc($customerQueryResult);
+	$customer_emails = array();
 	if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
 	{
-		$customer_emails = explode(";",$customer['accounts_email']);
+		$dirty_emails = explode(";",$customer['accounts_email']);
 	}
 	else
 	{
-		$customer_emails = explode(";",$customer['internal_email']);
+		$dirty_emails = explode(";",$customer['internal_email']);
+	}
+	foreach($dirty_emails as $dirty_email)
+	{
+		if (filter_var($dirty_email, FILTER_VALIDATE_EMAIL) !== false)
+		{
+			$customer_emails[] = $dirty_email;
+		}
 	}
 	$subject = "Statement of Account from Town and Country Meats";
 	$htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
