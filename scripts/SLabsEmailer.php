@@ -39,31 +39,42 @@ class SLabsEmailer {
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
         foreach($toEmails as $email)
         {	
-        $trimmed = trim($email);
-        //Set up the socketlabs client
-        $message = new BasicMessage();
-        $message->subject = $subject;
-        $message->htmlBody = $htmlBody;
-        $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-            $message->addToAddress(new BulkRecipient($trimmed));
-    
-        $fullExplainedPath = "NULL";
-        if ($pathToFile != '' && $fileName !='')
-        {
-            $fullExplainedPath = "'".join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName))."'";
-            $attachment = \Socketlabs\Message\Attachment::createFromPath(
-                join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)), 
-                $fileName,
-                "APPLICATION/PDF"
-            );
-            $message->attachments[] = $attachment;
-        }
-        //Generate a Unique Identifier for this Email
-        $mid = self::generate_uuid();
-        $message->messageId = $mid;
-        $response = $client->send($message);
+            
+            //Set up the socketlabs client
+            $message = new BasicMessage();
+            $message->subject = $subject;
+            $message->htmlBody = $htmlBody;
+            $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
+            
+        
+            $fullExplainedPath = "NULL";
+            if ($pathToFile != '' && $fileName !='')
+            {
+                $fullExplainedPath = "'".join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName))."'";
+                $attachment = \Socketlabs\Message\Attachment::createFromPath(
+                    join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)), 
+                    $fileName,
+                    "APPLICATION/PDF"
+                );
+                $message->attachments[] = $attachment;
+            }
+            //Generate a Unique Identifier for this Email
+            $mid = self::generate_uuid();
+            $message->messageId = $mid;
+            $trimmed = trim($email);
+
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
             mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
+
+            try
+            {
+                $message->addToAddress(new BulkRecipient($trimmed));
+                $response = $client->send($message);
+            }
+            catch (Exception $e) 
+            {
+                // handle error, probably email address lol
+            }
             
         }
 
