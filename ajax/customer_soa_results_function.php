@@ -190,34 +190,35 @@ function precredit_check($customer_id)
         $returningObj['closeToOverdue'] = $closeToOverdue;
         $returningObj['hideOnStmt'] = false;
         if ($oldest != "" && $oldest < $gracePeriod)
-        {
+        {//over grace
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
         } 
-        else if ($oldest != "" && $oldest < $beyondDate) 
-        {
+        else if ($outstanding > $custR['credit_rating'])
+        {//over finance
+            $returningObj['saleAllowed'] = false;
+            $returningObj['message'] = "Customer is over credit limit, contact administration";
+            $returningObj['messageLong'] = "Customer is over credit limit, contact administration";
+            $returningObj['overcredit'] = true;
+        }
+        else if ($oldest != "" && $oldest < $beyondDate)
+        {//over due
             $returningObj['showHigherWarning'] = true;
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Customer has invoice(s) overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
         }
         else if ($oldest != "" && $oldest < $closeToOverdue)
-        {
+        {//due soon
             $returningObj['hideOnStmt'] = true;
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
         }
-        else if ($outstanding > $custR['credit_rating']) 
-        {
-            $returningObj['saleAllowed'] = false;
-            $returningObj['message'] = "Customer is over credit limit, contact administration";
-            $returningObj['messageLong'] = "Customer is over credit limit, contact administration";
-            $returningObj['overcredit'] = true;
-        }
+       
         else if ($outstanding > $custR['flaguplimit']) 
-        {
+        {//close to finance
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
