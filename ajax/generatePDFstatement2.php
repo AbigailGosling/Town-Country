@@ -30,9 +30,9 @@ function renderPDF($customerID){
 	}
 	foreach($dirty_emails as $dirty_email)
 	{
-		if (filter_var($dirty_email, FILTER_VALIDATE_EMAIL) !== false)
+		if (filter_var(trim($dirty_email), FILTER_VALIDATE_EMAIL) !== false)
 		{
-			$customer_emails[] = $dirty_email;
+			$customer_emails[] = trim($dirty_email);
 		}
 	}
 	$subject = "Statement of Account from Town and Country Meats";
