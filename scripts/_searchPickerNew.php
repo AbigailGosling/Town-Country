@@ -209,7 +209,7 @@
                     <td></td>
                     <td>
                     <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
-                        <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
+                        <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                     <?php } ?>                    
                     </td>
                 </tr>
@@ -245,7 +245,7 @@
                     var pallet = $(this).parent().find('[name="pallet_id"]').val();
                     console.log(location);
                     console.log(pallet);
-                    $.post("/ajax/logComment.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
+                    $.post("/ajax/loggedDataChange.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
                         console.log(data);
                     });
                 }

@@ -75,6 +75,8 @@
 	 
 		$index++;
 	}
+	$x = "UPDATE `customers` SET override = 0 WHERE id = $customer_id";
+	$y = mysqli_query($conn, $x);
 	require_once('../ajax/generatePDFsaleconfirm.php');
 	
 ?>

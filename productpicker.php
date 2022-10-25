@@ -61,17 +61,18 @@
 		<div class="col"></div>
 	</div>
 	<?php } ?>
-	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
+	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>	  
 </div>
 
 <div class="rightPanel">
-	<table width="100%" class="basketTable">
+	<table width="100%" class="basketTable" id="basketTable">
 		<tr align="left" style="background:#3FADDD;height:30px;color:#FFF;">
 			<th>Intake ID</th>
 			<th>Plt ID</th>
 			<th>Product</th>
 			<th>Nationality</th>
 			<th>Brand</th>
+			<th>Use By</th>
 			<th>Volume <span style="display:none;">(num of cases)</span</th>
 			<th>Weight</th>
 			<th>Sell Price</th>
@@ -457,6 +458,7 @@ function cancelSale()
 	var showWarning = false;
 	var showHigherWarning = false;
 	var warningMessage = "";
+	var infoMessage = "";
 	var showPriceCheck = false;
     setTimeout(function(){
         $('.select2-container').css('display', 'none');
@@ -576,9 +578,12 @@ function cancelSale()
 			}
 			else
 			{
+				$('#warning').css('background', "#90EE90");
+				$('#warning').css('border', "2px solid #00FF00");
+				$('#warning').css('display', "inline-block");
+				$('#warning').html(warningMessage);
 				$('#sendfake').attr('disabled', false);
 				$('#searcher').attr('disabled', false);
-				$('#warning').css('display', "none");
 			}
 		});
 	}
@@ -617,14 +622,50 @@ function cancelSale()
 		});
 	  
 		$( "#estimated_delivery_date" ).datepicker({
+			onSelect: ddChanged,
 			dateFormat: 'dd/mm/yy'
 		});
 		
 		
 	});
-	
+	function ddChanged(dateText, inst){
+		checkUBDates(dateText);
+	}
+	function checkUBDates(dateText = null){
+		if (dateText == null) dateText = $('#estimated_delivery_date').val();
+		var date = parseDMY(dateText);
+		if (transactionAllowed){
+			$('#sendfake').prop('disabled',false);
+			var ubs = $('#basketTable #ubDate');
+			var pastBB = false; 
+			for(var x = 0; x < ubs.length; x++){
+				var ub = ubs[x];
+				if (ub.val()=="")continue;
+				var ubd = parseDMY(ub.val());
+				if (ubd >= date)
+				{
+					pastBB = true;
+					break;
+				}
+			}
+			if (pastBB)
+			{
+				$('#sendfake').prop('disabled',false);
+				$('#warning').css('background', "#ff6666");
+				$('#warning').css('border', "2px solid #ff0000");
+				$('#warning').css('display', "inline-block");
+				$('#warning').html("An item in this sale will expire before delivery");
+			}
+		}
+	}
+	function parseDMY(value) {
+		var date = value.split("/");
+		var d = parseInt(date[0], 10),
+			m = parseInt(date[1], 10),
+			y = parseInt(date[2], 10);
+		return new Date(y, m - 1, d);
+	}
 	function setCustomer(customer_id, text){
-		console.log("customer set to '"+customer_id+"'");
 		$('#customer_search_results').fadeOut();
 		$('#customer_id').val(customer_id);
 		$('#customer').val(text);
@@ -676,7 +717,6 @@ function cancelSale()
 			
 			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality, function(data, status){
 				$('#loadResults').html(data);
-				console.log(data);
 				
 			});
 

@@ -1,12 +1,11 @@
 <?php
 require_once('functions.php');
-require_once('ajax/customer_soa_results_function.php');
-$erroronous = mysqli_query($conn,"SELECT `id`,`credit_terms` FROM `customers`");
-while ($customer = mysqli_fetch_assoc($erroronous))
+$erroronous = mysqli_query($conn,"SELECT * FROM `comment_logging` WHERE `type` = 'product_weightnote'");
+while ($log = mysqli_fetch_assoc($erroronous))
 {   
-    $credit_grace=$customer['credit_terms'];
-    $credit_terms=$credit_grace-7;
-    $due_warning =$credit_terms-7;
-    mysqli_query($conn,"UPDATE `customers` SET due_warning = $due_warning, credit_terms=$credit_terms, credit_grace=$credit_grace WHERE id = ".$customer['id']);
+    $t = mysqli_query($conn,"SELECT `pallet_id` FROM `product` WHERE `id` = ".$log['entity_id']);
+    $pallet = mysqli_fetch_assoc($t);
+    $pallet_id = $pallet['pallet_id'];
+    mysqli_query($conn,"UPDATE `comment_logging` SET `type` = 'pallet',`entity_id` = '$pallet_id' WHERE `id` = ".$log['id']);
 }
 ?>
