@@ -61,11 +61,11 @@
 		<div class="col"></div>
 	</div>
 	<?php } ?>
-	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
+	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>	  
 </div>
 
 <div class="rightPanel">
-	<table width="100%" class="basketTable">
+	<table width="100%" class="basketTable" id="basketTable">
 		<tr align="left" style="background:#3FADDD;height:30px;color:#FFF;">
 			<th>Intake ID</th>
 			<th>Plt ID</th>
@@ -458,6 +458,7 @@ function cancelSale()
 	var showWarning = false;
 	var showHigherWarning = false;
 	var warningMessage = "";
+	var infoMessage = "";
 	var showPriceCheck = false;
     setTimeout(function(){
         $('.select2-container').css('display', 'none');
@@ -577,9 +578,12 @@ function cancelSale()
 			}
 			else
 			{
+				$('#warning').css('background', "#90EE90");
+				$('#warning').css('border', "2px solid #00FF00");
+				$('#warning').css('display', "inline-block");
+				$('#warning').html(warningMessage);
 				$('#sendfake').attr('disabled', false);
 				$('#searcher').attr('disabled', false);
-				$('#warning').css('display', "none");
 			}
 		});
 	}
@@ -632,8 +636,7 @@ function cancelSale()
 		var date = parseDMY(dateText);
 		if (transactionAllowed){
 			$('#sendfake').prop('disabled',false);
-			$('#warning').css('display', "none");
-			var ubs = $("#mydiv").find("ubDate");
+			var ubs = $('#basketTable #ubDate');
 			var pastBB = false; 
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
@@ -663,7 +666,6 @@ function cancelSale()
 		return new Date(y, m - 1, d);
 	}
 	function setCustomer(customer_id, text){
-		console.log("customer set to '"+customer_id+"'");
 		$('#customer_search_results').fadeOut();
 		$('#customer_id').val(customer_id);
 		$('#customer').val(text);
@@ -715,7 +717,6 @@ function cancelSale()
 			
 			$.get("/scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality, function(data, status){
 				$('#loadResults').html(data);
-				console.log(data);
 				
 			});
 

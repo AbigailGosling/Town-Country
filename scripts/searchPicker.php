@@ -396,8 +396,7 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, eve
 
 function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
-    var date = new Date()
-    var milliseconds = date.getTime()
+    var milliseconds = new Date().getTime()
 
     if ((milliseconds - firstExecution) > interval) {
         var q = $('#quantity-' + product_id + '-' + pallet_id).val();

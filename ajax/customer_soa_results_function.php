@@ -40,12 +40,12 @@ function date_compare($element1, $element2) {
     $datetime2 = $element2['datetime'];
     return $datetime2 - $datetime1;
 } 
-function check_customer_outstanding_cache($customer_id)
+function check_customer_outstanding_cache($customer_id,$forceReload = false)
 {
     global $conn;
     $cacheRow = mysqli_query($conn, "SELECT * FROM customer_outstanding_cache WHERE customer_id = $customer_id");
     $cacheRow = mysqli_fetch_assoc($cacheRow);
-    if ($cacheRow == null) 
+    if ($cacheRow == null || $forceReload == true) 
     {
         $cacheRow = array('customer_id' => $customer_id,'newRow' => true);
         $oldest = -1;
@@ -167,13 +167,17 @@ function precredit_check($customer_id)
     $custR = mysqli_fetch_assoc($customerQ);
     $returningObj['showWarning'] = false;
     $returningObj['saleAllowed'] = true;
-    if ($custR['override'] == 1 || $custR['credit_enabled'] == 1)
+    $returningObj['creditCheckRender'] = true;
+    if ($custR['override'] == 1 || $custR['credit_enabled'] == 0)
     {
+        $returningObj['infoMessage'] = "<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Credit Check Disabled</td>";
+        $returningObj['creditCheckRender'] = false;
         return $returningObj;
     }
     else if ($custR['credit_terms'] < 0)
     {
         $returningObj['saleAllowed'] = false;
+        $returningObj['creditCheckRender'] = false;
         $returningObj['message'] = "Customer has been suspended, contact administrator";
     }
     else
@@ -188,7 +192,33 @@ function precredit_check($customer_id)
         $returningObj['beyondDate'] = $beyondDate;
         $returningObj['gracePeriod'] = $gracePeriod;
         $returningObj['closeToOverdue'] = $closeToOverdue;
+
+        $returningObj['creditRating'] = $custR['credit_rating'];
+
         $returningObj['hideOnStmt'] = false;
+
+        $calDayRem1 = $oldest -$beyondDate;
+        $calDayRem = intdiv($calDayRem1,86400);
+        if ($calDayRem < 0)
+        {
+            $calDayRem = $calDayRem * -1;
+            $returningObj['infoMessage'] = "<td align='center' style='height:100%;padding-top:12px;padding-bottom:12px;' bgcolor='lightgrey'>Overdue day(s): $calDayRem</td>";
+        }
+        else
+        {
+            $returningObj['infoMessage'] = "<td align='center' style='height:100%;padding-top:12px;padding-bottom:12px;' bgcolor='lightgrey'>Remaining day(s): $calDayRem</td>";
+        }
+        $calCredRem = $custR['credit_rating'] - $outstanding;
+        if ($calCredRem < 0)
+        {
+            $calCredRem = $calCredRem * -1;
+            $returningObj['infoMessage'] .= "<td align='right'>Over Credit: £$calCredRem</td>";
+        }
+        else
+        {
+            $returningObj['infoMessage'] .= "<td align='right'>Remaining Credit: £$calCredRem</td>";
+        }
+
         if ($oldest != "" && $oldest < $gracePeriod)
         {//over grace
             $returningObj['saleAllowed'] = false;

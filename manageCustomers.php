@@ -87,7 +87,7 @@
 			$yy2 = mysqli_query($conn, $x2);
 			
 
-			$data = mysqli_fetch_array($yy2);
+			$data = mysqli_fetch_assoc($yy2);
 
 		}
 	?>
@@ -489,9 +489,9 @@
  	}
 	 function creditChecking(ele, id){
 		var q = $('#credit_enabled');
-		if (q.text() != "Enable Credit Checking") q.text("Enable Credit Checking");
+		if (q.text() != "Enable Credit Check") q.text("Enable Credit Check");
 		else q.text("Disable Credit Check");
-		$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
+		$.post("<?php echo $domain; ?>ajax/toggleCredit.php",{
 			id: id,
 		});
 	}

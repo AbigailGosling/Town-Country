@@ -1,8 +1,5 @@
 <?php
 require_once('functions.php');
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 $erroronous = mysqli_query($conn,"SELECT * FROM `comment_logging` WHERE `type` = 'product_weightnote'");
 while ($log = mysqli_fetch_assoc($erroronous))
 {   

@@ -5,6 +5,7 @@
 	$pallet_id = mysqli_real_escape_string($conn, $_GET['pallet_id']);
 	$species_id = mysqli_real_escape_string($conn, $_GET['species_id']);
 	$cut_id = mysqli_real_escape_string($conn, $_GET['cut_id']);
+	$dateParsed = mysqli_real_escape_string($conn, $_GET['date']);
 	$q = $_GET['q'];
 	$comment = $_GET['comment'];
 	
@@ -56,7 +57,7 @@
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>
 	<td><?php echo getNationality($nationality_id); ?></td>
 	<td><?php echo getBrand($brand_id); ?></td>
-	<td id="ubDate"><?php echo $_GET['date']; ?></td>
+	<td id="ubDate"><?php echo $smallestDate; ?></td>
 	<td><?php echo $q; ?></td>
 	<td>
 		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">

@@ -29,11 +29,11 @@
     }
 </style>
 <div class="leftPanel" style="padding:20px">
-    <h2></h2>
+    <h2>Outstanding Breakdown</h2>
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
         <option value="" selected>All Users</option>
 		<?php
-			$x = "SELECT `users`.`id`,`users`.`name` FROM `users`";
+			$x = "SELECT `users`.`id`,`users`.`name` FROM `users` WHERE `users`.`name` NOT LIKE '%REMOVED%' ORDER BY `users`.`name`";
 			$y = mysqli_query($conn, $x);
 			
 			while($row = mysqli_fetch_array($y)){
@@ -44,7 +44,7 @@
     <select name="customer_id" id="customer_id" style="width:152px;height:40px;">
         <option value="" selected>All Customers</option>
 		<?php
-			$x = "SELECT `customers`.`id`,`customers`.`businessname` FROM `customers` WHERE `disabled` = 0";
+			$x = "SELECT `customers`.`id`,`customers`.`businessname` FROM `customers` WHERE `disabled` = 0 AND `customers`.`businessname` NOT IN ('','.. search') ORDER BY `customers`.`businessname`";
 			$y = mysqli_query($conn, $x);
 			
 			while($row = mysqli_fetch_array($y)){
@@ -85,25 +85,30 @@
             </tfoot>
         </table>
         </div>
+        <div align="center" style="display:none" id="loadericoncenter" name="loadericoncenter" class="loadericoncenter">
+            <img src="img/loading.gif" alt="">
+        </div>
 </div>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
 $(document).ready(function(){ 
-    fetchResults()
 });
 function fetchResults(){
+    $("#search").prop('disabled', true);
+    $("#loadericoncenter").show();
     $("#soaTable > tbody").empty();
     var customer_id = $("#customer_id").val();
     var user_id = $("#user_id").val();
     $.post("/ajax/generateOutstandingBreakdown.php", { 'customer_id':customer_id,'user_id':user_id }, results);
 }
 function results(data, status){
-    var arr = data.split(",");
+    var arr = data.split("|");
     $("#soaTable > tbody").empty();
     $("#soaTable > tbody").append(arr[0]);
     $("#soaTable > tfoot").empty();
     $("#soaTable > tfoot").append(arr[1]);
-
+    $("#loadericoncenter").hide();
+    $("#search").prop('disabled', false);
 }
 </script>
