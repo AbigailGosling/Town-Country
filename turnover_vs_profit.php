@@ -82,6 +82,18 @@
 			}
 		?>
 	</select>
+    <select name="supplier_id" id="supplier_id" style="width:182px;height:40px;">
+        <option value="" disabled selected>Select Supplier..</option>
+        <option value="0">All Suppliers</option>
+		<?php
+			$x = "SELECT * FROM `supplier` where `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
+			$y = mysqli_query($conn, $x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>" <?php if($_POST['supplier_id'] == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+	</select>
 	<select id="SearchNationality" name="SearchNationality" style="width:152px;height:40px;">
         <option value="" disabled selected>Select Nationality..</option>
 		<?php
@@ -142,6 +154,7 @@
             $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
         }
     ?>
+    <br/><br/>
     <b>BETWEEN</b>
     <input class="datepicker" name="date_start" id="date_start" placeholder="START DATE" value="<?php echo $uk_date_start; ?>" style="height:34px;width:100px;">
     <b>AND</b>
@@ -185,6 +198,7 @@
         var customer_id = $('#customer_id').val();
         var brand_id = $('#SearchBrand').val();
         var nationality_id = $('#SearchNationality').val();
+        var supplier_id = $('#supplier_id').val();
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
 
@@ -203,7 +217,8 @@
             date_start: date_start,
             date_end: date_end,
             brand_id: brand_id,
-            nationality_id: nationality_id
+            nationality_id: nationality_id,
+            supplier_id: supplier_id
         },
         function(data, status){
             $("#search").prop('value', 'Search');

@@ -357,7 +357,7 @@ $(this).next('.searchRContent').toggle();
 var firstExecution = 0
 var interval = 1000
 
-function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
+function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, event){
     $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
 
         var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
@@ -394,10 +394,9 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, event){
 }
  
 
-function addToSheet(product_id, pallet_id, cut_id, theClass, event){
+function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
-    var date = new Date()
-    var milliseconds = date.getTime()
+    var milliseconds = new Date().getTime()
 
     if ((milliseconds - firstExecution) > interval) {
         var q = $('#quantity-' + product_id + '-' + pallet_id).val();
@@ -442,8 +441,9 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, event){
 
         $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
 
-        $.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
+        $.get( "/scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
             $('.basketTable').append(data);
+            checkUBDates(null);
         });
 
         firstExecution = milliseconds

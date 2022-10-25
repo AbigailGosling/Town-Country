@@ -15,8 +15,8 @@
 <script type="text/javascript">
 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
 	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
-	showHigherWarning 		= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
-	warningMessage		= "<?php echo $creditCheck['message']; ?>";
+	showHigherWarning 	= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
+	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo $creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
 </script>
 <div class="col">
 	<div class="row">

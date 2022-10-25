@@ -42,8 +42,8 @@
 				<td>
 					<label>Customer</label>
 					
-					<input name="supplier_id" id="customer_id" type="text" style="display:none;" value="<?php echo $supplierid; ?>">
-					<input name="supplier_search" id="customer" type="text" value="<?php echo $supplier['name']; ?>">
+					<input name="supplier_id" id="supplier_id" type="text" style="display:none;" value="<?php echo $supplierid; ?>">
+					<input name="supplier_search" id="supplier_search" type="text"><?php echo $supplier['name']; ?></input>
 					<div id="customer_search_results">
 						
 					</div>
@@ -106,8 +106,8 @@
 	
 	function setCustomer(customer_id, text){
 		$('#customer_search_results').fadeOut();
-		$('#customer_id').val(customer_id);
-		$('#customer').val(text);
+		$('#supplier_id').val(customer_id);
+		$('#supplier_search').val(text);
 	}
 	
 	function saveReturn(){
@@ -121,7 +121,7 @@
 		var good = 1;
 		var msg = "";
 		
-		if(supplier_search == ''){
+		if(supplier_search == undefined || supplier_search == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#supplier_search').css('border','2px solid red');
 			good = 0;

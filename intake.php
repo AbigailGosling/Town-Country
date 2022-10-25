@@ -41,7 +41,7 @@
 			if($product_id != ''){
 				$x = "UPDATE `product` SET cost='$cost', price='$price', weightnote='$weightnote' WHERE id IN $product_id";
  				$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
-				 loggedDataChange('product_weightnote',$product_id,$weightnote);
+				 loggedDataChange('pallet',$pallet_id,$weightnote);
 			}
 		}
 

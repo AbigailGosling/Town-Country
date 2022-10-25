@@ -1,5 +1,6 @@
 <?php
 include_once('includes/frontHeader.php');
+include_once('ajax/customer_soa_results_function.php');
 $serverRoot = $_SERVER["SERVER_NAME"];
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
@@ -143,20 +144,24 @@ $serverRoot = $_SERVER["SERVER_NAME"];
     if ($_GET['id'] != '') {
 
         $customer = getCustomer($_GET['id']);
+        $creditcheck = precredit_check($customer['id']);
     ?>
+    <script>console.log(<?php echo json_encode($creditcheck); ?>);</script>
     <div class="topheading">
 
     <div class="topInvoice">
     <div class="headerinfo">
         <div class="logocontainer" style="text-align: center; line-height: 13px; font-size: 10px; padding-top:10px;">
-        <img class="logo" style="width: 330px;" src="<?php echo $domain ?>images/tandclogo.jpg"><br/>
+        <div align="center"><img align="center" class="logo" style="width: 330px;" src="<?php echo $domain ?>images/tandclogo.jpg"></div><br/>
             13-17 Landport Ind. Est. Landport Road<br/>
             Wolverhampton WV2 2QJ<br/>
             <span>Vat. No: 701 075 285</span><br/>
             <span>Company Reg. No. 12192223</span><br/>
             <b>01902 457924</b><br/>
         </div>
-		
+		<table>
+        <tr>
+        <td>
 		<div class="invoice">
 			 
 			<b style="font-size:10px;color:#8c8c8c;">Invoice address</b>
@@ -171,9 +176,32 @@ $serverRoot = $_SERVER["SERVER_NAME"];
                     Customer ID: <?php echo str_pad($customer['id'], 4, '0', STR_PAD_LEFT); ?><br/>
                     <?php echo $customer['customer_email']; ?><br/>
 				</p>
-				<span style="display:none;">Account No: 1123ml</span>
 			</div>
 		</div>
+        </td>
+        <td style="width:100%">
+        </td>
+        <td align="right" style="vertical-align: bottom">
+        <div class="invoice">
+             <div align="left" class="invoicebox">
+                 <table style="font-size:10px;">
+                <?php
+                    if ($creditcheck['creditCheckRender'] == true) 
+                    {
+                        $remainingCredit = $creditcheck['creditRating'] - $creditcheck['details']['outstanding'];
+                ?>
+                    <tr><td style="text-align:right">Credit Rating</td> <td>:</td><td>£<?php echo $creditcheck['creditRating'];?></td></tr>
+                    <tr><td style="text-align:right">Outstanding</td>   <td>:</td><td>£<?php echo $creditcheck['details']['outstanding'];?></td></tr>
+                    <tr><td style="text-align:right">Balance</td>       <td>:</td><td>£<?php echo $remainingCredit;?></td></tr>
+                <?php
+                    }
+                ?>
+                </table>
+             </div>
+         </div>
+        </td>
+        </tr>
+        </table>
             <div class="container">
                 <table class="printemailbuttons" style="">
                     <tr>
