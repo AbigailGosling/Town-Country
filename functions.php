@@ -1696,7 +1696,7 @@
 			}
 		}
 		
-		return $price;
+		return ceilDec($price,2);
 	}
 
 	function weightCountOfProductOnPicksheet($pick_id, $productID){
@@ -1754,7 +1754,7 @@
 	function totalValueCreditedOnInvoiceID($invoice_id){
 		global $conn;
 		$price = 0;
-		$paymentsResult = mysqli_query($conn, "SELECT id FROM `invoice_payments` WHERE invoice_id='$invoice_id'");
+		$paymentsResult = mysqli_query($conn, "SELECT id FROM `invoice_payments` WHERE invoice_id='$invoice_id' AND payment_method = 'CREDIT_NOTE'");
 		while ($paymentData = mysqli_fetch_assoc($paymentsResult))
 		{
 			$price = $price + creditNoteTotal($paymentData['id']);
