@@ -6,7 +6,7 @@
 
 	$name = $_POST['searchterm'];
 
-	$y = fuzzyCustomerSearch($name);
+	$y = fuzzyCustomerSearch($name,true);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php
 	if($count > 0){

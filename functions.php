@@ -1866,7 +1866,7 @@
 			str_replace("&"," & ",$name)
 		);
 		$allSearchControl = "";
-		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `override` = 1)";
+		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
 		$queries = array(
 			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' $allSearchControl",
 			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl",
