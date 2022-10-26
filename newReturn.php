@@ -183,8 +183,8 @@
 			dateFormat: 'dd/mm/yy'
 		});
 		
-		$('#customer').keyup(function(){
-			var val = $('#customer').val();
+		$('#supplier_search').keyup(function(){
+			var val = $('#supplier_search').val();
 			// $('#test2d').text(val);
 			if(val != ''){
 				$('#customer_search_results').fadeIn();
