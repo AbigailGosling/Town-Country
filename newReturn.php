@@ -183,7 +183,6 @@
 			dateFormat: 'dd/mm/yy'
 		});
 		
-		
 		$('#customer').keyup(function(){
 			var val = $('#customer').val();
 			// $('#test2d').text(val);
