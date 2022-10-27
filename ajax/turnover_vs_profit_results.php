@@ -1,6 +1,5 @@
 <?php
    	require('../functions.php');
-
     if($_POST['user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''  || $_POST['brand_id'] != '' || $_POST['nationality_id'] != ''){
         
         $INVOICE_ID = mysqli_real_escape_string($conn, $_POST['invoice_id']);
@@ -66,7 +65,7 @@
         if($SUPPLIER_ID != 0){
             $supplierQueryPiece = " && intake.supplier_id ='$SUPPLIER_ID'";
         }else{
-            $nationQueryPiece = "";
+            $supplierQueryPiece = "";
         }
 
         if($INTAKE_ID != ''){
