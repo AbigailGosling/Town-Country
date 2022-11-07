@@ -360,7 +360,8 @@
             <td style="color:red;"><?php echo $cell_cutgroup; ?></td>
             <td style="color:red;"><?php echo $cell_product; ?></td>
             <td style="color:red;"><?php echo $cell_brand; ?></td>
-            <td style="color:red;" colspan="1" style="color:red;"><?php echo $credit_qty; ?></td>
+            <td style="color:red;"><?php echo $cell_supplier; ?></td>
+            <td style="color:red;" colspan="1"><?php echo $credit_qty; ?></td>
             <td style="color:red;">
                 <?php 
                     if($invoice['unit'] == 'C'){
