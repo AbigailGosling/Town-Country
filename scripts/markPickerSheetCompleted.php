@@ -17,8 +17,9 @@
 	$result_fresh = mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
 	$count_fresh = mysqli_num_rows($result_fresh);
 
-	$result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='2' LIMIT 1");
+	$result_frozen= mysqli_query($conn, "SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN ('2','3') LIMIT 1");
 	$count_frozen = mysqli_num_rows($result_frozen);
+	
 
 	// if you just submitted the fresh products OR theres no fresh products at all
 	if($type == 'fresh' || $count_fresh == 0){
