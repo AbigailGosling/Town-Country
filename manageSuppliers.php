@@ -147,7 +147,7 @@
 							$usersResult = mysqli_query($conn, "SELECT id,`name` FROM users");
 							while($user = mysqli_fetch_array($usersResult)){
 						?>
-						<option value="<?php echo $user['id']; ?>" <?php if($_GET['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
+						<option value="<?php echo $user['id']; ?>" <?php if($data['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
 						<?php } ?>
 					</select>
 				</td>
