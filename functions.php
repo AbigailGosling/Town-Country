@@ -1894,5 +1894,25 @@
 		$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES ('$type',$userid,$entity_id,'$body')";			
 		$y = mysqli_query($conn, $x);
 	}
+	function debuglogging($body){
+		global $conn;
+		global $userid;
+		$body = mysqli_real_escape_string($conn,$body);
+		$arr = mysqli_real_escape_string($conn,json_encode(array("GET"=>$_GET,"POST"=>$_POST)));
+		$REQUEST_URI = mysqli_real_escape_string($conn,$_SERVER['REQUEST_URI']);
+		$session_id = mysqli_real_escape_string($conn,session_id());
+		$x = "INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES ('".$REQUEST_URI."','".$arr."','$userid','".$session_id."','$body')";			
+		mysqli_query($conn, $x);
+	}
+	function queryproxy(mysqli $conn, string $query)
+	{
+		debuglogging($query);
+		$outcome = mysqli_query($conn,$query);
+		if ($outcome == false)
+		{
+			die(mysqli_error($conn));
+		}
+		return $outcome;
+	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>
