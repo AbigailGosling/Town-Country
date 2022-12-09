@@ -191,17 +191,14 @@
                 array_push($product2_cutids, $product2['cut_id']);
                 array_push($product2_productids, $product2['productid']);
                 $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
-
                 if($product2['akg'] != ''){
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id);
                 }else{
                     $this_row_weight = weightSoldFromProductID($product2['productid']);
                 }
-                if($product2['grosspallet'] == 1){
-                    if($this_row_weight != 0){ 
-                        $product2_quantity = $product2_quantity + $numOfWeights;
-                     }
-                }
+                if(($product2['grosspallet'] == 1 && $this_row_weight != 0)|| $product2['grosspallet'] == 0){ 
+                    $product2_quantity = $product2_quantity + $numOfWeights;
+                 }
                 if($numOfWeights > 0){
                     array_push($product2_brands, $product2['brand_id']);
                     array_push($product2_nationalities, $product2['nationality_id']);
