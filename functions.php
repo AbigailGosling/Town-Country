@@ -644,7 +644,6 @@
 
     function countNumProductsForCutOnPalletArrays($palletIDS, $cutIDS, $nationalityID){
         global $conn;
- 
         
         $palletIDS = implode(',', $palletIDS);
         $cutIDS = implode(',', $cutIDS);
@@ -1910,7 +1909,7 @@
 		$outcome = mysqli_query($conn,$query);
 		if ($outcome == false)
 		{
-			die(mysqli_error($conn));
+			debuglogging(mysqli_error($conn));
 		}
 		return $outcome;
 	}
