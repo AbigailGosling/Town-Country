@@ -233,7 +233,7 @@
             $locked = false;
             $lockedT = "n";
         }
-        if($totalWeightOfProduct <= 0 && $productsRow['unit'] != 'PPC'){ continue; }
+        if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         ?>
         <tr class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
             <td colspan="1">
