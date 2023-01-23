@@ -73,8 +73,9 @@
 	</select>
 	<select id="SearchBrand" name="SearchBrand" style="width:152px;height:40px;">
         <option value="" disabled selected>Select Brand..</option>
+        <option value="0">All Brands</option>
 		<?php
-			$x = "SELECT * FROM `brands` ORDER BY `name`";
+			$x = "SELECT * FROM `brands` where `name` IS NOT NULL AND `name` <> '' ORDER BY `name`";
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
