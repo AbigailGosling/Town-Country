@@ -1,13 +1,13 @@
 <?php
-	include_once('functions.php');
+	include_once('legacy/functions.php');
 	
 	session_start();
 	
 	if(isset($_SESSION['USER'])){
-		header('location:menu.php');
+		header('location:legacy/menu.php');
 	}
 	 
-		// echo $password = sha1(mysqli_real_escape_string($conn, 'password'));
+		// echo $password = sha1($mysqli->real_escape_string( 'password'));
 ?>
 <!doctype html>
 <html class="int">
@@ -15,14 +15,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Town &amp; Country</title>
-<link href="css/style.css" rel="stylesheet" type="text/css">
+<link href="legacy/css/style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <main>
 	<h1>Town &amp; Country</h1>
 	<div id="login">
 		<h2>Welcome</h2>
-		<form method="post" id="loginform" action="script_login.php">
+		<form method="post" id="loginform" action="legacy/script_login.php">
 			<input type="text" name="email" id="email" placeholder="Email">
 			<input type="password" name="password" id="password" placeholder="Password">
 			<div id="remember">
