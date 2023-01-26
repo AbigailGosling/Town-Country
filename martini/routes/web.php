@@ -42,7 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             abort(404);
         }
     });
-    Route::get('/users/search', [UserController::class, 'search'])->name('user.search');
+    Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
     Route::resource('users', 'App\Http\Controllers\UserController');
 
 });

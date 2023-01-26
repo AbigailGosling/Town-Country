@@ -10,7 +10,7 @@
                 <div class="col-span-2">
                 </div>
                 <div>
-                    <form class="flex items-center pb-4" method="get" action="{{route('user.search')}}">
+                    <form class="flex items-center pb-4" method="get" action="{{route('users.search')}}">
                         <label for="simple-search" class="sr-only">Search</label>
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">

@@ -27,9 +27,11 @@
             @endif
 
             <!-- Breadcrumbs -->
+            @if(\Diglactic\Breadcrumbs\Breadcrumbs::exists())
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             {{ Breadcrumbs::render() }}
             </div>
+            @endif
 
             <!-- Alerts -->
             @if (Session::has('message'))
@@ -59,7 +61,7 @@
 
             <!-- Page Content -->
             <main>
-                <div class="pt-2">
+                <div class="pt-6">
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                         {{ $slot }}
                     </div>
