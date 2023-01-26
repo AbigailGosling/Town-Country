@@ -16,7 +16,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
-use MongoDB\Driver\Session;
+use Illuminate\Support\Facades\Session;
 
 /**
  *
@@ -156,12 +156,9 @@ class UserController extends Controller
         $user->touch();
         $user->save();
 
-        \Illuminate\Support\Facades\Session::flash('message', "Successfully updated $user->name's account");
+        Session::flash('message', "Successfully updated $user->name's account");
 
         return redirect(route('users.index'));
-        //->with([
-        //    'success' =>
-        //]);
     }
 
     /**
