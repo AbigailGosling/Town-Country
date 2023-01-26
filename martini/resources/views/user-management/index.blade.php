@@ -10,7 +10,7 @@
                 <div class="col-span-2">
                 </div>
                 <div>
-                    <form class="flex items-center pb-4" method="get" action="{{route('users.search')}}">
+                    <form class="flex items-center pb-4 pr-4" method="get" action="{{route('users.search')}}">
                         <label for="simple-search" class="sr-only">Search</label>
                         <div class="relative w-full">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -25,39 +25,36 @@
                     </form>
                 </div>
             </div>
-            <div class="bg-gray-200 overflow-hidden shadow-sm sm:rounded-lg ml-6 mr-6">
-                <table class="border-collapse table-auto w-full text-sm mt-4">
-                    <thead class="bg-gray-200">
-                    <tr>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pl-8 pt-0 text-slate-900 text-left">Full Name</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Email Address</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">No Permissions</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Created At</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Updated At</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody class="bg-white">
+
+            <x-data-table>
+                <x-slot:headers>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pl-8 pt-0 text-slate-900 text-left">Full Name</th>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Email Address</th>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">No Permissions</th>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Created At</th>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Updated At</th>
+                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Action</th>
+                </x-slot:headers>
+                <slot>
                     @foreach($users as $user)
-                    <tr>
-                        <td class="border-b dark:border-slate-600 font-semibold p-4 pl-8 text-slate-600 text-left">{{$user->name}}</td>
-                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-left">{{$user->email}}</td>
-                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->permissions_count}}</td>
-                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->created_at->format('d/m/Y')}}</td>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->updated_at->format('d/m/Y')}}</th>
-                        <td class="border-b dark:border-slate-600 p-2 pr-8">
-                            <div class="grid-cols-2">
-                                <div class="grid grid-cols-2">
-                                    <x-table-action-button route="users.edit" :id="$user->id"></x-table-action-button>
-                                    <x-table-action-button route="users.edit" :id="$user->id" type="delete"></x-table-action-button>
+                        <tr>
+                            <td class="border-b dark:border-slate-600 font-semibold p-4 pl-8 text-slate-600 text-left">{{$user->name}}</td>
+                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-left">{{$user->email}}</td>
+                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->permissions_count}}</td>
+                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->created_at->format('d/m/Y')}}</td>
+                            <th class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->updated_at->format('d/m/Y')}}</th>
+                            <td class="border-b dark:border-slate-600 p-2 pr-8">
+                                <div class="grid-cols-2">
+                                    <div class="grid grid-cols-2">
+                                        <x-table-action-button route="users.edit" :id="$user->id"></x-table-action-button>
+                                        <x-table-action-button route="users.edit" :id="$user->id" type="delete"></x-table-action-button>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
                     @endforeach
-                    </tbody>
-                </table>
-            </div>
+                </slot>
+            </x-data-table>
         <br>
             {{ $users->links() }}
         </div>
