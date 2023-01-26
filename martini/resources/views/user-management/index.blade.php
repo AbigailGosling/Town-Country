@@ -57,6 +57,4 @@
             </x-data-table>
         <br>
             {{ $users->links() }}
-        </div>
-    </div>
 </x-app-layout>

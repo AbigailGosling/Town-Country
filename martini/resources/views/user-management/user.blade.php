@@ -61,7 +61,6 @@
                                     </div>
                                 @endforeach
                             </x-form-section>
-
                         </x-transfer-list-section>
                     @endforeach
                 </x-transfer-list>

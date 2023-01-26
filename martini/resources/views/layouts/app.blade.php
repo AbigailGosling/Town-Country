@@ -28,7 +28,7 @@
 
             <!-- Breadcrumbs -->
             @if(\Diglactic\Breadcrumbs\Breadcrumbs::exists())
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8" style="">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 breadcrumbs">
             {{ Breadcrumbs::render() }}
             </div>
             @endif
@@ -70,3 +70,10 @@
         </div>
     </body>
 </html>
+
+
+<style>
+    div.breadcrumbs > * > * {
+        background-color: transparent !important;
+    }
+</style>
