@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class UserController extends Controller
 {
-    private static $defaultPaginate = 25;
+    private static int $defaultPaginate = 25;
 
     /**
      * The default query to populate the list of users on the User Index/Search page
@@ -248,9 +248,17 @@ class UserController extends Controller
      * @param Request $request
      * @return void
      */
-    public function resetPassword(Request $request)
+    public function resetPassword(User $user)
     {
+        // We will send the password reset link to this user. Once we have attempted
+        // to send the link, we will examine the response then see the message we
+        // need to show to the user. Finally, we'll send out a proper response.
+        $status = Password::sendResetLink(
+                $user->toArray()
 
+        );
+
+        return redirect()->back()->with(['message' => __('passwords.sent')]);
     }
 }
 

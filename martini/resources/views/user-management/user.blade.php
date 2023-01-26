@@ -81,7 +81,7 @@
     <x-form-button title="{{ $isNew ? 'Create User' : 'Update User' }}" iconClass="fa-circle-arrow-right" :submit="true">
     </x-form-button>
     <x-form-button title="{{ 'Forgotten Password' }}" iconClass="fa-key" background="orange"
-                   route="{{ $isNew ? 'users.store' : 'users.update' }}" :params="$isNew ? '' : $user->id">
+                   route="users.forgot-password" :params="$user->id">
     </x-form-button>
     </x-slot>
     </x-form>

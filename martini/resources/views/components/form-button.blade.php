@@ -1,4 +1,4 @@
-
+<a href="{{$route ? route($route, $params) : ''}}">
 <div class="flex grid grid-cols-6 bg-white hover:bg-slate-200 shadow-md cursor-pointer mb-2 h-20 rounded-md" onclick="{{$submit ? '$(this).closest(`form`).submit()' : ''}}">
     @if($background === 'green')
     <div class="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center rounded-l-md">
@@ -15,3 +15,4 @@
     {{$title}}
     </div>
 </div>
+</a>
