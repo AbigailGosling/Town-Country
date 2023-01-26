@@ -32,20 +32,20 @@
                         <th class="border-b dark:border-slate-600 font-semibold p-4 pl-8 pt-0 text-slate-900 text-left">Full Name</th>
                         <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Email Address</th>
                         <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">No Permissions</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Created At</th>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Updated At</th>
+                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Created At</th>
+                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Updated At</th>
                         <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Action</th>
                     </tr>
                     </thead>
                     <tbody class="bg-white">
                     @foreach($users as $user)
                     <tr>
-                        <td class="border-b border-slate-100 dark:border-slate-700 p-2 pl-8 text-slate-600">{{$user->name}}</td>
-                        <td class="border-b border-slate-100 dark:border-slate-700 p-2 text-slate-600">{{$user->email}}</td>
-                        <td class="border-b border-slate-100 dark:border-slate-700 p-2 pr-8 text-slate-600 text-center">{{$user->permissions_count}}</td>
-                        <td class="border-b border-slate-100 dark:border-slate-700 p-2 pr-8 text-slate-600">{{$user->created_at->format('d/m/Y')}}</td>
-                        <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">{{$user->updated_at->format('d/m/Y')}}</th>
-                        <td class="border-b border-slate-100 dark:border-slate-700 p-2 pr-8">
+                        <td class="border-b dark:border-slate-600 font-semibold p-4 pl-8 text-slate-600 text-left">{{$user->name}}</td>
+                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-left">{{$user->email}}</td>
+                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->permissions_count}}</td>
+                        <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->created_at->format('d/m/Y')}}</td>
+                        <th class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->updated_at->format('d/m/Y')}}</th>
+                        <td class="border-b dark:border-slate-600 p-2 pr-8">
                             <div class="grid-cols-2">
                                 <div class="grid grid-cols-2">
                                     <x-table-action-button route="users.edit" :id="$user->id"></x-table-action-button>
