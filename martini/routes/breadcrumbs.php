@@ -17,7 +17,9 @@ Breadcrumbs::for('users.index', function(BreadcrumbTrail $trail){
 Breadcrumbs::for('users.search', function(BreadcrumbTrail $trail){
     $trail->push('Home', route('dashboard'));
     $trail->push('Users', route('users.index'));
-    $trail->push(request('search'));
+    if($search = request('search')) {
+        $trail->push($search);
+    }
 });
 
 Breadcrumbs::for('users.edit', function(BreadcrumbTrail $trail, User $user){
