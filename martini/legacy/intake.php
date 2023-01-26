@@ -23,7 +23,7 @@
 		header('location: intake.php?id='.$od);
 	}
 	
-	if(request('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
+	if(request('savePrices') == 'true'){
 		$productids = request('productid');
 		$price = request('price');
 		$cost = request('cost');
@@ -318,7 +318,7 @@
 		$y = prepareExecuteQuery($x,'i',[$userid]);
 		$user = mysqli_fetch_array($y);
 		
-		if (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin()){
+		
 		if($user['view_intake_prices'] == 1){
 	?>
 	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $intake_id; ?>">
@@ -630,7 +630,7 @@
 				<td align="right"><?php echo number_format($totalWeight, 3, '.', ''); ?>kg</td>
 			</tr>
 		</table> 
-	<?php } }?>
+	<?php } ?>
 	
 	<?php 
 		$xk = "SELECT * FROM product WHERE original_intake_id=?";
