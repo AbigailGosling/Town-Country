@@ -26,6 +26,11 @@
                 </header>
             @endif
 
+            <!-- Breadcrumbs -->
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {{ Breadcrumbs::render() }}
+            </div>
+
             <!-- Alerts -->
             @if (Session::has('message'))
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
@@ -54,7 +59,7 @@
 
             <!-- Page Content -->
             <main>
-                <div class="pt-8">
+                <div class="pt-2">
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                         {{ $slot }}
                     </div>
