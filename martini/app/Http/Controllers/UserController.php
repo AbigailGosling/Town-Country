@@ -156,9 +156,7 @@ class UserController extends Controller
         $user->touch();
         $user->save();
 
-        Session::flash('message', "Successfully updated $user->name's account");
-
-        return redirect(route('users.index'));
+        return redirect(route('users.index'))->with(['message' => "Successfully updated $user->name's account"]);
     }
 
     /**

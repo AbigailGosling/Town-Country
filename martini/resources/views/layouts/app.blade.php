@@ -26,7 +26,7 @@
                 </header>
             @endif
 
-
+            <!-- Alerts -->
             @if (Session::has('message'))
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
                 <x-alert type="success">
@@ -35,20 +35,26 @@
             </div>
             @endif
 
-
-            <!-- Alerts -->
-            @if($errors->any())
-                <x-alert type="error">
-                    {{$errors->first()}}
-                </x-alert>
+            @if(Session::has('error'))
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                    <x-alert type="error">
+                        {{ Session::get('error') }}
+                    </x-alert>
+                </div>
             @endif
 
 
-
+            @if($errors->any())
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                    <x-alert type="error">
+                        {{ $errors->first() }}
+                    </x-alert>
+                </div>
+            @endif
 
             <!-- Page Content -->
             <main>
-                <div class="py-12">
+                <div class="pt-8">
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                         {{ $slot }}
                     </div>
