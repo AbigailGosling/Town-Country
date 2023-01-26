@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 /**
  *
@@ -33,6 +34,17 @@ class UserController extends Controller
     protected function baseQuery()
     {
         return User::withCount('permissions');
+    }
+
+    /**
+     * Function which checks whether a SHA1 password is valid
+     * @param string $plainPassword The password the user entered you wish to validate
+     * @param string $hashedPassword The password that is hashed in the database
+     * @return bool The result of the operation
+     */
+    protected function checkSha1Hash(string $plainPassword, string $hashedPassword)
+    {
+        return sha1($plainPassword) === $hashedPassword;
     }
 
     public function __construct()
@@ -138,24 +150,42 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['string', Rules\Password::defaults()],
-            'confirm_password' => ['string', Rules\Password::defaults()]
+            'password' => ['string'],
+            'new-password' => ['string', Rules\Password::defaults()],
+            'confirm_password' => ['string', 'nullable', Rules\Password::defaults()]
         ]);
         $input = $request->all();
 
-        //To ensure autofill doesn't try and populate the value with the users pass
-        //and no confirm
-        if($confirmPassword = $input['confirm_password'] && Auth::user()->id === $user->id)
+        //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
+        //to change their password.
+        if($input['confirm_password'] && Auth::user()->id === $user->id)
         {
-            //We assume the user wishes to change their password
-            if($confirmPassword === $input['password'])
+            //Use correct password check for each Hash method
+            switch($user->hash_method){
+                case 'BCRYPT':
+                    if(!Auth::guard('web')->validate([
+                        'email' => $user->email,
+                        'password' => $input['password']
+                    ])){
+                        return redirect()->back()->withErrors(__('auth.password'));
+                    };
+                    break;
+                case 'SHA1':
+                    if(!$this->checkSha1Hash($input['password'], $user->password))
+                    {
+                        return redirect()->back()->withErrors(__('auth.password'));
+                    }
+                    break;
+            }
+
+            if($input['confirm_password'] === $input['new_password'])
             {
-                $user->password = Hash::make($confirmPassword);
+                $user->password = Hash::make($input['confirm_password']);
+                $user->hash_method = 'BCRYPT';
             }else{
-                return redirect()->back()->withErrors('The password and the confirm password do not match');
+                return redirect()->back()->withErrors(__('auth.confirm'));
             }
         }
-
 
         $user->name = $input['name'];
         $user->email = $input['email'];
@@ -211,6 +241,16 @@ class UserController extends Controller
                 'search_term' => $searchTerm
             ]
         );
+    }
+
+    /**
+     * POST route to send out a forgotten password email for a specific user
+     * @param Request $request
+     * @return void
+     */
+    public function resetPassword(Request $request)
+    {
+
     }
 }
 

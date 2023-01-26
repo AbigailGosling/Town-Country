@@ -47,8 +47,10 @@
             </x-form-section>
             @if(Auth::user()->id == $user->id)
             <x-form-section title="Change Password" columns="1">
-                <x-input-label for="password" class="block mt-1 w-full" value="New Password"/>
+                <x-input-label for="current-password" class="block mt-1 w-full" value="Current Password"/>
                 <x-text-input id="password" type="password" name="password"></x-text-input>
+                <x-input-label for="new-password"  value="New Password"/>
+                <x-text-input id="new-password" type="password" name="new_password"></x-text-input>
                 <x-input-label for="confirm-password" class="block mt-1 w-full" value="Confirm Password"/>
                 <x-text-input id="confirm-password" type="password" name="confirm_password">
                 </x-text-input>
