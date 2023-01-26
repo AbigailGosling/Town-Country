@@ -26,6 +26,16 @@
                 </header>
             @endif
 
+
+            @if (Session::has('message'))
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <x-alert type="success">
+                    {{ Session::get('message') }}
+                </x-alert>
+            </div>
+            @endif
+
+
             <!-- Alerts -->
             @if($errors->any())
                 <x-alert type="error">
@@ -33,16 +43,14 @@
                 </x-alert>
             @endif
 
-            @if (Session::has('message'))
-                <div class="alert alert-info">{{ Session::get('message') }}</div>
-            @endif
+
 
 
             <!-- Page Content -->
             <main>
                 <div class="py-12">
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                {{ $slot }}
+                        {{ $slot }}
                     </div>
                 </div>
             </main>

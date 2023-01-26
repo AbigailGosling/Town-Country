@@ -8,7 +8,6 @@
 
             <div class="grid grid-cols-3">
                 <div class="col-span-2">
-
                 </div>
                 <div>
                     <form class="flex items-center pb-4" method="get" action="{{route('user.search')}}">

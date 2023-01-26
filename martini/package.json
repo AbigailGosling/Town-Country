@@ -2,7 +2,8 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+	"servedhot": "npm run build | php artisan serve"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
