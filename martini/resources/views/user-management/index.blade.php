@@ -17,11 +17,11 @@
                     <x-data-table-header :show-on-mobile="false">No Permissions</x-data-table-header>
                     <x-data-table-header :show-on-mobile="false">Created At</x-data-table-header>
                     <x-data-table-header :show-on-mobile="false">Updated At</x-data-table-header>
-                    <x-data-table-header>Action</x-data-table-header>
+                    <x-data-table-header></x-data-table-header>
                 </x-slot:headers>
                 <slot>
                     @foreach($users as $user)
-                        <tr>
+                        <tr class="">
                             <x-data-table-column :show-on-mobile="false">{{$user->name}}</x-data-table-column>
                             <x-data-table-column :show-on-mobile="true">{{$user->email}}</x-data-table-column>
                             <x-data-table-column :show-on-mobile="false">{{$user->permissions_count}}</x-data-table-column>
