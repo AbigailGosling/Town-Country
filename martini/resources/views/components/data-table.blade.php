@@ -9,4 +9,7 @@
             {{$slot}}
         </tbody>
     </table>
+    @if($agent->isMobile())
+        <div class="h-max w-max bg-gray-800">FGHJFGHFHHFD</div>
+    @endif
 </div>

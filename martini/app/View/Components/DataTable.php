@@ -3,9 +3,11 @@
 namespace App\View\Components;
 
 use Illuminate\View\Component;
+use Jenssegers\Agent\Agent;
 
 class DataTable extends Component
 {
+    public $agent;
     /**
      * Create a new component instance.
      *
@@ -13,7 +15,7 @@ class DataTable extends Component
      */
     public function __construct()
     {
-        //
+        $this->agent = new Agent();
     }
 
     /**
