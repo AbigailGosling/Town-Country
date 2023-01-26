@@ -12,26 +12,25 @@
 
             <x-data-table>
                 <x-slot:headers>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pl-8 pt-0 text-slate-900 text-left">Full Name</th>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Email Address</th>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">No Permissions</th>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Created At</th>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-center">Updated At</th>
-                    <th class="border-b dark:border-slate-600 font-semibold p-4 pt-0 pb-3 text-slate-900 text-left">Action</th>
+                    <x-data-table-header :show-on-mobile="false">Full Name</x-data-table-header>
+                    <x-data-table-header>Email Address</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">No Permissions</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">Created At</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">Updated At</x-data-table-header>
+                    <x-data-table-header>Action</x-data-table-header>
                 </x-slot:headers>
                 <slot>
                     @foreach($users as $user)
                         <tr>
-                            <td class="border-b dark:border-slate-600 font-semibold p-4 pl-8 text-slate-600 text-left">{{$user->name}}</td>
-                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-left">{{$user->email}}</td>
-                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->permissions_count}}</td>
-                            <td class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->created_at->format('d/m/Y')}}</td>
-                            <th class="border-b dark:border-slate-600 font-semibold p-4 text-slate-600 text-center">{{$user->updated_at->format('d/m/Y')}}</th>
+                            <x-data-table-column :show-on-mobile="false">{{$user->name}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="true">{{$user->email}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->permissions_count}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->created_at->format('d/m/Y')}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->updated_at->format('d/m/Y')}}</x-data-table-column>
                             <td class="border-b dark:border-slate-600 p-2 pr-8">
                                 <div class="grid-cols-2">
                                     <div class="grid grid-cols-1">
                                         <x-table-action-button route="users.edit" :id="$user->id"></x-table-action-button>
-{{--                                        <x-table-action-button route="users.edit" :id="$user->id" type="delete"></x-table-action-button>--}}
                                     </div>
                                 </div>
                             </td>
