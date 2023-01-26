@@ -45,7 +45,16 @@
                 @endcan
 
             </x-form-section>
-            <x-form-section title="Permissions" columns="1">
+            @if(Auth::user()->id == $user->id)
+            <x-form-section title="Change Password" columns="1">
+                <x-input-label for="password" class="block mt-1 w-full" value="New Password"/>
+                <x-text-input id="password" type="password" name="password"></x-text-input>
+                <x-input-label for="confirm-password" class="block mt-1 w-full" value="Confirm Password"/>
+                <x-text-input id="confirm-password" type="password" name="confirm_password">
+                </x-text-input>
+            </x-form-section>
+            @endif
+            <x-form-section title="Permissions" columns="2">
                 <x-input-label/>
                 <x-transfer-list>
                     @foreach($permissions as $perm_category)
@@ -88,4 +97,5 @@
                     @csrf
 
                 </form>
+    </div>
 </x-app-layout>

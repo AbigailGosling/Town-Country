@@ -12,7 +12,7 @@ class DataTableColumn extends Component
      *
      * @return void
      */
-    public function __construct(bool $showOnMobile)
+    public function __construct(bool $showOnMobile = true)
     {
         $this->showOnMobile = $showOnMobile;
     }

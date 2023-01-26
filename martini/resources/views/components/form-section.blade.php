@@ -1,4 +1,4 @@
-<div>
+<div class="pb-4">
     <span class="h-1 w-full w-1/3 font-semibold">
     {{$title}}
     </span>

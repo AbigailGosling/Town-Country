@@ -21,7 +21,7 @@
                 </x-slot:headers>
                 <slot>
                     @foreach($users as $user)
-                        <tr class="">
+                        <tr>
                             <x-data-table-column :show-on-mobile="false">{{$user->name}}</x-data-table-column>
                             <x-data-table-column :show-on-mobile="true">{{$user->email}}</x-data-table-column>
                             <x-data-table-column :show-on-mobile="false">{{$user->permissions_count}}</x-data-table-column>

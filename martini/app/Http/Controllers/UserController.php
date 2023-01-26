@@ -138,13 +138,29 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['string', Rules\Password::defaults()],
+            'confirm_password' => ['string', Rules\Password::defaults()]
         ]);
         $input = $request->all();
+
+        //To ensure autofill doesn't try and populate the value with the users pass
+        //and no confirm
+        if($confirmPassword = $input['confirm_password'] && Auth::user()->id === $user->id)
+        {
+            //We assume the user wishes to change their password
+            if($confirmPassword === $input['password'])
+            {
+                $user->password = Hash::make($confirmPassword);
+            }else{
+                return redirect()->back()->withErrors('The password and the confirm password do not match');
+            }
+        }
+
+
         $user->name = $input['name'];
         $user->email = $input['email'];
         $user->disabled = array_key_exists("disabled", $input);
         if (isset($input['perms']) && is_array($input['perms']) && count($input['perms']) > 0) {
-            //throw new Exception(json_encode([$input['perms'],Permission::all()]));
             foreach (Permission::all() as $perm) {
                 if (array_key_exists($perm->name, $input['perms'])) {
                     $user->assignPermission($perm);
