@@ -28,7 +28,7 @@
 
 
             @if (Session::has('message'))
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
                 <x-alert type="success">
                     {{ Session::get('message') }}
                 </x-alert>
