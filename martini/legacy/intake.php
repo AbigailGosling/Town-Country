@@ -23,7 +23,7 @@
 		header('location: intake.php?id='.$od);
 	}
 	
-	if(request('savePrices') == 'true'){
+	if(request('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request('productid');
 		$price = request('price');
 		$cost = request('cost');
