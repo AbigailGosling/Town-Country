@@ -42,8 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             abort(404);
         }
     });
-
+    Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
+    Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
+
 });
 
 //THIS MUST BE LAST!

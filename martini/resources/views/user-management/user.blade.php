@@ -1,78 +1,103 @@
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        @if ($isNew)
-            Create New User
-        @else
-            {{ $user->name }}
-        @endif
+            @if ($isNew)
+                Create New User
+            @else
+                {{ $user->name }}
+            @endif
         </h2>
     </x-slot>
-
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                        @if ($isNew)                            
-                            <form method="POST" action="{{ route('users.store') }}">
-                            {{ method_field('POST') }}
-                        @else
-                            <form method="POST" action="{{ route('users.update',['user'=>$user]) }}">
-                            {{ method_field('PUT') }}
-                        @endif
-                        @csrf
+<form method="POST" action="{{route('users.update', ['user' => $user->id])}}">
+    {{ method_field('PUT') }}
+    @csrf
+        <x-form>
+            <x-form-section title="Personal Information" columns="2">
+                <!-- Name Field -->
+                <div>
+                    <x-input-label for="name" :value="__('Name')"/>
 
-                        <!-- Name -->
-                        <div>
-                            <x-input-label for="name" :value="__('Name')" />
+                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
+                                  :value="old('name', $user->name)"
+                                  required autofocus/>
 
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name',$user->name)" required autofocus />
-
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                        </div>
-
-                        <!-- Email Address -->
-                        <div class="mt-4">
-                            <x-input-label for="email" :value="__('Email')" />
-
-                            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email',$user->email)" required />
-
-                            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                        </div>
-                        <div>
-                        </div>
-                        @can('admin', Auth::user())
-                            <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
-                            <input type="checkbox" id="disabled" name="disabled" @if($user->disabled) checked @endif /><div style="width: 1em;" @if($user->id == Auth::id()) disabled @endif></div>
-                            <x-input-label for="disabled" value="Disabled" />
-                            </div>
-                            <div>
-                            </div>
-                            <div class="mt-4">
-                            </div>
-                            <x-input-label :value="__('Roles')" />
-                            @foreach($perms as $perm)
-                            <div class="mt-4" for="perms[{{$perm->name}}]" style="display: flex; padding-bottom: 1em;">
-                            <input type="checkbox" id="perms[{{$perm->name}}]" name="perms[{{$perm->name}}]" @if($user->hasPermission($perm)) checked @endif /><div style="width: 1em;"></div>
-                            <x-input-label for="perms[{{$perm->name}}]" :value="__($perm->label)" />
-                            </div>
-                            @endforeach
-                        
-                        @endcan
-                        <div class="mt-4">
-                            <x-primary-button class="ml-4">
-                            @if ($isNew)
-                            {{ __('Create') }}
-                            @else
-                            {{ __('Update') }}
-                            @endif                          
-                            </x-primary-button>
-                        </div>
-                    </form>
-                </div class="p-6 bg-white border-b border-gray-200">
+                    <x-input-error :messages="$errors->get('name')" class="mt-2"/>
                 </div>
-            </div>
-        </div>
+                <!-- Email Field -->
+                <div>
+                    <x-input-label for="email" :value="__('Email')"/>
+
+                    <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
+                                  :value="old('email', $user->email)" required/>
+
+                    <x-input-error :messages="$errors->get('email')" class="mt-2"/>
+                </div>
+
+
+                @can('admin', Auth::user())
+                    <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
+                        <input type="checkbox" id="disabled" name="disabled"
+                               @if ($user->disabled) checked @endif />
+                        <div style="width: 1em;" @if ($user->id == Auth::id()) disabled @endif></div>
+                        <x-input-label for="disabled" value="User Disabled"/>
+                    </div>
+                @endcan
+
+            </x-form-section>
+            @if(Auth::user()->id == $user->id)
+            <x-form-section title="Change Password" columns="1">
+                <x-input-label for="current-password" class="block mt-1 w-full" value="Current Password"/>
+                <x-text-input id="password" type="password" name="password"></x-text-input>
+                <x-input-label for="new-password"  value="New Password"/>
+                <x-text-input id="new-password" type="password" name="new_password"></x-text-input>
+                <x-input-label for="confirm-password" class="block mt-1 w-full" value="Confirm Password"/>
+                <x-text-input id="confirm-password" type="password" name="confirm_password">
+                </x-text-input>
+            </x-form-section>
+            @endif
+            <x-form-section title="Permissions" columns="2">
+                <x-input-label/>
+                <x-transfer-list>
+                    @foreach($permissions as $perm_category)
+                        <x-transfer-list-section title="{{$perm_category->name}}">
+                            <x-form-section columns="2">
+                                @foreach ($perm_category->permissions as $perm)
+                                    <div class="mt-4" for="perms[{{ $perm->name }}]"
+                                         style="display: flex; padding-bottom: 1em;">
+                                        <input type="checkbox" id="perms[{{ $perm->name }}]" name="perms[{{ $perm->name }}]"
+                                               @if ($user->hasPermission($perm)) checked @endif />
+                                        <div style="width: 1em;"></div>
+                                        <x-input-label for="perms[{{ $perm->name }}]" :value="__($perm->label)"/>
+                                    </div>
+                                @endforeach
+                            </x-form-section>
+                        </x-transfer-list-section>
+                    @endforeach
+                </x-transfer-list>
+            </x-form-section>
+            <!-- Form Action Buttons -->
+            <x-slot name="buttons">
+    <x-form-button title="{{ $isNew ? 'Create User' : 'Update User' }}" iconClass="fa-circle-arrow-right" :submit="true">
+    </x-form-button>
+    <x-form-button title="{{ 'Forgotten Password' }}" iconClass="fa-key" background="orange"
+                   route="users.forgot-password" :params="$user->id">
+    </x-form-button>
+    </x-slot>
+    </x-form>
+</form>
+
+
+    @if ($isNew)
+        <form method="POST" action="{{ route('users.store') }}">
+            {{ method_field('POST') }}
+        </form>
+            @else
+                <form method="POST" action="{{ route('users.update', ['user' => $user]) }}">
+                    {{ method_field('PUT') }}
+                    @endif
+                    @csrf
+
+                </form>
     </div>
 </x-app-layout>

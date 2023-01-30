@@ -4,19 +4,40 @@
             {{ __('Users') }}
         </h2>
     </x-slot>
+    <form  method="get" action="{{route('users.search')}}">
+            <x-search search_term="{{$search_term ? $search_term : ''}}">
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            @foreach ($users as $user)
-            <a style="height: 100%; display:block;" href="{{route('users.show',$user)}}">
-                <div class="p-6 bg-white border-b border-gray-200" :href="route('users.index')" :active="request()->routeIs('users')">
-                    {{ $user->name }}    
-                </div>
-            </a>
-            @endforeach
-            </div>
+            </x-search>
+    </form>
+
+            <x-data-table>
+                <x-slot:headers>
+                    <x-data-table-header :show-on-mobile="false">Full Name</x-data-table-header>
+                    <x-data-table-header>Email Address</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">No Permissions</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">Created At</x-data-table-header>
+                    <x-data-table-header :show-on-mobile="false">Updated At</x-data-table-header>
+                    <x-data-table-header></x-data-table-header>
+                </x-slot:headers>
+                <slot>
+                    @foreach($users as $user)
+                        <tr>
+                            <x-data-table-column :show-on-mobile="false">{{$user->name}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="true">{{$user->email}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->permissions_count}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->created_at->format('d/m/Y')}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$user->updated_at->format('d/m/Y')}}</x-data-table-column>
+                            <td class="border-b dark:border-slate-600 p-2 pr-8">
+                                <div class="grid-cols-2">
+                                    <div class="grid grid-cols-1">
+                                        <x-table-action-button route="users.edit" :id="$user->id"></x-table-action-button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </slot>
+            </x-data-table>
+        <br>
             {{ $users->links() }}
-        </div>
-    </div>
 </x-app-layout>

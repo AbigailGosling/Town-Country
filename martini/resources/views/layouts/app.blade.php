@@ -26,10 +26,54 @@
                 </header>
             @endif
 
+            <!-- Breadcrumbs -->
+            @if(\Diglactic\Breadcrumbs\Breadcrumbs::exists())
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 breadcrumbs">
+            {{ Breadcrumbs::render() }}
+            </div>
+            @endif
+
+            <!-- Alerts -->
+            @if (Session::has('message'))
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                <x-alert type="success">
+                    {{ Session::get('message') }}
+                </x-alert>
+            </div>
+            @endif
+
+            @if(Session::has('error'))
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                    <x-alert type="error">
+                        {{ Session::get('error') }}
+                    </x-alert>
+                </div>
+            @endif
+
+
+            @if($errors->any())
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                    <x-alert type="error">
+                        {{ $errors->first() }}
+                    </x-alert>
+                </div>
+            @endif
+
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+                <div class="pt-6">
+                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                        {{ $slot }}
+                    </div>
+                </div>
             </main>
         </div>
     </body>
 </html>
+
+
+<style>
+    div.breadcrumbs > * > * {
+        background-color: transparent !important;
+    }
+</style>
