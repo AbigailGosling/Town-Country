@@ -41,7 +41,6 @@
 <?php
     $time1 = microtime(true);
 	require(__DIR__.'/../functions.php');
-	
 	$cutgroup_id = request('cutgroup_id');
 	$species_id = request('species');
 	$temperatureID = request('temperatureID');
@@ -119,16 +118,14 @@
     JOIN `nationality` ON product.nationality_id = nationality.id
     WHERE $whereString
     GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
-
     $productsY = prepareExecuteQuery($productsX);
     $productsCount = mysqli_num_rows($productsY);
      
     $totalW = 0;
     
     $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
-    
-    foreach($products as $productsRow){
 
+    foreach($products as $productsRow){
         $thisclass = 'thisclass'.rand(1,999999);
         $class = 'KIS'.rand(1,999999);
         $pallet_id = $productsRow['pallet_id'];
@@ -183,7 +180,7 @@
             array_push($product2_productids, $product2['productid']);
             $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
             if($product2['akg'] != ''){
-                $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$nationality_id);
+                    $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
             }else{
                 $this_row_weight = weightSoldFromProductID($product2['productid']);
             }
