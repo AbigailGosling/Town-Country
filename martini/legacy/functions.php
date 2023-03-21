@@ -391,7 +391,7 @@
 				$w = $row['weight_gross'] - $row['weight_tear'];
 			}
 			
-			$weight = $weight + $w;
+			$weight = $weight + (int)$w;
 		}
 		
 		

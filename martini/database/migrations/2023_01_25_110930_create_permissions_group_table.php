@@ -21,21 +21,12 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        //Migrate all of the Group 0's (administrator privileges) to group 4 for the foreign key
-        $permissions = Permission::where('group', 0)->get();
-        foreach($permissions as $permission)
-        {
-            $permission->group = 4;
-            $permission->save();
-        }
-
-
         PermissionsGroup::insert([[
             'name' => 'Sales'
         ],[
             'name' => 'Intake'
         ],[
-            'name' => 'Stock'
+            'name' => 'Management'
         ],[
             'name' => 'Administration'
         ]]);

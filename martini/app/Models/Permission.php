@@ -12,15 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Permission extends Model
 {
     use HasFactory;
-    /**
-     * Get Correctly Ordered list of Permissions for render
-     *
-     * @return Illuminate\Support\Collection
-     */
-    public static function GetPermissionList()
-    {
-        return Permission::where("name","<>","superadmin")->orderBy("group")->get();
-    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);

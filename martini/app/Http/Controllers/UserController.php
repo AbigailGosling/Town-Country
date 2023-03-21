@@ -51,7 +51,7 @@ class UserController extends Controller
     {
         $this->authorizeResource(User::class);
         View::composer('user-management/user', function ($view) {
-            $view->with('perms', Permission::GetPermissionList());
+            $view->with('permissions', PermissionsGroup::with('permissions')->where('id','<>',"0")->get());
         });
     }
 
@@ -102,6 +102,14 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make(Str::random(40)),
         ]);
+        
+        if (isset($request->perms) && is_array($request->perms) && count($request->perms) > 0) {
+            foreach (Permission::all() as $perm) {
+                if (array_key_exists($perm->name, $request->perms)) {
+                    $user->assignPermission($perm);
+                }
+            }
+        }
 
         event(new Registered($user));
         // We will send the password reset link to this user. Once we have attempted
@@ -110,7 +118,7 @@ class UserController extends Controller
         $status = Password::sendResetLink(
             $request->only('email')
         );
-        return $this->show($user);
+        return redirect()->route('users.show',['user'=>$user]);
     }
 
     /**
@@ -123,7 +131,7 @@ class UserController extends Controller
     {
         return view('user-management/user',
             ['user' => $user,
-                'permissions' => PermissionsGroup::with('permissions')->get(),
+                'permissions' => PermissionsGroup::with('permissions')->where('id','<>',"0")->get(),
                 'isNew' => false]);
     }
 

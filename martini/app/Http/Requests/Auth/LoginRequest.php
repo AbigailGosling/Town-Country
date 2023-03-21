@@ -47,7 +47,15 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
         $user = User::where("email",$this->input('email'))->where("disabled","false")->first();
-        if ($user && $user->hash_method !="BCRYPT")
+        if (!$user)
+        {
+            RateLimiter::hit($this->throttleKey());
+
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.failed'),
+                ]);
+        }
+        if ($user->hash_method !="BCRYPT")
         {
             if (!$this->checkAndConvertOldAccount($user))
             {
@@ -65,7 +73,7 @@ class LoginRequest extends FormRequest
                 'email' => trans('auth.failed'),
             ]);
         }
-
+        Auth::login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
     }
 

@@ -1,7 +1,7 @@
 <?php
 namespace InternalScripts;
 require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'/../functions.php')));
-require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../vendor/autoload.php')));
+require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../../vendor/autoload.php')));
     //SOCKETLABS IMPORTS//
 use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;

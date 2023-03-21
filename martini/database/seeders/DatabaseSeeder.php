@@ -81,6 +81,7 @@ class DatabaseSeeder extends Seeder
             if (!$existing)
             {
                 $perm->name = $oldPermission->file;
+                $perm->file = $oldPermission->file;
                 $perm->save();
             }         
         }
@@ -88,29 +89,36 @@ class DatabaseSeeder extends Seeder
         $perm = new Permission;
         $perm->label = 'Show Intake Overview Table Prices';
         $perm->description = 'Show Intake Overview Table Prices';
-        $perm->group = 0;
-        $perm->name = 'view_intake_prices';
+        $perm->group = 4;
+        $perm->file = $perm->name = 'view_intake_prices';
         $perm->save();
 
         $perm = new Permission;
         $perm->label = 'Ability to change salesman on create sale';
         $perm->description = 'Ability to change salesman on create sale';
-        $perm->group = 0;
-        $perm->name = 'allow_override_salesman';
+        $perm->group = 4;
+        $perm->file = $perm->name = 'allow_override_salesman';
         $perm->save();
 
         $perm = new Permission;
         $perm->label = 'Admin';
         $perm->description = 'Admin';
-        $perm->group = 0;
-        $perm->name = 'admin';
+        $perm->group = 4;
+        $perm->file = $perm->name = 'admin';
+        $perm->save();
+
+        $perm = new Permission;
+        $perm->label = 'Set Prices';
+        $perm->description = 'set_prices';
+        $perm->group = 4;
+        $perm->file = $perm->name = 'set_prices';
         $perm->save();
 
         $perm = new Permission;
         $perm->label = 'Super Admin';
         $perm->description = 'Super Admin';
         $perm->group = 0;
-        $perm->name = 'superadmin';
+        $perm->file = $perm->name = 'superadmin';
         $perm->save();
 
         foreach (OldUser::all() as $oldUser)
@@ -126,7 +134,7 @@ class DatabaseSeeder extends Seeder
             }
             $user->password = $oldUser->password;
             $user->hash_method = "SHA1";
-            $user->save();
+            $user->saveQuietly();
             $pp = explode(",",$oldUser->pages);
             foreach($pp as $oldPage)
             {

@@ -1,7 +1,6 @@
-<div class="grid grid-cols-1 md:grid-cols-3 pl-4">
-    <div class="col-span-2">
-    </div>
-    <div class="flex items-center pb-4 pr-4">
+<div class="grid pl-4">
+
+    <div class="flex items-center pb-4 pr-4 col-span-2">
             <label for="simple-search" class="sr-only">Search</label>
             <div class="relative w-full">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">

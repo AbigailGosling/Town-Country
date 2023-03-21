@@ -77,7 +77,7 @@ class UserObserver
         
         foreach($newUser->permissions as $newPermission)
         {
-            foreach(PagePermission::where("file",$newPermission->name)->get() as $oldp)
+            foreach(PagePermission::where("file",$newPermission->file)->get() as $oldp)
             {
                 if ($newPermission->group != 0)$pages[] = $oldp->id;
                 else

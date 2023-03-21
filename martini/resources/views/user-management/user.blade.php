@@ -9,8 +9,13 @@
         </h2>
     </x-slot>
     <div class="py-12">
-<form method="POST" action="{{route('users.update', ['user' => $user->id])}}">
-    {{ method_field('PUT') }}
+    @if ($isNew)
+            <form method="POST" action="{{route('users.store')}}">
+            {{ method_field('POST') }}
+            @else
+            <form method="POST" action="{{route('users.update', ['user' => $user->id])}}">
+            {{ method_field('PUT') }}
+            @endif
     @csrf
         <x-form>
             <x-form-section title="Personal Information" columns="2">
@@ -80,9 +85,11 @@
             <x-slot name="buttons">
     <x-form-button title="{{ $isNew ? 'Create User' : 'Update User' }}" iconClass="fa-circle-arrow-right" :submit="true">
     </x-form-button>
+    @if (!$isNew)
     <x-form-button title="{{ 'Forgotten Password' }}" iconClass="fa-key" background="orange"
                    route="users.forgot-password" :params="$user->id">
     </x-form-button>
+    @endif
     </x-slot>
     </x-form>
 </form>
