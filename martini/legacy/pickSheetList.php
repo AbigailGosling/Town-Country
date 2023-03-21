@@ -1,23 +1,11 @@
 <?php
-    include_once('functions.php');
-    
+    include_once('includes/frontHeader.php');
     if(request('delid') != ''){
-    
-
         $delid = $mysqli->real_escape_string( request('delid'));
-        
         $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=? WHERE id=?",'ii',[$userid,$delid]);
-
         $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id=?",'i',[$delid]);
-
         $palletsOutResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$delid]);
-
-        while($palletOut = mysqli_fetch_array($palletsOutResult)){
-            $weightIDS = $palletOut['weight_ids'];
-
             $deleteWeightsResult = prepareExecuteQuery("UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
-        }
-
         $x = "DELETE FROM `palletsOut` WHERE pickersheet_id=?";
         $y = prepareExecuteQuery($x,'i',[$delid]);
 
@@ -134,7 +122,7 @@
                         </table>
                     </div>
                      <div class="actions">
-                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ window.location.href= '/pickSheetList.php?delid=<?php echo $row['id']; ?>'; }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $row['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
                     </div>
                 </div>
             <?php
@@ -159,5 +147,13 @@
     .tag.fresh{ background:#c0392b; }
     .tag.frozen{ background:#2980b9; }
 </style>
+<script>
+    function doDelete(id){
+        $.post("/ajax/deletePick.php", {'id':id}, results);
+    }
+    function results(){
+        location.reload();
+    }
+</script>
 </body>
 </html>

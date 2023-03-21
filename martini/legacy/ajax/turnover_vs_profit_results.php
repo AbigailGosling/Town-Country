@@ -433,5 +433,5 @@
     <td><div class="totalWeightValue" style="font-size:13px;"></div></td>
     <td><div class="totalCostValue" style="font-size:13px;"></div></td>
     <td><div class="totalSellValue" style="font-size:13px;"></div></td>
-    <td><div class="totalProfitValue" style="font-size:13px;"></div></td>
+    <td><div class="totalProfitValue" style="font-size:13px;"></div><div class="totalProfitPercent" style="font-size:13px;"></div></td>
 </tr>

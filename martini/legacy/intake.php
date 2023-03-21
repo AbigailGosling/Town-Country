@@ -235,7 +235,6 @@
 		$y = prepareExecuteQuery($x,'i',[$intake_id]);
         $count = mysqli_num_rows($y);
         
-        if($count < 5){ 
     ?>
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Add Document</h2>
@@ -254,14 +253,13 @@
 			 
 		</form>
     </div>
-    <?php } ?>
     <?php
         $x = "SELECT * FROM `intakeDocs` WHERE intakeid=?";
 		$y = prepareExecuteQuery($x,'s',[$intake_id]);
 		$count = mysqli_num_rows($y);
 		
 		if($count > 0){
-			?><div style="padding: 15px;border: 1px solid grey;<?php if($count < 5){ echo 'width:100%;margin-top:40px;'; } else{ echo 'width:45%;'; }?>">
+			?><div style="padding: 15px;border: 1px solid grey;width:100%;margin-top:40px;">
 			<h2 style="font-size:20px;">Intake Documents</h2><?php
 			while($row = mysqli_fetch_array($y)){
 			?>

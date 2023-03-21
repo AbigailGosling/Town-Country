@@ -24,6 +24,7 @@
 		case '/index.php':
 		case '/legacy/script_login.php':
 		case '/legacy/ajax/generatePDFstatement2.php':
+		case '/ajax/deletePick.php':
 		case '/legacy/scripts/SLabsNotifier.php':
 			$exit = 0;
 	}

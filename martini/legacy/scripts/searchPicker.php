@@ -124,7 +124,8 @@
     $totalW = 0;
     
     $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
-
+    $overallQuantity =0;
+    $overallWeight =0;
     foreach($products as $productsRow){
         $thisclass = 'thisclass'.rand(1,999999);
         $class = 'KIS'.rand(1,999999);
@@ -173,6 +174,7 @@
         $product2_temperatures = array();
         $product2_dateranges = array();
         $product2_quantity = 0;
+<<<<<<< HEAD:martini/legacy/scripts/searchPicker.php
         foreach ($products2 as $product2) 
         {
             array_push($product2_palletids, $product2['pallet_id']);
@@ -180,6 +182,26 @@
             array_push($product2_productids, $product2['productid']);
             $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
             if($product2['akg'] != ''){
+=======
+        array_map(
+            function($product2) {
+                global $intake_id;
+                global $product2_palletids;
+                global $product2_cutids;
+                global $product2_productids;
+                global $product2_brands;
+                global $product2_nationalities;
+                global $product2_temperatures;
+                global $product2_dateranges;
+                global $product2_quantity;
+                global $overallQuantity;
+                global $overallWeight;
+                array_push($product2_palletids, $product2['pallet_id']);
+                array_push($product2_cutids, $product2['cut_id']);
+                array_push($product2_productids, $product2['productid']);
+                $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
+                if($product2['akg'] != ''){
+>>>>>>> develop:scripts/searchPicker.php
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
             }else{
                 $this_row_weight = weightSoldFromProductID($product2['productid']);
@@ -207,6 +229,7 @@
         else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
         if($quantityTotal < 1){continue;}
+        $overallQuantity = $overallQuantity + $quantityTotal;
         ###
         
         $totalW += weightSoldFromProductID($productsRow['productid']);           
@@ -214,6 +237,7 @@
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
 
         $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
+        $overallWeight = $overallWeight + $totalWeightOfProduct;
         if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){
             $locked = true;
             $lockedT = "y";
@@ -285,19 +309,46 @@
                     }
                 ?>
             </td>
-			<td>
+			
             <?php
                 if($uniqueDateranges > 1){
-                    echo '--';                    
+                    echo '<td>--</td>';                    
                 }else{
                     if($ubbb != 2){
-                        //echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; 
-                        if(isset($product2_dateranges[0])) echo $ubtext . ' ' . $product2_dateranges[0];
+                        $toDate = DateTime::createFromFormat('d/m/Y',explode("-",$product2_dateranges[0])[1])->getTimestamp();
+                        $cutQuery = mysqli_query($conn,"SELECT warning,danger FROM `cuts` WHERE id = ".$product2_cutids[0]);
+                        $cutResult= mysqli_fetch_assoc($cutQuery);
+                        $bgCol = "";
+                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        {
+                            $bgCol = 'style="background-color:LightGreen"';
+                            $now = time();
+                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                            {
+                                $pastWarning = $now - ($cutResult['warning'] * 86400);
+                                if ($toDate <= $pastWarning)
+                                {
+                                    $bgCol = 'style="background-color:LemonChiffon"';
+                                }
+                            }
+                            if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                            {
+                                $pastWarning = $now - ($cutResult['danger'] * 86400);
+                                if ($toDate <= $pastWarning)
+                                {
+                                    $bgCol = 'style="background-color:LightPink"';
+                                }
+                            }
+                        }
+                        
+                        
+                        if(isset($product2_dateranges[0])) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $product2_dateranges[0].'</td>';
+                        else echo '<td>--</td>';
                     }else{
-                        echo $ubtext;
+                        echo '<td>'.$ubtext.'</td>';
                     }
                 }
-            ?></td>
+            ?>
             <td class="bold"><?php 
                 
                 if($productsRow['grosspallet'] == 1){
@@ -324,7 +375,33 @@
 
     <?php 
     }
- ?>
+    ?>
+    <tr class="searchAccordTitle">
+    <td colspan="1">
+        <div class="intakeLink" style="color:#000;text-decoration:underline;">
+            <b>Totals</b>
+        </div>
+    </td>
+    <td colspan="1">
+     &nbsp;		 
+    </td>
+    <td colspan="1"  onclick=""></td>
+   <td width="40" align="center"></td>
+    <td class="bold" colspan="1"><?php echo $overallQuantity; ?></td>
+    <td></td>
+    <td class="bold" colspan="1"></td>
+    <td colspan="1">
+    </td>
+    <td colspan="1">
+    </td>
+    <td>
+    </td>
+    <td></td>
+    <td class="bold"><?php echo floorDec($overallWeight,3) . "kg"; ?></td>
+    <td class="bold"></td>
+    <td class="bold"></td>
+    <td></td>
+</tr>
 
 
 <script type="text/javascript">
