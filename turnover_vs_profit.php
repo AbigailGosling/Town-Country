@@ -254,10 +254,11 @@
                 });
 
                 totalProfitValue = (totalSellValue -totalCostValue).toFixed(2);
-
+                var totProfitPerc= (totalSellValue /totalCostValue).toFixed(2);
                 $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
                 $('.totalQuantityValue').text(totalQuantity);
                 $('.totalProfitValue').text('£' + formatNumber(totalProfitValue));
+                $('.totalProfitPercent').text(formatNumber(totProfitPerc) + "%");
                 $('.totalSellValue').text('£' + formatNumber(totalSellValue));
                 $('.totalCostValue').text('£' + formatNumber(totalCostValue));
                 

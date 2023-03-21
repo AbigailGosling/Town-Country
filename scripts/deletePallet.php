@@ -10,7 +10,7 @@
 	
 	
 	# if($product_id != '' && $pallet_id != ''){
-		
+		loggedDataChange('pallet_force_delete',$pallet_id,'User Deleted Pallet');
 		
 		$x = "SELECT * FROM `product` WHERE pallet_id = $pallet_id";
 		$y = mysqli_query($conn, $x) or die(mysqli_error($conn));

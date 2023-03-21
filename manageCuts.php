@@ -138,6 +138,29 @@
 				</td>
 
 			</tr>
+			<tr>
+
+				<td>
+
+					<label>Warning Threshold (in days)</label>
+
+					<input type="text" name="warning" onkeypress="validate(event)" value="<?php echo $data['warning']; ?>">
+
+				</td>
+
+				</tr>
+
+				<tr>
+
+				<td>
+
+					<label>Danger Threshold (in days)</label>
+
+					<input type="text" name="name" onkeypress="validate(event)" value="<?php echo $data['danger']; ?>">
+
+				</td>
+
+			</tr>
 
 			<tr>
 
@@ -160,7 +183,7 @@
 				</td>
 
 			</tr>
-
+					
 		</table>
 
 		</form>
@@ -210,11 +233,28 @@
 </main>
 
 <script type="text/javascript">
+	function validate(evt) {
+  var theEvent = evt || window.event;
+
+  // Handle paste
+  if (theEvent.type === 'paste') {
+      key = event.clipboardData.getData('text/plain');
+  } else {
+  // Handle key press
+      var key = theEvent.keyCode || theEvent.which;
+      key = String.fromCharCode(key);
+  }
+  var regex = /[0-9]|\./;
+  if( !regex.test(key) ) {
+    theEvent.returnValue = false;
+    if(theEvent.preventDefault) theEvent.preventDefault();
+  }
+}
 
 	$(document).ready(function(){
 
     $('#SearchCutgroups option.s'+$('#SearchSpecies').first().val()).show();
-
+	
 	function toggleOptions(){
 
 		var thisval = $("#SearchSpecies").val();

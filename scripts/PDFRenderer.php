@@ -41,7 +41,7 @@ class PDFRenderer{
                             })()'
                         )->getReturnValue(10000);
                 }
-                catch (Exception $e) {}
+                catch (\Exception $e) {}
                 if ($evaluation)
                 {
                     $hasResult = true;
@@ -58,7 +58,7 @@ class PDFRenderer{
             $out= $page->pdf(['printBackground' => false]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
             $page->navigate('https:'.$domain.'logout.php')->waitForNavigation();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             die($e->getMessage());
         } finally {
             // bye
@@ -91,7 +91,7 @@ class PDFRenderer{
                 )->waitForPageReload();
             $page->navigate('https:'.$domain.$targetURL)->waitForNavigation();
             $output = $page->getHtml();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             die($e->getMessage());
         } finally {
             // bye
