@@ -1,7 +1,7 @@
 <?php
 namespace InternalScripts;
-require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'/../functions.php')));
-require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../../vendor/autoload.php')));
+require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../functions.php')));
+require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../vendor/autoload.php')));
     //SOCKETLABS IMPORTS//
 use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;
@@ -30,12 +30,12 @@ class SLabsEmailer {
         );
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
-        global $mysqli;
+        global $conn;
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
-        $toEmails = array('andrew.gosling@tang.solutions','thecyanangel@gmail.com');
+
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
         foreach($toEmails as $email)
         {	
@@ -63,8 +63,8 @@ class SLabsEmailer {
             $message->messageId = $mid;
             $trimmed = trim($email);
 
-            $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES (?,?,?,?,?,?,?, NOW())";
-            prepareExecuteQuery($sql,'issssss',[$customerID, $document_id, $trimmed, $mid, $type, SLabsEmailerStatus::Sending, $fullExplainedPath]);
+            $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
+            mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
 
             try
             {
@@ -81,12 +81,12 @@ class SLabsEmailer {
         return "done";
     }
     public static function process_notification($data) {
-        global $mysqli;
+        global $conn;
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
        
-        $t = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE `addressee`=? AND `message_id`=?",'ss',[$addressee,$message_id]);
-        if (mysqli_num_rows($t) == 0 && request()->server('SERVER_NAME') != "13.40.103.56")
+        $t = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
+        if (mysqli_num_rows($t) == 0 && $_SERVER['SERVER_NAME'] != "13.40.103.56")
         {
             /*ob_start();
             header('Location: https://tcdev.tang.solutions//scripts/SLabsNotifier.php');
@@ -129,7 +129,7 @@ class SLabsEmailer {
             }
         }
 
-        prepareExecuteQuery("UPDATE `mail_tracking` SET `status`=?,`secondary_code`=? WHERE `addressee`=? AND `message_id`=?",'ssss',[$status_code,$secondary_code,$addressee,$message_id]);
+        mysqli_query($conn, "UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
     }
 }
 abstract class SLabsEmailerType
@@ -171,7 +171,7 @@ abstract class SLabsEmailerStatus
         return $trafficColour;
     }
     static function getTextStatus($status,$secondary_code){
-        global $mysqli;
+        global $conn;
         $returningValue = null;
         switch ($status){
             case SLabsEmailerStatus::Sending:          
@@ -184,7 +184,7 @@ abstract class SLabsEmailerStatus
         }
         if ($returningValue == null)
         {
-            $q = prepareExecuteQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = ?",'s',[$secondary_code]);
+            $q = mysqli_query($conn, "SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
             $returningValue = mysqli_fetch_assoc($q);
             $returningValue = $returningValue['value'];
         }
