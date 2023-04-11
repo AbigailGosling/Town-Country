@@ -220,35 +220,35 @@ function precredit_check($customer_id)
         }
 
         if ($oldest != "" && $oldest < $gracePeriod)
-        {//over grace
+        {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
         } 
-        else if ($outstanding > $custR['credit_rating'])
-        {//over finance
+        else if ($outstanding > $custR['credit_rating']) 
+        {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer is over credit limit, contact administration";
             $returningObj['messageLong'] = "Customer is over credit limit, contact administration";
             $returningObj['overcredit'] = true;
         }
-        else if ($oldest != "" && $oldest < $beyondDate)
-        {//over due
+        else if ($oldest != "" && $oldest < $beyondDate) 
+        {
             $returningObj['showHigherWarning'] = true;
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Customer has invoice(s) overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
         }
         else if ($oldest != "" && $oldest < $closeToOverdue)
-        {//due soon
+        {
             $returningObj['hideOnStmt'] = true;
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
         }
-       
+        
         else if ($outstanding > $custR['flaguplimit']) 
-        {//close to finance
+        {
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";
