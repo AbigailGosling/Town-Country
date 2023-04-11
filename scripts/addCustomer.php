@@ -1,6 +1,5 @@
 <?php
 	require('../functions.php');
-	
 	$businessname = mysqli_real_escape_string($conn, $_POST['businessname']);
 	
 	$tradingas = mysqli_real_escape_string($conn, $_POST['tradingas']);
@@ -85,8 +84,8 @@
 
 	$x = "INSERT INTO `customers` (`businessname`, `tradingas`, `nameofbuyer`, `contactnumber`, `customer_email`, `companyregno`, `accounts_address_1`, `accounts_address_2`, `accounts_address_3`, `accounts_address_4`, `accounts_contact`, `tel_number`, `internal_email`, `credit_terms`, `pricedefault`, `credit_rating`, `flaguplimit`, `current_outstanding`,`accounts_email`,`accounts_comments`,`default_salesman_id`,`due_warning`,`credit_grace`, ".implode(",",$colNames).") 
 	VALUES
-	('$businessname','$tradingas','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$accounts_email','$accounts_comments','$default_salesman_id','$due_warning','$credit_grace', ".implode(",",$colNames).");";
-	
+	('$businessname','$tradingas','$nameofbuyer','$contactnumber','$customer_email','$companyregno','$accounts_address_1','$accounts_address_2','$accounts_address_3','$accounts_address_4','$accounts_contact','$tel_number','$internal_email','$credit_terms','$pricedefault','$credit_rating','$flaguplimit','$current_outstanding','$accounts_email','$accounts_comments','$default_salesman_id','$due_warning','$credit_grace', ".implode(",",$colValue).");";
+
 	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
 	
 ?>
