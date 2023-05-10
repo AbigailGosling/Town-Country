@@ -1,0 +1,11 @@
+<?php
+	require(__DIR__.'/../functions.php');
+	
+	$id = $mysqli->real_escape_string( request()->input('id'));
+	
+	$x = "DELETE FROM `brands` WHERE id = ?";
+	$y = prepareExecuteQuery($x,'i',[$id]);
+?>
+<script>
+	window.location = '../manageBrands.php';
+</script>

@@ -1,0 +1,50 @@
+<?php
+//This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
+require_once(__DIR__.'/../functions.php');
+require_once(__DIR__.'/../scripts/PDFRenderer.php');
+require_once(__DIR__.'/../scripts/SLabsEmailer.php');
+
+use InternalScripts\SLabsEmailer;
+use InternalScripts\PDFRenderer;
+
+//This function renders a PDF document from a string using mPDF
+function renderPDF($saleID){
+	
+	$statementDate = time();
+	$fileName = 'Sale_'.$saleID.'_'.$statementDate.'.pdf';
+	$pathToFile = 'PDF';
+	
+	PDFRenderer::generatePDFfromWeb('viewSalesconfirmation.php?id='.$saleID,$pathToFile,$fileName);
+	
+	$x = "SELECT `customer_id` FROM `pickerSheets` WHERE id=?";
+	$y = prepareExecuteQuery($x,'i',[$saleID]);
+	$picksheet = mysqli_fetch_assoc($y);
+	
+	$customer_id = $picksheet['customer_id'];
+
+	$customerQueryResult = prepareExecuteQuery("SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = ?",'i',[$customer_id]);
+	$customer = mysqli_fetch_assoc($customerQueryResult);
+	if ($customer['customer_email']!= null && $customer['customer_email']!= "")
+	{
+		$customer_emails = explode(";",$customer['customer_email']);
+	}
+	else if ($customer['accounts_email']!= null && $customer['accounts_email']!= "")
+	{
+		$customer_emails = explode(";",$customer['accounts_email']);
+	}
+	else
+	{
+		$customer_emails = explode(";",$customer['internal_email']);
+	}
+	$subject = "Sale Confirmation ".$saleID." from Town and Country Meats";
+	$htmlBody = "<html>Please find attached a sale confirmation from Town and Country Meats Group for ".$customer['businessname']." Invoice No: ".$saleID.".</html>";
+
+	$x = "UPDATE `pickerSheets` SET sent=1 WHERE id=?";
+	
+	$y = prepareExecuteQuery($x,'i',[$saleID]);
+	
+	return SLabsEmailer::send_email($customer_id,"SALES_CONFIRMATION",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$saleID);
+	
+}
+
+?>
