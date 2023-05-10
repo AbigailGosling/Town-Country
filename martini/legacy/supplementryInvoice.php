@@ -3,11 +3,11 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 
-<form id="pickerForm" method="POST" action="/scripts/buildPicker2.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
+<form id="pickerForm" method="POST" action="scripts/buildPicker2.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
 <div class="container container--pt">
@@ -50,7 +50,7 @@
 			<label> Salesperson</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
-					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
 	
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -261,6 +261,9 @@
 	var showWarning = false;
 	var showHigherWarning = false;
 	var warningMessage = "";
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     $(document).ready(function() {
         var formHasChanged = false;
         var submitted = false;
@@ -292,7 +295,7 @@
 
 			if (alert === true) {
 				if (prop == 'menu') {
-					window.location.href = "/menu.php"
+					window.location.href = "menu.php"
 				} else {
 					window.location.href = '/intake.php?id=' + prop + '&ref=salesconfirmationsheet'
 				}
@@ -303,13 +306,13 @@
 	function add() {
 		var name = $('#itemname').val();
 		var cost = $('#itemcost').val();
-		$.post("/ajax/supplimentryItemAdd.php", { 'name':name, 'cost':cost }, addComplete);
+		$.post("ajax/supplimentryItemAdd.php", { 'name':name, 'cost':cost }, addComplete);
 	}
 	function addComplete(data){
 		$('.basketTable').append(data);
 	}
 	function deleteRow(id){
-		$.post("/ajax/supplimentryItemRemove.php", { 'id':id }, deleteComplete);
+		$.post("ajax/supplimentryItemRemove.php", { 'id':id }, deleteComplete);
 	}
 	function deleteComplete(data){
 		console.log(data);
@@ -387,7 +390,7 @@
 		});
 		
 		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet){
-			$('#sendreal').trigger('click');
+			$('#sendreal').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 			return false;
 		}else{
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
@@ -398,7 +401,9 @@
 
 		}		
 	});
-	
+	function mainFormSucess(){
+		location.reload();
+	}
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
 		
@@ -534,7 +539,7 @@
 		$('#addressid').val(address_id);
 
 
-		$.get("/ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});

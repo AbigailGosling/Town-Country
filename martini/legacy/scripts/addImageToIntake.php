@@ -13,9 +13,9 @@
 		copy($tmp_name,$upload_dir.$file_name);
 	}
 	
-	$intakeID = request('intakeid');
+	$intakeID = request()->input('intakeid');
 	
-	$name = $mysqli->real_escape_string( request('name'));
+	$name = $mysqli->real_escape_string( request()->input('name'));
 	
 	$x = "INSERT INTO `intakeDocs` (`name`,`dfile`,`intakeid`) VALUES (?,?,?)";
 	$y = prepareExecuteQuery($x,'sss',[$name,$file_name,$intakeID]);

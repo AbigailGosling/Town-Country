@@ -17,57 +17,6 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run2()
-    {
-        foreach (User::all() as $newUser)
-        {
-            $oldUser = OldUser::firstOrCreate(['id' => $newUser->id]);
-            $oldUser->name = $newUser->name;
-            $oldUser->email = $newUser->email;
-            if ($newUser->disabled == true && strpos(strtolower($oldUser->name),"removed") == 0)
-            {
-                $oldUser->name = $oldUser->name . " removed";
-            }
-            $oldUser->password = $newUser->password;
-            $pages = [];
-            foreach($newUser->permissions as $newPermission)
-            {
-                foreach(PagePermission::where("file",$newPermission->name)->get() as $oldp)
-                {
-                    if ($newPermission->group != 0)$pages[] = $oldp->id;
-                    else
-                    {
-                        if ($newPermission->name == 'view_intake_prices')
-                        {
-                            $oldUser->view_intake_prices = 1;
-                        }
-                        else
-                        {
-                            $oldUser->view_intake_prices = 0;
-                        }
-                        if ($newPermission->name == 'allow_override_salesman')
-                        {
-                            $oldUser->allow_override_salesman = 1;
-                        }
-                        else
-                        {
-                            $oldUser->allow_override_salesman = 0;
-                        }
-                        if ($newPermission->name == 'admin')
-                        {
-                            $oldUser->user_type = "A";
-                        }
-                        else
-                        {
-                            $oldUser->user_type = "M";
-                        }
-                    }
-                }
-            }
-            $oldUser->pages = implode(",",$pages);
-            $oldUser->save();
-        }
-    }
     public function run()
     {
         foreach (PagePermission::all() as $oldPermission)
@@ -83,7 +32,14 @@ class DatabaseSeeder extends Seeder
                 $perm->name = $oldPermission->file;
                 $perm->file = $oldPermission->file;
                 $perm->save();
-            }         
+            }
+            if ($perm->label == "editUsers.php")
+            {
+                $oldPermission->file = "../users";
+                $oldPermission->save();
+                $perm->file = "../users";
+                $perm->save();
+            }
         }
 
         $perm = new Permission;

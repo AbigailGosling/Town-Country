@@ -12,7 +12,7 @@
 
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script>
 	$( function() {
@@ -23,7 +23,7 @@
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
 	<div id="intakelist">
@@ -37,7 +37,9 @@
 		<div class="loadMoreBtn" onclick="loadRows()">Load More</div>
     </div>	
 	<script type="text/javascript">
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 		$(document).ready(function(){
 			
 			// load initial 80 rows
@@ -52,6 +54,7 @@
 			var val = $('#instantSearch').val();
 
 				var request = $.ajax({
+					headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 					type: "POST",
 					url: "legacy/ajax/deliverynotePageList.php",
 					data: {

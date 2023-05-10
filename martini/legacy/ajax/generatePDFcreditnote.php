@@ -1,32 +1,59 @@
 <?php
 	require(__DIR__.'/../functions.php');
-
-	ini_set('memory_limit', '1024M');
 	
-	require_once '../vendor/autoload.php';
-	
-	$perPage = 29;
+	require(__DIR__.'/../scripts/PDFRenderer.php');
+	use InternalScripts\PDFRenderer;
+	if (!request()->has('adv'))
+	{
+		$filename2 = 'Credit_Note_'.request()->input('id').'.pdf';
+		PDFRenderer::generatePDFfromWeb('ajax/generatePDFcreditnote.php?id='.request()->input('id').'&payment_id='.request()->input('payment_id').'&adv=1','PDF',$filename2,false);
+		 	
+		/*$file =__DIR__."/../PDF/".$filename2;
+		if (file_exists($file)) {
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename='.basename($file));
+			header('Content-Transfer-Encoding: binary');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			header('Pragma: public');
+			header('Content-Length: ' . filesize($file));
+			ob_clean();
+			flush();
+			readfile($file);
+			exit;
+		}*/
+?>
+<script>
+	window.location.href="../PDF/<?php echo $filename2; ?>";
+</script>
+<?php
+	}
+	else
+	{
+		ini_set('memory_limit', '1024M');
+		$perPage = 29;
  	$border = 0;
 	
  	$pageArray = array();
 	
-	$payment_id = request('payment_id');
-	$pickersheet_id = request('id');
+	$payment_id = request()->input('payment_id');
+	$pickersheet_id = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
-	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
+	$y = loggedQuery($x,'i',[$pickersheet_id]);
 	$pickSheetRow = mysqli_fetch_array($y);
 	
 	$customer_id = $pickSheetRow['customer_id'];
 	
 	$x2 = "SELECT * FROM `customers` WHERE id=?";
-	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
+	$y2 = loggedQuery($x2,'i',[$customer_id]);
 	
 	$customerRow = mysqli_fetch_array($y2); 
 
 	$customer_id = $pickSheetRow['customer_id'];
 	$x = "SELECT * FROM `customers` WHERE id=?";
-	$y = prepareExecuteQuery($x,'i',[$customer_id]);
+	$y = loggedQuery($x,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y);
 	
 	$date = str_replace('/', '-', $pickSheetRow['date_completed']);
@@ -41,7 +68,7 @@
 	
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
-	
+	$header .= '<link href="../css/style.css" rel="stylesheet" type="text/css">';
 	$css ="
 		body{
 			font-family: 'Roboto', sans-serif;
@@ -272,14 +299,14 @@
 						<td class="heading" colspan="2">Sub Total</td>
 					</tr>';
 			 	
-				$paymentsResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
+				$paymentsResult = loggedQuery("SELECT * FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
 
 				$total_qty_count = 0;
 				while($payment = mysqli_fetch_array($paymentsResult)){
 					$total_qty_count += $payment['quantity'];
 					$productID = $payment['product_id'];
 				
-					$productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
+					$productResult = loggedQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
 					$product = mysqli_fetch_array($productResult);
 					
 					if($productID == 0){
@@ -292,11 +319,11 @@
 							<b class="unit">'. $unit .'</b>
 						</td>
 						<td></td>
-						<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
-						<td>£'. number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '') .'</td>
+						<td>£'. number_format((double)$payment['price'], 2, '.', '') .'</td>
+						<td>£'. number_format((double)$payment['price'] * $payment['quantity'], 2, '.', '') .'</td>
 						</tr>';
 
-						$totalPrice += number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '');
+						$totalPrice += number_format((double)$payment['price'] * $payment['quantity'], 2, '.', '');
 					}else{
 					
 						if($product['unit'] == 'C'){
@@ -313,9 +340,9 @@
 
 						$weight = weightFromProductIDArray([$productID]);
 						if($product['unit'] == 'PPC'){
-							$sub_tot = number_format((float)$payment['price'] * $payment['quantity'], 2, '.', '');
+							$sub_tot = number_format((double)$payment['price'] * $payment['quantity'], 2, '.', '');
 						}else{
-							$sub_tot = number_format((float)$payment['price'] * $weight, 2, '.', '');
+							$sub_tot = number_format((double)$payment['price'] * $weight, 2, '.', '');
 						}
 
 						$html .='
@@ -330,7 +357,7 @@
 							<b class="unit">'. $unit .'</b>
 						</td>
 						<td>'. $weight .'kg</td>
-						<td>£'. number_format((float)$payment['price'], 2, '.', '') .'</td>
+						<td>£'. number_format((double)$payment['price'], 2, '.', '') .'</td>
 						<td>£'. $sub_tot .'</td>
 						</tr>';
 								
@@ -345,7 +372,7 @@
 				  <th align="left"></th>
 				  <th align="left"></th>
 				  <th align="left"></th>';
-				$html .= '<th align="price" colspan="2" class="price">£' . number_format((float)$totalPrice, 2, '.', '') . '</th>';
+				$html .= '<th align="price" colspan="2" class="price">£' . number_format((double)$totalPrice, 2, '.', '') . '</th>';
 				
 
 				$html .='</tr>';
@@ -376,7 +403,7 @@
 						<img src="'. $domain .'images/ecblue.jpg">
 					</td>
 					<td align="right">
-						<div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£'. number_format((float)$totalPrice, 2, '.', '') .'</b></span></div>
+						<div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£'. number_format((double)$totalPrice, 2, '.', '') .'</b></span></div>
 						<div class="paymentDue"></span></div>
 					</td>
 				</tr>
@@ -413,56 +440,6 @@
 		</tr>
 	</table>
 	';
-	if (!isset(request('adv')))
-	{
-		$mpdf = new \Mpdf\Mpdf([
-			'debug' => true,
-			'mode' => 'utf-8',
-			'format' => [210, 297],
-			'setAutoTopMargin' => 'stretch',
-			'autoMarginPadding' => 0,
-			'bleedMargin' => 0,
-			'crossMarkMargin' => 0,
-			'cropMarkMargin' => 0,
-			'nonPrintMargin' => 0,
-			'margBuffer' => 0,
-			'collapseBlockMargins' => true,
-		]);
-		$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
-		$mpdf->SetHTMLHeader($header);
-		
-		
-		 
-		 foreach($pageArray as $page){
-			$mpdf->SetHTMLFooter($footer);
-			$mpdf->AddPage();
-			$mpdf->WriteHTML($pageHeader);
-			$mpdf->WriteHTML($page);
-			$mpdf->WriteHTML($pageFooter);
-		}
-		
-		
-		   $mpdf->SetHTMLFooter($footer);
-	 
-	 
-	 
-		 $filename2 = 'Credit_Note_'.$pickersheet_id.'.pdf';
-		$filename = '../PDF/' . $filename2;
-		
-		 
-		$mpdf->Output($filename,'F');
-	
-		echo $filename2;
-
-?>
-
-<script>
-	window.location.href="/PDF/<?php echo $filename2; ?>";
-</script>
-<?php
-	}
-	else
-	{
 		echo "<div class='printme'>";
 		
 		echo $header;

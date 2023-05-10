@@ -3,7 +3,7 @@
 	require(__DIR__.'/../functions.php');
 	
     $intake_picksheet_ids = array();
-	$term = $mysqli->real_escape_string(request('searchterm'));
+	$term = $mysqli->real_escape_string(request()->input('searchterm'));
     
     $x = "SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);

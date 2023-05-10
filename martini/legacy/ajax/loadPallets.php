@@ -1,6 +1,6 @@
 	<?php
 		include(__DIR__.'/../functions.php');
-		$intake_id = request('intake_id');
+		$intake_id = request()->input('intake_id');
 	?>
 	 
 	<div class="clearfix"></div>
@@ -44,7 +44,7 @@
 					<?php
  						$kk = prepareExecuteQuery("SELECT product.* FROM product INNER JOIN cuts ON product.cut_id=cuts.id && product.pallet_id=?",'i',[$pallet_id]);
 						
-						$totalWeight2 = 0;
+						$totalWeight2 = (double)0;
 						while($product = mysqli_fetch_array($kk)){
 								$product_id = $product['id'];
 								$cut_id = $product['cut_id'];
@@ -90,7 +90,7 @@
 										echo getCut($cut_id);
 										
 										
-										$totalWeight2 = $totalWeight2 + $ykRow['weight_gross'];
+										(double)$totalWeight2 = (double)$totalWeight2 + (double)$ykRow['weight_gross'];
 										$weightthing = weightFromProductID($product_id);
 										
 										if($unit == 'PP'){
@@ -209,7 +209,7 @@
 										<a href="javascript:;" onclick="editWeight('<?php echo $intake_id; ?>','<?php echo $pallet_id; ?>','<?php echo $product_id; ?>','<?php echo $weightID; ?>')">
 											<i class="fa fa-pencil" aria-hidden="true" style="font-size:18px;color:#000;"></i>
 										</a>
-										<a href="/scripts/deleteProduct.php?productid=<?php echo $product_id; ?>&intakeid=<?php echo $intake_id; ?>">
+										<a href="scripts/deleteProduct.php?productid=<?php echo $product_id; ?>&intakeid=<?php echo $intake_id; ?>">
 											<i class="fa fa-trash" aria-hidden="true" style="font-size:18px;color:#000;"></i>
 										</a>
 									</td>

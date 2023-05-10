@@ -3,7 +3,7 @@
 ?>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <style id="mainStyle">
 
@@ -86,12 +86,15 @@
         </table>
         </div>
         <div align="center" style="display:none" id="loadericoncenter" name="loadericoncenter" class="loadericoncenter">
-            <img src="legacy/img/loading.gif" alt="">
+            <img src="img/loading.gif" alt="">
         </div>
 </div>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 $(document).ready(function(){ 
 });
 function fetchResults(){
@@ -100,7 +103,7 @@ function fetchResults(){
     $("#soaTable > tbody").empty();
     var customer_id = $("#customer_id").val();
     var user_id = $("#user_id").val();
-    $.post("/ajax/generateOutstandingBreakdown.php", { 'customer_id':customer_id,'user_id':user_id }, results);
+    $.post("ajax/generateOutstandingBreakdown.php", { 'customer_id':customer_id,'user_id':user_id }, results);
 }
 function results(data, status){
     var arr = data.split("|");

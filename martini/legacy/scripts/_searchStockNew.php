@@ -2,10 +2,10 @@
     ini_set('memory_limit','16M');
 	require(__DIR__.'/../functions.php');
 	
-    $intake_id = request('intake_id');
-	$cut_id = request('cut_id');
-	$class = request('class');
-	$nationality_id = request('nationality_id');
+    $intake_id = request()->input('intake_id');
+	$cut_id = request()->input('cut_id');
+	$class = request()->input('class');
+	$nationality_id = request()->input('nationality_id');
   
     $totalW = 0;
      
@@ -112,7 +112,9 @@
 		}
  ?>
   <script>
- 
+ $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
  $(document).ready(function(){
 	 $('.location-input').each(function(){
 		 $(this).on('keypress',function(e) {

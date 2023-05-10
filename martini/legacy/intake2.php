@@ -1,8 +1,8 @@
 <?php
 	include('includes/frontHeader.php');
  
-	$id = request('id');
-	$intake_id = request('id');	
+	$id = request()->input('id');
+	$intake_id = request()->input('id');	
 	
 	$intake = getIntake($id);
 	
@@ -12,33 +12,33 @@
 	
 	$supplier = getSupplier($intake['supplier_id']);
 	
-	if(request('hide') == 'true'){
-		$pallet_id = request('pallet_id');
+	if(request()->input('hide') == 'true'){
+		$pallet_id = request()->input('pallet_id');
 		
 		$x1 = "UPDATE `product` SET status='1' WHERE pallet_id='$pallet_id'";
 		$y1 = prepareExecuteQuery($x1);
 		
-		$od = request('id');
+		$od = request()->input('id');
 		
 		header('location: intake.php?id='.$od);
 	}
 	
-	if(request('savePrices') == 'true'){
-		$productid = request('productid');
-		$price = request('price');
-		$cost = request('cost');
+	if(request()->input('savePrices') == 'true'){
+		$productid = request()->input('productid');
+		$price = request()->input('price');
+		$cost = request()->input('cost');
 		
 		$size = sizeof($productid);
 		
-		$intakeid = request('intakeid');
+		$intakeid = request()->input('intakeid');
 		
 			
 		for($i=0;$i<$size;$i++){
-			$product_id = request('productid')[$i]; 
-			$cost = sprintf('%0.2f', request('cost')[$i]);
-			$price = sprintf('%0.2f', request('price')[$i]);
+			$product_id = request()->input('productid')[$i]; 
+			$cost = sprintf('%0.2f', request()->input('cost')[$i]);
+			$price = sprintf('%0.2f', request()->input('price')[$i]);
 			
-			$weightnote = request('weightnote')[$i];
+			$weightnote = request()->input('weightnote')[$i];
 			
 			 if($product_id != ''){
 				$x = "UPDATE `product` SET cost='$cost', price='$price', weightnote='$weightnote' WHERE id='$product_id'";
@@ -53,7 +53,7 @@
 
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <script type="text/javascript">
@@ -98,9 +98,9 @@
 	}
 </style>
 <main class="int">
-	<?php if(request('ref') == 'salesconfirmationsheet'){ ?>
+	<?php if(request()->input('ref') == 'salesconfirmationsheet'){ ?>
 		<a href="<?php echo $domain; ?>productpicker.php" class="backbtn">< Back</a>
-	<?php }else if(request('ref') == 'searchstock'){ ?>
+	<?php }else if(request()->input('ref') == 'searchstock'){ ?>
 		<a href="<?php echo $domain; ?>stock.php" class="backbtn">< Back</a>
 	<?php }?>
 
@@ -200,7 +200,7 @@
 	<div style="display:flex;justify-content:space-between;">
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Intake Notes</h2>
-		<form method="POST" action="/scripts/saveIntakeNotes.php" enctype="multipart/form-data">
+		<form method="POST" action="scripts/saveIntakeNotes.php" enctype="multipart/form-data">
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
 			
 			<label>Notes</label><br/>
@@ -214,7 +214,7 @@
 	
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Add Document</h2>
-		<form method="POST" action="/scripts/addImageToIntake.php" enctype="multipart/form-data">
+		<form method="POST" action="scripts/addImageToIntake.php" enctype="multipart/form-data">
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
 			
 			<label>Document Name</label><br/>
@@ -400,10 +400,10 @@
 					</td>
 					<td>
 						<input type="text" name="productid[]" value="<?php echo $product_id; ?>" style="display:none;">
-						<input type="text" name="cost[]" value="<?php echo number_format((float)$row['cost'], 2, '.', ''); ?>">
+						<input type="text" name="cost[]" value="<?php echo number_format((double)$row['cost'], 2, '.', ''); ?>">
 					</td>
 					<td>
-						<input type="text" name="price[]" value="<?php echo number_format((float)$row['price'], 2, '.', ''); ?>">
+						<input type="text" name="price[]" value="<?php echo number_format((double)$row['price'], 2, '.', ''); ?>">
 					</td>
 				</tr>
 			<?php } ?>
@@ -624,10 +624,12 @@
 	}
 </style>
 <script>
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$('.loadPalletBtn').click(function(){
 		$('#ajaxContent').html('<center><img src="https://i.gifer.com/7plQ.gif"></center>');
-		$.get( "/ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {	
+		$.get( "ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {	
 			$('#ajaxContent').html(data);
 			$('#hidePalletBtnContainer').fadeOut();
 		});
@@ -724,6 +726,7 @@
 	
 	function printIntake(intake_id){
 		$.ajax({
+			headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 			type: "POST",
 			url: 'printIntake.php?intake_id=' + intake_id,
 			type: 'get',
@@ -796,7 +799,7 @@
 		
 		$(window).scrollTop(0);
 		
-		$.get( "/ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
+		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
@@ -809,7 +812,7 @@
 	
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
-			window.location.href = "/scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}
@@ -817,7 +820,7 @@
 	// printContent(1);
 	
 	function addProductToProduct(intake_id, pallet_id, product_id){
-		$.get( "/ajax/addProductToProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id  + "&product_id=" + product_id, function( data ) {
+		$.get( "ajax/addProductToProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id  + "&product_id=" + product_id, function( data ) {
 			$('#box').html(data);
 		});
 
@@ -910,16 +913,16 @@
 			$('.palletnotepopup').fadeOut();
 		});
 		
-		<?php if(request('pallet_id')){ ?>
+		<?php if(request()->input('pallet_id')){ ?>
 			$('.palletnotepopup').fadeIn();
 		<?php } ?>
 	});
 </script>
-<div class="palletnotepopup">Pallet <span class="palletidpopup"><?php echo request('pallet_id'); ?></span> Noted <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
+<div class="palletnotepopup">Pallet <span class="palletidpopup"><?php echo request()->input('pallet_id'); ?></span> Noted <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
 
 
 <?php
-	if(request('palletupdated')){
+	if(request()->input('palletupdated')){
 	?>
 		<script>
 			$(document).ready(function(){
@@ -929,7 +932,7 @@
 				});
 			});
 		</script>
-		<div class="palletnotepopup">Pallet <?php echo request('palletupdated'); ?> Updated <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
+		<div class="palletnotepopup">Pallet <?php echo request()->input('palletupdated'); ?> Updated <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
 	<?php
 	}
 ?>

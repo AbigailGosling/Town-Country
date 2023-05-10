@@ -3,8 +3,8 @@
 	require_once(__DIR__.'/../functions.php');
 	require_once('customer_soa_results_function.php');
 
-	$customer_id = request('id');
-	$address_id = request('address_id');
+	$customer_id = request()->input('id');
+	$address_id = request()->input('address_id');
 	
 	$x = "SELECT * FROM `customers` WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
@@ -75,7 +75,7 @@
  		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addresspostcode" name="addresspostcode" value="<?php echo $addresspostcode; ?>">
 
 	</div>
-	<?php if(request('src') == 'salesconfirmation'){ ?>
+	<?php if(request()->input('src') == 'salesconfirmation'){ ?>
 		<div class="printenable" style="display:none;">
 			<label>Delivery Address</label><br/>
 			<textarea class="form-control" style="height:185px;padding:10px;resize:none;"disabled><?php if($addressline1 != ''){ echo $addressline1 . ',&#13;'; } ?><?php if($addressline2 != ''){ echo $addressline2 . ',&#13;'; } ?><?php if($addressline3 != ''){ echo $addressline3 . ',&#13;'; } ?><?php if($addressline4 != ''){ echo $addressline4 . ',&#13;'; } ?><?php if($addresspostcode != ''){ echo $addresspostcode . ',&#13;'; } ?></textarea>
@@ -88,11 +88,11 @@
 		
 	<div>
  		<?php
-			if(request('empty') != 'true'){
+			if(request()->input('empty') != 'true'){
 				
-				$current_outstanding = (float) $row['current_outstanding'];
-				$flaguplimit = (float) $row['flaguplimit'];
-				$credit_rating = (float) $row['credit_rating'];
+				$current_outstanding = (double) $row['current_outstanding'];
+				$flaguplimit = (double) $row['flaguplimit'];
+				$credit_rating = (double) $row['credit_rating'];
 				 
 				if(false){ # temp disable credit control requested by Jamie 
 					if($current_outstanding >= $credit_rating && $row['override'] != 1){

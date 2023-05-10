@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request('intake_id'));
+	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
 	
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);
@@ -241,7 +241,9 @@
 
 
 <script type="text/javascript">
-
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	function calculateTare(){
 		
 		var gross_weight_val = $('#gross_weight_val').val();
@@ -475,11 +477,12 @@
 			
 			 $.ajax({ // make an AJAX request
 				type: "POST",
+				headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
 				url: "script_addPallet.php?dupe=true", // it's the URL of your component B
 				data: $('#addPalletForm').serialize(), // serializes the form's elements
 				error: function(xhr, error){
-					// console.log(xhr);
-					// console.log(error);
+					 console.log(xhr);
+					 console.log(error);
 					
 					$('#networkError').fadeIn();
 				},
@@ -729,6 +732,7 @@
 		if(good == 1){
 			$.ajax({ // make an AJAX request
 				type: "POST",
+				headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
 				url: "script_addPallet.php", // it's the URL of your component B
 				data: $('#addPalletForm').serialize(), // serializes the form's elements
 				error: function(xhr, error){

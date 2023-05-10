@@ -3,11 +3,11 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 
-<form id="pickerForm" method="POST" action="/scripts/buildPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
+<form id="pickerForm" method="POST" action="scripts/buildPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
 <div class="container container--pt">
@@ -118,7 +118,7 @@
                     $y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
                     $species = mysqli_fetch_array($y2);
                     $rand = 'z' . rand(6000,12212);
-                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                     }
             ?>
 	</select>
@@ -157,10 +157,10 @@
 <script type="text/javascript" src="js/modal-dialog.js"></script>  
 <div class="clearfix"></div>
 <?php 
-	if(request('msg') != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo request('msg');?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
@@ -212,7 +212,7 @@
 
 	function addToList(id){
 		
-		$.get( "/scripts/getBasketItem.php?id="+id, function( data ) {
+		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
 		});
 		
@@ -237,7 +237,7 @@ function checkStock(){
             var product_id = bits[0];
             var quantity_wanted = bits[1];
 
-            $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
+            $.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
 				var product_stock_count = parseInt(num);
 				
                 if(quantity_wanted <= product_stock_count){
@@ -270,7 +270,7 @@ function checkStock(){
 				}
 				else
 				{
-					$('#sendreal').trigger('click');
+					$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess});
 				}
 			}
 		}, 2000);
@@ -278,7 +278,12 @@ function checkStock(){
 function completeSale()
 {
 	modalDialog.showMask();
-	$('#sendreal').trigger('click');
+	$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess});
+}
+function finalSaleSucess()
+{
+	alert("Done!");
+	window.location = 'menu.php';
 }
 function cancelSale()
 {
@@ -464,7 +469,9 @@ function cancelSale()
         $('.select2-container').css('display', 'none');
         $('.select2-container').first().css('display', 'inline-block');
     }, 10);
-
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$('#sendfake').click(function(){
 
 		$(this).prop('disabled', true);
@@ -535,12 +542,19 @@ function cancelSale()
 
 		}		
 	});
-	
+	var getCustomResult;
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
 		
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
-			$('#address').html(data);
+			getCustomResult = data;
+			setCustomerCreditFeedback(data);
+		});
+	}
+	function setCustomerCreditFeedback(data){
+		console.log("test");
+		if (data == "") data = getCustomResult;
+		$('#address').html(data);
 			$('.rating').fadeIn();
 			
 			$('#addressline1').prop('readonly', true);
@@ -585,7 +599,6 @@ function cancelSale()
 				$('#sendfake').attr('disabled', false);
 				$('#searcher').attr('disabled', false);
 			}
-		});
 	}
 	ready = true;
 	setInterval(function(){
@@ -633,18 +646,24 @@ function cancelSale()
 	}
 	function checkUBDates(dateText = null){
 		if (dateText == null) dateText = $('#estimated_delivery_date').val();
-		var date = parseDMY(dateText);
+		var ubs = $('#basketTable #ubDate');
+		if (ubs.length == 0) return;
+		var date = parseDMY(dateText).getTime();
 		if (transactionAllowed){
 			$('#sendfake').prop('disabled',false);
 			var ubs = $('#basketTable #ubDate');
-			var pastBB = false; 
+			var pastBB = true; 
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
-				if (ub.val()=="")continue;
-				var ubd = parseDMY(ub.val());
+				if (ub.innerHTML=="")
+				{
+					console.log("somehow "+ub);
+					continue;
+				}
+				var ubd = parseDMY(ub.innerHTML).getTime();
 				if (ubd >= date)
 				{
-					pastBB = true;
+					pastBB = false;
 					break;
 				}
 			}
@@ -656,6 +675,11 @@ function cancelSale()
 				$('#warning').css('display', "inline-block");
 				$('#warning').html("An item in this sale will expire before delivery");
 			}
+			else
+			{
+				setCustomerCreditFeedback();
+			}
+
 		}
 	}
 	function parseDMY(value) {
@@ -712,10 +736,11 @@ function cancelSale()
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
+		 var customer_id = $('#customer_id').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			
-			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality, function(data, status){
+			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&customerID="+customer_id, function(data, status){
 				$('#loadResults').html(data);
 				
 			});
@@ -780,7 +805,7 @@ function cancelSale()
 		$('#addressid').val(address_id);
 
 
-		$.get("/ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});

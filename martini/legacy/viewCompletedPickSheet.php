@@ -1,7 +1,7 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$picksheetid = request('id');
+	$picksheetid = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id =?";
 	$y = prepareExecuteQuery($x,'i',[$picksheetid]);
@@ -14,7 +14,7 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <script type="text/javascript">
 
@@ -129,9 +129,9 @@
                         while($weight = mysqli_fetch_array($y2)){
                             
                             if($weight['weight_tear'] == $weight['weight_gross']){
-                                $w = $weight['weight_gross'];
+                                (double)$w = (double)$weight['weight_gross'];
                             }else{
-                                $w = $weight['weight_gross'] - $weight['weight_tear'];
+                                (double)$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                             }
 							
                             $k = $k + $w;
@@ -151,9 +151,9 @@
                         while($weight2 = mysqli_fetch_array($y22)){
                             
                             if($weight2['weight_tear'] == $weight2['weight_gross']){
-                                $w = $weight2['weight_gross'];
+                                $w = (double)$weight2['weight_gross'];
                             }else{
-                                $w = $weight2['weight_gross'] - $weight2['weight_tear'];
+                                $w = (double)$weight2['weight_gross'] - (double)$weight2['weight_tear'];
                             }
 							
 							?><div class="weightbox"><?php echo $w; ?></div><?php

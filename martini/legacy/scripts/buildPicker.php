@@ -1,17 +1,17 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$picker_id = request('picker_id');
-	$customer_id = request('customer_id');
-	$estimated_delivery_date = request('estimated_delivery_date');
+	$picker_id = request()->input('picker_id');
+	$customer_id = request()->input('customer_id');
+	$estimated_delivery_date = request()->input('estimated_delivery_date');
 	
 	$orderReferenceNumber = request('orderReferenceNumber');
-	$weightnote = request('weightnote');
-	$picksheet_note = request('picksheet_note');
+	$weightnote = request()->input('weightnote');
+	$picksheet_note = request()->input('picksheet_note');
 
 	//$user_from_id = $_SESSION['USER'];
-	$user_from_id = request('sales_person');
-	$addressid = request('addressid');
+	$user_from_id = request()->input('sales_person');
+	$addressid = request()->input('addressid');
 	
 	if ($user_from_id == "" || $customer_id == 0 || $customer_id == "")
 	{
@@ -27,12 +27,12 @@
 	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
 	//$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
 
-	$addressline1 = $mysqli->real_escape_string( request('addressline1'));
-	$addressline2 = $mysqli->real_escape_string( request('addressline2'));
-	$addressline3 = $mysqli->real_escape_string( request('addressline3'));
-	$addressline4 = $mysqli->real_escape_string( request('addressline4'));
-	$addresspostcode = $mysqli->real_escape_string( request('addresspostcode'));
-	$deliverynumber = $mysqli->real_escape_string( request('deliverynumber'));
+	$addressline1 = $mysqli->real_escape_string( request()->input('addressline1'));
+	$addressline2 = $mysqli->real_escape_string( request()->input('addressline2'));
+	$addressline3 = $mysqli->real_escape_string( request()->input('addressline3'));
+	$addressline4 = $mysqli->real_escape_string( request()->input('addressline4'));
+	$addresspostcode = $mysqli->real_escape_string( request()->input('addresspostcode'));
+	$deliverynumber = $mysqli->real_escape_string( request()->input('deliverynumber'));
 		
 	$addressQuery = "address{$addressid}_1='$addressline1', address{$addressid}_2='$addressline2', address{$addressid}_3='$addressline3', address{$addressid}_4='$addressline4', postcode_{$addressid}='$addresspostcode', address{$addressid}_number='$deliverynumber'";
 
@@ -44,9 +44,9 @@
 
 	
 	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note) VALUES (?,?,?,?,?,?,?,?)";
-	$y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note]);
+	$y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note],true);
 	
-	request('id') = $pickersheet_id = mysqli_insert_id($conn);
+	$pickersheet_id = $y;
 	
 	$index = 0;
 	foreach (request('basketRow') as $key => $value) {
@@ -56,7 +56,7 @@
 		$quantity = $details[1];
 		$cut_id = $details[2];
 		
-		$price_type = request('price_type');
+		$price_type = request()->input('price_type');
 		$target_weight = (int) request('target_weight_' . $product_id);
 		
 		if(empty($target_weight)){ $target_weight = 0; }
@@ -77,7 +77,7 @@
 	}
 	$x = "UPDATE `customers` SET override = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
-	require_once('../ajax/generatePDFsaleconfirm.php');
+	require_once(__DIR__.'/../ajax/generatePDFsaleconfirm.php');
 	
 ?>
 <script>

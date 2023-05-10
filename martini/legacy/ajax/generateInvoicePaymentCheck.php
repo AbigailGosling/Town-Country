@@ -1,28 +1,28 @@
 <?php
 include_once(__DIR__.'/../functions.php');
 $sql = "SELECT `pickerSheets`.*,`customers`.`businessname` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
-if (isset(request('start']) && $_POST['start']!="" && isset($_POST['end']) && $_POST['end')!="") 
+if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="") 
 {
-    $start = request('start');
-    $end =  request('end');
+    $start = request()->input('start');
+    $end =  request()->input('end');
     $sql .= "(STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN ? AND ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (isset(request('startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv') !="" && request()->input('end') !== null && request()->input('end')!="") 
 {
-    $start = request('startInv');
-    $end =  request('end');
+    $start = request()->input('startInv');
+    $end =  request()->input('end');
     $sql .= "(`pickerSheets`.`id` >= ? AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')` <= ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (isset(request('startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv')!==null && request()->input('endInv')!="") 
 {
-    $start = request('startInv');
-    $end =  request('endInv');
+    $start = request()->input('startInv');
+    $end =  request()->input('endInv');
     $sql .= "(`pickerSheets`.`id` >= ? AND `pickerSheets`.`id` <= ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (isset(request('start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv')!="") 
+else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv')!==null && request()->input('endInv')!="") 
 {
-    $start = request('start');
-    $end =  request('endInv');
+    $start = request()->input('start');
+    $end =  request()->input('endInv');
     $sql .= "(STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') > ? AND `pickerSheets`.`id` <= ?) ORDER BY `pickerSheets`.id ASC";
 }
 $res = prepareExecuteQuery($sql,'ss',[$start,$end]);
@@ -34,7 +34,7 @@ foreach ($list as $item)
     $id = $item['id'];
     $customername = $item['businessname'];
     $assembledate = $item['estimated_delivery_date'];
-    $value = number_format((float)invoiceTotal($item['id']), 2, '.', '');
+    $value = number_format((double)invoiceTotal($item['id']), 2, '.', '');
     $href = '';
     $status = '';
     $rowStyle = '';

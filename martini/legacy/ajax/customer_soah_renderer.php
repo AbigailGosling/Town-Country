@@ -3,7 +3,7 @@
     require('../scripts/SLabsEmailer.php');
     use InternalScripts\SLabsEmailerStatus;
 
-    $customer_id = request('customer_id');
+    $customer_id = request()->input('customer_id');
     $customerSTMemails = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE customer_id = ? AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC",'i',[$customer_id]);
     //Check if due days is a string if so strip out the numbers
     while ($email = mysqli_fetch_assoc($customerSTMemails)) {

@@ -17,10 +17,10 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$cut = request('cut');
-	$species_id = request('species');
-	$temperatureID = request('temperatureID');
-	$palletID = request('palletID');
+	$cut = request()->input('cut');
+	$species_id = request()->input('species');
+	$temperatureID = request()->input('temperatureID');
+	$palletID = request()->input('palletID');
 	
  	if($cut != '' && $species_id != 0){
 		$cutsY = prepareExecuteQuery("SELECT * FROM `cuts` WHERE `name` LIKE ? AND `species_id`=? order by `name` ASC",'si',['%'.$cut.'%',$species_id]);
@@ -150,8 +150,8 @@
                 }
                  
 				?>kg</td>
-			<td><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-			<td><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+			<td><?php  if($productsRow['cost']){ echo '£' . number_format((double)$productsRow['cost'], 2, '.', ''); } ?></td>
+			<td><?php  if($productsRow['price']){ echo '£' . number_format((double)$productsRow['price'], 2, '.', ''); } ?></td>
 		</tr>
 		
 		<?php
@@ -243,7 +243,9 @@
  
 
 <script type="text/javascript">
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	
 	function toggleRow(classS){
 		$('.' + classS).toggle();
@@ -302,7 +304,7 @@
   
 		$('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
 
-		$.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
+		$.get( "scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
 			$('.basketTable').append(data);
 		});
 		

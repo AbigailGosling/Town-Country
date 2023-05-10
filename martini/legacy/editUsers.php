@@ -1,10 +1,10 @@
 <?php
     include_once('functions.php');
     
-    if(request('delid') != ''){
+    if(request()->input('delid') != ''){
     
 
-        $delid = $mysqli->real_escape_string( request('delid'));
+        $delid = $mysqli->real_escape_string( request()->input('delid'));
 
 
         $x = "DELETE FROM `users` WHERE id=?";
@@ -19,6 +19,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/jquery-ui-git.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+<script>
+	function mainForm(){
+		$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	}
+	function mainFormSucess(){
+		location.reload();
+	}
+</script>
 <title>Town &amp; Country</title>
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="css/main.css" rel="stylesheet" type="text/css">
@@ -28,7 +38,7 @@
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
     <h1 class="int">CREATE USER</h1>	
@@ -37,9 +47,9 @@
 	<div id="menu_wrasp">
 		<?php
 
-			if(request('id') != ''){
+			if(request()->input('id') != ''){
 				
-				$id = request('id');
+				$id = request()->input('id');
 
 				$x = "SELECT * FROM users WHERE id = ?";
 				$yy = prepareExecuteQuery($x,'i',[$id]);
@@ -52,8 +62,8 @@
 				$page_ids = array();
 			}
 		?>
-		<form method="POST" action="<?php if(request('id') != ''){ echo 'scripts/updateUser.php'; } else { echo 'scripts/addUser.php'; } ?>">
-			<input type="hidden" value="<?php echo request('id'); ?>" name="id">
+		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateUser.php'; } else { echo 'scripts/addUser.php'; } ?>">
+			<input type="hidden" value="<?php echo request()->input('id'); ?>" name="id">
 			
 			<div class="formElement">
 				<label>Name</label>
@@ -67,7 +77,7 @@
 			
 			<div class="formElement">
 				<label>Password</label>
-				<input type="text" class="inputtext" name="password" <?php if(request('id') == ''){ echo 'required'; } ?>>
+				<input type="text" class="inputtext" name="password" <?php if(request()->input('id') == ''){ echo 'required'; } ?>>
 			</div>
 
 			<div class="formElement">
@@ -146,10 +156,10 @@
 
 			
 			<?php
-				if(request('id') != ''){
-				?><input type="submit" class="formbtn" value="Update User"><?php
+				if(request()->input('id') != ''){
+				?><input type="button" onclick="mainForm()" class="formbtn" value="Update User"><?php
 				}else{
-				?><input type="submit" class="formbtn" value="Add User"><?php
+				?><input type="button" onclick="mainForm()" class="formbtn" value="Add User"><?php
 				}
 			?>
 		</form>
@@ -182,7 +192,7 @@
         ?>
          
         
-	</div>	
+	</div>
 </main> 
 </body>
 </html>

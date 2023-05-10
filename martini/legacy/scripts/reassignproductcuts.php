@@ -11,7 +11,7 @@
         
         $y = prepareExecuteQuery("DELETE FROM `cuts` WHERE id=?",'i',[$before_cutid]);
 
-        ?><script> window.location.href = '/manageCuts.php'; </script><?php
+        ?><script> window.location.href = '../manageCuts.php'; </script><?php
     }else{
         echo 'failed';
     }

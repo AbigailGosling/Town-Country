@@ -3,7 +3,7 @@
 require(__DIR__.'/../functions.php');
 
 	
-$id = request('id');
+$id = request()->input('id');
  
 
 $x = "UPDATE `customers` SET credit_enabled = NOT credit_enabled WHERE id = ?";

@@ -1,11 +1,11 @@
 <?php
 
 	require(__DIR__.'/../../functions.php');
-    require('../customer_soa_results_function.php');
-    $name = request('searchterm');
+    require(__DIR__.'/../customer_soa_results_function.php');
+    $name = request()->input('searchterm');
 	$showBal = false;
 	$rollingTotal = 0;
-	if (isset(request('showBal']) && $_POST['showBal') == 1) $showBal = true;
+	if (request()->input('showBal') !== null && request()->input('showBal') == 1) $showBal = true;
 ?>
 	<div class="cutsContainer">
 	<?php
@@ -23,7 +23,7 @@
 		{
 			$cache_check = check_customer_outstanding_cache($customer['id']);
 			$customer['cache'] = $cache_check;
-			$customer['balance'] = (float) $cache_check['outstanding'];
+			$customer['balance'] = (double) $cache_check['outstanding'];
 		}
 		$workingSet[] = $customer;
 	}
@@ -39,7 +39,7 @@
 	?>
 	<table width="100%">
 		<tr><td align="center" class="pos">
-			<a href="/customer_soam.php?id=<?php echo $customer['id']; ?>" class="intake">
+			<a href="customer_soam.php?id=<?php echo $customer['id']; ?>" class="intake">
 				<table width="100%" border="0">
 					<tr>
 						<td width="100" align="left">ID: <?php echo $customer['id']; ?></td>

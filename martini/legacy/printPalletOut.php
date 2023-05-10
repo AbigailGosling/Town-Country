@@ -1,14 +1,14 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$pickersheet_id = request('pickersheet_id');
-	$palletsOutID = request('palletsOutID');
+	$pickersheet_id = request()->input('pickersheet_id');
+	$palletsOutID = request()->input('palletsOutID');
 	
 	
 	
-	$id = request('intake_id');
-	$intake_id = request('intake_id');	
-	$pallet_id = request('pallet_id');	
+	$id = request()->input('intake_id');
+	$intake_id = request()->input('intake_id');	
+	$pallet_id = request()->input('pallet_id');	
 	
 	$intake = getIntake($id);
 	
@@ -95,7 +95,9 @@
 		// $('#box').fadeOut();
 		// $('#box2').fadeOut();
 	// });
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	function editProduct(intake_id, species_id, pallet_id, product_id, cut_id){
 		console.log('intake_id ' + intake_id);
 		console.log('species_id ' + species_id);
@@ -283,7 +285,7 @@
 	
 	function openAddtoPallet(intake_id, pallet_id){
 		
-		$.get( "/ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
+		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
@@ -296,7 +298,7 @@
 	
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
-			window.location.href = "/scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}

@@ -10,14 +10,14 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
 	<div id="intakelist">
@@ -185,7 +185,7 @@
 			})
 			.then((confirmed) => {
 				if (confirmed) {
-					window.location.href = "/scripts/deleteIntake.php?intake_id=" + intake_id;
+					window.location.href = "scripts/deleteIntake.php?intake_id=" + intake_id;
 				}
 			});
 		}
@@ -197,6 +197,9 @@
 		?>
 		function date_paid_changed(dateText,inst)
 		{
+			$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 			var id = inst.id.toString().replace("date_paid_","");
 			$.post( "ajax/updateIntakeDatePaid.php", { date: dateText, id: id } );
 		}

@@ -1,8 +1,8 @@
 <?php
 require_once(__DIR__.'/../functions.php');
-if (isset(request("ids")))
+if (request()->input("ids") !== null)
 {
-	foreach(request("ids") as $customerID)
+	foreach(request()->input("ids") as $customerID)
 	{
 		prepareExecuteQuery("INSERT INTO mail_queue (customer_id) VALUES (?)",'i',[$customerID]);
 	}

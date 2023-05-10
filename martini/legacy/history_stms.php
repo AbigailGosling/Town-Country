@@ -133,16 +133,16 @@ $serverRoot = request()->server("SERVER_NAME");
 </style>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 
 
 <div id="printDiv" class="container" style=""> 
     
     <?php
-    if (request('id') != '') {
+    if (request()->input('id') != '') {
 
-        $customer = getCustomer(request('id'));
+        $customer = getCustomer(request()->input('id'));
     ?>
     <div class="topheading">
 
@@ -187,7 +187,7 @@ var invoiceCount = 0;
 var crCount = -1;                 
 var renderCompleted = false;
 
-    var customer_id = <?php echo request('id'); ?>;
+    var customer_id = <?php echo request()->input('id'); ?>;
 
     $(document).ready(function() {
         table = $('#soaTable').DataTable({
@@ -199,6 +199,9 @@ var renderCompleted = false;
         //$("#printer").hide();
     });
     function getData() {
+        $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
         $.post("ajax/customer_soah_renderer.php", {
                 customer_id: customer_id
             },

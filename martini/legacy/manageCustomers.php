@@ -1,9 +1,9 @@
 <?php
 	include('functions.php');
 	$showDisabled = 0;
-	if (request('showDisabled') !== null)
+	if (request()->input('showDisabled') !== null)
 	{
-		$showDisabled = request('showDisabled');
+		$showDisabled = request()->input('showDisabled');
 	}
 	
 ?>
@@ -19,7 +19,7 @@
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="js/lity.js"></script>
 
@@ -76,14 +76,14 @@
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <main style="padding-top:0px !important;">
 	<?php
-		if(request('id') != ''){
+		if(request()->input('id') != ''){
 			
-			$id = request('id');
+			$id = request()->input('id');
 			$x2 = "SELECT * FROM customers WHERE id = ?";
 			$yy2 = prepareExecuteQuery($x2,'i',[$id]);
 			
@@ -92,8 +92,8 @@
 			totalOutstandingForCustomer($data['id']);
 		}
 	?>
-	<form method="POST" action="<?php if(request('id') != ''){ echo 'scripts/updateCustomer.php'; } else { echo '/scripts/addCustomer.php'; } ?>">
-	<input type="hidden" value="<?php echo request('id'); ?>" name="id">
+	<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateCustomer.php'; } else { echo 'scripts/addCustomer.php'; } ?>">
+	<input type="hidden" value="<?php echo request()->input('id'); ?>" name="id">
 	<div id="customerContainer">
 		<div class="box">
 			<h3>Customer Details</h3>
@@ -232,6 +232,19 @@
 						</select>
 					</td>
 				</tr>
+				<tr>
+					<td class="label"><label>Price Markup/Markdown</label></td>
+					<td>
+						<select name="markup_type">
+						<option value="FLAT" <?php if($data['markup_type'] == "FLAT" && $data != ''){ echo 'selected'; } ?>>Flat</option>   
+                            <option value="PERCENT" <?php if($data['markup_type'] == "PERCENT" && $data != ''){ echo 'selected'; } ?>>Percentage Based</option> 
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td class="label"><label>Markup/Markdown Amount</label></td>
+					<td><input type="number" class="input" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"></td>
+				</tr>
 				<tr height="40"><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Default User</label></td>
@@ -256,11 +269,11 @@
 			<table width="100%">
 				<tr>
 					<td class="label"><label>Credit Rating</label></td>
-					<td><input type="text" class="input" name="credit_rating" value="<?php echo number_format((float)$data['credit_rating'], 2, '.', ''); ?>"></td>
+					<td><input type="text" class="input" name="credit_rating" value="<?php echo number_format((double)$data['credit_rating'], 2, '.', ''); ?>"></td>
 				</tr>
 				<tr>
 					<td class="label"><label>Close to limit alert</label></td>
-					<td><input type="text" class="input" name="flaguplimit" value="<?php echo number_format((float)$data['flaguplimit'], 2, '.', ''); ?>"></td>
+					<td><input type="text" class="input" name="flaguplimit" value="<?php echo number_format((double)$data['flaguplimit'], 2, '.', ''); ?>"></td>
 				</tr>
 				<tr>
 					<td class="label"><label>Current outstanding</label></td>
@@ -274,9 +287,9 @@
 					<td class="label"><label>Account status</label></td>
 					<td>
 						<?php
-							$current_outstanding = (float) $data['current_outstanding'];
-							$flaguplimit = (float) $data['flaguplimit'];
-							$credit_rating = (float) $data['credit_rating'];
+							$current_outstanding = (double) $data['current_outstanding'];
+							$flaguplimit = (double) $data['flaguplimit'];
+							$credit_rating = (double) $data['credit_rating'];
 							
 							if($current_outstanding >= $credit_rating){
 							?><div class="status stop">Stop</div><?php
@@ -318,7 +331,7 @@
 			<table width="100%">
 				<tr>
 					<td>
-						<?php if(request('id') != ''){ ?>
+						<?php if(request()->input('id') != ''){ ?>
 							<a href="customer_soa.php?id=<?php echo $data['id']; ?>" class="update" style="color:white;background:orange;">View Statement of account</a>
 						<?php } ?>
 					</td>
@@ -332,7 +345,7 @@
 					<td class="label"><label></label></td>
 					<td style="text-align:right;">
 						<a href="#" class="update" style="display:none;">Update & Save</a>
-						<input type="submit" class="update" value="Update & Save">
+						<input type="button" onclick="mainForm()" class="update" value="Update & Save">
 					</td>
 				</tr>			
 			</table>
@@ -408,7 +421,7 @@
 			<div class="transferPopup-content">
 				<h2>Transfer required</h2>
 				<p>There is currently <b id="transferCount"></b> picksheets connected to this customer.<br/>Please pick a new customer to transfer them.</p>
-				<form method="POST" action="scripts/transferPicksheetsCustomer.php">
+				<form id="mainForm2" method="POST" action="scripts/transferPicksheetsCustomer.php">
 					<input type="hidden" name="old_customer_id" id="old_customer_id">
 					<select name="new_customer_id">
 						<?php
@@ -420,7 +433,7 @@
 						?>
 					</select>
 					
-					<input type="submit" value="Transfer picksheets" class="transferbtn">
+					<input  type="button" onclick="mainForm2()" value="Transfer picksheets" class="transferbtn">
 				</form>
 			</div>
 		</div>
@@ -428,6 +441,18 @@
 </main>
 
 <script type="text/javascript">
+	function mainForm(){
+	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
+function mainForm2(){
+	$('#mainForm2').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$(document).ready(function() {
 		$("[name$=_email]").keypress(function(event) {
 			if(event.which == '13') {				
@@ -450,7 +475,7 @@
 		}
 		var val = $('#instantSearch').val();
 
-		$.post('/ajax/customersPageList.php',{'searchterm':val},function(data,status) {
+		$.post('ajax/customersPageList.php',{'searchterm':val},function(data,status) {
 			if (status == "success") {
 				
 				$('#cutAjax').html(data);

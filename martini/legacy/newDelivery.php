@@ -1,21 +1,20 @@
 <?php
 	include('functions.php');
-	// $id = request('id');
+	// $id = request()->input('id');
 	
 	
-	// $intake_id = request('id');
+	// $intake_id = request()->input('id');
 	
 	
 	// $intake = getIntake($id);
 	
 	// $supplier = getSupplier($intake['supplier_id']);
 	
-	$purchase = getPurchase(request('purchaseid'));
+	$purchase = getPurchase(request()->input('purchaseid'));
 	
 	
 	$supplierid = $purchase['supplier_id'];
 	$supplier = getSupplier($supplierid);
-	
 ?>
 
 <!doctype html>
@@ -28,22 +27,22 @@
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
 </head>
 <body>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main class="int">
 	<div id="product">		
 		<div id="product_heading">New Delivery</div>		
 		<div id="product_options">
-			<a href="#" onclick="saveDelivery()">Save Delivery</a>
+			<a href="javascript:;" onclick="saveDelivery(event)">Save Delivery</a>
 		</div>
-		<form method="POST" id="mainForm" action="scripts/newDelivery.php" autocomplete="off">
+		<form method="GET" id="mainForm" action="scripts/newDelivery.php">
 		<input type="text" name="purchase_id" value="<?php if($purchase['id'] != ''){ echo $purchase['id']; }else{ echo '#'; } ?>" style="display:none;">
 		<table>
 			<tbody>
@@ -114,8 +113,8 @@
 <script>
 	
 	
-	function saveDelivery(){
- 
+	function saveDelivery(event){
+		event.preventDefault();
 		var supplier_search = $('#supplier_search').val();
 		var date_received = $('#date_received').val();
 		var vehicle_temperature = $('#vehicle_temperature').val();
@@ -187,14 +186,13 @@
 		$('#msgNotice').html(msg);
 		
 		if(good == 1){
-			var formName = '#mainForm';
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", $(formName).attr('action'), true);
-			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send($(formName).serialize());
+			$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 		}
 	}
-	
+	function mainFormSucess(event){
+		$('#supplier_search_results').html(event);
+	}
+
 	$(document).ready(function(){
 		// $( "#date_received" ).datepicker({
 		// 	dateFormat: 'dd/mm/yy'

@@ -23,7 +23,7 @@
 	
  	$pageArray = array();
 	
-	$pickersheet_id = request('id');
+	$pickersheet_id = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
@@ -317,9 +317,9 @@
 					
 					
 					if($weight['weight_tear'] == $weight['weight_gross']){
-						$w = $weight['weight_gross'];
+						$w = (double)$weight['weight_gross'];
 					}else{
-						$w = $weight['weight_gross'] - $weight['weight_tear'];
+						$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
 					}
 					
 					$kg = $kg + $w;
@@ -389,9 +389,9 @@
 									while($weightRow = mysqli_fetch_array($yyWeight)){
 										
 										if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-											$tw = $weightRow['weight_gross'];
+											$tw = (double)$weightRow['weight_gross'];
 										}else{
-											$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+											$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
 										}
 										
 										$kg = $kg + $tw;
@@ -412,17 +412,17 @@
 								  </b>
 								</td>
 							</tr>';
-							$html .='<td align="right" class="price">£ '. number_format((float)$pickerItem['price'], 2, '.', '') . '</td>';
+							$html .='<td align="right" class="price">£ '. number_format((double)$pickerItem['price'], 2, '.', '') . '</td>';
 
 							if($product['unit'] == 'PPC'){
-								$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
-								$html .='<td align="right" class="price">£'. number_format((float)$count * $pickerItem['price'], 2, '.', '') . '</td>';
+								$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
+								$html .='<td align="right" class="price">£'. number_format((double)$count * $pickerItem['price'], 2, '.', '') . '</td>';
 							}else{
-								$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-								$html .= '<td align="right" class="price">£' . number_format((float)$kg * $pickerItem['price'], 2, '.', '') . '</td>';
+								$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
+								$html .= '<td align="right" class="price">£' . number_format((double)$kg * $pickerItem['price'], 2, '.', '') . '</td>';
 							 }
 				 
- 							// $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+ 							// $totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
 						}
 						
 						
@@ -447,7 +447,7 @@
 			<th align="center">' . $total_qty_count . '</th>
 			<th align="left"></th>
 			<th align="right">' . $total_weight_count . ' kg (+ ' . $total_case_count . ' cases)</th>';
-			$html .= '<th align="price" colspan="2" class="price" align="right">£'. number_format((float)$totalPrice, 2, '.', '') .'</th>';
+			$html .= '<th align="price" colspan="2" class="price" align="right">£'. number_format((double)$totalPrice, 2, '.', '') .'</th>';
 			$html .='</tr>';
 		  array_push($pageArray, $html);
 
@@ -476,7 +476,7 @@
 						<img src="'. $domain .'images/ecblue.jpg">
 					</td>
 					<td align="right">
-						<div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£'. number_format((float)$totalPrice, 2, '.', '') .'</b></span></div>
+						<div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£'. number_format((double)$totalPrice, 2, '.', '') .'</b></span></div>
 						<div class="paymentDue">Payment due by: <span class="payvalue">'. $payByDate .'</span></div>
 					</td>
 				</tr>

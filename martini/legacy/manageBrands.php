@@ -26,7 +26,7 @@
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -48,7 +48,7 @@
 
 	<a href="menu.php" id="menu">MENU</a>
 
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 
 </div>
 
@@ -58,11 +58,11 @@
 
 		<?php
 
-			if(request('id') != ''){
+			if(request()->input('id') != ''){
 
 				
 
-				$id = request('id');
+				$id = request()->input('id');
 
 				
 
@@ -78,11 +78,11 @@
 
 		?>
 
-		<form method="POST" action="<?php if(request('id') != ''){ echo '/scripts/updateBrand.php'; } else { echo '/scripts/addBrand.php'; } ?>">
+		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateBrand.php'; } else { echo 'scripts/addBrand.php'; } ?>">
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
-			<tr><td align="center"><h1 class="int"><?php if(request('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> BRAND</h1></td></tr>
+			<tr><td align="center"><h1 class="int"><?php if(request()->input('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> BRAND</h1></td></tr>
 
 			<tr>
 
@@ -104,13 +104,13 @@
 
 					<?php
 
-					if(request('id') != ''){
+					if(request()->input('id') != ''){
 
-					?><input type="submit" value="Update Brand"><?php
+					?><input type="button" onclick="mainForm()" value="Update Brand"><?php
 
 					}else{
 
-					?><input type="submit" value="Add Brand"><?php
+					?><input type="button" onclick="mainForm()" value="Add Brand"><?php
 
 					}
 
@@ -177,7 +177,12 @@
 </main>
 
 <script type="text/javascript">
-
+function mainForm(){
+	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
 	$(document).ready(function(){
 
 		
@@ -234,7 +239,7 @@
 
 		if(confirm('Are you sure you want to delete this?')){
 
-			window.location.href = "/scripts/deleteBrand.php?id=" + id;
+			window.location.href = "scripts/deleteBrand.php?id=" + id;
 
 			// console.log(id);
 

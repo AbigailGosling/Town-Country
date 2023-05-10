@@ -3,8 +3,8 @@
 	require(__DIR__.'/../functions.php');
 
 	
-	$productid = request('productid');
-	$comment = request('comment');
+	$productid = request()->input('productid');
+	$comment = request()->input('comment');
 	
 	
 	echo $x = "UPDATE `product` SET weightnote=? WHERE id=?";

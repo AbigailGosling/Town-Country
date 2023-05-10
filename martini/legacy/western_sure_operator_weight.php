@@ -11,18 +11,27 @@
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="css/main.css" rel="stylesheet" type="text/css">
 <link href="css/font-awesome.css" rel="stylesheet" type="text/css">
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/jquery-ui-git.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+<script>
+	function mainForm(){
+		$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	}
+	function mainFormSucess(){
+		location.reload();
+	}
+</script>
 </head>
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
     <h1 class="int">SYSTEM SETTINGS</h1>	
     <br/><br/>
 	<div id="menu_wrasp">
-		<form method="POST">
+		<form id="mainForm" method="POST">
 			<div class="formElement flex">
 				<div>
 				<?php
@@ -52,7 +61,7 @@
 				?>
 				</div>
 			</div>
-			<input type="submit" class="formbtn" value="Update Settings">
+			<input type="button" onclick="mainForm()" class="formbtn" value="Update Settings">
 		</form>        
 	</div>	
 </main> 

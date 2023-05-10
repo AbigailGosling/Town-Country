@@ -1,7 +1,7 @@
 <?php
     require(__DIR__.'/../../functions.php');
     
-    $toSkip = request('toSkip');
+    $toSkip = request()->input('toSkip');
     $limit = 80;
 
     $queryResult = prepareExecuteQuery("SELECT * FROM `intake` ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);

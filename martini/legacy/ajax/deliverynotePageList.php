@@ -2,7 +2,7 @@
 
 	require(__DIR__.'/../functions.php');
 	
-	$term = request('searchterm');
+	$term = request()->input('searchterm');
     
     $x = "SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);

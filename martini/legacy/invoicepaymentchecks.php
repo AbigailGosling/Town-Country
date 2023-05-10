@@ -133,7 +133,7 @@ include_once('functions.php');
 </style>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
  
 <div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
@@ -189,6 +189,9 @@ var end;
 var endInv;
 var d;
 var selectedID;
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 $(document).ready(function(){ 
     $("#startdate").datepicker({
         dateFormat: 'yy-mm-dd'

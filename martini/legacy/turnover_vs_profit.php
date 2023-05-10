@@ -3,7 +3,7 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <style type="text/css">
@@ -38,9 +38,9 @@
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
     <form method="POST">
-    <input name="invoice_id" id="invoice_id" placeholder="Invoice ID" value="<?php echo request('invoice_id'); ?>" style="height:34px;width:100px;">
-    <input name="intake_id" id="intake_id" placeholder="Intake ID" value="<?php echo request('intake_id'); ?>" style="height:34px;width:100px;">
-    <input name="pallet_id" id="pallet_id" placeholder="Pallet ID" value="<?php echo request('pallet_id'); ?>" style="height:34px;width:100px;margin-right:20px;">
+    <input name="invoice_id" id="invoice_id" placeholder="Invoice ID" value="<?php echo request()->input('invoice_id'); ?>" style="height:34px;width:100px;">
+    <input name="intake_id" id="intake_id" placeholder="Intake ID" value="<?php echo request()->input('intake_id'); ?>" style="height:34px;width:100px;">
+    <input name="pallet_id" id="pallet_id" placeholder="Pallet ID" value="<?php echo request()->input('pallet_id'); ?>" style="height:34px;width:100px;margin-right:20px;">
 
     <select name="species_id" id="species_id" style="width:152px;height:40px;">
         <option value="0" selected>All species</option>
@@ -49,7 +49,7 @@
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if(request('species_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('species_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 	</select>
@@ -91,7 +91,7 @@
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if(request('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 	</select>
@@ -113,7 +113,7 @@
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
-			?><option class="alltemperature temperature<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" <?php if(request('cooling_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
+			?><option class="alltemperature temperature<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" <?php if(request()->input('cooling_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
 			}
 		?>
 	</select>
@@ -126,7 +126,7 @@
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if(request('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 	</select>
@@ -140,7 +140,7 @@
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if(request('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
 			}
 		?>
 	</select>
@@ -180,6 +180,9 @@
 <div class="clearfix"></div>
  
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     var req = null;
     function loadData(reset){    
         if (req){
@@ -254,7 +257,7 @@
                 });
 
                 totalProfitValue = (totalSellValue -totalCostValue).toFixed(2);
-                var totProfitPerc= (totalSellValue /totalCostValue).toFixed(2);
+                var totProfitPerc= (((totalSellValue - totalCostValue) / totalCostValue) * 100).toFixed(2);
                 $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
                 $('.totalQuantityValue').text(totalQuantity);
                 $('.totalProfitValue').text('£' + formatNumber(totalProfitValue));

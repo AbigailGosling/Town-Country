@@ -2,9 +2,9 @@
 
 	require(__DIR__.'/../../functions.php');
     require(__DIR__.'/../../scripts/SLabsEmailer.php');
-	require_once('../customer_soa_results_function.php');
+	require_once(__DIR__.'/../customer_soa_results_function.php');
     use InternalScripts\SLabsEmailerStatus;
-    $name = request('searchterm');
+    $name = request()->input('searchterm');
 ?>
 <div class="cutsContainer">
 <?php
@@ -17,7 +17,7 @@ if($name != ''){
 while($customer = mysqli_fetch_array($customerQueryResult)){
 	$title = "";
 	$style = "";
-	if (isset(request('history')))
+	if (request()->input('history') !== null)
 	{
 		$historyQuery = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE customer_id = ? AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC",'i',[$customer['id']]);
 		if (mysqli_num_rows($historyQuery) > 0)
@@ -58,7 +58,7 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 ?>
 <table width="100%">
 	<tr><td align="center" class="pos">
-		<?php if (isset(request('history'])) {?><a href="history_stms.php?id=<?php echo $customer['id'); ?>" class="intake"><?php }
+		<?php if (request()->input('history') != null) {?><a href="history_stms.php?id=<?php echo $customer['id']; ?>" class="intake"><?php }
 										else{?><a href="customer_soa.php?id=<?php echo $customer['id']; ?>" class="intake"><?php } ?>			
 			<table width="100%" border="0">
 				<tr>

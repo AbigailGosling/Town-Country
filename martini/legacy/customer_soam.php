@@ -134,16 +134,16 @@ $serverRoot = request()->server("SERVER_NAME");
 </style>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 
 
 <div id="printDiv" class="container" style=""> 
     
     <?php
-    if (request('id') != '') {
+    if (request()->input('id') != '') {
 
-        $customer = getCustomer(request('id'));
+        $customer = getCustomer(request()->input('id'));
         $creditcheck = precredit_check($customer['id']);
     ?>
     <div class="topheading">
@@ -272,6 +272,9 @@ $serverRoot = request()->server("SERVER_NAME");
 var invoiceCount = 0;
 var crCount = -1;                 
 var renderCompleted = false;
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -288,9 +291,9 @@ function isNumber(n) {
     if(!isNumber(due_warning)){
         due_warning = 0;
     }
-    var customer_id = <?php echo request('id'); ?>;
-    var date_from = '<?php echo request('date_from'); ?>';
-    var date_to = '<?php echo request('date_to'); ?>';
+    var customer_id = <?php echo request()->input('id'); ?>;
+    var date_from = '<?php echo request()->input('date_from'); ?>';
+    var date_to = '<?php echo request()->input('date_to'); ?>';
     var table = null;
     var column = 3;
     var order = 'DESC';
@@ -408,7 +411,7 @@ function isNumber(n) {
         else if (dataParsed[invoiceCount] && dataParsed[invoiceCount].hasOwnProperty("creditNotes") && dataParsed[invoiceCount].creditNotes.length > crCount)
         {
 
-            $.get("/ajax/generatePDFcreditnote.php", {
+            $.get("ajax/generatePDFcreditnote.php", {
                 payment_id: dataParsed[invoiceCount].creditNotes[crCount].id,
                 id: dataParsed[invoiceCount].creditNotes[crCount].invoice_id,
                 adv:"Y",

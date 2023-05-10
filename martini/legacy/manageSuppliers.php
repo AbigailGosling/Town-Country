@@ -24,7 +24,7 @@
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -52,7 +52,7 @@
 
 	<a href="menu.php" id="menu">MENU</a>
 
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 
 </div>
 
@@ -62,11 +62,11 @@
 
 		<?php
 
-			if(request('id') != ''){
+			if(request()->input('id') != ''){
 
 				
 
-				$id = request('id');
+				$id = request()->input('id');
 
 				
 
@@ -82,11 +82,11 @@
 
 		?>
 
-		<form method="POST" action="<?php if(request('id') != ''){ echo '/scripts/updateSupplier.php'; } else { echo '/scripts/addSupplier.php'; } ?>">
+		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo '/scripts/updateSupplier.php'; } else { echo '/scripts/addSupplier.php'; } ?>">
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
-			<tr><td colspan="3"><h1 class="int"><?php if(request('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> SUPPLIER</h1></td></tr>
+			<tr><td colspan="3"><h1 class="int"><?php if(request()->input('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> SUPPLIER</h1></td></tr>
 
 			<tr>
 
@@ -147,7 +147,7 @@
 							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users");
 							while($user = mysqli_fetch_array($usersResult)){
 						?>
-						<option value="<?php echo $user['id']; ?>" <?php if(request('user_id') == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
+						<option value="<?php echo $user['id']; ?>" <?php if(request()->input('user_id') == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
 						<?php } ?>
 					</select>
 				</td>
@@ -165,16 +165,16 @@
 			<tr>
 
 				<td colspan="3">
-				<input type="submit" disabled style="display: none" aria-hidden="true" />
+				<input type="button" onclick="mainForm()" disabled style="display: none" aria-hidden="true" />
 					<?php
 
-					if(request('id') != ''){
+					if(request()->input('id') != ''){
 
-					?><input type="submit" value="Update Supplier"><?php
+					?><input type="button" onclick="mainForm()" value="Update Supplier"><?php
 
 					}else{
 
-					?><input type="submit" value="Add Supplier"><?php
+					?><input type="button" onclick="mainForm()" value="Add Supplier"><?php
 
 					}
 
@@ -238,7 +238,12 @@
 </main>
 
 <script type="text/javascript">
-
+function mainForm(){
+	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
 	$(document).ready(function(){
 
 		
@@ -297,7 +302,7 @@
 
 		if(confirm('Are you sure you want to delete this?')){
 
-		window.location.href = "/scripts/deleteSupplier.php?id=" + id;
+		window.location.href = "scripts/deleteSupplier.php?id=" + id;
 
 			// console.log(id);
 

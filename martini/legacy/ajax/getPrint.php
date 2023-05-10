@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = request('intake_id');
-	$pallet_id = request('pallet_id');
+	$intake_id = request()->input('intake_id');
+	$pallet_id = request()->input('pallet_id');
 	
 	
 	$x = "SELECT * FROM `intake` WHERE id= ?";

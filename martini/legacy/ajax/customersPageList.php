@@ -2,7 +2,7 @@
 
 	require(__DIR__.'/../functions.php');
 
-	$name = request('searchterm');
+	$name = request()->input('searchterm');
 	
 	if($name != '' && strlen($name) > 1){
 	

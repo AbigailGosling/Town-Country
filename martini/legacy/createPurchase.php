@@ -1,9 +1,9 @@
 <?php
 	include('functions.php');
 	
-	if(request('id') != ''){
+	if(request()->input('id') != ''){
 		
-		$id = $mysqli->real_escape_string( request('id'));
+		$id = $mysqli->real_escape_string( request()->input('id'));
 		
 		$x = "SELECT * FROM `purchase_form` WHERE id=?";
 		$y = $mysqli->prepare($x);
@@ -27,25 +27,25 @@
 	<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css">
 	<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="js/jquery.datetimepicker.min.js"></script>
-	<link href="/legacy/css/bootstrap-combined.min.css" rel="stylesheet">
+	<link href="css/bootstrap-combined.min.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap-datetimepicker.min.css">
 </head>
 <body onafterprint="afterPrint()">
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main class="int">
 	<div id="product">
 		<div id="product_heading" class="printhide"><?php if($edit){ echo 'Edit'; }else{ echo 'New'; } ?> Purchase</div>		
-		<form method="POST" enctype="multipart/form-data" id="mainForm" action="/scripts/<?php if($edit){ echo 'editPurchase.php'; } else { echo 'newPurchase.php'; } ?>" autocomplete="off">
+		<form id="mainForm" method="POST" enctype="multipart/form-data" id="mainForm" action="scripts/<?php if($edit){ echo 'editPurchase.php'; } else { echo 'newPurchase.php'; } ?>" autocomplete="off">
 		<input autocomplete="off" name="hidden" type="text" style="display:none;">
         <div id="product_options" style="display:flex;flex-wrap:wrap;width:190px;">
 			<?php if($edit){ ?><a href="javascript:myprint();" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Print Purchase</a><?php } ?>
-			<input type="submit" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Purchase" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
+			<input type="button" onclick="mainForm()" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Purchase" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
 			
 			<?php
 				$purchaseid = $purchase['id'];
@@ -230,7 +230,12 @@
 </main>
 <div id="btm"></div>
 <script>
-
+function mainForm(){
+	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
 	
 	function newProduct(){
 		div = '<div>';

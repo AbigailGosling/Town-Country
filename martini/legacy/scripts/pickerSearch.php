@@ -1,5 +1,5 @@
 <?php
-	echo $cut = request('cut');
+	echo $cut = request()->input('cut');
 	
 	exit();
 ?><table width="100%">
@@ -12,8 +12,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$cut = request('cut');
-	$species_id = request('species');
+	$cut = request()->input('cut');
+	$species_id = request()->input('species');
 	$temperatureID = request('temperatureID');
 	$palletID = request('palletID');
 	
@@ -63,7 +63,9 @@
 	?>
 </table>
 <script type="text/javascript">
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	function getCookie(name) {
 		var value = "; " + document.cookie;
 		var parts = value.split("; " + name + "=");
@@ -106,7 +108,7 @@
 		
 		
 		
-		$.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q, function( data ) {
+		$.get( "scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q, function( data ) {
 			$('.basketTable').append(data);
 		});
 

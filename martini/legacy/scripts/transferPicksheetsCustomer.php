@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$old_customer_id = $mysqli->real_escape_string( request('old_customer_id'));
-	$new_customer_id = $mysqli->real_escape_string( request('new_customer_id'));
+	$old_customer_id = $mysqli->real_escape_string( request()->input('old_customer_id'));
+	$new_customer_id = $mysqli->real_escape_string( request()->input('new_customer_id'));
 	
     
 

@@ -3,7 +3,7 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <div class="leftPanel" style="position:relative;">
@@ -18,10 +18,10 @@
 
 <div class="clearfix"></div>
 <?php 
-	if(request('msg') != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo request('msg');?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
@@ -31,7 +31,9 @@
 	
 </style>
 <script type="text/javascript">
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$(document).ready(function(){
 		
 	});
@@ -43,7 +45,7 @@
   		
 		$('#loadResults').html('<center><img src="https://zippy.gfycat.com/SkinnySeveralAsianlion.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 		
-		$.get("/scripts/searchReturns.php?intakeID=" + intakeID, function(data, status){
+		$.get("scripts/searchReturns.php?intakeID=" + intakeID, function(data, status){
 			$('#loadResults').html(data);
 		});
 		

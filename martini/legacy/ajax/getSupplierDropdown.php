@@ -2,8 +2,8 @@
 
 	require(__DIR__.'/../functions.php');
 
-	$name = request('searchterm');
-	$species_id = request('species_id');
+	$name = request()->input('searchterm');
+	$species_id = request()->input('species_id');
 	
 	$cutX = "SELECT * FROM `supplier` WHERE `name` LIKE ?";
 	$cutY = prepareExecuteQuery($cutX,'s',['%'.$name.'%']);

@@ -1,7 +1,7 @@
 <?php
 include('../functions.php');
-$name = mysqli_real_escape_string($conn,$_POST['name']);
-$cost = mysqli_real_escape_string($conn,$_POST['cost']);
+$name = mysqli_real_escape_string($conn,request()->input('name'));
+$cost = mysqli_real_escape_string($conn,request()->input('cost'));
 //Cut Row
 mysqli_query($conn,"INSERT INTO `tandc_live`.`cuts` ( `species_id`, `name`, `cutgroup_id`) VALUES (-1, ".$name.", -1)");
 $cutid = mysqli_insert_id($conn);

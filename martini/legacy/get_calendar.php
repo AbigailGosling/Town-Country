@@ -26,7 +26,7 @@
 
 	$today = date('d/m/Y');
 
-	$id = request('id');
+	$id = request()->input('id');
 	
 	$date = DateTime::createFromFormat('d/m/Y', $today)->format('Y-m-d');
 	$date = new DateTime($date);

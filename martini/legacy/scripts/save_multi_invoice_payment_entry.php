@@ -2,11 +2,11 @@
 
 	require(__DIR__.'/../functions.php');
     
-    $customerID = request('customer_id');
-    $paymentData = request('payment_data');
+    $customerID = request()->input('customer_id');
+    $paymentData = request()->input('payment_data');
     $paymentData = explode(",", $paymentData);
-    $metaData = request('meta_data');
-    $paymentMethod = request('payment_method');
+    $metaData = request()->input('meta_data');
+    $paymentMethod = request()->input('payment_method');
     
     
     if(empty($customerID) || count($paymentData) == 0 || !in_array($paymentMethod, PAYMENT_METHODS) || !$_SESSION['USER']){

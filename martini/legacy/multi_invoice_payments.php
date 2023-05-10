@@ -2,7 +2,7 @@
 include('includes/frontHeader.php');
 
 
-$customerID = request('customer_id');
+$customerID = request()->input('customer_id');
 
 if (empty($customerID)) {
     header('Location: /');
@@ -13,12 +13,12 @@ $customer = getCustomer($customerID);
 
 ?>
 
-<link href="/legacy/css/bootstrap.min.css" rel="stylesheet" >
+<link href="css/bootstrap.min.css" rel="stylesheet" >
 <script src="/legacy/js/jquery.numeric.js"></script>
 
 <div id="top">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
@@ -85,7 +85,7 @@ $customer = getCustomer($customerID);
             </table>
         </div>
     </div>
-    <form id="payment_entry" method="POST" action="/scripts/save_multi_invoice_payment_entry.php">
+    <form id="payment_entry" method="POST" action="scripts/save_multi_invoice_payment_entry.php">
         <div class="row container--pt">
             <div class="col">
                 <label for="payment_method">Payment Method</label>
@@ -108,7 +108,7 @@ $customer = getCustomer($customerID);
             <div class="col d-flex justify-content-end">
                 <input type="hidden" id="payment_data" name="payment_data" value="" />
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
-                <input class="btn btn-success" type="submit" value="SUBMIT" />
+                <input class="btn btn-success" type="button" onclick="mainForm()" value="SUBMIT" />
             </div>
         </div>
     </form>
@@ -116,6 +116,12 @@ $customer = getCustomer($customerID);
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    function mainForm(){
+	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
 </script>
 
 <style type="text/css">

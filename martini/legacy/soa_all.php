@@ -59,7 +59,7 @@
 </style>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
@@ -80,27 +80,27 @@
         }
         $USER_IDS = implode(',', $USER_IDS);
     ?>
-    <form method="GET">
+    <form id="mainForm" method="GET">
         <h2>Statement of accounts</h2>
         <p> Showing results for: 
         <select name="user_id" style="height:30px;width:150px;">
             <option disabled selected>Select a salesman</option>
-            <option value="0" <?php if(request('user_id') == '0'){ echo 'selected'; } ?>>All Salesmen</option>
+            <option value="0" <?php if(request()->input('user_id') == '0'){ echo 'selected'; } ?>>All Salesmen</option>
             <?php
                 $usersResult = prepareExecuteQuery("SELECT * FROM users WHERE id IN ($USER_IDS)");
                 while($user = mysqli_fetch_array($usersResult)){
             ?>
-            <option value="<?php echo $user['id']; ?>" <?php if(request('user_id') == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
+            <option value="<?php echo $user['id']; ?>" <?php if(request()->input('user_id') == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
             <?php } ?>
         </select>
         <?php
-        if(request('date_start') != ''){
-            $uk_date_start = str_replace('/', '-', request('date_start'));
+        if(request()->input('date_start') != ''){
+            $uk_date_start = str_replace('/', '-', request()->input('date_start'));
             $uk_date_start = date('d/m/Y', strtotime($uk_date_start));
         }
 
-        if(request('date_end') != ''){
-            $uk_date_end = str_replace('/', '-', request('date_end'));
+        if(request()->input('date_end') != ''){
+            $uk_date_end = str_replace('/', '-', request()->input('date_end'));
             $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
         }
     ?>
@@ -109,20 +109,20 @@
         <b>AND</b>
         <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" value="<?php echo $uk_date_end; ?>" style="height:30px;width:100px;">
 
-        <input type="submit" style="height:30px;" value="Search">
+        <input type="button" onclick="mainForm()"  style="height:30px;" value="Search">
         <a href="soa_all.php" style="font-size:12px;text-decoration:none">Reset Form</a>
         </p>
     </form>
     <?php
-        $form_user_id = $mysqli->real_escape_string( request('user_id'));
+        $form_user_id = $mysqli->real_escape_string( request()->input('user_id'));
         
         // if the form has been submitted
         if($form_user_id != null){
 
             // Dates were selected
-            if(request('date_start') != '' && request('date_end') != ''){
-                $date_start = $mysqli->real_escape_string( request('date_start'));
-                $date_end = $mysqli->real_escape_string( request('date_end'));
+            if(request()->input('date_start') != '' && request()->input('date_end') != ''){
+                $date_start = $mysqli->real_escape_string( request()->input('date_start'));
+                $date_end = $mysqli->real_escape_string( request()->input('date_end'));
 
                 $date_start = str_replace('/', '-', $date_start);
                 $date_start = date('Y-m-d', strtotime($date_start));
@@ -188,8 +188,8 @@
                                     $total_paid_picksheet = getPaidPicksheetTotalList(explode(",",$picksheet['id']));
                                     
                                     $total_sales += $num_of_sales;
-                                    $total_charged_user += (float)$total_charged_picksheet;
-                                    $total_paid_user += (float)$total_paid_picksheet;
+                                    $total_charged_user += (double)$total_charged_picksheet;
+                                    $total_paid_user += (double)$total_paid_picksheet;
 
                                 ?>
                                 <tr class="<?php if($i % 2 == 0){ echo 'even'; }else{ echo 'odd'; } ?>">
@@ -224,7 +224,12 @@
 
 <div class="clearfix"></div>
 <script type="text/javascript"> 
-
+function mainForm(){
+	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
    $(document).ready(function() {
         $( ".datepicker" ).datepicker({
             dateFormat: 'dd/mm/yy'

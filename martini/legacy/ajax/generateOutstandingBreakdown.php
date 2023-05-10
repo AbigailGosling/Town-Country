@@ -6,15 +6,15 @@
     $where = array("`customers`.`disabled` = 0");
     $varsD='';
     $varsA=array();
-    if (isset(request('customer_id']) && $_POST['customer_id') != "") {
+    if (request()->input('customer_id') != "") {
         $where[] = "`customers`.`id` = ?";
         $varsD.='i';
-        $varsA[]=request('customer_id');
+        $varsA[]=request()->input('customer_id');
     }
-    if (isset(request('user_id']) && $_POST['user_id') != "") {
+    if (request()->input('user_id') != "") {
         $where[] = "`users`.`id` = ?";
         $varsD.='i';
-        $varsA[]=request('user_id');
+        $varsA[]=request()->input('user_id');
     }
     $masterQ = prepareExecuteQuery("SELECT `customers`.*,`users`.`name` as `username` FROM `customers` INNER JOIN `users` ON `users`.`id` = `customers`.`default_salesman_id` WHERE ".implode(" AND ",$where),$varsD,$varsA);
     $overallBeyondGrace = 0;

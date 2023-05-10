@@ -1,7 +1,7 @@
 <?php
     require(__DIR__.'/../../functions.php');
 
-    $toSkip = request('toSkip');
+    $toSkip = request()->input('toSkip');
     $limit = 80;
 			
     session_start();
@@ -23,6 +23,7 @@
         $date = $row['estimated_delivery_date'];
         
         $date=date_create($date);
+        if ($date === false)$date=DateTime::createFromFormat('d/m/Y',"".$row['estimated_delivery_date']);
         $date = date_format($date,"d/m/Y");
         
         $x2 = "SELECT * FROM `customers` WHERE id = ?";

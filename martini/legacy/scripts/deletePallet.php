@@ -1,19 +1,19 @@
 <?php
-	require(__DIR__.'/../functions.php');
+	require('../functions.php');
 	
 	
-	$intake_id = $mysqli->real_escape_string( request('intake_id'));
+	$intake_id = mysqli_real_escape_string($conn, request()->input('intake_id'));
 	echo "<br/>";
-	$pallet_id = $mysqli->real_escape_string( request('pallet_id'));
+	$pallet_id = mysqli_real_escape_string($conn, request()->input('pallet_id'));
 	echo "<br/>";
-	$product_id  = $mysqli->real_escape_string( request('product_id'));
+	$product_id  = mysqli_real_escape_string($conn, request()->input('product_id'));
 	
 	
 	# if($product_id != '' && $pallet_id != ''){
+		loggedDataChange('pallet_force_delete',$pallet_id,'User Deleted Pallet');
 		
-		
-		$x = "SELECT * FROM `product` WHERE pallet_id = ?";
-		$y = prepareExecuteQuery($x,'i',[$pallet_id]);
+		$x = "SELECT * FROM `product` WHERE pallet_id = $pallet_id";
+		$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
 		
 		while($row = mysqli_fetch_array($y)){
 			

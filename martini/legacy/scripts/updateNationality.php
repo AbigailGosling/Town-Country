@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$id = $mysqli->real_escape_string( request('id'));
-	$name = $mysqli->real_escape_string( request('name'));
+	$id = $mysqli->real_escape_string( request()->input('id'));
+	$name = $mysqli->real_escape_string( request()->input('name'));
 	
 	
 	$x = "UPDATE `nationality` SET `name`= ? WHERE `id` = ?";

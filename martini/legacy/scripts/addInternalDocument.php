@@ -13,9 +13,9 @@
 		copy($tmp_name,$upload_dir.$file_name);
     }
     
-	$pickersheet_id = $mysqli->real_escape_string( request('pickersheet_id'));
-    $type = $mysqli->real_escape_string( request('type'));
-    $message = $mysqli->real_escape_string( request('message'));
+	$pickersheet_id = $mysqli->real_escape_string( request()->input('pickersheet_id'));
+    $type = $mysqli->real_escape_string( request()->input('type'));
+    $message = $mysqli->real_escape_string( request()->input('message'));
     
     $user_id = $_SESSION['USER'];
 

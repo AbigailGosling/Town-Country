@@ -2,7 +2,7 @@
 
 	require(__DIR__.'/../functions.php');
 	
-	$term = request('searchterm');
+	$term = request()->input('searchterm');
 	
 	if($term != ''){
 		

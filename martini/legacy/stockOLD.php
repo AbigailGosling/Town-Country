@@ -4,7 +4,7 @@
 ?>
 <script>
     function toggleRow(classs, ele,productid){
-        $.get( "/scripts/_searchStockNew.php?product_id="+productid+"&class=" + classs, function( data ) {
+        $.get( "scripts/_searchStockNew.php?product_id="+productid+"&class=" + classs, function( data ) {
             //$('.basketTable').append(data);
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
@@ -105,7 +105,7 @@
 </style>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <div class="leftPanel" style="position:relative;">
@@ -117,7 +117,7 @@
                 $y = prepareExecuteQuery($x);
                 
                 while($row = mysqli_fetch_array($y)){
-                ?><option value="<?php echo $row['id']; ?>" <?php if(request('species') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                ?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('species') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                 }
             ?>
         </select>
@@ -136,13 +136,13 @@
                     $y2 = mysqli_query($conn,"SELECT * FROM species WHERE id='$thisid'");
                     $species = mysqli_fetch_array($y2);
                     $rand = 'z' . rand(6000,12212);
-                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request('cutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('cutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                     }
             ?>
         </select>
     </form>	
 	<div id="loadResults" class="resultsContainer">
-        <?php if(request('cutgroup_id')){ ?>        
+        <?php if(request()->input('cutgroup_id')){ ?>        
             <table width="100%" class="slim searchRContent"   style="display:table;">
             <th align="left"></th>
             <th align="left">Intake ID</th>
@@ -162,8 +162,8 @@
             
            <?php 
                 ?><div class="gifContainer"><center><img src="https://zippy.gfycat.com/SkinnySeveralAsianlion.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
-                $cutgroup_id = request('cutgroup_id');
-                $species_id = request('species');
+                $cutgroup_id = request()->input('cutgroup_id');
+                $species_id = request()->input('species');
                 
                 $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id);
 
@@ -248,9 +248,9 @@
 
                         $w = 0;
                         if($weight['weight_tear'] == $weight['weight_gross']){
-                            $w = $weight['weight_gross'];
+                            $w = (double)$weight['weight_gross'];
                         }else{
-                            $w = $weight['weight_gross'] - $weight['weight_tear'];
+                            $w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                         }
                         
                         $totalW = $totalW + $w;
@@ -311,8 +311,8 @@
                                 }
 
                                 ?>kg</td>
-                            <td><?php  if($productsRow['cost']){ echo 'Â£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-                            <td><?php  if($productsRow['price']){ echo 'Â£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+                            <td><?php  if($productsRow['cost']){ echo 'Â£' . number_format((double)$productsRow['cost'], 2, '.', ''); } ?></td>
+                            <td><?php  if($productsRow['price']){ echo 'Â£' . number_format((double)$productsRow['price'], 2, '.', ''); } ?></td>
                         </tr>
                     <?php }?>
             
@@ -327,17 +327,19 @@
 
 <div class="clearfix"></div>
 <?php 
-	if(request('msg') != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo request('msg');?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
 ?>
   
 <script type="text/javascript">
-    
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     $('.gifContainer').hide();
     $('.resultsContainer').css('padding-bottom','30px');
     setTimeout(function(){

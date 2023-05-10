@@ -8,7 +8,7 @@
         toggleRow(classs,ele, productid);
     }
     function toggleRow(classs, ele,intake_id, cut_id, nationality_id){
-        $.get( "/scripts/_searchStockNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id="+nationality_id, function( data ) {
+        $.get( "scripts/_searchStockNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id="+nationality_id, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -186,7 +186,7 @@
 </style>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <div class="leftPanel" style="position:relative;">
@@ -198,7 +198,7 @@
                 $y = prepareExecuteQuery($x);
                 
                 while($row = mysqli_fetch_array($y)){
-                ?><option value="<?php echo $row['id']; ?>" <?php if(request('aspecies') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                ?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('aspecies') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                 }
             ?>
         </select>
@@ -217,7 +217,7 @@
                     $y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
                     $species = mysqli_fetch_array($y2);
                     $rand = 'z' . rand(6000,12212);
-                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                     }
             ?>
         </select>
@@ -227,7 +227,7 @@
         <input type="button" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;">
     </form>
 	<div id="loadResults" class="resultsContainer">
-        <?php if(request('cutgroup_id') || request('pallet_id') || request('intake_id')){ ?>        
+        <?php if(request()->input('cutgroup_id') || request()->input('pallet_id') || request()->input('intake_id')){ ?>        
             <table width="100%" class="slim searchRContent"   style="display:table;">
 	        <th class="searchRContent__id">Intake ID</th>
 	        <th class="searchRContent__location">Location</th>
@@ -247,10 +247,10 @@
            <?php 
                 ?><div class="gifContainer"><center><img src="/legacy/img/loading.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
                 
-                $cutgroup_id = $mysqli->real_escape_string(request('cutgroup_id'));
-                $species_id = $mysqli->real_escape_string(request('species'));
-                $pallet_id = $mysqli->real_escape_string(request('pallet_id'));
-                $intake_id = $mysqli->real_escape_string(request('intake_id'));
+                $cutgroup_id = $mysqli->real_escape_string(request()->input('cutgroup_id'));
+                $species_id = $mysqli->real_escape_string(request()->input('species'));
+                $pallet_id = $mysqli->real_escape_string(request()->input('pallet_id'));
+                $intake_id = $mysqli->real_escape_string(request()->input('intake_id'));
                 
                 $whereArray = [];
 
@@ -366,9 +366,9 @@
                     
                         $w = 0;
                         if($weight['weight_tear'] == $weight['weight_gross']){
-                            $w = $weight['weight_gross'];
+                            $w = (double)$weight['weight_gross'];
                         }else{
-                            $w = $weight['weight_gross'] - $weight['weight_tear'];
+                            $w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                         }
                         
                         $totalW = $totalW + $w;
@@ -419,8 +419,8 @@
                                 echo $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
                              }
                                 ?>kg</td>
-                            <td><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-                            <td><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+                            <td><?php  if($productsRow['cost']){ echo '£' . number_format((double)$productsRow['cost'], 2, '.', ''); } ?></td>
+                            <td><?php  if($productsRow['price']){ echo '£' . number_format((double)$productsRow['price'], 2, '.', ''); } ?></td>
                         </tr>
                     <?php }?>
             
@@ -435,17 +435,19 @@
 
 <div class="clearfix"></div>
 <?php 
-	if(request('msg') != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo request('msg');?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
 ?>
   
 <script type="text/javascript">
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     $('.overviewcomment').focus(function() {
         console.log($(this)[0].scrollHeight)
         $(this).height($(this)[0].scrollHeight)
@@ -525,6 +527,7 @@
             
    
             $.ajax({
+                headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
                 method: "POST",
                 url: "<?php echo $domain; ?>ajax/saveCommentPicker.php",
                 data: {

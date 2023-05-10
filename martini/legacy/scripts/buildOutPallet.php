@@ -1,11 +1,11 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$pickersheet_id = $mysqli->real_escape_string( request('id'));
+	$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
     
-	$functype = request('functype');
+	$functype = request()->input('functype');
     
-    $weight_ids = request('weightids');
+    $weight_ids = request()->input('weightids');
     $weight_ids = rtrim($weight_ids,',');
     $weight_id_array = explode(",",$weight_ids);
 
@@ -16,7 +16,7 @@
     if($weightsAlreadySold > 0){
     ?>
         <script>
-            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request('type'); ?>';
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
         </script>
     <?php
         exit();
@@ -35,7 +35,7 @@
             $grossTareArray = explode(',', $outPallet['weight_ids']); 
             $grosstareEmpty = true;
             
-            foreach(request('grossids') as $weightID){
+            foreach(request()->input('grossids') as $weightID){
                 
                   if(is_numeric($weightID) && request('gross_' . $weightID) != 0){
     
@@ -80,7 +80,7 @@
 
             # START NORMAL WEIGHT
  
-            $weightids = explode(',', request('weightids'));
+            $weightids = explode(',', request()->input('weightids'));
 
             foreach($weightids as $weightID){
                 if($weightID != ''){
@@ -114,7 +114,7 @@
         $grossTareArray = array(); 
         $grosstareEmpty = true;
         
-		foreach(request('grossids') as $weightID){
+		foreach(request()->input('grossids') as $weightID){
             
   			if(is_numeric($weightID) && request('gross_' . $weightID) != 0){
 
@@ -162,7 +162,7 @@
         # START NORMAL WEIGHT
         $weightArray = array();
 
-        $weightids = explode(',', request('weightids'));
+        $weightids = explode(',', request()->input('weightids'));
 
         foreach($weightids as $weightID){
 
@@ -189,5 +189,5 @@
 	
     ?>
 <script>
-	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request('type'); ?>';
+	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
 </script>

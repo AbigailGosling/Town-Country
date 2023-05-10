@@ -1,10 +1,10 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request('pallet_id'));
-	$product_id = $mysqli->real_escape_string( request('product_id'));
-	$weight_id = $mysqli->real_escape_string( request('weight_id'));
+	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
+	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
+	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
+	$weight_id = $mysqli->real_escape_string( request()->input('weight_id'));
 	
 	$x1 = "SELECT * FROM `product` WHERE id = ?";
 	$y1 = prepareExecuteQuery($x1,'i',[$product_id]);
@@ -278,6 +278,9 @@
 
 
 <script type="text/javascript">
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$(document).ready(function(){
 		
 	 
@@ -488,10 +491,7 @@
 		
 		if(good == 1){
 			var formName = '#addPalletForm';
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", $(formName).attr('action'), true);
-			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send($(formName).serialize());
+			$(formName).ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:function(){	location.reload();}});
 		}
 		
 		// console.log(msg);

@@ -15,16 +15,14 @@
 </head>
 <body class="menu">
 <div id="top">
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
 	<h1 class="int">Town &amp; Country 3</h1>	
 	<div id="menu_wrap">
 		<?php
 			$ids = $user['pages'];
-		?>
-
-		<?php
+			if(count(explode(",",$ids)) == 0){ header('location:/logout'); exit; die();}
 			$resultsColumn1 = prepareExecuteQuery("SELECT * FROM `page_permissions` WHERE `column` = 1 && `id` IN ($ids)");
 			$count = mysqli_num_rows($resultsColumn1);
 

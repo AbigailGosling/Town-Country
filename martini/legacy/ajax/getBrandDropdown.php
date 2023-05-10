@@ -1,6 +1,6 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	$name = request('searchterm');
+	$name = request()->input('searchterm');
 	$cutX = "SELECT * FROM `brands` WHERE `name` LIKE ?";
 	$cutY = prepareExecuteQuery($cutX,'s',['%'.$name.'%']);
 	$count = mysqli_num_rows($cutY);

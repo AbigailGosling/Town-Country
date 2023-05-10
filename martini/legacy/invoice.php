@@ -1,6 +1,6 @@
 <?php
-	$pickersheet_id = request('id');
-	$adv = array_key_exists("adv",$_GET);
+	$pickersheet_id = request()->input('id');
+	$adv = request()->has("adv");
 
 	if ($adv == false) include_once('includes/frontHeader.php');
 	else require_once('functions.php');
@@ -16,9 +16,9 @@
 	
 	$customerRow = $y2->fetch_assoc(); 
 	
-	if(request('deleteInternalDocument'] != '' && $user['user_type') == 'A'){
-		$internal_doc_id = $mysqli->real_escape_string( request('deleteInternalDocument'));
-		$pickersheet_id = $mysqli->real_escape_string( request('id'));
+	if(request()->input('deleteInternalDocument') != '' && $user['user_type'] == 'A'){
+		$internal_doc_id = $mysqli->real_escape_string( request()->input('deleteInternalDocument'));
+		$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
 
 		prepareExecuteQuery("DELETE FROM `pickersheet_documents` WHERE id=? LIMIT 1",'i',[$internal_doc_id]);
 
@@ -30,7 +30,7 @@
 <div>
 	<div id="top">
 		<a href="menu.php" id="menu">MENU</a>
-		<a href="logout.php" id="logout">LOGOUT</a>
+		<a href="logout" id="logout">LOGOUT</a>
 	</div>
 	<?php
 	}
@@ -165,7 +165,7 @@
 				</div>
 				<?php if($user['user_type'] == 'A'){ ?>
 				<br />
-				<form class="printhide" method="POST" action="scripts/addInternalDocument.php"
+				<form id="mainForm" class="printhide" method="POST" action="scripts/addInternalDocument.php"
 					enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 					<input type="hidden" name="type" value="INVOICE">
 					<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
@@ -187,7 +187,7 @@
 								<input type="file" name="dfile">
 							</td>
 							<td><br />
-								<input type="submit">
+								<input type="button" onclick="mainForm()" value ="Submit"></input>
 							</td>
 						</tr>
 					</table>
@@ -213,7 +213,7 @@
 							echo $internalDoc['message'];
 
 							if($internalDoc['dfile'] != ''){
-							?> <a href="/docs/<?php echo $internalDoc['dfile']; ?>" target="_blank">(View Document)</a><?php
+							?> <a href="docs/<?php echo $internalDoc['dfile']; ?>" target="_blank">(View Document)</a><?php
 							}
 						?>
 							</td>
@@ -294,9 +294,9 @@
                         while($weight = mysqli_fetch_array($y2)){
                             
                             if($weight['weight_tear'] == $weight['weight_gross']){
-                                $w = $weight['weight_gross'];
+                                $w = (double)$weight['weight_gross'];
                             }else{
-                                $w = $weight['weight_gross'] - $weight['weight_tear'];
+                                $w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                             }
 
                             $k = $k + $w;
@@ -359,9 +359,9 @@
                                 while($weightRow = mysqli_fetch_array($yyWeight)){
                                     
                                     if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-                                        $tw = $weightRow['weight_gross'];
+                                        $tw = (double)$weightRow['weight_gross'];
                                     }else{
-                                        $tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+                                        $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
                                     }
                                     
                                     $kg = $kg + $tw;
@@ -371,13 +371,13 @@
                                 
                                 if($product['unit'] == 'PPC'){
 									echo $count . ' Cases';
-									$totalPriceRow = number_format((float)$count * $pickerItem['price'], 2, '.', '');
-									$totalPrice += number_format((float)$count * $pickerItem['price'], 2, '.', '');
+									$totalPriceRow = number_format((double)$count * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
 									$total_case_count += $count;
                                 }else{
                                     echo $kg . ' kg';
-									$totalPriceRow = number_format((float)$kg * $pickerItem['price'], 2, '.', '');
-									$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+									$totalPriceRow = number_format((double)$kg * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
 									$total_weight_count += $kg;
 								}
                                 
@@ -385,7 +385,7 @@
 							</b>
 						</td>
 						<td align="right" class="price">
-							£<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?></td>
+							£<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?></td>
 						<td align="right" class="price">£<?php echo $totalPriceRow; ?></td>
 					</tr>
 					<?php
@@ -453,7 +453,7 @@
 							<td style="text-align: right;">
 								<div class="col3">
 									<div class="totalPayable"><b>Total Payable:</b> <span
-											class="payvalue"><b>£<?php echo number_format((float)$totalPrice, 2, '.', ''); ?></b></span>
+											class="payvalue"><b>£<?php echo number_format((double)$totalPrice, 2, '.', ''); ?></b></span>
 									</div>
 									<div class="paymentDue">Payment due by: <span
 											class="payvalue"><?php echo $payByDate; ?></span></div>
@@ -503,6 +503,12 @@
 </body>
 </html>
 <script>
+	function mainForm(){
+		$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	}
+	function mainFormSucess(){
+		location.reload();
+	}
 	$(document).ready(function () {
 		var totalIntakeWeight = 0.0;
 
@@ -523,7 +529,7 @@
 
 		if (confirm('Are you sure you want to send an email copy of this invoice?')) {
 
-			$.get("<?php echo $domain; ?>ajax/generatePDFinvoice.php?id=<?php echo request('id'); ?>", function (data,
+			$.get("<?php echo $domain; ?>ajax/generatePDFinvoice.php?id=<?php echo request()->input('id'); ?>", function (data,
 				status) {
 
 				var name = data.replace(/\s+/g, '');
@@ -536,15 +542,17 @@
 		}
 	}
 	<?php
-	if (request('msg') != '') {
+	if (request()->input('msg') != '') {
 	?>
-		alert('<?php echo request('msg'); ?>'); <?php
+		alert('<?php echo request()->input('msg'); ?>'); <?php
 	} ?>
 	function togglePrices() {
 		$('.price').toggle('');
 	}
 
-
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	function editWeight(intake_id, pallet_id, product_id, weight_id) {
 		console.log('intake_id ' + intake_id);
 		console.log('pallet_id ' + pallet_id);
@@ -706,7 +714,7 @@
 
 	function openAddtoPallet(intake_id, pallet_id) {
 
-		$.get("/ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function (data) {
+		$.get("ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function (data) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
@@ -719,14 +727,14 @@
 
 	function deleteRow(intake_id, pallet_id) {
 		if (confirm('Are you sure you want to delete this?')) {
-			window.location.href = "/scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}
 
 	function printStuff() {
 
-		$.get("<?php echo $domain; ?>ajax/markInvoiceAsPrinted.php?id=<?php echo request('id'); ?>", function (data,
+		$.get("<?php echo $domain; ?>ajax/markInvoiceAsPrinted.php?id=<?php echo request()->input('id'); ?>", function (data,
 			status) {
 			console.log(data);
 			$('#top').hide();

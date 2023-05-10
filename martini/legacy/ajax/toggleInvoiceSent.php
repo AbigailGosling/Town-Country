@@ -3,8 +3,8 @@
 	require(__DIR__.'/../functions.php');
 
 	
-	$picksheet = request('picksheet');
-	$status = request('status');
+	$picksheet = request()->input('picksheet');
+	$status = request()->input('status');
  	
 	
 	$x = "UPDATE `pickerSheets` SET invoicesent=? WHERE id=?";

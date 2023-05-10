@@ -1,30 +1,30 @@
 <?php
 include('includes/frontHeader.php');
 
-$invoiceID = request('invoice_id');
-$paymentID = request('payment_id');
-$customerID = request('customer_id');
+$invoiceID = request()->input('invoice_id');
+$paymentID = request()->input('payment_id');
+$customerID = request()->input('customer_id');
 
 if (empty($invoiceID)) {
     header('Location: /customer_soa.php?id=' . $customerID);
     die();
 }
 
-$invoiceAmount = number_format((float)invoiceTotal($invoiceID), 2, '.', '');
+$invoiceAmount = number_format((double)invoiceTotal($invoiceID), 2, '.', '');
 
 if (!empty($paymentID)) {
-    $selectedInvoicePayment = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ?",'ii',[$paymentID,$invoiceID]);
+    $selectedInvoicePayment = loggedQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ?",'ii',[$paymentID,$invoiceID]);
     $selectedPaymentData = mysqli_fetch_assoc($selectedInvoicePayment);
     //print_r($selectedPaymentData);
 }
 
 ?>
 
-<link href="/legacy/css/bootstrap.min.css" rel="stylesheet" >
+<link href="css/bootstrap.min.css" rel="stylesheet" >
 
 <div id="top">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
@@ -49,7 +49,7 @@ if (!empty($paymentID)) {
         <tbody>
         <?php
 
-        $invoicePayments = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ?",'i',[$invoiceID]);
+        $invoicePayments = loggedQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ?",'i',[$invoiceID]);
 
         $runningBalance = $invoiceAmount;
         $i = 0;
@@ -60,7 +60,7 @@ if (!empty($paymentID)) {
                 <td>
                     <?php
                         if($invoicePayment['payment_method'] == 'CREDIT_NOTE'){
-                        ?><a target="_blank" href="/ajax/generatePDFcreditnote.php?id=<?php echo $invoiceID; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><?php echo $invoicePayment['payment_method']; ?></a><?php
+                        ?><a target="_blank" href="ajax/generatePDFcreditnote.php?id=<?php echo $invoiceID; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><?php echo $invoicePayment['payment_method']; ?></a><?php
                         }else{
                             echo $invoicePayment['payment_method'];
                         }
@@ -70,14 +70,14 @@ if (!empty($paymentID)) {
                 <td><?php echo $invoicePayment['created_at']; ?></td>
                 <td><?php echo $invoicePayment['name']; ?></td>
                 <td align="center">
-                    <a href="single_invoice_payments.php?customer_id=<?php echo request('customer_id'); ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                    <a href="single_invoice_payments.php?customer_id=<?php echo request()->input('customer_id'); ?>&invoice_id=<?php echo $invoicePayment['invoice_id']; ?>&payment_id=<?php echo $invoicePayment['id']; ?>"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
                 </td>
                 <td align="center">
-                <form method="POST" action="/scripts/_deleteInvoicePayment.php">
+                <form id="mainForm<?php echo $invoicePayment['id']; ?>" method="POST" action="scripts/_deleteInvoicePayment.php">
                     <input type="hidden" name="return_url" value="<?php echo "https://".request()->server('HTTP_HOST').request()->server('REQUEST_URI'); ?>">
                     <input type="hidden" name="invoice_id" value="<?php echo $invoicePayment['id']; ?>">
 
-                    <button type="submit" style="border:0px;background:none;"><i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px !important"></i></button>
+                    <button type="button" onclick="mainForm(<?php echo $invoicePayment['id']; ?>)" style="border:0px;background:none;"><i class="fa fa-trash" aria-hidden="true" style="color:red;font-size:18px !important"></i></button>
                 </form>
                 </td>
                 <td align="right">
@@ -121,7 +121,7 @@ if (!empty($paymentID)) {
 </tr>
 <?php
 
-    $outpalletResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
+    $outpalletResult = loggedQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
     $outpalletCount = mysqli_num_rows($outpalletResult);
 
     $total_weight_count = 0;
@@ -138,7 +138,7 @@ if (!empty($paymentID)) {
 
         foreach($weightids as $weightid){
             $x = "SELECT * FROM `weights` WHERE id=?";
-            $y = prepareExecuteQuery($x,'i',[$weightid]);
+            $y = loggedQuery($x,'i',[$weightid]);
             $weight = mysqli_fetch_array($y);
 
             if(!in_array($weight['product_id'], $productIDArray)){
@@ -150,7 +150,7 @@ if (!empty($paymentID)) {
         foreach($productIDArray as $productID){
             $kg = 0;
             $x1 = "SELECT * FROM `product` WHERE id=?";
-            $y1 = prepareExecuteQuery($x1,'i',[$productID]);
+            $y1 = loggedQuery($x1,'i',[$productID]);
             $product = mysqli_fetch_array($y1);
 
 
@@ -163,16 +163,16 @@ if (!empty($paymentID)) {
             array_unshift($qVars , $productID);
             $x2 = "SELECT * FROM `weights` WHERE product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
 
-            $y2 = prepareExecuteQuery($x2,str_repeat('i',count($qVars)),$qVars);
+            $y2 = loggedQuery($x2,str_repeat('i',count($qVars)),$qVars);
             $count = mysqli_num_rows($y2);
             
              
             
             while($weightRow = mysqli_fetch_array($y2)){               
                 if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-                    $tw = $weightRow['weight_gross'];
+                    $tw = (double)$weightRow['weight_gross'];
                 }else{
-                    $tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+                    $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
                 }
                 
                 $kg = $kg + $tw;
@@ -195,7 +195,7 @@ if (!empty($paymentID)) {
             <?php
                 $productID = $product['id'];
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
+                $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
                 $pickerItem = mysqli_fetch_array($howManyY);
                 $howMany = mysqli_num_rows($howManyY);
             ?>
@@ -226,7 +226,7 @@ if (!empty($paymentID)) {
                 <?php echo $kg; ?> kg
             </td>
              
-            <td align="left" class="">£<input type="number" disabled style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$pickerItem['price'], 2, '.', ''); ?>"></td>
+            <td align="left" class="">£<input type="number" disabled style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?>"></td>
             <td>
             </td>
         </tr>
@@ -240,10 +240,10 @@ if (!empty($paymentID)) {
 
     <div class="row">
         <div class="col">
-            <h2 style="font-size:22px;padding-bottom:10px;"><?php echo (empty(request('payment_id'))) ? 'Add' : 'Edit'; ?> Payment</h2>
+            <h2 style="font-size:22px;padding-bottom:10px;"><?php echo (empty(request()->input('payment_id'))) ? 'Add' : 'Edit'; ?> Payment</h2>
         </div>
     </div>
-    <form id="payment_entry" method="POST" action="/scripts/save_invoice_payment_entry.php">
+    <form id="payment_entry" method="POST" action="scripts/save_invoice_payment_entry.php">
         <div class="row">
             <div class="col">
                 <label for="invoice_id">Invoice ID</label>
@@ -303,7 +303,7 @@ if (!empty($paymentID)) {
                 $payment_id = $selectedPaymentData['id'];
 
                 
-                $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `vc` WHERE payment_id=?",'i',[$payment_id]);
+                $creditNoteResult = loggedQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
 
@@ -312,7 +312,7 @@ if (!empty($paymentID)) {
                 foreach($productIDs as $productID){
                     $i++;
                     
-                    $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
+                    $creditNoteResult = loggedQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
                      
 
                     if($productID == 0){
@@ -348,10 +348,10 @@ if (!empty($paymentID)) {
                     }else{
                         $creditNoteDetails = mysqli_fetch_array($creditNoteResult);
                         # get number of weights for this product
-                        $weightCountResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
+                        $weightCountResult = loggedQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
                         $count = mysqli_num_rows($weightCountResult);
                         
-                        $productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
+                        $productResult = loggedQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
                         $product = mysqli_fetch_array($productResult);
 
                         $rowClass = "customProductRow" . $i;
@@ -375,7 +375,7 @@ if (!empty($paymentID)) {
                     <?php
                         $productID = $product['id'];
                         $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                        $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
+                        $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
                         $pickerItem = mysqli_fetch_array($howManyY);
                         $howMany = mysqli_num_rows($howManyY);
                     ?>
@@ -406,7 +406,7 @@ if (!empty($paymentID)) {
                     ?>
                 </td>
                 <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
-                    <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((float)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
+                    <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
                     <td>
                      </td>
                 </tr>
@@ -424,7 +424,7 @@ if (!empty($paymentID)) {
             <div class="col d-flex justify-content-start">
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
                 <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
-                <input class="btn btn-success" type="submit" value="SUBMIT" />  
+                <input class="btn btn-success" type="button" onclick="mainForm2()" value="SUBMIT" />  
             </div>
         </div>
     </form>    
@@ -515,6 +515,15 @@ if (!empty($paymentID)) {
 </style>
 
 <script>
+    function mainForm(id){
+	$('#mainForm'+id).ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
+function mainForm2(){
+	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
     $(document).ready(function() {
         $('#payment_entry').submit(function() {
             return validateForm();

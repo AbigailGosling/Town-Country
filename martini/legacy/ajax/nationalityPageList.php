@@ -1,8 +1,7 @@
 <?php
 
 	require(__DIR__.'/../functions.php');
-
-	$name = request('searchterm');
+	$name = request()->input('searchterm');
 	
 	if($name != '' && strlen($name) > 1){
 	
@@ -11,7 +10,7 @@
 		<?php
 		
 		$cutX = "SELECT * FROM `nationality` WHERE `name` LIKE ?";
-		$cutY = prepareExecuteQuery($cutX,'i',['%'.$name.'%']);
+		$cutY = prepareExecuteQuery($cutX,'s',['%'.$name.'%']);
 		
 		while($cutRow = mysqli_fetch_array($cutY)){
 		?>

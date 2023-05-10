@@ -1,4 +1,7 @@
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     function autoToggleRow(classs,thisclass, productid){
         
         var ele = $('.' + thisclass);
@@ -41,13 +44,14 @@
 <?php
     $time1 = microtime(true);
 	require(__DIR__.'/../functions.php');
-	$cutgroup_id = request('cutgroup_id');
-	$species_id = request('species');
-	$temperatureID = request('temperatureID');
-	$pallet_id = request('palletID');
-	$intake_id = request('intakeID');
-    $brand =  request('brandID');
-    $nationality =  request('nationalityID');
+	$cutgroup_id = request()->input('cutgroup_id');
+	$species_id = request()->input('species');
+	$temperatureID = request()->input('temperatureID');
+	$pallet_id = request()->input('palletID');
+	$intake_id = request()->input('intakeID');
+    $brand =  request()->input('brandID');
+    $nationality =  request()->input('nationalityID');
+    $customer_id =  request()->input('customerID');
     $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
@@ -174,7 +178,6 @@
         $product2_temperatures = array();
         $product2_dateranges = array();
         $product2_quantity = 0;
-<<<<<<< HEAD:martini/legacy/scripts/searchPicker.php
         foreach ($products2 as $product2) 
         {
             array_push($product2_palletids, $product2['pallet_id']);
@@ -182,26 +185,6 @@
             array_push($product2_productids, $product2['productid']);
             $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
             if($product2['akg'] != ''){
-=======
-        array_map(
-            function($product2) {
-                global $intake_id;
-                global $product2_palletids;
-                global $product2_cutids;
-                global $product2_productids;
-                global $product2_brands;
-                global $product2_nationalities;
-                global $product2_temperatures;
-                global $product2_dateranges;
-                global $product2_quantity;
-                global $overallQuantity;
-                global $overallWeight;
-                array_push($product2_palletids, $product2['pallet_id']);
-                array_push($product2_cutids, $product2['cut_id']);
-                array_push($product2_productids, $product2['productid']);
-                $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
-                if($product2['akg'] != ''){
->>>>>>> develop:scripts/searchPicker.php
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
             }else{
                 $this_row_weight = weightSoldFromProductID($product2['productid']);
@@ -229,7 +212,6 @@
         else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
         if($quantityTotal < 1){continue;}
-        $overallQuantity = $overallQuantity + $quantityTotal;
         ###
         
         $totalW += weightSoldFromProductID($productsRow['productid']);           
@@ -237,7 +219,7 @@
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
 
         $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
-        $overallWeight = $overallWeight + $totalWeightOfProduct;
+        
         if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){
             $locked = true;
             $lockedT = "y";
@@ -247,6 +229,8 @@
             $lockedT = "n";
         }
         if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
+        $overallQuantity = $overallQuantity + $quantityTotal;
+        $overallWeight = $overallWeight + $totalWeightOfProduct;
         ?>
         <tr class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
             <td colspan="1">
@@ -367,8 +351,8 @@
                 }
 
  				?></td>
-			<td class="bold"><?php  if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-			<td class="bold"><?php  if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td>
+			<td class="bold"><?php if($productsRow['cost']){ echo '£' . number_format(applyCustomerMarkup($customer_id,(float)$productsRow['cost']), 2, '.', ''); } ?></td>
+			<td class="bold"><?php if($productsRow['price']){ echo '£' . number_format(applyCustomerMarkup($customer_id,(float)$productsRow['price']), 2, '.', ''); } ?></td>
             <td></td>
         </tr>
     <?php  ?>
@@ -421,7 +405,7 @@ var firstExecution = 0
 var interval = 1000
 
 function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, event){
-    $.get("/ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
+    $.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
 
         var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
         var howManyLeft = parseInt(num);
@@ -504,7 +488,7 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
         $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
 
-        $.get( "/scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
+        $.get( "scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
             $('.basketTable').append(data);
             checkUBDates(null);
         });

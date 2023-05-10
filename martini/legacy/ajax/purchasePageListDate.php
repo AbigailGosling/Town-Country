@@ -2,8 +2,8 @@
 
 	require(__DIR__.'/../functions.php');
     
-    $month = request('month');
-	$year = request('year');
+    $month = request()->input('month');
+	$year = request()->input('year');
 	
 	$month = str_pad($month, 2, '0', STR_PAD_LEFT);
 	

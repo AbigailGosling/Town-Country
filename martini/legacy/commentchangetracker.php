@@ -3,7 +3,7 @@
 ?>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <style id="mainStyle">
 
@@ -30,7 +30,7 @@
 </style>
 <div class="leftPanel" style="padding:20px">
     <h2></h2>
-    <input name="entity_id" id="entity_id" placeholder="Enter ID..." value="<?php echo request('invoice_id'); ?>" style="height:34px;width:100px;"></input>
+    <input name="entity_id" id="entity_id" placeholder="Enter ID..." value="<?php echo request()->input('invoice_id'); ?>" style="height:34px;width:100px;"></input>
     <select name="type_id" id="type_id" style="width:152px;height:40px;">
         <option value="" selected>All Types</option>
 		<?php
@@ -92,6 +92,9 @@
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 $(document).ready(function(){ 
     $("#date_start").datepicker({
         dateFormat: 'dd/mm/yy'

@@ -1,37 +1,37 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$unit = $mysqli->real_escape_string( request('unit'));	
-	$intake_id = $mysqli->real_escape_string( request('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request('pallet_id'));
+	$unit = $mysqli->real_escape_string( request()->input('unit'));	
+	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
+	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
 	
 	
-	$status_id = $mysqli->real_escape_string( request('statuses_id'));
-	$ubbb = $mysqli->real_escape_string( request('ubbb'));
-	$cut_id = $mysqli->real_escape_string( request('cut_id'));
+	$status_id = $mysqli->real_escape_string( request()->input('statuses_id'));
+	$ubbb = $mysqli->real_escape_string( request()->input('ubbb'));
+	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
 	
-	$best_by = $mysqli->real_escape_string( request('best_by'));
-	$range_from = $mysqli->real_escape_string( request('best_by_range_from'));
-	$range_to = $mysqli->real_escape_string( request('best_by_range_to'));
-	$weight = $mysqli->real_escape_string( request('weight'));
+	$best_by = $mysqli->real_escape_string( request()->input('best_by'));
+	$range_from = $mysqli->real_escape_string( request()->input('best_by_range_from'));
+	$range_to = $mysqli->real_escape_string( request()->input('best_by_range_to'));
+	$weight = $mysqli->real_escape_string( request()->input('weight'));
 	
-	$species_id = $mysqli->real_escape_string( request('species_id'));
-	$temperature_id = $mysqli->real_escape_string( request('temperature_id'));
-	
-	
-	$nationality_id = $mysqli->real_escape_string( request('nationality_id'));
-	$brand_id = $mysqli->real_escape_string( request('brand_id'));
-	
-	$pallet_tare = $mysqli->real_escape_string( request('pallet_tare'));
-	$tare_per_carton = $mysqli->real_escape_string( request('tare_per_carton'));
-	$number_of_cartons = $mysqli->real_escape_string( request('number_of_cartons'));
+	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
+	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
 	
 	
-	$akg = $mysqli->real_escape_string( request('akg'));
+	$nationality_id = $mysqli->real_escape_string( request()->input('nationality_id'));
+	$brand_id = $mysqli->real_escape_string( request()->input('brand_id'));
+	
+	$pallet_tare = $mysqli->real_escape_string( request()->input('pallet_tare'));
+	$tare_per_carton = $mysqli->real_escape_string( request()->input('tare_per_carton'));
+	$number_of_cartons = $mysqli->real_escape_string( request()->input('number_of_cartons'));
+	
+	
+	$akg = $mysqli->real_escape_string( request()->input('akg'));
 
 	
-	request('quantity')++; # Fix the loop from starting at 0
-	
+	$quantity=request()->input('quantity'); # Fix the loop from starting at 0
+	$quantity++;
 	
 	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit) VALUES (?,?,?,?,?,?,?,?,?,?)";
 	$y = prepareExecuteQuery($x,'ssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$ubbb,$unit]);
@@ -45,8 +45,8 @@
 		$x = "INSERT INTO `weights` (`product_id`,`status_id`,`weight_gross`,`weight_tear`) VALUES (?,?,?,?)";
 		$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$akg,$akg]);	
 	}else{
-		for($a = 1; $a < request('quantity'); $a++){
- 			$individualweights = request('individualweights');
+		for($a = 1; $a < $quantity; $a++){
+ 			$individualweights = request()->input('individualweights');
 			
 			if($individualweights == 'C'){
 				# Catch Weights
@@ -66,7 +66,7 @@
 				
 			}else{
 				# Single Weight Value
-				$weight = request('single_weight_val');
+				$weight = request()->input('single_weight_val');
 				
 				
 				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
@@ -94,9 +94,9 @@
 	temperature_id: <?php echo $temperature_id; ?><br/>
 	nationality_id: <?php echo $nationality_id; ?><br/>
 	brand_id: <?php echo $brand_id; ?><br/>
-	quantity: <?php echo request('quantity'); ?><br/>
-	individualweights: <?php echo request('individualweights'); ?><br/>
-	single_weight_val: <?php echo request('single_weight_val'); ?><br/>
+	quantity: <?php echo $quantity; ?><br/>
+	individualweights: <?php echo request()->input('individualweights'); ?><br/>
+	single_weight_val: <?php echo request()->input('single_weight_val'); ?><br/>
 </div>
 <br/>
 <script>

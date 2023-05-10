@@ -2,14 +2,14 @@
 	require(__DIR__.'/../functions.php');
 	
 	
-	$supplier_id = $mysqli->real_escape_string( request('supplier_id'));
-	$purchased_by = $mysqli->real_escape_string( request('purchased_by'));
-	$date_purchased = $mysqli->real_escape_string( request('date_purchased'));
-	$date_due = $mysqli->real_escape_string( request('date_due'));
-	$transportation = $mysqli->real_escape_string( request('transportation'));
-	$haulier = $mysqli->real_escape_string( request('haulier'));
-	$direct_drop = $mysqli->real_escape_string( request('direct_drop'));
-	$temperature_id = $mysqli->real_escape_string( request('temperature_id'));
+	$supplier_id = $mysqli->real_escape_string( request()->input('supplier_id'));
+	$purchased_by = $mysqli->real_escape_string( request()->input('purchased_by'));
+	$date_purchased = $mysqli->real_escape_string( request()->input('date_purchased'));
+	$date_due = $mysqli->real_escape_string( request()->input('date_due'));
+	$transportation = $mysqli->real_escape_string( request()->input('transportation'));
+	$haulier = $mysqli->real_escape_string( request()->input('haulier'));
+	$direct_drop = $mysqli->real_escape_string( request()->input('direct_drop'));
+	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
 	
 	$date_purchased = str_replace('/', '-', $date_purchased);
 	$date_purchased = date('Y-m-d 00:00:00', strtotime($date_purchased));
@@ -17,27 +17,27 @@
 	$date_due = str_replace('/', '-', $date_due);
 	$date_due = date('Y-m-d H:00:00', strtotime($date_due));
 	
-	$comments = $mysqli->real_escape_string( request('comments'));
-	$booking_ref_number = $mysqli->real_escape_string( request('booking_ref_number'));
+	$comments = $mysqli->real_escape_string( request()->input('comments'));
+	$booking_ref_number = $mysqli->real_escape_string( request()->input('booking_ref_number'));
 	
 	$speciesString = '';
 	$cutString = '';
 	$unitsString = '';
 	$priceString = '';
 	
-	foreach(request('species') as $species){
+	foreach(request()->input('species') as $species){
 		$speciesString .= $species.'|';
 	}
 	
-	foreach(request('cuts') as $cuts){
+	foreach(request()->input('cuts') as $cuts){
 		$cutString .= $cuts.'|';
 	}
 	
-	foreach(request('units') as $units){
+	foreach(request()->input('units') as $units){
 		$unitsString .= $units.'|';
 	}
  
-	foreach(request('prices') as $price){
+	foreach(request()->input('prices') as $price){
 		$priceString .= $price.'|';
 	}
 	

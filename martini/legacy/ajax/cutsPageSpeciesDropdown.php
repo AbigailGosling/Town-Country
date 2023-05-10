@@ -1,14 +1,16 @@
 <?php
 	require(__DIR__.'/../functions.php');
-
-    $speciesID = $mysqli->real_escape_string( request('species_id'));
+    ini_set("memory_limit", "-1");
+    $speciesID = $mysqli->real_escape_string( request()->input('species_id'));
 
     $cutsArray = Array();
 
     $cutsResult = prepareExecuteQuery("SELECT * FROM `cuts` WHERE species_id = ? ORDER by `name` ASC",'i',[$speciesID]);
 
-    while($cutRow = mysqli_fetch_array($cutsResult)){                    
-        array_push($cutsArray, $cutRow);    
+    while($cutRow = mysqli_fetch_array($cutsResult)){              
+        array_push($cutsArray, $cutRow);  
+    }
+    foreach ($cutsArray as $cutRow) {
     ?>
 
     <table style="width: 100%;display: table;">
@@ -28,7 +30,8 @@
         <h2>Confirm</h2>
         <p>Where would you like to reassign the existing products?</p>
 
-        <form method="POST" action="scripts/reassignproductcuts.php">
+        <form id="mainForm" method="POST" action="scripts/reassignproductcuts.php">
+        <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
             <input type="hidden" value="<?php echo $cutRow['id']; ?>" name="before_cutid">
             <select style="width:100%;height:35px;" name="after_cutid" required>
                 <option value="" disabled selected>Please select a cut..</option>
@@ -42,6 +45,8 @@
             </select>
 
             <input type="submit" value="Reassign products & delete <?php echo $cutRow['name']; ?>" style="width:100%;height:35px;color:#fff;margin-top:20px;background:#3faddd;outline:none;border:0px;font-weight:bold;">
+            <script>
+</script>
         </form>
     </div>
     <?php

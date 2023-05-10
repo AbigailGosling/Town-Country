@@ -3,7 +3,7 @@ include('includes/frontHeader.php');
 ?>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <div class="search printhide">
     <div class="container flex space-between" style="align-items:center; width:90%">
@@ -47,7 +47,9 @@ include('includes/frontHeader.php');
 
 <div class="clearfix"></div>
 <script type="text/javascript">
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     $(document).ready(function() {
         table = $('#soaTable').DataTable({
             "pageLength": -1,

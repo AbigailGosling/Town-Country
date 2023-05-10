@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 class LegacyController extends Controller
 {
     public function entry_point()
@@ -41,6 +42,7 @@ class LegacyController extends Controller
             }
             catch (Exception $e)
             {
+                Log::debug($e,[$targetFile]);
                 abort(404);
             }
         }
@@ -59,6 +61,8 @@ class LegacyController extends Controller
                 return "image/jpeg";
             case "js":
                 return "text/javascript";
+            case "pdf":
+                return "application/pdf";
             case "png":
                 return "image/png";
             case "ttf":

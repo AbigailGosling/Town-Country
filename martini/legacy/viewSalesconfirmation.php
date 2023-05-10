@@ -1,11 +1,11 @@
 <?php
-	$adv = array_key_exists("adv",$_GET);
+	$adv = request()->has("adv");
 
 	if ($adv == false) include_once('includes/frontHeader.php');
 	else require_once('functions.php');
 
 	
-	$picksheet_id = request('id');
+	$picksheet_id = request()->input('id');
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$picksheet_id]);
@@ -35,7 +35,7 @@
 ?>
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <?php
 	}
@@ -58,7 +58,7 @@
 
 
 
-<form id="pickerForm" method="POST" action="/scripts/updateSalesconfirmation.php" autocomplete="off">
+<form id="pickerForm" method="POST" action="scripts/updateSalesconfirmation.php" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="picksheetid" id="picksheetid" value="<?php echo $picksheet_id; ?>">
 <input type="hidden" name="customerid" id="customerid" value="<?php echo $customer_id; ?>">
@@ -116,7 +116,7 @@
 
 	<div class="row printhide">
 		<div class="col">
-			<input type="submit" value="Update">
+			<input type="button" onclick="mainForm()" value="Update">
 		</div>
 	</div>
 </div>
@@ -203,7 +203,7 @@
 					</td>
 					<td>
 						<?php
-							echo '£'. number_format((float)$pickerItem['price'], 2, '.', '');
+							echo '£'. number_format((double)$pickerItem['price'], 2, '.', '');
 
 						?>
 					</td>
@@ -226,10 +226,10 @@
 
 <div class="clearfix"></div>
 <?php 
-	if(request('msg') != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo request('msg');?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
@@ -278,7 +278,7 @@
 
 	function addToList(id){
 		
-		$.get( "/scripts/getBasketItem.php?id="+id, function( data ) {
+		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
 		});
 		
@@ -295,7 +295,7 @@
 
 		$('#addressid').val(address_id);
 
-		$.get("/ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});
@@ -366,7 +366,15 @@
 	}
 </style>
 <script type="text/javascript">
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
+	function mainForm(){
+		$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	}
+	function mainFormSucess(){
+		location.reload();
+	}
 	function printStuff(){
 		window.print();
 	}

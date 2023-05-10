@@ -1,8 +1,8 @@
 <?php
     require(__DIR__.'/../functions.php');
-    $customerPicksheets = json_decode(request('picksheet'),true);
-    $customer_id = request('customer_id');
-    $showAll = (request('showAll') == "Y");
+    $customerPicksheets = json_decode(request()->input('picksheet'),true);
+    $customer_id = request()->input('customer_id');
+    $showAll = (request()->input('showAll') == "Y");
     $picksheet = null;
     for ($i = 0; $i < count($customerPicksheets);$i++) {
         $picksheet = $customerPicksheets[$i];

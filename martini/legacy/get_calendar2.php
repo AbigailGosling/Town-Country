@@ -16,8 +16,8 @@
 		}
 	}
 	
-	if(request('temperature_id') != 0){
-		$temperature_id = $mysqli->real_escape_string( request('temperature_id'));
+	if(request()->input('temperature_id') != 0){
+		$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
 		
 		$temperatureQueryPiece = "&& temperature_id='$temperature_id'"; 
 	}else{
@@ -25,9 +25,9 @@
 	}
 	
 	$d = date('d');
-	$week = request('w') ?: 1;
-	$month = request('m') ?: date('m');
-	$year = request('y') ?: date('Y');
+	$week = request()->input('w') ?: 1;
+	$month = request()->input('m') ?: date('m');
+	$year = request()->input('y') ?: date('Y');
 	
 	$running_day_temp = date('w',mktime(0,0,0,$month,0,$year));
 	
@@ -71,7 +71,7 @@
 	$weeksToJump++;
 	 
 	
-	if(request('w') === null){
+	if(request()->input('w') === null){
 		
 	?><script> window.location.href = 'calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo $weeksToJump; ?>&temperature_id=<?php echo $temperature_id; ?>'; </script> <?php
 	}

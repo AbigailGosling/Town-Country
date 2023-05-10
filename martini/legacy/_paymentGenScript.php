@@ -15,14 +15,14 @@
     while($picksheet = $result_picksheets->fetch_assoc()){
         $i++;
         
-        $this_price = (float) invoiceTotal($picksheet['id']);
+        $this_price = (double) invoiceTotal($picksheet['id']);
 
         if(($this_price - $picksheet['paid']) <= $epsilon){ continue; }
         
         
         $epsilon = 0.00001;
         $total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
-        $currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
+        $currentOutstanding = (double) $this_price - $picksheet['paid'] - $total_credit;
 
         $invoice_id = $picksheet['id'];
 

@@ -2,10 +2,10 @@
 	
 	include('functions.php');
 	
-	if(isset(request('state'))){
+	if(request()->input('state') !== null){
 		
-		$value = request('state');
-		$intakeID = request('intakeid');
+		$value = request()->input('state');
+		$intakeID = request()->input('intakeid');
 		
 		$palletX = "SELECT * FROM `pallet` WHERE intake_id=?";
 		$palletY = prepareExecuteQuery($palletX,'i',[$intakeID]);

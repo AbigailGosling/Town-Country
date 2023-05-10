@@ -1,9 +1,9 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$id = request('intake_id');
-	$intake_id = request('intake_id');	
-	$pallet_id = request('pallet_id');	
+	$id = request()->input('intake_id');
+	$intake_id = request()->input('intake_id');	
+	$pallet_id = request()->input('pallet_id');	
 	
 	$intake = getIntake($id);
 
@@ -163,9 +163,9 @@
 									?>
 									<?php
 											if($weights['weight_tear'] == $weights['weight_gross']){
-												$w = $weights['weight_gross'];
+												$w = (double)$weights['weight_gross'];
 											}else{
-												$w = $weights['weight_gross'] - $weights['weight_tear'];
+												$w = (double)$weights['weight_gross'] - (double)$weights['weight_tear'];
 											}
 										?>
 										<div class="weightbox" <?php if($w == 1){ ?> style="margin: 2px;width: 12px;"<?php }?>>
@@ -221,7 +221,9 @@
 	</div>
 </main>
 <script>
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
 		
@@ -432,7 +434,7 @@
 	
 	function openAddtoPallet(intake_id, pallet_id){
 		
-		$.get( "/ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
+		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
@@ -445,7 +447,7 @@
 	
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
-			window.location.href = "/scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}

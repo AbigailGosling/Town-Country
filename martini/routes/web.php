@@ -47,6 +47,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', 'App\Http\Controllers\UserController');
 
 });
-
+Route::get('/menu.php', function () {
+    return redirect('/legacy/menu.php');
+});
+Route::get('/logout.php', function () {
+    return redirect('/logout');
+});
+Route::get('legacy/logout.php', function () {
+    return redirect('/logout');
+});
+Route::get('legacy/logout', function () {
+    return redirect('/logout');
+});
 //THIS MUST BE LAST!
 Route::any('/{path}', [LegacyController::class,'entry_point'])->middleware(['auth', 'verified'])->where('path', '.*');

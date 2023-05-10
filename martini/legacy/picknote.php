@@ -1,7 +1,7 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$pickersheet_id = request('id');
+	$pickersheet_id = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
@@ -17,14 +17,14 @@
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <script type="text/javascript">
 	
 </script>
 <main class="int">
 	
-	<a href="<?php echo $domain; ?>viewPickSheet.php?id=<?php echo request('id'); ?>"class="backbtn"  onclick="goBack()">< Back</a>
+	<a href="<?php echo $domain; ?>viewPickSheet.php?id=<?php echo request()->input('id'); ?>"class="backbtn"  onclick="goBack()">< Back</a>
 
 	<div class="formBackButton" style="float:right;font-size:22px;">
 		<a href="viewPickSheet.php?id=<?php echo $pickersheet_id; ?>">Back to Picksheet</a>|
@@ -122,9 +122,9 @@
                         while($weight = mysqli_fetch_array($y2)){
                             
                             if($weight['weight_tear'] == $weight['weight_gross']){
-                                $w = $weight['weight_gross'];
+                                $w = (double)$weight['weight_gross'];
                             }else{
-                                $w = $weight['weight_gross'] - $weight['weight_tear'];
+                                $w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                             }
 
                             $k = $k + $w;
@@ -171,9 +171,9 @@
 						while($weightRow = mysqli_fetch_array($yyWeight)){
 							
 							if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-								$tw = $weightRow['weight_gross'];
+								$tw = (double)$weightRow['weight_gross'];
 							}else{
-								$tw = $weightRow['weight_gross'] - $weightRow['weight_tear'];
+								$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
 							}
 							
 							$kg = $kg + $tw;
@@ -192,7 +192,7 @@
 					  ?>
 					  </b>
 					</td>
-  					<?php $totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', ''); ?>
+  					<?php $totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', ''); ?>
 				</tr>
                 <?php
                     }
@@ -226,7 +226,9 @@
 
 </div>
 <script>
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
 		
@@ -403,7 +405,7 @@
 	
 	function openAddtoPallet(intake_id, pallet_id){
 		
-		$.get( "/ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
+		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
@@ -416,7 +418,7 @@
 	
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
-			window.location.href = "/scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}

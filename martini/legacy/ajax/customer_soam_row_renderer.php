@@ -1,10 +1,10 @@
 <?php
     require(__DIR__.'/../functions.php');
-    $customerPicksheets = json_decode(request('picksheet'),true);
-    $customer_id = request('customer_id');
-    $due_days = request('duedays');
-    $due_warning = request('due_warning');
-    $showAll = (request('showAll') == "Y");
+    $customerPicksheets = json_decode(request()->input('picksheet'),true);
+    $customer_id = request()->input('customer_id');
+    $due_days = request()->input('duedays');
+    $due_warning = request()->input('due_warning');
+    $showAll = (request()->input('showAll') == "Y");
     $picksheet = null;
     //Check if due days is a string if so strip out the numbers
     for ($i = 0; $i < count($customerPicksheets);$i++) {

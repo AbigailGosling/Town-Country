@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intakeid = $mysqli->real_escape_string( request('intakeid'));
-	$docid = $mysqli->real_escape_string( request('docid'));
+	$intakeid = $mysqli->real_escape_string( request()->input('intakeid'));
+	$docid = $mysqli->real_escape_string( request()->input('docid'));
 	
 	deleteIntakeDoc($intakeid, $docid);
 ?>

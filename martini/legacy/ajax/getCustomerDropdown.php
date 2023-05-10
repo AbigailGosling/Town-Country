@@ -4,7 +4,7 @@
 	
 	$user_id = $_SESSION['USER'];
 
-	$name = request('searchterm');
+	$name = request()->input('searchterm');
 
 	$y = fuzzyCustomerSearch($name,true);
 	$count = mysqli_num_rows($y);

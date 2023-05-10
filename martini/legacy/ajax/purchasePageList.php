@@ -2,16 +2,15 @@
 
 	require(__DIR__.'/../functions.php');
 	
-	$term = request('searchterm');
+	$term = request()->input('searchterm');
 	
 	if($term != ''){ ?>
 		<?php
 		
 		$x = "SELECT * FROM `supplier` WHERE name LIKE ?";
-		$y = prepareExecuteQuery($x,'i',['%'.$term.'%']);
+		$y = prepareExecuteQuery($x,'s',['%'.$term.'%']);
 		
 		$supplierids = '';
-		
 		while($row = mysqli_fetch_array($y)){
 			$rowid = $row['id'];
 			$supplierids .= " OR supplier_id='$rowid'";
@@ -21,7 +20,7 @@
 		if (validateDate($term)) {
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
-			$y = prepareExecuteQuery("SELECT * FROM `purchase_form` WHERE date_due LIKE ? ORDER BY date_due DESC",'i',['%'.$termDate.'%']);
+			$y = prepareExecuteQuery("SELECT * FROM `purchase_form` WHERE date_due LIKE ? ORDER BY date_due DESC",'s',['%'.$termDate.'%']);
 		}else{
 			$y = prepareExecuteQuery("SELECT * FROM `purchase_form` WHERE id=? OR id LIKE ? $supplierids  ORDER BY date_due DESC",'is',[$term,'%'.$term.'%']);
 		}

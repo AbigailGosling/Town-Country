@@ -1,14 +1,14 @@
 <?php
-    ini_set('memory_limit','16M');
+    ini_set('memory_limit','32M');
 	require(__DIR__.'/../functions.php');
 
-	$intake_id = request('intake_id');
-    $pallet_id = request('pallet_id');
-	$cut_id = request('cut_id');
-	$class = request('class');
-	$nationality_id = request('nationality_id');
-    $ubbb = request('ubbb');
-    if (request('locked') == "y"){
+	$intake_id = request()->input('intake_id');
+    $pallet_id = request()->input('pallet_id');
+	$cut_id = request()->input('cut_id');
+	$class = request()->input('class');
+	$nationality_id = request()->input('nationality_id');
+    $ubbb = request()->input('ubbb');
+    if (request()->input('locked') == "y"){
         $locked = true;
     }
     else {
@@ -79,10 +79,10 @@
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
                     if ($productsRow2['storage_location'] == "Coldstore" || $locked){
-                        $class = request('class') . " searchAccordTitle locked";
+                        $class = request()->input('class') . " searchAccordTitle locked";
                     }
                     else {
-                        $class = request('class');
+                        $class = request()->input('class');
                     }
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = $productsRow2['range_from'];
@@ -98,7 +98,7 @@
                         $pallet_comments = $pallet_comments['body'];
                     }
                     if($productsRow2['akg'] != ''){
-                        $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id);
+                        $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$nationality_id);
                     }else{
                         $this_row_weight = weightSoldFromProductID($product_id);
                     }
@@ -219,7 +219,9 @@
 		}
  ?>
  <script>
-    
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     $(document).ready(function()
     {
         $('select[name="location"]') .each(function()
@@ -245,7 +247,7 @@
                     var pallet = $(this).parent().find('[name="pallet_id"]').val();
                     console.log(location);
                     console.log(pallet);
-                    $.post("/ajax/loggedDataChange.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
+                    $.post("ajax/loggedDataChange.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
                         console.log(data);
                     });
                 }

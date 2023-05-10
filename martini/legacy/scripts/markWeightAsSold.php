@@ -1,15 +1,15 @@
 <?php
     require(__DIR__.'/../functions.php');
     
-	$product_id = $mysqli->real_escape_string( request('product_id'));
-	$weightIDs = $mysqli->real_escape_string( request('weightid'));
-    $intakeID = $mysqli->real_escape_string( request('intakeid'));
+	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
+	$weightIDs = $mysqli->real_escape_string( request()->input('weightid'));
+    $intakeID = $mysqli->real_escape_string( request()->input('intakeid'));
 
 
     $weightIDs = rtrim($weightIDs, ',');
     $ids = explode(',', $weightIDs);
 
-    if(request('weightid') != ''){ # Specific weight ID's have been posted
+    if(request()->input('weightid') != ''){ # Specific weight ID's have been posted
         
         
         foreach($ids as $weightID){

@@ -7,6 +7,7 @@ use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;
 use Socketlabs\Message\EmailAddress;
 use Socketlabs\Message\BulkRecipient;
+use Illuminate\Support\Facades\Log;
 
 class SLabsEmailer {
     //This function generates a Unique ID using Mersenne Twister RNG
@@ -64,16 +65,16 @@ class SLabsEmailer {
             $trimmed = trim($email);
 
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
-            mysqli_query($conn, $sql) or die(mysqli_error($conn)." ". $sql);
+            loggedQuery($sql);
 
             try
             {
                 $message->addToAddress(new BulkRecipient($trimmed));
                 $response = $client->send($message);
             }
-            catch (Exception $e) 
+            catch (\Exception $e) 
             {
-                // handle error, probably email address lol
+                Log::error($e);
             }
             
         }
@@ -85,7 +86,7 @@ class SLabsEmailer {
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
        
-        $t = mysqli_query($conn, "SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
+        $t = loggedQuery("SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
         if (mysqli_num_rows($t) == 0 && $_SERVER['SERVER_NAME'] != "13.40.103.56")
         {
             /*ob_start();
@@ -129,7 +130,7 @@ class SLabsEmailer {
             }
         }
 
-        mysqli_query($conn, "UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
+        loggedQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
     }
 }
 abstract class SLabsEmailerType
@@ -137,6 +138,7 @@ abstract class SLabsEmailerType
     const Statment  = 'STATEMENT';
     const Sales     = 'SALES_CONFIRMATION';
     const CrdtAlert = 'CREDIT_ALERT';
+    const Retraction= 'RETRACTION';
 }
 abstract class SLabsEmailerStatus
 {
@@ -184,7 +186,7 @@ abstract class SLabsEmailerStatus
         }
         if ($returningValue == null)
         {
-            $q = mysqli_query($conn, "SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
+            $q = loggedQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
             $returningValue = mysqli_fetch_assoc($q);
             $returningValue = $returningValue['value'];
         }

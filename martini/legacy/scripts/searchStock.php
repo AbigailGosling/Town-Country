@@ -17,8 +17,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$cutgroup_id = request('cutgroup_id');
-	$species_id = request('species');
+	$cutgroup_id = request()->input('cutgroup_id');
+	$species_id = request()->input('species');
 	$temperatureID = request('temperatureID');
 	$palletID = request('palletID');
     
@@ -257,7 +257,9 @@
 
 
 <script type="text/javascript">
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 
 function toggleRow(classS){
 $('.' + classS).toggle();
@@ -316,7 +318,7 @@ var howManyAfter = $('#quantity-' + product_id + '-' + pallet_id).children('opti
 
 $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
 
-$.get( "/scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
+$.get( "scripts/getBasketItem.php?product_id="+product_id+"&pallet_id="+pallet_id+"&cut_id="+cut_id+"&q="+q+"&comment="+comment, function( data ) {
     $('.basketTable').append(data);
 });
 

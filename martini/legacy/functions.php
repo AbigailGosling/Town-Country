@@ -5,6 +5,9 @@
     ini_set('upload_max_filesize', '64M');
 	
 	require('config.php');
+	require_once('../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
+	use Illuminate\Support\Facades\Log;
+use Ramsey\Uuid\Type\Decimal;
 
 	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
@@ -24,30 +27,52 @@
 		case '/index.php':
 		case '/legacy/script_login.php':
 		case '/legacy/ajax/generatePDFstatement2.php':
-		case '/ajax/deletePick.php':
 		case '/legacy/scripts/SLabsNotifier.php':
 			$exit = 0;
 	}
 	
-	if(!$_SESSION['USER'] && $exit == 1){ header('location:/index.php'); }
+	if(!$_SESSION['USER'] && $exit == 1){ header('location:/logout'); exit; die();}
 	
 	if($userid != ''){
-		$x = "SELECT * FROM users WHERE id=?";
+		$x = "SELECT * FROM `tandc_live`.`users` WHERE `id`=?";
 		$y = prepareExecuteQuery($x,'i',[$userid]);
 		
 		$user = $y->fetch_assoc();
+		if ($user===false || $user['pages'] == ''){ Log::error(new Exception("Failed to find legacy pages for user_id:".$userid));header('location:/logout'); }
 	}
-	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null)
+	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
+	{
+		Log::debug($sql,[$varTypes, $vars ,$returnInsert]);
+		return prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+	}
+	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
 		global $mysqli;
-		$stmt = $mysqli->prepare($sql);
-		if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
-		$stmt->execute();
-		$res = $stmt->get_result();
-		if ($res) return $res;
-		else return new mysqli_result($mysqli);
+		$res = null;
+		try
+		{
+			$stmt = $mysqli->prepare($sql);
+			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
+			$stmt->execute();
+			$res = $stmt->get_result();
+			if ($returnInsert)
+			{
+				return $mysqli->insert_id;
+			}
+			else
+			{
+				return $res;
+			}
+		}
+		catch (Exception $e)
+		{
+			Log::error($e,["sql"=>$sql,"varTypes"=>$varTypes,"vars"=>$vars]);
+			$stmt = $mysqli->prepare("SELECT * FROM `customers` WHERE 1=0");
+			$stmt->execute();
+			$res = $stmt->get_result();
+			return $res;
+		}
 	}
-	// sendEmail(['kez@phenixdigital.co.uk'], 'test', 'hello');
 	function sendEmail($toArray, $mail_subject, $mail_message, $name = 'Town & Country'){
 		 
         $domain_email='webform@'.str_replace("www.", "", request()->server('HTTP_HOST'));
@@ -92,9 +117,9 @@
 				$productids[]=$weight['product_id'];
 				
 				if($weight['weight_tear'] == $weight['weight_gross']){
-					$w = $weight['weight_gross'];
+					(double)$w = (double)$weight['weight_gross'];
 				}else{
-					$w = $weight['weight_gross'] - $weight['weight_tear'];
+					(double)$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
 				}
 				
 				$kg = $kg + $w;
@@ -112,7 +137,7 @@
 					$howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
 					$pickerItem = $howManyY->fetch_assoc();
 					
-					$totalPrice += number_format((float)$kg * $pickerItem['price'], 2, '.', '');
+					$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
 			
 			}
 		}
@@ -165,13 +190,10 @@
     }
 	
 	function getPurchase($purchaseid){
-		global $mysqli;
-		
 		$x = "SELECT * FROM `purchase_form` WHERE id=?";
 		$y = prepareExecuteQuery($x,'i',[$purchaseid]);
 		
 		$row = $y->fetch_assoc();
-		
 		return $row;
 	}
 
@@ -229,12 +251,8 @@
 		
 		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop,temperature_id) 
 		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		prepareExecuteQuery($x,'isssssssssssss',
-			[$supplier_id,$speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$purchase_comments,$file_name,$booking_ref_number,$transportation,$haulier,$direct_drop,$temperature_id]);
-         
-		$id = $mysqli->insert_id;
-		
-		return $id;
+		return prepareExecuteQuery($x,'issssssssssssss',
+			[$supplier_id,$speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$purchase_comments,$file_name,$booking_ref_number,$transportation,$haulier,$direct_drop,$temperature_id],true);
 	}
 	
 	
@@ -265,11 +283,7 @@
 		
 		$x = "INSERT into `intake` (supplier_id, purchase_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id) 
 				VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-		$y = prepareExecuteQuery($x,'iissssss',[$supplier_id,$purchase_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$purchased_id]);
-		
-		$id = $mysqli->insert_id;
-
-		return $id;
+		return prepareExecuteQuery($x,'iissssss',[$supplier_id,$purchase_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$purchased_id],true);
 		
 	}
 	
@@ -301,7 +315,7 @@
 			// $value = $value + $weights['weight_gross'];
 			
 			if($weights['weight_tear'] !=''){
-				$value = $value + ($weights['weight_gross'] - $weights['weight_tear']);
+				(double)$value = (double)$value + ((double)$weights['weight_gross'] - (double)$weights['weight_tear']);
 			}
 		}
 		
@@ -341,9 +355,9 @@
 		
 		while($row = $y->fetch_assoc()){
 			if($row['weight_tear'] == $row['weight_gross']){
-				$w = $row['weight_gross'];
+				(double)$w = (double)$row['weight_gross'];
 			}else{
-				$w = $row['weight_gross'] - $row['weight_tear'];
+				(double)$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 			}
 			
 			$weight = $weight + $w;
@@ -364,12 +378,12 @@
 		
 		while($row = $y->fetch_assoc()){
 			if($row['weight_tear'] == $row['weight_gross']){
-				$w = $row['weight_gross'];
+				(double)$w = (double)$row['weight_gross'];
 			}else{
-				$w = $row['weight_gross'] - $row['weight_tear'];
+				(double)$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 			}
 			
-			$weight = $weight + $w;
+			(double)$weight = (double)$weight + (double)$w;
 		}
 		
 		
@@ -377,24 +391,21 @@
 	}
 	
 	function weightSoldFromProductID($productID){
-		global $mysqli;
 		// ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
 		$x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = ?";
 		//$x = "SELECT * FROM `weights` WHERE product_id = $productID";
 		$y = prepareExecuteQuery($x,'i',[$productID]);
 		
 		$weight = 0;
-		
 		while($row = $y->fetch_assoc()){
 			if($row['weight_tear'] == $row['weight_gross']){
-				$w = $row['weight_gross'];
+				(double)$w = (double)$row['weight_gross'];
 			}else{
-				$w = $row['weight_gross'] - $row['weight_tear'];
+				(double)$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 			}
 			
-			$weight = $weight + (int)$w;
+			$weight = $weight + (double)$w;
 		}
-		
 		
 		return $weight;
     }
@@ -440,9 +451,9 @@
 		
 		while($row = $y->fetch_assoc()){
 			if($row['weight_tear'] == $row['weight_gross']){
-				$w = $row['weight_gross'];
+				(double)$w = (double)$row['weight_gross'];
 			}else{
-				$w = $row['weight_gross'] - $row['weight_tear'];
+				(double)$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 			}
 			
 			$weight = $weight + $w;
@@ -663,16 +674,16 @@
         $x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id IN (" . implode(",",array_fill(0,count($productIDS),"?")) . ")";
 		$y = prepareExecuteQuery($x,str_repeat('i',count($productIDS)),$productIDS);
 		
-		$weight = (float)0;
+		$weight = (double)0;
 		
 		while($row = $y->fetch_assoc()){
 			if($row['weight_tear'] == $row['weight_gross']){
-				$w = (float)$row['weight_gross'];
+				$w = (double)$row['weight_gross'];
 			}else{
-				$w = (float)$row['weight_gross'] - (float)$row['weight_tear'];
+				$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 			}
 			
-			$weight = (float)$weight + (float)$w;
+			$weight = (double)$weight + (double)$w;
 		}
 		
 		
@@ -1018,16 +1029,16 @@
 		$totalOutstanding = 0.00;
 
 		$picksheet = $customerPicksheets->fetch_assoc();
-		$this_price = (float) invoiceTotal($picksheet['id']);
+		$this_price = (double) invoiceTotal($picksheet['id']);
 
 		$epsilon = 0.00001;
 		if(($this_price - $picksheet['paid']) <= $epsilon){
-			$totalOutstanding = (float) 0;
+			$totalOutstanding = (double) 0;
 		}else{
-			$totalOutstanding = (float) $this_price - $picksheet['paid'];
+			$totalOutstanding = (double) $this_price - $picksheet['paid'];
 		}
 		
-		return number_format((float)$totalOutstanding, 2, '.', '');
+		return number_format((double)$totalOutstanding, 2, '.', '');
 	}
 
 	function getChargedPicksheetTotalList($picksheet_ids){
@@ -1040,7 +1051,7 @@
 
 		while($picksheet = $customerPicksheets->fetch_assoc())
 		{
-			$this_price = $this_price + (float) invoiceTotal($picksheet['id']);
+			$this_price = $this_price + (double) invoiceTotal($picksheet['id']);
 		}
 
 		return $this_price;
@@ -1108,7 +1119,7 @@
 
 		$picksheet = $customerPicksheets->fetch_assoc();
  
-		$totalPaid = (float) $picksheet['paid'];
+		$totalPaid = (double) $picksheet['paid'];
 
 		return $totalPaid;
 	}
@@ -1190,10 +1201,7 @@
 			$varSt= str_repeat('s',count($vars));
 		}
 		
-		$y = prepareExecuteQuery($x,$varSt,$vars);
-		
-		$v = $mysqli->insert_id;
-		return $v;
+		return prepareExecuteQuery($x,$varSt,$vars,true);
 	}
 	
 	function addReturnIntake($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature, $product_temperature, $delivery_note_number, $staff_id, $security_id, $purchase_id){
@@ -1201,20 +1209,18 @@
 		
 		if($purchase_id != '#'){
 			$x = "INSERT into `intake` (returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id) 
-			VALUES (1,'$supplier_id','$security_id','$date_received','$vehicle_reg','$vehicle_temperature','$product_temperature','$delivery_note_number','$staff_id','$purchase_id')";
+			VALUES (?,?,?,?,?,?,?,?,?,?)";
 			$vars = [1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id];
 			$varSt= str_repeat('s',count($vars));
 		}else{
 			$x = "INSERT into `intake` (returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id) 
-			VALUES (1,'$supplier_id','$security_id','$date_received','$vehicle_reg','$vehicle_temperature','$product_temperature','$delivery_note_number','$staff_id')";
+			VALUES (?,?,?,?,?,?,?,?,?)";
 			$vars = [1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id];
 			$varSt= str_repeat('s',count($vars));
 		}
 		
-		$y = prepareExecuteQuery($x,$varSt,$vars);
+		return prepareExecuteQuery($x,$varSt,$vars,true);
 		
-		$v = $mysqli->insert_id;
-		return $v;
 	}
 	
 	function getSecurityName($id){
@@ -1268,9 +1274,9 @@
 		$row = $y->fetch_assoc();
 		
 		if($row['weight_tear'] != ''){
-			return $row['weight_gross'];
+			return (double)$row['weight_gross'];
 		}else{
-			return ($row['weight_gross'] - $row['weight_tear']);
+			return ((double)$row['weight_gross'] - (double)$row['weight_tear']);
 		}
 	}
 	  
@@ -1472,11 +1478,9 @@
 
     function checkForSoldPallets($pallets){
 
-    	global $mysqli;
-
         $x = "SELECT * from `product` inner join `weights` on product.id = weights.product_id WHERE product.pallet_id in (".implode(",",array_fill(0,count($pallets),"?")).") AND weights.status_id = 1";
         $y = prepareExecuteQuery($x,str_repeat('i',count($pallets)),$pallets);
-        return $mysqli->num_rows;
+        return $y->num_rows;
         
     }
 	
@@ -1486,7 +1490,7 @@
 		$palletResult = prepareExecuteQuery("SELECT GROUP_CONCAT(id) AS ids FROM pallet WHERE intake_id=?",'i',[$intake_id]);
 		$palletData = $palletResult->fetch_assoc();
 		$pallet_ids = $palletData['ids'];		
-
+		if (!$pallet_ids || strlen($pallet_ids) == 0) return 0;
 		$productResult = prepareExecuteQuery("SELECT count(id) as count FROM product WHERE (cost is null && pallet_id IN ($pallet_ids)) || (cost = '0.00' && pallet_id IN ($pallet_ids))");
 		$productData = $productResult->fetch_assoc();
 
@@ -1503,20 +1507,20 @@
 				
 				$total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
 				
-				$this_price = (float) invoiceTotal($picksheet['id']);
+				$this_price = (double) invoiceTotal($picksheet['id']);
 				
 				$epsilon = 0.00001;
 				if(($this_price - $picksheet['paid']) <= $epsilon){
-					$currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
+					$currentOutstanding = (double) $this_price - $picksheet['paid'] - $total_credit;
 				}else{
-					$currentOutstanding = (float) $this_price - $picksheet['paid'] - $total_credit;
+					$currentOutstanding = (double) $this_price - $picksheet['paid'] - $total_credit;
 				}
 				
 				$totalOutstanding += $currentOutstanding;
 			
 		}
 		
-		return number_format((float)$totalOutstanding, 2, '.', '');
+		return number_format((double)$totalOutstanding, 2, '.', '');
 	}
 
 	function invoiceTotal($pickersheet_id){
@@ -1567,9 +1571,9 @@
 				foreach($weightsByProductID[$productID] as $weightRow){
 					
 					if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-						$tw = (float)$weightRow['weight_gross'];
+						$tw = (double)$weightRow['weight_gross'];
 					}else{
-						$tw = (float)$weightRow['weight_gross'] - $weightRow['weight_tear'];
+						$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
 					}			
 					$kg = $kg + $tw;
 
@@ -1577,9 +1581,9 @@
 				}
 						
 				if($product['unit'] == 'PPC'){
-					$totalPrice += number_format((float)$count * (float)$pickerItem['price'], 2, '.', '');
+					$totalPrice += number_format((double)$count * (double)$pickerItem['price'], 2, '.', '');
 				}else{
-					$totalPrice += number_format((float)$kg * (float)$pickerItem['price'], 2, '.', '');
+					$totalPrice += number_format((double)$kg * (double)$pickerItem['price'], 2, '.', '');
 				}
 			}
 		}
@@ -1593,7 +1597,7 @@
 		$db_result = prepareExecuteQuery("SELECT SUM(amount) as total_credit FROM `invoice_payments` WHERE invoice_id=? && payment_method='CREDIT_NOTE'",'i',[$invoice_id]); 
 		$data = $db_result->fetch_assoc();
 
-		return (float) $data['total_credit'];
+		return (double) $data['total_credit'];
 
 	}
 
@@ -1637,10 +1641,10 @@
 
 		while($creditNoteItem = $creditNoteResult->fetch_assoc()){
 			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
-				$price += (float)$creditNoteItem['price'] * (float)$creditNoteItem['quantity'];	
+				$price += (double)$creditNoteItem['price'] * (double)$creditNoteItem['quantity'];	
 			}else{
 				$weight = weightFromProductIDArray([$creditNoteItem['product_id']]);
-				$price += ((float)$creditNoteItem['price'] * (float)$weight);
+				$price += ((double)$creditNoteItem['price'] * (double)$weight);
 			}
 		}
 		
@@ -1686,9 +1690,9 @@
             
 			while($row = $y->fetch_assoc()){
 				if($row['weight_tear'] == $row['weight_gross']){
-					$w = $row['weight_gross'];
+					$w = (double)$row['weight_gross'];
 				}else{
-					$w = $row['weight_gross'] - $row['weight_tear'];
+					$w = (double)$row['weight_gross'] - (double)$row['weight_tear'];
 				}
 				
 				$weight = $weight + $w;
@@ -1705,7 +1709,7 @@
 		$paymentsResult = prepareExecuteQuery("SELECT id FROM `invoice_payments` WHERE invoice_id=? AND payment_method = 'CREDIT_NOTE'",'i',[$invoice_id]);
 		while ($paymentData = $paymentsResult->fetch_assoc())
 		{
-			$price = $price + (float)creditNoteTotal($paymentData['id']);
+			$price = $price + (double)creditNoteTotal($paymentData['id']);
 		}		
 		return ceilDec($price,2);	
  	}
@@ -1777,10 +1781,10 @@
 				while ($cnr = $cnq->fetch_assoc())
 				{
 					if($cnr['product_id'] == 0 || weightTypeOfProduct($cnr['product_id']) == 'PPC'){ # bespoke credit note, not attached product
-						$cnr['finalValue'] = floorDec($cnr['credit_note_items_price'] * $cnr['credit_note_items_quantity']);
+						$cnr['finalValue'] = (double)floorDec((double) $cnr['credit_note_items_price'] * (double) $cnr['credit_note_items_quantity']);
 					}else{
-						$weight = weightFromProductIDArray([$cnr['product_id']]);
-						$cnr['finalValue'] = floorDec(($cnr['credit_note_items_price'] * $weight));
+						$weight = (double)weightFromProductIDArray([$cnr['product_id']]);
+						$cnr['finalValue'] = (double)floorDec(((double)$cnr['credit_note_items_price'] * (double)$weight));
 					}
 					$row['noteItems'][] = $cnr;
 				}
@@ -1836,22 +1840,41 @@
 		}
 		return $y;
 	}
+	$knownCustomerMarkups = array();
+	function applyCustomerMarkup(int $customer_id,float $price):float{
+		global $knownCustomerMarkups;
+		$customerEntry = null;
+		if (!array_key_exists($customer_id,$knownCustomerMarkups))
+		{
+			$qR = prepareExecuteQuery("SELECT markup_type,markup_amount FROM customers WHERE id = ?",'i',[$customer_id]);
+			$knownCustomerMarkups[$customer_id] = $qR->fetch_assoc();
+		}
+		$customerEntry = $knownCustomerMarkups[$customer_id];
+		if ($customerEntry['markup_amount'] == null || $customerEntry['markup_amount'] == "" || $customerEntry['markup_amount'] == 0) return $price;
+		
+		if ($customerEntry['markup_type'] == "FLAT") return $price + $customerEntry['markup_amount'];
+		if ($customerEntry['markup_type'] == "PERCENT") {
+			$percent = $customerEntry['markup_amount'] / 100;
+			return $price + ($price*$percent);
+		}		
+	}
 	function loggedDataChange($type,$entity_id,$body){
+		Log::debug(json_encode([$type,$entity_id,$body]));
 		global $mysqli;
-		global $userid;
+		$userid = $_SESSION['USER'];
 		$body = $mysqli->real_escape_string($body);
 		$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";			
 		$y = prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
 	}
 	function debuglogging($body){
 		global $conn;
-		global $userid;
+		$userid = $_SESSION['USER'];
 		$body = mysqli_real_escape_string($conn,$body);
-		$arr = mysqli_real_escape_string($conn,json_encode(array("GET"=>$_GET,"POST"=>$_POST)));
+		$arr = mysqli_real_escape_string($conn,json_encode(array("REQUEST"=>request()->all())));
 		$REQUEST_URI = mysqli_real_escape_string($conn,$_SERVER['REQUEST_URI']);
 		$session_id = mysqli_real_escape_string($conn,session_id());
 		$x = "INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES ('".$REQUEST_URI."','".$arr."','$userid','".$session_id."','$body')";			
-		mysqli_query($conn, $x);
+		prepareExecuteQuery($x);
 	}
 	function queryproxy(mysqli $conn, string $query)
 	{

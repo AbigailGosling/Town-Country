@@ -6,7 +6,7 @@
     include('includes/frontHeader.php');
     require 'vendor/autoload.php';    
 
-	$pickersheet_id = request('id');
+	$pickersheet_id = request()->input('id');
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
@@ -16,7 +16,7 @@
 
     $customer = getCustomer($customer_id);
 
-    $link = request('link');
+    $link = request()->input('link');
 
 
     // Instantiation and passing `true` enables exceptions
@@ -39,7 +39,7 @@
         $mail->addAddress($customer['accounts_email']);     // Add a recipient
        
         // Attachments
-        $mail->addAttachment(request('link'));         // Add attachments
+        $mail->addAttachment(request()->input('link'));         // Add attachments
 
         // Content
         $mail->isHTML(true);                                  // Set email format to HTML

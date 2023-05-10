@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	$name = request('searchterm');
-	$species_id = request('species_id');
+	$name = request()->input('searchterm');
+	$species_id = request()->input('species_id');
 	// $cutXtemp = "SELECT * FROM `cuts` WHERE species_id = '$speciesID' AND name LIKE '%$name%'";
 	// $cutYtemp = prepareExecuteQuery($cutXtemp);
 	$cutX = "SELECT * FROM `cuts` WHERE `name` LIKE ? && species_id = ?";

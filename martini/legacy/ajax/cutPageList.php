@@ -2,7 +2,7 @@
 
 	require(__DIR__.'/../functions.php');
 
-	$name = request('searchterm');
+	$name = request()->input('searchterm');
 	
 	if($name != '' && strlen($name) > 1){
 		$speciesX = "SELECT * FROM `species`";
@@ -33,7 +33,7 @@
 					<a href="#" class="intake"><?php echo $cutRow['name']; ?></a>
 					<a href="manageCuts.php?id=<?php echo $cutRow['id']; ?>"  <?php if($user['user_type'] == 'A'){ ?> style="right:35px;" <?php } ?> id="delete_intake"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 					<?php if($user['user_type'] == 'A'){ ?>
-					<a href="/scripts/deleteCut.php?id=<?php echo $cutRow['id']; ?>" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+					<a href="scripts/deleteCut.php?id=<?php echo $cutRow['id']; ?>" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
 					<?php } ?>
 				</td></tr>
 			</table>
@@ -66,7 +66,7 @@
 					<a href="#" class="intake"><?php echo $cutRow['name']; ?></a>
 					<a href="manageCuts.php?id=<?php echo $cutRow['id']; ?>"  <?php if($user['user_type'] == 'A'){ ?> style="right:-35px;" <?php } ?> id="delete_intake"><i class="fa fa-pencil" aria-hidden="true"></i></a>
 					<?php if($user['user_type'] == 'A'){ ?>
-					<a href="/scripts/deleteCut.php?id=<?php echo $cutRow['id']; ?>" id="delete_intake" style="right:-75px;"><i class="fa fa-times" aria-hidden="true"></i></a>
+					<a href="scripts/deleteCut.php?id=<?php echo $cutRow['id']; ?>" id="delete_intake" style="right:-75px;"><i class="fa fa-times" aria-hidden="true"></i></a>
 					<?php } ?>
 				</td></tr>
 			</table>

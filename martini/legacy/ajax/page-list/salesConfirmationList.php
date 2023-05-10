@@ -2,9 +2,9 @@
     require(__DIR__.'/../../functions.php');
     require(__DIR__.'/../../scripts/SLabsEmailer.php');
     use InternalScripts\SLabsEmailerStatus;
-    $toSkip = request('toSkip');
+    $toSkip = request()->input('toSkip');
     $limit = 80;
-    $searchterm = request('searchterm');
+    $searchterm = request()->input('searchterm');
 	
 	if($searchterm != ''){      
         # Check if any customer names match the search input

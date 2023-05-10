@@ -2,8 +2,8 @@
 	require(__DIR__.'/../functions.php');
 
 	
-	$intake_id = request('intake_id');
-	$delivery_note_number = request('delivery_note_number');
+	$intake_id = request()->input('intake_id');
+	$delivery_note_number = request()->input('delivery_note_number');
     
     
     $y = prepareExecuteQuery("UPDATE `intake` SET delivery_note_number=? WHERE id=? LIMIT 1",'si',[$delivery_note_number,$intake_id]);

@@ -1,22 +1,18 @@
 <?php
-        include_once('../functions.php');
-        include_once('../scripts/SLabsEmailer.php');
-        include_once('../scripts/PDFRenderer.php');
+        include_once('martini/legacy/functions.php');
+        include_once('martini/legacy/scripts/SLabsEmailer.php');
+        include_once('martini/legacy/scripts/PDFRenderer.php');
         use InternalScripts\SLabsEmailer;
         use InternalScripts\SLabsEmailerType;
         use InternalScripts\PDFRenderer;
-        ini_set('display_errors', 1);
-        ini_set('display_startup_errors', 1);
-        error_reporting(E_ALL);
-
-        if($_POST['id'] != ''){
+        if(request()->input('id') != ''){
     
-            $delid = mysqli_real_escape_string($conn, $_POST['id']);
+            $delid = mysqli_real_escape_string($conn, request()->input('id'));
 
-            $customerResult = mysqli_query($conn, "SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
+            $customerResult = loggedQuery("SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
             $customerID = mysqli_fetch_array($customerResult)['customer_id'];
             
-            $customerQueryResult = mysqli_query($conn, "SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
+            $customerQueryResult = loggedQuery("SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
             $customer = mysqli_fetch_assoc($customerQueryResult);
             if ($customer['customer_email']!= null && $customer['customer_email']!= "")
             {
@@ -35,23 +31,22 @@
             $statementDate = time();
             $fileName = 'SalesRetraction_'.$delid.'_'.$statementDate.'.pdf';
             $pathToFile = 'PDF';
-            PDFRenderer::generatePDFfromWeb('viewSalesRetraction.php?id='.$_POST['id'],$pathToFile,$fileName);
+            PDFRenderer::generatePDFfromWeb('viewSalesRetraction.php?id='.request()->input('id'),$pathToFile,$fileName);
             SLabsEmailer::send_email($customerID,SLabsEmailerType::Retraction,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
-
-            $picksheetResult = mysqli_query($conn, "UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
+            $picksheetResult = loggedQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
     
-            $pickerItemsResult = mysqli_query($conn, "UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
+            $pickerItemsResult = loggedQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
     
-            $palletsOutResult = mysqli_query($conn, "SELECT * FROM `palletsOut` WHERE pickersheet_id='$delid'");
+            $palletsOutResult = loggedQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id='$delid'");
     
             while($palletOut = mysqli_fetch_array($palletsOutResult)){
                 $weightIDS = $palletOut['weight_ids'];
     
-                $deleteWeightsResult = mysqli_query($conn, "UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
+                $deleteWeightsResult = loggedQuery("UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
             }
     
             $x = "DELETE FROM `palletsOut` WHERE pickersheet_id='$delid'";
-            $y = mysqli_query($conn, $x);
+            $y = loggedQuery($x);
 
         }
 ?>

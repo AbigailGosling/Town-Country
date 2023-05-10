@@ -1,7 +1,7 @@
 <?php
     require(__DIR__.'/../../functions.php');
     
-    $toSkip = request('toSkip');
+    $toSkip = request()->input('toSkip');
     $limit = 80;
 
 

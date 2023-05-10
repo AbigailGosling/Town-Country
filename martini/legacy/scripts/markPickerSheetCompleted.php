@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	$id = $mysqli->real_escape_string( request('id'));
-	$pickersheet_id = $mysqli->real_escape_string( request('id'));
-	$type = $mysqli->real_escape_string( request('sheet_type'));
+	$id = $mysqli->real_escape_string( request()->input('id'));
+	$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
+	$type = $mysqli->real_escape_string( request()->input('sheet_type'));
 
 	/* START - Get all product IDs on the picksheet */
 	$product_ids = array();

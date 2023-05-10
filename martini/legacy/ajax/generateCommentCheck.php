@@ -4,11 +4,11 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 $queryArray = array();
-$entity_id = $mysqli->real_escape_string(request('entity_id'));
-$type_id = $mysqli->real_escape_string(request('type_id'));
-$user_id = $mysqli->real_escape_string(request('user_id'));
-$date_start = $mysqli->real_escape_string(request('date_start'));
-$date_end = $mysqli->real_escape_string(request('date_end'));
+$entity_id = $mysqli->real_escape_string(request()->input('entity_id'));
+$type_id = $mysqli->real_escape_string(request()->input('type_id'));
+$user_id = $mysqli->real_escape_string(request()->input('user_id'));
+$date_start = $mysqli->real_escape_string(request()->input('date_start'));
+$date_end = $mysqli->real_escape_string(request()->input('date_end'));
 if (isset($entity_id) && $entity_id != null && $entity_id != "")
     $queryArray[] = "`comment_logging`.`entity_id` = '".$entity_id."'";
 if (isset($type_id) && $type_id != null && $type_id != "")
@@ -31,7 +31,7 @@ else
         $date_start = $date_start->format('Y-m-d');
         $queryArray[] = "`comment_logging`.`datetime` >= '".$date_start."'";
     }
-    if (isset(request('date_date_endstart')) && $date_end != null && $date_end != "")
+    if (request()->input('date_date_endstart') !== null && $date_end != null && $date_end != "")
     {
         $date_end = DateTime::createFromFormat("d/m/Y" , $date_end);
         $date_end = $date_end->format('Y-m-d');

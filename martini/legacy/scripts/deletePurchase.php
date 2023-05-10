@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$purchaseID = $mysqli->real_escape_string( request('purchase_id'));
+	$purchaseID = $mysqli->real_escape_string( request()->input('purchase_id'));
 	
 	deletePurchase($purchaseID);
 ?>

@@ -1,4 +1,7 @@
 <?php
+
+use Illuminate\Support\Facades\Log;
+
 	include_once('functions.php');
 ?>
 <!doctype html>
@@ -22,7 +25,7 @@
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
 	<div id="intakelist">
@@ -45,7 +48,8 @@
 					$date = $row['estimated_delivery_date'];
 					
 					$date=date_create($date);
-					if ($date === false)$date=DateTime::createFromFormat('d/m/Y',"".$row['estimated_delivery_date']);
+					if ($date == false)$date=DateTime::createFromFormat('d/m/Y',"".$row['estimated_delivery_date']);
+					if ($date == false) continue;
 					$date = date_format($date,"d/m/Y");
 					
 					$x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";

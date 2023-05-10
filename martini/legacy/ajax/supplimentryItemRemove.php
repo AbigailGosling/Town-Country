@@ -1,6 +1,6 @@
 <?php
 include('../functions.php');
-$weightid = mysqli_real_escape_string($conn,$_POST['id']);
+$weightid = mysqli_real_escape_string($conn,request()->input('id'));
 //Weight Row
 $q = mysqli_query($conn,"SELECT * FROM `tandc_live`.`weights` WHERE `id` = $weightid");
 $weightrow = mysqli_fetch_assoc($q);

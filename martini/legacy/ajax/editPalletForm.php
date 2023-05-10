@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request('pallet_id'));
+	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
+	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);
 	$intake = mysqli_fetch_array($y);
@@ -11,7 +11,7 @@
 <a href="javascript:;" id="closeAddPallet2" class="close closeAddPallet"></a>
 <h1 class="int">Add a product to<br/> pallet #0000<?php echo $pallet_id; ?></h1>
 
-<form method="POST" id="addProductToPallet" action="/scripts/addProductToPallet.php">
+<form method="POST" id="addProductToPallet" action="scripts/addProductToPallet.php">
 	<div class="float">
 		<div id="msgNotice3" style="color:white;"></div>
 		<input type="text" style="display:none;" value="<?php echo $intake_id; ?>" name="intake_id">
@@ -188,7 +188,9 @@
 	<input value="Add product" onclick="addPallet();" type="button">
 </form>
 <script>
-
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 	function calculateTare(){
 		
 		var gross_weight_val = $('#gross_weight_val').val();

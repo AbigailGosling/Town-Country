@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$ids = request('ids');
+	$ids = request()->input('ids');
 	
 	
 	$ids = explode(',', $ids);

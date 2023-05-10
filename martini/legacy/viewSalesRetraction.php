@@ -1,21 +1,21 @@
 <?php
-	$adv = array_key_exists("adv",$_GET);
+	$adv = request()->has("adv");
 
 	if ($adv == false) include_once('includes/frontHeader.php');
 	else require_once('functions.php');
 
 	
-	$picksheet_id = $_GET['id'];
+	$picksheet_id = request()->input('id');
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id='$picksheet_id'";
-	$y = mysqli_query($conn, $x) or die(mysqli_error($conn));
+	$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
 	$picksheet = mysqli_fetch_array($y);
 	
 	
 	
 	$customer_id = $picksheet['customer_id'];
 	$x1 = "SELECT * FROM `customers` WHERE id='$customer_id'";
-	$y1 = mysqli_query($conn, $x1) or die(mysqli_error($conn));
+	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($conn));
 	$customer = mysqli_fetch_array($y1);
 	
 	$addressNumber = $row['address'.$picksheet['addressid'].'_number'];
@@ -35,7 +35,7 @@
 ?>
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <?php
 	}
@@ -58,7 +58,7 @@
 
 
 
-<form id="pickerForm" method="POST" action="/scripts/updateSalesconfirmation.php" autocomplete="off">
+<form id="pickerForm" method="POST" action="scripts/updateSalesconfirmation.php" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="picksheetid" id="picksheetid" value="<?php echo $picksheet_id; ?>">
 <input type="hidden" name="customerid" id="customerid" value="<?php echo $customer_id; ?>">
@@ -85,7 +85,7 @@
 			<label>Salesman</label><br/>
  		 	<select id="" class="form-control" name="user_from_id">
 				<?php
-					$_users = mysqli_query($conn, "SELECT * FROM `users` where 1 in (pages)");
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
 
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($picksheet['user_from_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -116,7 +116,7 @@
 
 	<div class="row printhide">
 		<div class="col">
-			<input type="submit" value="Update">
+			<input type="button" onclick="mainForm()" value="Update">
 		</div>
 	</div>
 </div>
@@ -138,7 +138,7 @@
 			$query = "SELECT * FROM `product` WHERE ";
 		
 			$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$picksheet_id'";
-			$y = mysqli_query($conn, $x);
+			$y = prepareExecuteQuery($x);
 			
 			while($item = mysqli_fetch_array($y)){
 				$query .= " id = '".$item['product_id'] ."' ||";
@@ -150,7 +150,7 @@
 		
 		
 		<?php
- 			$yproduct = mysqli_query($conn, $query);
+ 			$yproduct = prepareExecuteQuery($query);
 			
 			while($product = mysqli_fetch_array($yproduct)){
 			?>
@@ -160,7 +160,7 @@
 						$thispalletid = $product['pallet_id'];
 						
 						$palletx = "SELECT * FROM `pallet` WHERE id ='$thispalletid'";
-						$pallety = mysqli_query($conn, $palletx);
+						$pallety = prepareExecuteQuery($palletx);
 						$pallet = mysqli_fetch_array($pallety);
 						
 					?>
@@ -172,7 +172,7 @@
 					<?php
 						$productID = $product['id'];
 						$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$picksheet_id' AND product_id='$productID'";
-						$howManyY = mysqli_query($conn, $howManyX);
+						$howManyY = prepareExecuteQuery($howManyX);
 						$pickerItem = mysqli_fetch_array($howManyY);
 						$howMany = mysqli_num_rows($howManyY);
 					?>
@@ -204,7 +204,7 @@
 					</td>
 					<td>
 						<?php
-							echo '£'. number_format((float)$pickerItem['price'], 2, '.', '');
+							echo '£'. number_format((double)$pickerItem['price'], 2, '.', '');
 
 						?>
 					</td>
@@ -227,10 +227,10 @@
 
 <div class="clearfix"></div>
 <?php 
-	if($_GET['msg'] != ''){
+	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
-		alert('<?php echo $_GET['msg'];?>');
+		alert('<?php echo request()->input('msg');?>');
 	</script>
 	<?php	
 	}
@@ -278,7 +278,7 @@
 
 	function addToList(id){
 		
-		$.get( "/scripts/getBasketItem.php?id="+id, function( data ) {
+		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
 		});
 		
@@ -295,7 +295,7 @@
 
 		$('#addressid').val(address_id);
 
-		$.get("/ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?src=salesconfirmation&id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});
@@ -366,7 +366,15 @@
 	}
 </style>
 <script type="text/javascript">
-	
+	$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
+function mainForm(){
+	$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}	
 	function printStuff(){
 		window.print();
 	}

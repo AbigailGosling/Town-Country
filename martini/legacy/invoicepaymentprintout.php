@@ -133,7 +133,7 @@ $serverRoot = request()->server("SERVER_NAME");
 </style>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 
 
@@ -154,10 +154,13 @@ $serverRoot = request()->server("SERVER_NAME");
 <div class="clearfix"></div>
 <script type="text/javascript">           
 var renderCompleted = false;
+$.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-var dataParsed = <?php echo json_encode(explode(",",request('data'))); ?>;
+var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); ?>;
     $(document).ready(function() {
         table = $('#soaTable').DataTable({
             "pageLength": -1,

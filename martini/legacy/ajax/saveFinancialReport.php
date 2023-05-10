@@ -1,10 +1,10 @@
 <?php
 require_once(__DIR__.'/../functions.php');
-if (array_key_exists("rolTotal",request('input'])) unset($_POST['input']['rolTotal'));
+if (array_key_exists("rolTotal",request()->input('input'))) unset(request()->input('input')['rolTotal']);
 $col = array();
 $val = array();
-if (isset(request('input']['previous'])) unset($_POST['input']['previous'));
-foreach (request('input') as $key => $value)
+if (isset(request()->input('input')['previous'])) unset(request()->input('input')['previous']);
+foreach (request()->input('input') as $key => $value)
 {
     if (strpos($key,"date") !== false) $value = DateTime::createFromFormat("d/m/Y H:i:s",$value)->format('Y-m-d H:i:s');
     $col[] = "`".$key."`";

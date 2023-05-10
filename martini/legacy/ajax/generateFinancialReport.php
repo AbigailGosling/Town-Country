@@ -1,28 +1,28 @@
 <?php
 require_once(__DIR__.'/../functions.php');
 
-if (isset(request('start']) && $_POST['start']!="" && isset($_POST['end']) && $_POST['end')!="") 
+if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="") 
 {
-    $start = DateTime::createFromFormat("d/m/Y",request('start'))->format('Y-m-d');
-    $end  = DateTime::createFromFormat("d/m/Y",request('end'))->format('Y-m-d');
+    $start = DateTime::createFromFormat("d/m/Y",request()->input('start'))->format('Y-m-d');
+    $end  = DateTime::createFromFormat("d/m/Y",request()->input('end'))->format('Y-m-d');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE (STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN ? AND ?) ORDER BY id ASC",'ss',[$start,$end]);
 }
-else if (isset(request('startInv']) && $_POST['startInv']!="" && isset($_POST['end']) && $_POST['end')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('end') !== null && request()->input('end')!="") 
 {
-    $start = request('startInv');
-    $end  = DateTime::createFromFormat("d/m/Y",request('end'))->format('Y-m-d');
+    $start = request()->input('startInv');
+    $end  = DateTime::createFromFormat("d/m/Y",request()->input('end'))->format('Y-m-d');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE id >= ? AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')< ? ORDER BY id ASC",'is',[$start,$end]);
 }
-else if (isset(request('start']) && $_POST['start']!="" && isset($_POST['endInv']) && $_POST['endInv')!="") 
+else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv') !== null && request()->input('endInv')!="") 
 {
-    $start = DateTime::createFromFormat("d/m/Y",request('start'))->format('Y-m-d');
-    $end  = request('endInv');
+    $start = DateTime::createFromFormat("d/m/Y",request()->input('start'))->format('Y-m-d');
+    $end  = request()->input('endInv');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') >= ? AND `id` <= ? ORDER BY id ASC",'si',[$start,$end]);
 }
-else if (isset(request('startInv']) && $_POST['startInv']!="" && isset($_POST['endInv']) && $_POST['endInv')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv') !== null && request()->input('endInv')!="") 
 {
-    $start = request('startInv');
-    $end  = request('endInv');
+    $start = request()->input('startInv');
+    $end  = request()->input('endInv');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE `id` >= ? AND `id` <= ? ORDER BY id ASC",'ss',[$start,$end]);
 }
 
@@ -57,9 +57,9 @@ foreach ($list as $pick)
     $sql = "SELECT SUM(amount) as amount FROM invoice_payments WHERE invoice_payments.payment_method != 'CREDIT_NOTE' && invoice_payments.invoice_id = ?";
     $res = prepareExecuteQuery($sql,'i',[$pick['id']]) or die(mysqli_error($conn)." ". $sql);
    
-    $thisInvTotal = number_format((float)invoiceTotal($pick['id']), 2, '.', '');
+    $thisInvTotal = number_format((double)invoiceTotal($pick['id']), 2, '.', '');
     $thisPayment = mysqli_fetch_assoc($res)['amount'];
-    $thisPayment = number_format((float)totalValueCreditedOnInvoiceID($pick['id']), 2, '.', '');
+    $thisPayment = number_format((double)totalValueCreditedOnInvoiceID($pick['id']), 2, '.', '');
     
     $rolSaleVal += $thisInvTotal;  
     $rolPayment += $thisPayment;
@@ -67,7 +67,7 @@ foreach ($list as $pick)
 
 $output = array();
 $output['user_id'] = $userid;
-$output['previous_id'] = request('previous_id');
+$output['previous_id'] = request()->input('previous_id');
 $output['sales'] = round($rolSaleVal,2,PHP_ROUND_HALF_DOWN);
 $output['payments'] = round($rolPayment,2,PHP_ROUND_HALF_DOWN);
 $output['start_invoice_id'] = $firstid;
@@ -75,14 +75,14 @@ $output['end_invoice_id'] = $lastid;
 $output['aborted_id'] = $aborted;
 $output['start_date'] = date('d/m/Y H:i:s', strtotime($first_date));
 $output['end_date'] = date('d/m/Y H:i:s', strtotime($end_date));
-if (isset(request('previous_id']) && $_POST['previous_id') != null)
+if (request()->input('previous_id') !== null)
 {
-    $output['previous'] = get_previous(request('previous_id'));
+    $output['previous'] = get_previous(request()->input('previous_id'));
 }
-else if (isset(request('previous_value']) && $_POST['previous_value'] != null && $_POST['previous_value'] != "" && $_POST['previous_value'] != 0 && $_POST['previous_value') != "0")
+else if (request()->input('previous_value') !== null && request()->input('previous_value') != "" && request()->input('previous_value') != 0 && request()->input('previous_value') != "0")
 {
     $output['previous'] = array(
-        'rolTotal'=>request('previous_value'),
+        'rolTotal'=>request()->input('previous_value'),
         'start_invoice_id'=>0,
         'end_invoice_id'=>0
     );

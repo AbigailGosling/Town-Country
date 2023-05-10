@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$species = request('id');
+	$species = request()->input('id');
 	
 	$cuts = getCutsFor($species);
 	

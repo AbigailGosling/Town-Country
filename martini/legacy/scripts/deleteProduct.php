@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-    $productID = request('productid');	
-    $intakeID = request('intakeid');	
+    $productID = request()->input('productid');	
+    $intakeID = request()->input('intakeid');	
     
     if($productID != ''){
 	    deleteProductEntry($productID);

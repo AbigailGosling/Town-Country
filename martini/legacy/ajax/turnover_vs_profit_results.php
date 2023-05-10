@@ -1,29 +1,29 @@
 <?php
    	require(__DIR__.'/../functions.php');
 
-    if(request('user_id'] != '' || $_POST['customer_id'] != '' || $_POST['species_id'] != '' || $_POST['intake_id'] != '' || $_POST['pallet_id'] != '' || $_POST['invoice_id'] != ''  || $_POST['brand_id'] != '' || $_POST['nationality_id') != ''){
+       if(request()->input('user_id') != '' || request()->input('customer_id') != '' || request()->input('species_id') != '' || request()->input('intake_id') != '' || request()->input('pallet_id') != '' || request()->input('invoice_id') != ''  || request()->input('brand_id') != '' || request()->input('nationality_id') != ''){
         
-        $INVOICE_ID = $mysqli->real_escape_string( request('invoice_id'));
-        $INTAKE_ID = $mysqli->real_escape_string( request('intake_id'));
-        $PALLET_ID = $mysqli->real_escape_string( request('pallet_id'));
-        $USER_ID = $mysqli->real_escape_string( request('user_id'));
-        $CUSTOMER_ID = $mysqli->real_escape_string( request('customer_id'));
-        $SPECIES_ID = $mysqli->real_escape_string( request('species_id'));
-        $CUTGROUP_ID = $mysqli->real_escape_string( request('cutgroup_id'));
-        $COOLING_ID = $mysqli->real_escape_string( request('cooling_id'));
-        $BRAND_ID = $mysqli->real_escape_string( request('brand_id'));
-        $NATIONALITY_ID = $mysqli->real_escape_string( request('nationality_id'));
-        $SUPPLIER_ID = $mysqli->real_escape_string( request('supplier_id'));
+        $INVOICE_ID = $mysqli->real_escape_string( request()->input('invoice_id'));
+        $INTAKE_ID = $mysqli->real_escape_string( request()->input('intake_id'));
+        $PALLET_ID = $mysqli->real_escape_string( request()->input('pallet_id'));
+        $USER_ID = $mysqli->real_escape_string( request()->input('user_id'));
+        $CUSTOMER_ID = $mysqli->real_escape_string( request()->input('customer_id'));
+        $SPECIES_ID = $mysqli->real_escape_string( request()->input('species_id'));
+        $CUTGROUP_ID = $mysqli->real_escape_string( request()->input('cutgroup_id'));
+        $COOLING_ID = $mysqli->real_escape_string( request()->input('cooling_id'));
+        $BRAND_ID = $mysqli->real_escape_string( request()->input('brand_id'));
+        $NATIONALITY_ID = $mysqli->real_escape_string( request()->input('nationality_id'));
+        $SUPPLIER_ID = $mysqli->real_escape_string( request()->input('supplier_id'));
         $QUERY_VARS = array();
-        if(request('date_start') != ''){
-            $date_start = $mysqli->real_escape_string( request('date_start'));
+        if(request()->input('date_start') != ''){
+            $date_start = $mysqli->real_escape_string( request()->input('date_start'));
             $date_start = str_replace('/', '-', $date_start);
             $date_start = date('Y-m-d', strtotime($date_start));
             
-            if(request('date_end') == ''){
+            if(request()->input('date_end') == ''){
                 $date_end = date('d/m/Y');
             }else{
-                $date_end = $mysqli->real_escape_string( request('date_end'));
+                $date_end = $mysqli->real_escape_string( request()->input('date_end'));
             }
 
             $date_end = str_replace('/', '-', $date_end);
@@ -345,8 +345,8 @@
                             $creditItempallet_id = $creditItem['pallet_id'];
                             $weight = weightFromProductIDArray([$returned_product_id]);
                             $weightReturned += $weight;
-                            $credit_value += number_format((float)$creditItem['price'] * $weight, 2, '.', '');
-                            $cost_value += number_format((float)$creditItem['cost'] * $weight, 2, '.', '');
+                            $credit_value += number_format((double)$creditItem['price'] * $weight, 2, '.', '');
+                            $cost_value += number_format((double)$creditItem['cost'] * $weight, 2, '.', '');
                             $credit_qty += $creditItem['quantity'];
                         }
                     }
@@ -361,7 +361,7 @@
             // $creditNoteCheck = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id='$product_id'");
             
             // while($creditItem = mysqli_fetch_array($creditNoteCheck)){
-            //     $credit_value += ((float) $creditItem['price'] * $creditItem['quantity']);
+            //     $credit_value += ((double) $creditItem['price'] * $creditItem['quantity']);
             //     $credit_qty += $creditItem['quantity'];
             // }
 

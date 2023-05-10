@@ -1,8 +1,8 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$id = request('intake_id');
-	$intake_id = request('intake_id');	
+	$id = request()->input('intake_id');
+	$intake_id = request()->input('intake_id');	
 	
 	$types = Array('UB','BB','N/A','PB','EX');
 	
@@ -251,9 +251,9 @@
 									?>
 									<?php
 											if($weights['weight_tear'] == $weights['weight_gross']){
-												$w = $weights['weight_gross'];
+												$w = (double)$weights['weight_gross'];
 											}else{
-												$w = $weights['weight_gross'] - $weights['weight_tear'];
+												$w = (double)$weights['weight_gross'] - (double)$weights['weight_tear'];
 											}
 										?>
 										<div class="weightbox" <?php if($w == 1){ ?> style="margin: 2px;width: 12px;"<?php }?>>

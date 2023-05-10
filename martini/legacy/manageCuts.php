@@ -23,11 +23,10 @@
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="js/lity.js"></script>
 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
 	<script>
 
 		$(function(){
@@ -46,21 +45,21 @@
 
 	<a href="menu.php" id="menu">MENU</a>
 
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 
 </div>
 
 <main>
-
+	
 	<div id="intakelist">
 
 		<?php
 
-			if(request('id') != ''){
+			if(request()->input('id') != ''){
 
 				
 
-				$id = request('id');
+				$id = request()->input('id');
 
 				
 
@@ -76,11 +75,11 @@
 
 		?>
 
-		<form class="container" method="POST" action="<?php if(request('id') != ''){ echo '/scripts/updateCut.php'; } else { echo '/scripts/addCut.php'; } ?>">
-
+		<form id="mainForm" class="container" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateCut.php'; } else { echo 'scripts/addCut.php'; } ?>">
+		<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
-			<tr><td align="center"><h1 class="int"><?php if(request('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> CUTS</h1></td></tr>
+			<tr><td align="center"><h1 class="int"><?php if(request()->input('id') != ''){ echo 'UPDATE'; } else { echo 'ADD'; } ?> CUTS</h1></td></tr>
 
 			<tr>
 				<td>
@@ -156,7 +155,7 @@
 
 					<label>Danger Threshold (in days)</label>
 
-					<input type="text" name="name" onkeypress="validate(event)" value="<?php echo $data['danger']; ?>">
+					<input type="text" name="danger" onkeypress="validate(event)" value="<?php echo $data['danger']; ?>">
 
 				</td>
 
@@ -168,7 +167,7 @@
 
 					<?php
 
-					if(request('id') != ''){
+					if(request()->input('id') != ''){
 
 					?><input type="submit" value="Update Cut"><?php
 
@@ -233,6 +232,7 @@
 </main>
 
 <script type="text/javascript">
+
 	function validate(evt) {
   var theEvent = evt || window.event;
 
@@ -356,7 +356,7 @@
 </script>
 
 <div id="btm"></div>
-
+<div style="visibility: hidden;"><i class="fa fa-pencil" style="padding-right:0px;" aria-hidden="true"></i><i class="fa fa-times" aria-hidden="true"></i></div>
 </body>
 
 </html>

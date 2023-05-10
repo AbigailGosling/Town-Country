@@ -4,7 +4,7 @@
 	ini_set('memory_limit', '1024M');
 	
 	require_once '../vendor/autoload.php';
-    $intake_id = request('id');
+    $intake_id = request()->input('id');
 
 /*	
 	$perPage = 29;
@@ -25,7 +25,7 @@
 	
 	$pageArray = array();
 	
-	$intake_id = request('id');
+	$intake_id = request()->input('id');
  
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';

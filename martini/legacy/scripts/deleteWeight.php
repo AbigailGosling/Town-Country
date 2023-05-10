@@ -1,11 +1,11 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$weightID = request('id');
+	$weightID = request()->input('id');
 	
 	deleteWeight($weightID);
 	
-	$intakeID = request('intakeid');
+	$intakeID = request()->input('intakeid');
 ?>
 <script>
 	window.location = '../intake.php?id=<?php echo $intakeID; ?>';

@@ -1,7 +1,7 @@
 <?php
 	include('functions.php');
 	
-	$purchase = getPurchase(request('purchaseid'));
+	$purchase = getPurchase(request()->input('purchaseid'));
 	
 	$supplierid = $purchase['supplier_id'];
 	$supplier = getSupplier($supplierid);
@@ -17,13 +17,13 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 </head>
 <body>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main class="int">
 	<div id="product">		
@@ -31,7 +31,7 @@
 		<div id="product_options">
 			<a href="#" onclick="saveReturn()">Save Return</a>
 		</div>
-		<form method="POST" id="mainForm" action="/scripts/newReturn.php">
+		<form method="POST" id="mainForm" action="scripts/newReturn.php">
 		<input type="text" name="purchase_id" value="<?php if($purchase['id'] != ''){ echo $purchase['id']; }else{ echo '#'; } ?>" style="display:none;">
 		<table>
 			<tbody>
@@ -172,12 +172,11 @@
 		$('#msgNotice').html(msg);
 		
 		if(good == 1){
-			var formName = '#mainForm';
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", $(formName).attr('action'), true);
-			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send($(formName).serialize());
+			$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 		}
+	}
+	function mainFormSucess(event){
+		$('#customer_search_results').html(event);
 	}
 	
  
@@ -199,7 +198,7 @@
 			var species = $('#species_id').val();
 			
 			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function() {
+			xhttp.onload = function() {
 			if (this.readyState == 4 && this.status == 200) {
 			  // document.getElementById("demo").innerHTML = this.responseText;
 			  $('#customer_search_results').html(this.responseText);

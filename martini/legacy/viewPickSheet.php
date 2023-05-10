@@ -1,7 +1,7 @@
 <?php
 	include('includes/frontHeader.php');
 	
-	$picksheetid = request('id');
+	$picksheetid = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id =?";
 	$y = prepareExecuteQuery($x,'i',[$picksheetid]);
@@ -15,7 +15,7 @@
 	$customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE id=?",'i',[$customer_id]);
 	$customer = mysqli_fetch_array($customerResult);
 
-	$type = request('type');
+	$type = request()->input('type');
 
 	if($type == 'fresh'){
 		$type_value = '1';
@@ -39,7 +39,7 @@
 
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <script type="text/javascript">
 </script>
@@ -97,7 +97,7 @@
 
 		</div>
 	</div>
-	<form method="POST" id="addtoPalletForm" action="/scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request('type'); ?>">
+	<form method="POST" id="addtoPalletForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
 	<?php
 		
 		##########################
@@ -108,6 +108,7 @@
 		
 		while($row = mysqli_fetch_array($y)){ $productids .= '(id = ' . $row['product_id'] . ' && cooling_id IN ('. $type_value .')) ||'; }
 		$productids = rtrim($productids," ||");
+		if($productids == '') return;
 		##########################
 		
 		$productsQuery = "SELECT * FROM `product` WHERE $productids";
@@ -276,13 +277,13 @@
 		 	<input type="text" id="weightids" name="weightids" style="display:none;">
 			<input type="text" id="functype" name="functype" style="display:none;">
 			<input type="text" id="newweightvals" name="newweightvals" style="display:none">
-			<input type="submit" style="display:none;">
+			<input type="button" onclick="mainForm()" style="display:none;">
  			<input type="button" id="addToPallet" value="Add to Pallet" style="width:323px;height:34px;margin-bottom:10px;display:block;">
 			<input type="button" id="nextPallet" value="Next Pallet" style="width:323px;height:34px;margin-bottom:10px;display: block;">
 		</form>
 		<br/>
-		<form method="POST" action="/scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
-		<input type="hidden" name="sheet_type" value="<?php echo request('type'); ?>">
+		<form method="POST" action="scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
+		<input type="hidden" name="sheet_type" value="<?php echo request()->input('type'); ?>">
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
 			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0){ ?> disabled <?php } ?>>
 		</form>
@@ -370,12 +371,12 @@
                         while($weight = mysqli_fetch_array($y2)){
                             
                             if($weight['weight_tear'] == $weight['weight_gross']){
-                                $w = $weight['weight_gross'];
+                                (double)$w = (double)$weight['weight_gross'];
                             }else{
-                                $w = $weight['weight_gross'] - $weight['weight_tear'];
+                                (double)$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
                             }
 
-                            $k = $k + $w;
+                            (double)$k = (double)$k + (double)$w;
                         }
                         ?><div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
 							<?php if($product['unit'] != 'PPC'){ ?>[<?php echo $k . $ext; $k = 0; ?>]</div> <?php } ?>
@@ -387,14 +388,19 @@
 </main>
 
 <?php if($pickerSheet['completed'] != '1'){ ?>
-	<script> setTimeout(() => { setPickMode('<?php echo request('type'); ?>');  }, 500);</script>
+	<script> setTimeout(() => { setPickMode('<?php echo request()->input('type'); ?>');  }, 500);</script>
 <?php }else{ ?>
 	<script> setTimeout(() => { setPickMode('all'); }, 500); </script>
 <?php } ?>
 
 <div id="btm"></div>
 <script>
- 
+ function mainForm(){
+	$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainFormSucess(){
+	location.reload();
+}
 	function maxValueCheck(ele, max){
 		if (parseInt($(ele).val()) > max) {
         	$(ele).val(max);
@@ -520,14 +526,13 @@
 		console.log('Total Got: ' + totalGot);
 
 		var formName = '#markCompletedForm';
-		var xhttp = new XMLHttpRequest();
-		xhttp.open("POST", $(formName).attr('action'), true);
-		xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-		xhttp.send($(formName).serialize());
-		
- 		 
+		$('#markCompletedForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:markCompletedSucess});
+	window.location = '../menu.php';
 	});
-	
+	function markCompletedSucess(){
+		//alert("Picking Sheet Submitted!");
+		//window.location = 'menu.php';
+	}
 
 	function addStringName(data){
 		$('#theRowName').append(data);
@@ -557,7 +562,7 @@
 		var shouldSubmit = false;
 		var needApprovalBeforeSubmit = false;
 
-		$('.productGroup.<?php echo request('type'); ?>').each(function(){
+		$('.productGroup.<?php echo request()->input('type'); ?>').each(function(){
 			
 			var numRequired = $(this).attr('targetamount');
 			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());
@@ -584,11 +589,7 @@
 			askForIncompleteSelectionApprovalAndSubmit();
 			return false;
 		 }
-		var formName = '#addtoPalletForm';
-		var xhttp = new XMLHttpRequest();
-		xhttp.open("POST", $(formName).attr('action'), true);
-		xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-		xhttp.send($(formName).serialize());
+		$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 	}
 
 	function askForIncompleteSelectionApprovalAndSubmit()
@@ -602,11 +603,7 @@
 			confirmButtonText: 'Continue'
 		}).then((result) => {
 			if (result.value) {
-				var formName = '#addtoPalletForm';
-				var xhttp = new XMLHttpRequest();
-				xhttp.open("POST", $(formName).attr('action'), true);
-				xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-				xhttp.send($(formName).serialize());
+				$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 			}
 		});
 	}

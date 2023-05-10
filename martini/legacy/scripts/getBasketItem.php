@@ -1,13 +1,13 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$product_id = $mysqli->real_escape_string( request('product_id'));
-	$pallet_id = $mysqli->real_escape_string( request('pallet_id'));
-	$species_id = $mysqli->real_escape_string( request('species_id'));
-	$cut_id = $mysqli->real_escape_string( request('cut_id'));
-	$dateParsed = $mysqli->real_escape_string( request('date'));
-	$q = request('q');
-	$comment = request('comment');
+	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
+	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
+	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
+	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
+	$dateParsed = $mysqli->real_escape_string( request()->input('date'));
+	$q = request()->input('q');
+	$comment = request()->input('comment');
 	
 	$x = "SELECT * FROM `product` WHERE pallet_id=?";
 	// exit();

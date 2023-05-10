@@ -1,7 +1,7 @@
 <?php
     include_once('includes/frontHeader.php');
-    if(request('delid') != ''){
-        $delid = $mysqli->real_escape_string( request('delid'));
+    if(request()->input('delid') != ''){
+        $delid = $mysqli->real_escape_string( request()->input('delid'));
         $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=? WHERE id=?",'ii',[$userid,$delid]);
         $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id=?",'i',[$delid]);
         $palletsOutResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$delid]);
@@ -25,7 +25,7 @@
 <body class="menu">
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
-	<a href="logout.php" id="logout">LOGOUT</a>
+	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
     <h1 class="int">Your Pick Sheets</h1>	
@@ -47,34 +47,41 @@
 
                 $result_product = prepareExecuteQuery("SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$picksheetid' GROUP BY product_id");
                 while($product = mysqli_fetch_assoc($result_product)){
-                    array_push($product_ids, $product['product_id']);
+                    $product_ids[]=$product['product_id'];
                 } 
-
-                $product_ids = implode(',', $product_ids);
-
-                $result_fresh = prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
-                $count_fresh = mysqli_num_rows($result_fresh);
-                
-                if ($count_fresh>0)
+                             
+                if (count($product_ids)>0)
                 {
-                    $result_location_fresh= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (1) LIMIT 1");
-                    $location_fresh = mysqli_fetch_assoc($result_location_fresh);
-                    $location_fresh = $location_fresh["loc"];
+                    $product_ids = implode(',', $product_ids);
+                    $result_fresh = prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
+                    $count_fresh = mysqli_num_rows($result_fresh);
+                    if ($count_fresh>0)
+                    {
+                        $result_location_fresh= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (1) LIMIT 1");
+                        $location_fresh = mysqli_fetch_assoc($result_location_fresh);
+                        $location_fresh = $location_fresh["loc"];
+                    }
+
+                    // 2 is frozen
+                    // 3 is fresh/frozen
+
+                    $result_frozen= prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN (2,3) LIMIT 1");
+                    $count_frozen = mysqli_num_rows($result_frozen);
+                    
+                    if ($count_frozen>0)
+                    {
+                        $result_location_frozen= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (2,3) LIMIT 1");
+                        $location_frozen = mysqli_fetch_assoc($result_location_frozen);
+                        $location_frozen = $location_frozen["loc"];
+                    }
                 }
-
-                // 2 is frozen
-                // 3 is fresh/frozen
-
-                $result_frozen= prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN (2,3) LIMIT 1");
-                $count_frozen = mysqli_num_rows($result_frozen);
-                
-                if ($count_frozen>0)
+                else
                 {
-                    $result_location_frozen= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (2,3) LIMIT 1");
-                   $location_frozen = mysqli_fetch_assoc($result_location_frozen);
-                    $location_frozen = $location_frozen["loc"];
+                    $count_frozen = 0;
+                    $count_fresh = 0;
                 }
-               
+                    
+                    
                 $customer_id = $row['customer_id'];
 				
 				$date = $row['date'];
@@ -148,8 +155,11 @@
     .tag.frozen{ background:#2980b9; }
 </style>
 <script>
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     function doDelete(id){
-        $.post("/ajax/deletePick.php", {'id':id}, results);
+        $.post("ajax/deletePick.php", {'id':id}, results);
     }
     function results(){
         location.reload();

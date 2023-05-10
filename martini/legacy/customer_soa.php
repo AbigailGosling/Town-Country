@@ -4,7 +4,7 @@ include_once('ajax/customer_soa_results_function.php');
 ?>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 <div class="search printhide">
     <div class="container flex space-between" style="align-items:center">
@@ -14,10 +14,10 @@ include_once('ajax/customer_soa_results_function.php');
 </div>
 <div class="container">
     <?php
-    if (request('id') != '') {
+    if (request()->input('id') != '') {
 
-        $customer = getCustomer(request('id'));
-        $creditCheck = precredit_check(request('id'));
+        $customer = getCustomer(request()->input('id'));
+        $creditCheck = precredit_check(request()->input('id'));
 		$title = "";
 		if ($creditCheck['saleAllowed'] == true)
 		{
@@ -51,12 +51,12 @@ include_once('ajax/customer_soa_results_function.php');
                                                                                             }
                                                                                                 ?>
             <?php
-            if (request('date_from'] != '' && $_GET['date_to') != '') {
+            if (request()->input('date_from') != '' && request()->input('date_to') != '') {
 
-                $date = str_replace('/', '-', request('date_from'));
+                $date = str_replace('/', '-', request()->input('date_from'));
                 $date_from = date('d/m/Y', strtotime($date));
 
-                $date = str_replace('/', '-', request('date_to'));
+                $date = str_replace('/', '-', request()->input('date_to'));
                 $date_to = date('d/m/Y', strtotime($date));
 
                 echo '(' . $date_from . ' - ' . $date_to . ')';
@@ -66,7 +66,7 @@ include_once('ajax/customer_soa_results_function.php');
             ?>
         </h2>
         <a id="viewAllLabel" href="">Show All</a>
-        <a class="mp" href="/multi_invoice_payments.php?customer_id=<?php echo request('id'); ?>">Make / View payments</a>
+        <a class="mp" href="multi_invoice_payments.php?customer_id=<?php echo request()->input('id'); ?>">Make / View payments</a>
         <div class="loadingContainer">
             <img src="img/loading.gif" alt="">
         </div>
@@ -106,10 +106,13 @@ include_once('ajax/customer_soa_results_function.php');
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
     var toSkip = 0;
-    var customer_id = <?php echo request('id'); ?>;
-    var date_from = '<?php echo request('date_from'); ?>';
-    var date_to = '<?php echo request('date_to'); ?>';
+    var customer_id = <?php echo request()->input('id'); ?>;
+    var date_from = '<?php echo request()->input('date_from'); ?>';
+    var date_to = '<?php echo request()->input('date_to'); ?>';
     var table = null;
     var column = 3;
     var order = 'DESC';
@@ -125,6 +128,7 @@ include_once('ajax/customer_soa_results_function.php');
     document.getElementById("viewAllLabel").addEventListener("click", toggleViewAll);
 
     function getData() {
+        
         $.post("ajax/customer_soa_results.php", {
                 customer_id: customer_id
             },

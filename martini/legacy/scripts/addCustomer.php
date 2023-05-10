@@ -4,73 +4,79 @@
 	$colValue = array();
 
 	$colNames[] = "`businessname`";
-	$colValue[] = $mysqli->real_escape_string( request('businessname'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('businessname'));
 	
 	$colNames[] = "`tradingas`";
-	$colValue[] = $mysqli->real_escape_string( request('tradingas'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('tradingas'));
 	
 	$colNames[] = "`nameofbuyer`";
-	$colValue[] = $mysqli->real_escape_string( request('nameofbuyer'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('nameofbuyer'));
 	
 	$colNames[] = "`contactnumber`";	
-	$colValue[] = $mysqli->real_escape_string( request('contactnumber'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('contactnumber'));
 	
 	$colNames[] = "`customer_email`";	
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request('customer_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('customer_email')));
 
 	$colNames[] = "`companyregno`";	
-	$colValue[] = $mysqli->real_escape_string( request('companyregno'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('companyregno'));
 	
 	$colNames[] = "`accounts_address_1`";	
-	$colValue[] = $mysqli->real_escape_string( request('accounts_address_1'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_1'));
 	
 	$colNames[] = "`accounts_address_2`";
-	$colValue[] = $mysqli->real_escape_string( request('accounts_address_2'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_2'));
 	
 	$colNames[] = "`accounts_address_3`";
-	$colValue[] = $mysqli->real_escape_string( request('accounts_address_3'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_3'));
 	
 	$colNames[] = "`accounts_address_4`";
-	$colValue[] = $mysqli->real_escape_string( request('accounts_address_4'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_4'));
 	
 	$colNames[] = "`accounts_contact`";
-	$colValue[] = $mysqli->real_escape_string( request('accounts_contact'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_contact'));
 	
 	$colNames[] = "`tel_number`";
-	$colValue[] = $mysqli->real_escape_string( request('tel_number'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('tel_number'));
 	
 	$colNames[] = "`internal_email`";
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request('internal_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('internal_email')));
 	
 	$colNames[] = "`credit_terms`";
-	$colValue[] = $mysqli->real_escape_string( request('credit_terms'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('credit_terms'));
 	
 	$colNames[] = "`pricedefault`";
-	$colValue[] = $mysqli->real_escape_string( request('pricedefault'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('pricedefault'));
 	
 	$colNames[] = "`credit_rating`";
-	$colValue[] = $mysqli->real_escape_string( request('credit_rating'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('credit_rating'));
 	
 	$colNames[] = "`flaguplimit`";
-	$colValue[] = $mysqli->real_escape_string( request('flaguplimit'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('flaguplimit'));
 		
 	$colNames[] = "`current_outstanding`";
-	$colValue[] = $mysqli->real_escape_string( request('current_outstanding'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('current_outstanding'));
 
 	$colNames[] = "`accounts_email`";
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request('accounts_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('accounts_email')));
 	
 	$colNames[] = "`accounts_comments`";
-	$colValue[] = $mysqli->real_escape_string( request('accounts_comments'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_comments'));
 	
 	$colNames[] = "`default_salesman_id`";
-	$colValue[] = $mysqli->real_escape_string( request('default_salesman_id'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('default_salesman_id'));
 	
 	$colNames[] = "`due_warning`";
-	$colValue[] = $mysqli->real_escape_string( request('due_warning'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('due_warning'));
 
 	$colNames[] = "`credit_grace`";
-	$colValue[] = $mysqli->real_escape_string( request('credit_grace'));
+	$colValue[] = $mysqli->real_escape_string( request()->input('credit_grace'));
+
+	$colNames[] = "`markup_type`";
+	$colValue[] = $mysqli->real_escape_string( request()->input('markup_type'));
+
+	$colNames[] = "`markup_amount`";
+	$colValue[] = $mysqli->real_escape_string( request()->input('markup_amount'));
 
 	for ($u=1;$u<10;$u++)
 	{

@@ -133,7 +133,7 @@ include_once('includes/frontHeader.php');
 </style>
 <div id="top" class="printhide">
     <a href="menu.php" id="menu">MENU</a>
-    <a href="logout.php" id="logout">LOGOUT</a>
+    <a href="logout" id="logout">LOGOUT</a>
 </div>
 
 <div class="logocontainer" style="text-align: center; line-height: 13px; font-size: 10px; padding-top:10px;">
@@ -195,6 +195,9 @@ include_once('includes/frontHeader.php');
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    $.ajaxSetup({
+		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
+	});
 $(document).ready(function(){  
     $("#startdate").datepicker({
         dateFormat: 'dd/mm/yy'
@@ -247,11 +250,11 @@ function hist_results(data,status){
     $("#hisTable > tbody").html(data);
 }
 function deleteHist(id){
-    $.post("/ajax/deleteHistoricFinancialReport.php", {id:id}, del_results);
+    $.post("ajax/deleteHistoricFinancialReport.php", {id:id}, del_results);
 }
 function del_results(data,status){
     $("#hisTable > tbody").empty();
-    $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
+    $.post("ajax/loadHistoricFinancialReport.php", {}, hist_results);
 }
 function fetchResults(){
     $('#soaTable').DataTable().destroy();
@@ -357,7 +360,7 @@ function save()
 }
 function debug(data, status)
 {
-    $.post("/ajax/loadHistoricFinancialReport.php", {}, hist_results);
+    $.post("ajax/loadHistoricFinancialReport.php", {}, hist_results);
     $('#warning').css('background', "#CFFDBC");
     $('#warning').css('border', "2px solid #6EFA32");
     $('#warning').css('display', "inline-block");

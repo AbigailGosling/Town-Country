@@ -110,7 +110,7 @@
         array_push($single_row, $range_to);
 
         if($productsRow['unit'] == 'PPC'){
-            $this_total_cost = (float)$productsRow['cost']*$quantityTotal;
+            $this_total_cost = (double)$productsRow['cost']*$quantityTotal;
             array_push($single_row, 'PPC');
         }else{
             if($productsRow['akg'] != ''){
@@ -120,7 +120,7 @@
             }
             if ($weight_value > 0.9)
             {
-                $this_total_cost = (float)$productsRow['cost']*$weight_value;
+                $this_total_cost = (double)$productsRow['cost']*$weight_value;
                 array_push($single_row, $weight_value . 'kg');
                 $TOTAL_WEIGHT += $weight_value;
                 $TOTAL_QUANTITY += $quantityTotal;
