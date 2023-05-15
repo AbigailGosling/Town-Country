@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
                 $perm->file = $oldPermission->file;
                 $perm->save();
             }
-            if ($perm->label == "editUsers.php")
+            if ($perm->name == "editUsers.php")
             {
                 $oldPermission->file = "../users";
                 $oldPermission->save();
