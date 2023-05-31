@@ -1,7 +1,7 @@
 <?php
-        include_once('martini/legacy/functions.php');
-        include_once('martini/legacy/scripts/SLabsEmailer.php');
-        include_once('martini/legacy/scripts/PDFRenderer.php');
+        require_once(__DIR__.'/../functions.php');
+        require_once(__DIR__.'/../scripts/PDFRenderer.php');
+        require_once(__DIR__.'/../scripts/SLabsEmailer.php');
         use InternalScripts\SLabsEmailer;
         use InternalScripts\SLabsEmailerType;
         use InternalScripts\PDFRenderer;

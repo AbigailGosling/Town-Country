@@ -60,4 +60,4 @@ Route::get('legacy/logout', function () {
     return redirect('/logout');
 });
 //THIS MUST BE LAST!
-Route::any('/{path}', [LegacyController::class,'entry_point'])->middleware(['auth', 'verified'])->where('path', '.*');
+Route::any('/{path}', [LegacyController::class,'entry_point'])->name('legacy')->middleware(['auth', 'verified'])->where('path', '.*');

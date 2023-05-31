@@ -26,9 +26,13 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::connection('tandc_live')->table('customers', function(Blueprint $table)
+        try
         {
-            $table->dropFullText('full_text_businessname');
-        });
+            Schema::connection('tandc_live')->table('customers', function(Blueprint $table)
+            {
+                $table->dropFullText('full_text_businessname');
+            });
+        }
+        catch (\Exception $e){}
     }
 };

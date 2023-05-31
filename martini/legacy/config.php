@@ -1,12 +1,13 @@
 <?php
 
-    $dbHost = '';
-    $dbUser = '';
-    $dbPass = '';
-    $dbName = '';
+    $dbHost = 'localhost';
+    $dbUser = 'phenixdigital';
+    $dbPass = 'szcUgQ93Zw72Qyz2dfsW';
+    $dbName = 'tandc_live';
 
-    $domain = '';
-
+    $domain = '//tcdev4.tang.solutions/legacy/';
+    $domainOld = '//tcdev4.tang.solutions/';
+	
     $mail_host = 'smtp.mandrillapp.com';
     $mail_email = 'info@devclever.co.uk';
     $mail_password = 'DjNrfHlchKtb8ul0e4nLWQ';

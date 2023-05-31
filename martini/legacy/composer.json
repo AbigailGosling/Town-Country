@@ -3,7 +3,7 @@
         "phpmailer/phpmailer": "^6.2",
         "mpdf/mpdf": "^8.1",
         "socketlabs/email-delivery": "^1.2",
-        "chrome-php/chrome": "^0.11.2",
+        "chrome-php/chrome": "^1.9",
         "shuchkin/simplexlsxgen": "^1.1"
     }
 }

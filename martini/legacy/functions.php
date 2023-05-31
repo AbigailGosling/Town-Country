@@ -5,10 +5,11 @@
     ini_set('upload_max_filesize', '64M');
 	
 	require('config.php');
-	require_once('../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
+	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 	use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Type\Decimal;
-
+	global $conn;
+	global $mysqli;
 	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
@@ -42,7 +43,7 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
-		Log::debug($sql,[$varTypes, $vars ,$returnInsert]);
+		Log::debug(new \Exception(),[$sql, $varTypes, $vars ,$returnInsert]);
 		return prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
 	}
 	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
@@ -804,6 +805,7 @@ use Ramsey\Uuid\Type\Decimal;
 	// ??: Should be renamed or return full nationality entry
 	# Get nationality name from id
 	// cache the results
+	global $nationalities;
 	$nationalities = [];
 	function getNationality($id){
 		global $mysqli;
@@ -831,6 +833,7 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 
 	# Get Temp - returns temp text for specific tempid
+	global $temperatures;
 	$temperatures = [];
 	function getTemp($tempid){
 		global $mysqli;
@@ -856,6 +859,7 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 
 	# Get brand name from id
+	global $brands;
 	$brands = [];
 	function getBrand($id){
 		global $mysqli;
@@ -1840,6 +1844,7 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 		return $y;
 	}
+	global $knownCustomerMarkups;
 	$knownCustomerMarkups = array();
 	function applyCustomerMarkup(int $customer_id,float $price):float{
 		global $knownCustomerMarkups;

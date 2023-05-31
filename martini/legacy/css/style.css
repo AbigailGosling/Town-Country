@@ -17,7 +17,7 @@
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
 body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
-body.menu {background: #3faddd;}
+body.menu {background: #D16002;}
 
 
 
@@ -118,7 +118,7 @@ div#login div#remember {
 	font-family: 'OpenSans_Semibold';
 }
 div#top {
-	background: #3faddd;
+	background: #D16002;
 	width: 100%;
 	height: 70px;
 	margin: 0;
@@ -171,14 +171,14 @@ div#menu_wrap a {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
 	text-decoration: none;
  	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #D16002 solid;
 	padding-left: 20px;
     box-sizing: border-box;
 	text-align:left;
@@ -187,7 +187,7 @@ span.small {
     font-size: 12px;
 }
 
-div#menu_wrap a:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+div#menu_wrap a:hover {background: #D16002;color: #fff;border: 1px #fff solid;}
 
 
 /* Product */
@@ -223,7 +223,7 @@ asdf.div#product_options a {
 	padding: 0;
 	display: block;
 	float: left;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 18px;
 	line-height: 40px;
 	font-weight: normal;
@@ -324,11 +324,11 @@ div#product_list::-webkit-scrollbar-track {
 }
 /* Handle */
 div#product_list::-webkit-scrollbar-thumb {
-    background: #3faddd;
+    background: #D16002;
 }
 /* Handle on hover */
 div#product_list::-webkit-scrollbar-thumb:hover {
-    background: #3faddd;
+    background: #D16002;
 }
 
 .overview {
@@ -545,7 +545,7 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
@@ -553,11 +553,11 @@ a.delete_row {
 	text-transform: uppercase;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #D16002 solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #D16002;color: #fff;border: 1px #fff solid;}
 #intakelist {
 	width: 100%;
 	max-width: 100%;
@@ -634,7 +634,7 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
@@ -642,11 +642,11 @@ a.delete_row {
 	text-transform: uppercase;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #D16002 solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#intakelist form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+#intakelist form input[type="submit"]:hover {background: #D16002;color: #fff;border: 1px #fff solid;}
 .intake {
 	background: #fff;
 	margin: 0 auto;
@@ -654,7 +654,7 @@ a.delete_row {
 	padding: 0 10px 0 10px;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 14px;
 	line-height: 40px;
 	text-align: left;
@@ -662,11 +662,11 @@ a.delete_row {
 	text-transform: capitalize;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #D16002 solid;
 	cursor: pointer;
 	position: relative;
 }
-.intake:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
+.intake:hover {background: #D16002;color: #fff;border: 1px #fff solid;}
 td.pos {position: relative;}
 a#delete_intake {
 	margin: 0;
@@ -753,7 +753,7 @@ a#delete_intake {
 	padding: 10px 8px 8px 8px;
     display: block;
     clear: both;
-    color: #3faddd;
+    color: #D16002;
     font-size: 14px;
     line-height: 40px;
     text-align: left;
@@ -761,7 +761,7 @@ a#delete_intake {
     text-transform: uppercase;
     font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #3faddd solid;
+    border: 1px #D16002 solid;
     cursor: pointer;
     position: relative;
 	line-height: 22px;
@@ -786,7 +786,7 @@ a i.fa-pencil{
 
 
 .picksheetType{
-	background:#3faddd;
+	background:#D16002;
 	padding:8px;
 	margin-top:10px;
 	color:#fff;
@@ -843,7 +843,7 @@ a#delete_intake {
 }
 
 .loadPalletBtn{
-	background:#3faddd;
+	background:#D16002;
     display: inline-block;
     margin: 0 auto;
     padding: 10px;
@@ -861,7 +861,7 @@ a#delete_intake {
 	top:220px;
 	left:calc(50% - 150px);
 	padding:35px;
-	background:#3faddd;
+	background:#D16002;
 	text-align:center;
 	color:#fff;
 	font-weight:700;
@@ -907,7 +907,7 @@ a#delete_intake {
 	position:absolute;
 	top:0px;
 	left:0px;
-	background:#3faddd;
+	background:#D16002;
 	z-index:1000;
 	padding:10px;
 }
@@ -989,14 +989,14 @@ select.producttext{
 }
 
 .bluebtn{
-	background: #3faddd !important;
+	background: #D16002 !important;
     border: 0px !important;
     padding: 15px !important;
     color: #fff !important;
 }
 
 .viewpurchase{
-	background: #3faddd !important;
+	background: #D16002 !important;
     border: 0px !important;
     position: absolute;
     padding: 10px !important;
@@ -1012,7 +1012,7 @@ select.producttext{
 	color:#333;
 }
 
-.calendar_head_box { background:#3faddd; height:40px; color:#fff; border:1px solid #3faddd; }
+.calendar_head_box { background:#D16002; height:40px; color:#fff; border:1px solid #D16002; }
 .calendar_blank_box { background:#ddd; border:1px solid #a1a1a1; }
 .calendar_box { background:#ddd; border:1px solid #a1a1a1;}
 
@@ -1026,7 +1026,7 @@ select.producttext{
 }
 
 .calendar_box.event_here span{
-	background: #3faddd;
+	background: #D16002;
     padding: 15px;
     border-radius: 100%;
     color: #fff;
@@ -1048,7 +1048,7 @@ select.producttext{
 	cursor:pointer;
 	text-decoration:none;
 	font-weight:700;
-	color:#3faddd;
+	color:#D16002;
 	font-size:22px;
 }
 
@@ -1090,7 +1090,7 @@ select.producttext{
 
 .deliveryBox a.btn{
 	margin-right: 10px;
-    background: #3faddd;
+    background: #D16002;
     padding: 10px;
     font-size: 14px;
     color: #fff;
@@ -1186,7 +1186,7 @@ span.add-on{
 	height: 30px;
 }
 	
-.activeWeight { background:#3faddd !important; color:#fff !important}
+.activeWeight { background:#D16002 !important; color:#fff !important}
 .weightbox:hover{ background:#cacaca; }
 
 .backbtn{
@@ -1238,7 +1238,7 @@ span.add-on{
 	position: absolute;
 	right: 4px;
 	top: -9px;
-	background: #3FADDD;
+	background: #D16002;
 	height: 36px;
 	width: 37px;
 	text-align: center;
@@ -1412,7 +1412,7 @@ span.add-on{
     width: 410px;
     margin: 12px;
     text-align: center;
-    background: #3faddd;
+    background: #D16002;
     color: #fff;
 	cursor:pointer;
 }
@@ -1457,7 +1457,7 @@ span.add-on{
 .returnStockBtn{
     width: 160px;
     height: 40px;
-    background: #3faddd;
+    background: #D16002;
     line-height: 40px;
     text-align: center;
     margin: 20px;
@@ -1554,7 +1554,7 @@ span.add-on{
 	padding-bottom:2px;
 }
 #print .bottom .signbox{
-	background:#ffa50017;
+	background:#D1600217;
 	width:200px;
 }
 
@@ -1566,7 +1566,7 @@ span.add-on{
 
 
 #print .bankdetails .bankbox{
-	background-color:#ffa50017;
+	background-color:#D1600217;
 	width:100%;
  	margin-bottom:13px;
 	
@@ -1622,7 +1622,7 @@ span.add-on{
 }
 
 .productsHeading{
-	background-color:#ffa50017;
+	background-color:#D1600217;
 }
 
 .productsRow{
@@ -1818,12 +1818,12 @@ td span.chilled{
     line-height: 50px;
     height: 50px;
     margin-bottom: 10px;
-    color: #3faddd;
+    color: #D16002;
     font-size: 14px;
     text-transform: capitalize;
     font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #3faddd solid;
+    border: 1px #D16002 solid;
     cursor: pointer;
     position: relative;
     text-align:center;
@@ -1838,7 +1838,7 @@ td span.chilled{
 
 .menuItem a.icon{
     font-size:22px;
-    color: #3faddd;
+    color: #D16002;
 
     margin-left:50px;
 }
@@ -1871,7 +1871,7 @@ td span.chilled{
 }
 
 .completedby-tag{
-    background: #3faddd;
+    background: #D16002;
     padding: 8px 20px;
     border-radius: 20px;
     color: #fff;
@@ -1888,7 +1888,7 @@ td span.chilled{
     display: block;
     padding: 10px;
     margin-right: 12px;
-    color: #3faddd;
+    color: #D16002;
     font-weight: bold;
 }
 
@@ -2030,7 +2030,7 @@ textarea {
 .loadMoreBtn{
 	width:100%;
 	background:#fff;
-	color: #3faddd;
+	color: #D16002;
 	text-align:center;
 	cursor:pointer;
 	font-size:18px;
@@ -2040,7 +2040,7 @@ textarea {
 }
 
 .soa_cr_label{
-	background: #3faddd;
+	background: #D16002;
     display: inline-block;
     color: #fff;
     border-radius: 100%;
@@ -2066,7 +2066,7 @@ textarea {
 	padding: 0 10px 0 10px;
 	display: block;
 	clear: both;
-	color: #3faddd;
+	color: #D16002;
 	font-size: 14px;
 	line-height: 40px;
 	text-align: left;
@@ -2074,7 +2074,7 @@ textarea {
 	text-transform: capitalize;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #3faddd solid;
+	border: 1px #D16002 solid;
 	cursor: pointer;
 	position: relative;
 }

@@ -46,5 +46,5 @@ function renderPDF($saleID){
 	return SLabsEmailer::send_email($customer_id,"SALES_CONFIRMATION",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$saleID);
 	
 }
-
+if (request()->has('id')) renderPDF(request()->input('id'));
 ?>

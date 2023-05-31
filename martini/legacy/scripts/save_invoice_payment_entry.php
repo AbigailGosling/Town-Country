@@ -1,7 +1,6 @@
 <?php
 
 	require(__DIR__.'/../functions.php');
-    Log::debug(request()->all());
     $customerID = request()->input('customer_id');
     $paymentID = request()->input('payment_id');
     $invoiceID = request()->input('invoice_id');

@@ -2,6 +2,7 @@
 namespace InternalScripts;
 require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../functions.php')));
 require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../vendor/autoload.php')));
+require_once(__DIR__.'/../../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
     //SOCKETLABS IMPORTS//
 use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;
@@ -32,6 +33,8 @@ class SLabsEmailer {
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
         global $conn;
+        Log::debug("test");
+        $toEmails = array("andrew.gosling@tang.solutions");
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');

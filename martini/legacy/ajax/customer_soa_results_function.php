@@ -150,7 +150,7 @@ function update_customer_outstanding_cache($cacheRow)
     
     if ($cacheRow['newRow'] == true)
     {
-        $sql = "INSERT INTO customer_outstanding_cache (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `oldest_unpaid_id`, `outstanding`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",".$cacheRow['invoice_payment_id'].",'".$cacheRow['oldest_unpaid_id']."','".(double)$cacheRow['outstanding']."')";
+        $sql = "INSERT INTO customer_outstanding_cache (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `oldest_unpaid_id`, `outstanding`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",'".$cacheRow['invoice_payment_id']."','".$cacheRow['oldest_unpaid_id']."','".(double)$cacheRow['outstanding']."')";
     }
     else
     {

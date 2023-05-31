@@ -78,6 +78,7 @@
 	$x = "UPDATE `customers` SET override = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 	require_once(__DIR__.'/../ajax/generatePDFsaleconfirm.php');
+	renderPDF($pickersheet_id);
 	
 ?>
 <script>

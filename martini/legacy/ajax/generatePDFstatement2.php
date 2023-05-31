@@ -1,9 +1,9 @@
 <?php
 //This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
 
-require_once('/var/www/html/functions.php');
-require_once('../scripts//PDFRenderer.php');
-require_once('../scripts/SLabsEmailer.php');
+require_once(__DIR__.'/../functions.php');
+require_once(__DIR__.'/../scripts/PDFRenderer.php');
+require_once(__DIR__.'/../scripts/SLabsEmailer.php');
 
 use InternalScripts\SLabsEmailer;
 use InternalScripts\PDFRenderer;
@@ -48,7 +48,6 @@ if (mysqli_num_rows($customerQueryResult) > 0)
 	$customerID = $customer['customer_id'];
 	renderPDF($customerID);
 	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE customer_id = ?",'i',[$customerID]);
-	putenv("SHELL=/bin/bash");
-	print `echo php -q generatePDFstatement2.php | at now 2>&1`;
+	shell_exec("php /var/www/html/martini/artisan run:statements_queue > /dev/null 2>&1 &");
 }
 ?>
