@@ -645,11 +645,12 @@ function cancelSale()
 		checkUBDates(dateText);
 	}
 	function checkUBDates(dateText = null){
-		if (dateText == null) dateText = $('#estimated_delivery_date').val();
-		var ubs = $('#basketTable #ubDate');
-		if (ubs.length == 0) return;
-		var date = parseDMY(dateText).getTime();
 		if (transactionAllowed){
+			if (dateText == null) dateText = $('#estimated_delivery_date').val();
+			console.log(dateText);
+			var ubs = $('#basketTable #ubDate');
+			if (ubs.length == 0 || dateText == null || dateText == "") return;
+			var date = parseDMY(dateText).getTime();
 			$('#sendfake').prop('disabled',false);
 			var ubs = $('#basketTable #ubDate');
 			var pastBB = true; 
@@ -657,7 +658,6 @@ function cancelSale()
 				var ub = ubs[x];
 				if (ub.innerHTML=="")
 				{
-					console.log("somehow "+ub);
 					continue;
 				}
 				var ubd = parseDMY(ub.innerHTML).getTime();
@@ -673,7 +673,7 @@ function cancelSale()
 				$('#warning').css('background', "#ff6666");
 				$('#warning').css('border', "2px solid #ff0000");
 				$('#warning').css('display', "inline-block");
-				$('#warning').html("An item in this sale will expire before delivery");
+				$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
 			}
 			else
 			{
