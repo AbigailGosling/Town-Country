@@ -397,7 +397,17 @@
 			}else{
 				$('#best_by_range_to').css('border','1px solid grey');
 			}
-			
+			var from = best_by_range_from.split("/");
+			from = new Date(from[2],from[1],from[0]);
+			var to = best_by_range_to.split("/");
+			to = new Date(to[2],to[1],to[0]);
+			if (from > to)
+			{
+				$('#best_by_range_from').css('border','2px solid red');
+				$('#best_by_range_to').css('border','2px solid red');
+				msg = "From date cannot be after To date!";
+				good = 0;
+			}
 		}
 		
 		if(brand_id == ''){
@@ -601,7 +611,17 @@
 			}else{
 				$('#best_by_range_to').css('border','1px solid grey');
 			}
-			
+			var from = best_by_range_from.split("/");
+			from = new Date(from[2],from[1],from[0]);
+			var to = best_by_range_to.split("/");
+			to = new Date(to[2],to[1],to[0]);
+			if (from > to)
+			{
+				$('#best_by_range_from').css('border','2px solid red');
+				$('#best_by_range_to').css('border','2px solid red');
+				msg = "From date cannot be after To date!";
+				good = 0;
+			}
 		}
 		
 		if(brand_id == ''){
