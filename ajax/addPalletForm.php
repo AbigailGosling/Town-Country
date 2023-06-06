@@ -236,7 +236,7 @@
  	<input value="Add Pallet" onclick="addPallet();" type="button">
 	
  
-	<input value="Add Pallet & Duplicate " onclick="addPalletDuplicate();" type="button">
+	<!--<input value="Add Pallet & Duplicate " onclick="addPalletDuplicate();" type="button">-->
 </form>
 
 
