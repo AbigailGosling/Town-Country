@@ -17,7 +17,7 @@ class SLabsEmailer {
     //SOCKETLABS CONFIG//
     const SocketID = 42191;
     const InjectionAPIKey = "Kr86CiGz24Bes9F7Wyk5";
-    const NotifcationAPIKey="Te8y2S5NfCq6a9LRt74X";
+    const NotifcationAPIKey="Zq39SfPb75Ddi4CWa2n";
     static function generate_uuid() {
         return sprintf( 
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
