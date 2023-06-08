@@ -32,7 +32,7 @@ class RunStatementQueue extends Command
     {
         $user = User::where('id',57)->first();
         Auth::login($user);
-        $request = Request::create(route('legacy',['path'=>'legacy/ajax/generatePDFstatement2.php']));Log::debug(json_decode($request, true));
+        $request = Request::create(route('legacy',['path'=>'legacy/ajax/generatePDFstatement2.php']));
         $response = app()->handle($request);
         return Command::SUCCESS;
     }

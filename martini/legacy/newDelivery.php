@@ -72,7 +72,7 @@
 				</td>
 				<td>
 					<label>Vehicle Temp (°C)</label>
-					<input type="number" name="vehicle_temperature" id="vehicle_temperature" placeholder="">
+					<input type="number" step="0.1" min="-100.0" max="100.0" width="184" name="vehicle_temperature" id="vehicle_temperature" placeholder="">
 				</td>
 			
 				</tr>

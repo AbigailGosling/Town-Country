@@ -1864,7 +1864,7 @@ use Ramsey\Uuid\Type\Decimal;
 		}		
 	}
 	function loggedDataChange($type,$entity_id,$body){
-		Log::debug(json_encode([$type,$entity_id,$body]));
+		Log::debug(new \Exception(),[$type,$entity_id,$body]);
 		global $mysqli;
 		$userid = $_SESSION['USER'];
 		$body = $mysqli->real_escape_string($body);

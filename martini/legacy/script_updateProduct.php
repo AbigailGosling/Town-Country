@@ -38,7 +38,7 @@
 	$original_pallet_id = $mysqli->real_escape_string( request()->input('original_pallet_id'));
 	$product_temp = $mysqli->real_escape_string( request()->input('product_temp'));
 	$x = "UPDATE `product` SET original_intake_id = ?, original_pallet_id = ?, pallet_id=?, best_by=?, cut_id=?, brand_id=?,nationality_id=?,cooling_id=?,status=?,range_from=?,range_to=?, ubbb=?,unit=?,comments=?,product_temp = ?";
-	$varsArr =[$original_intake_id,$original_pallet_id,$pallet_id,$best_by,$cut_id,$brand_id,$nationality_id,$temperature_id,0,$best_by_range_from,$best_by_range_to,'$ubbb',$unit,$comments,$product_temp];
+	$varsArr =[$original_intake_id,$original_pallet_id,$pallet_id,$best_by,$cut_id,$brand_id,$nationality_id,$temperature_id,0,$best_by_range_from,$best_by_range_to,$ubbb,$unit,$comments,$product_temp];
 	$varStr  ='iiisiiiiissssss';
 	if($cost != NULL){
 		$x .= ", cost=?, price=?";
