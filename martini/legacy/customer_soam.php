@@ -151,7 +151,7 @@ $serverRoot = request()->server("SERVER_NAME");
     <div class="topInvoice">
     <div class="headerinfo">
         <div class="logocontainer" style="text-align: center; line-height: 13px; font-size: 10px; padding-top:10px;">
-        <div align="center"><img align="center" class="logo" style="width: 330px;" src="<?php echo $domain ?>images/tandclogo.jpg"></div><br/>
+        <div align="center"><img align="center" class="logo" style="width: 330px;" src="https:<?php echo $domain ?>images/tandclogo.jpg"></div><br/>
             13-17 Landport Ind. Est. Landport Road<br/>
             Wolverhampton WV2 2QJ<br/>
             <span>Vat. No: 701 075 285</span><br/>

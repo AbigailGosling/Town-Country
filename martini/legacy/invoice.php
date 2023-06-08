@@ -61,7 +61,7 @@
 							<tr>
 								<th width="33%"></th>
 								<th width="33%">
-									<img class="logo" style="width: 290px; display:block" src="<?php echo $domain ?>images/tandclogo.jpg"><br />
+									<img class="logo" style="width: 290px; display:block" src="https:<?php echo $domain ?>images/tandclogo.jpg"><br />
 									<br>
 									<div class="mainaddress" style="font-size: 10px;">
 										13-17 Landport Ind. Est. Landport Road<br />
