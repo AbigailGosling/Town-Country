@@ -1,6 +1,6 @@
 <?php
 
-require_once('../scripts/SLabsEmailer.php');
+require_once(__DIR__.'/../scripts/SLabsEmailer.php');
 use InternalScripts\SLabsEmailer;
 
 $data = json_decode(file_get_contents('php://input'), true);
