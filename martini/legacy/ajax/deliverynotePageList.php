@@ -38,6 +38,7 @@
             $date = $row['estimated_delivery_date'];
             
             $date=date_create($date);
+            if (!$date)continue;
             $date = date_format($date,"d/m/Y");
             
             $x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";

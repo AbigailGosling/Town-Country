@@ -56,7 +56,7 @@ $.ajaxSetup({
 				var request = $.ajax({
 					headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 					type: "POST",
-					url: "legacy/ajax/deliverynotePageList.php",
+					url: "ajax/deliverynotePageList.php",
 					data: {
 						searchterm: val
 					},
