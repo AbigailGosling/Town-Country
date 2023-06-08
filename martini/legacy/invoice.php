@@ -529,7 +529,7 @@
 
 		if (confirm('Are you sure you want to send an email copy of this invoice?')) {
 
-			$.get("<?php echo $domain; ?>ajax/generatePDFinvoice.php?id=<?php echo request()->input('id'); ?>", function (data,
+			$.get("ajax/generatePDFinvoice.php?id=<?php echo request()->input('id'); ?>", function (data,
 				status) {
 
 				var name = data.replace(/\s+/g, '');
@@ -734,7 +734,7 @@
 
 	function printStuff() {
 
-		$.get("<?php echo $domain; ?>ajax/markInvoiceAsPrinted.php?id=<?php echo request()->input('id'); ?>", function (data,
+		$.get("ajax/markInvoiceAsPrinted.php?id=<?php echo request()->input('id'); ?>", function (data,
 			status) {
 			console.log(data);
 			$('#top').hide();
