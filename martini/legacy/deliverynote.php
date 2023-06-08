@@ -71,7 +71,7 @@
 		<a href="#" id="sample" style="display:none;">test</a>
 		 
 		 <div class="logocontainer">
-			<img class="logo" src="<?php echo $domain; ?>images/tandclogo.jpg">
+			<img class="logo" src="https:<?php echo $domain; ?>images/tandclogo.jpg">
 			13-17 Landport Ind. Est. Landport Road<br/>
 			Wolverhampton WV2 2QJ<br/>
 			<span>Vat. No: 701 075 285</span><br/>
@@ -446,10 +446,10 @@
 		
 		<div class="bottom">
 			<div class="col footerlogo">
- 				<img class="one" src="<?php echo $domain; ?>images/footer1.png">
- 				<img class="one" src="<?php echo $domain; ?>images/footer2.png" style="margin-left:5px;margin-right:5px;"><br/><br/>
-				<img class="two" src="<?php echo $domain; ?>images/AIMS_LOGO_2008_002.gif">
-				<img class="two" src="<?php echo $domain; ?>images/the-food-awards-england-2017-winner.jpg">
+ 				<img class="one" src="https:<?php echo $domain; ?>images/footer1.png">
+ 				<img class="one" src="https:<?php echo $domain; ?>images/footer2.png" style="margin-left:5px;margin-right:5px;"><br/><br/>
+				<img class="two" src="https:<?php echo $domain; ?>images/AIMS_LOGO_2008_002.gif">
+				<img class="two" src="https:<?php echo $domain; ?>images/the-food-awards-england-2017-winner.jpg">
  			</div>
 			
 			<div class="col">
