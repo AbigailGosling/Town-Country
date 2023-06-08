@@ -56,7 +56,7 @@
 
 			var request = $.ajax({
 				type: "POST",
-				url: "legacy/ajax/invoicePageList.php",
+				url: "ajax/invoicePageList.php",
 				data: {
 					searchterm: val
 				},
