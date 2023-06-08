@@ -652,8 +652,7 @@ function cancelSale()
 			if (ubs.length == 0 || dateText == null || dateText == "") return;
 			var date = parseDMY(dateText).getTime();
 			$('#sendfake').prop('disabled',false);
-			var ubs = $('#basketTable #ubDate');
-			var pastBB = true; 
+			var pastBB = false; 
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
 				if (ub.innerHTML=="")
@@ -661,9 +660,9 @@ function cancelSale()
 					continue;
 				}
 				var ubd = parseDMY(ub.innerHTML).getTime();
-				if (ubd >= date)
+				if (ubd < date)
 				{
-					pastBB = false;
+					pastBB = true;
 					break;
 				}
 			}

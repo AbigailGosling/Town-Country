@@ -66,7 +66,7 @@ class SLabsEmailer {
             $trimmed = trim($email);
 
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
-            loggedQuery($sql);
+            prepareExecuteQuery($sql);
 
             try
             {
@@ -87,7 +87,7 @@ class SLabsEmailer {
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
        
-        $t = loggedQuery("SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
+        $t = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
         if (mysqli_num_rows($t) == 0 && $_SERVER['SERVER_NAME'] != "13.40.103.56")
         {
             /*ob_start();
@@ -131,7 +131,7 @@ class SLabsEmailer {
             }
         }
 
-        loggedQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
+        prepareExecuteQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
     }
 }
 abstract class SLabsEmailerType
@@ -187,7 +187,7 @@ abstract class SLabsEmailerStatus
         }
         if ($returningValue == null)
         {
-            $q = loggedQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
+            $q = prepareExecuteQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
             $returningValue = mysqli_fetch_assoc($q);
             $returningValue = $returningValue['value'];
         }
