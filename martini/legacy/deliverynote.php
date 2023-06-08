@@ -677,7 +677,7 @@
 
 	function printStuff(){ // Print btn on menu
 
-		$.get("<?php echo $domain; ?>ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
+		$.get("ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
 			hideItemsPrint();
 			window.print();
 		});
@@ -686,7 +686,7 @@
 
 	function beforePrint(){ // CTRL + P
 		
-		$.get("<?php echo $domain; ?>ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
+		$.get("ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
 			hideItemsPrint();
 		});
 	
@@ -702,7 +702,7 @@
 
 	
 	function generatePDF(){
-		$.get("<?php echo $domain; ?>ajax/generatePDFdeliveryNote.php?id=<?php echo request()->input('id'); ?>", function(data, status){
+		$.get("ajax/generatePDFdeliveryNote.php?id=<?php echo request()->input('id'); ?>", function(data, status){
 			
 			var name = data.replace(/\s+/g, '');
 			

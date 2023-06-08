@@ -9,13 +9,12 @@
 		$SUPPLIER_CUSTOMER_IDS = array(0);
 
 		// Check for search matching suppliers
-		$suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?");
-		while($supplier = mysqli_fetch_array($suppliersResult)){ array_push($SUPPLIER_CUSTOMER_IDS, $supplier['id']); }
+		$suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?",'ss',[$term.'%',$term]);
+		while($supplier = mysqli_fetch_array($suppliersResult)){ $SUPPLIER_CUSTOMER_IDS[]=$supplier['id']; }
 
 		// Check for search matching customers
-		$customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',['$term%',$term]);
-		while($customer = mysqli_fetch_array($customersResult)){ array_push($SUPPLIER_CUSTOMER_IDS, $customer['id']); }
-
+		$customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',[$term.'%',$term]);
+		while($customer = mysqli_fetch_array($customersResult)){ $SUPPLIER_CUSTOMER_IDS[]=$customer['id']; }
 
 		$SUPPLIER_CUSTOMER_IDS = implode(',', $SUPPLIER_CUSTOMER_IDS);
 
