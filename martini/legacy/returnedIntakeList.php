@@ -1,0 +1,170 @@
+<?php
+	include('functions.php');
+?>
+<!doctype html>
+<html class="int">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Town &amp; Country</title>
+	<link href="css/style.css" rel="stylesheet" type="text/css">
+
+	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script>
+	$( function() {
+		$( "#datepicker" ).datepicker();
+	});
+	</script>
+</head>
+<body class="menu">
+<div id="top">
+	<a href="menu.php" id="menu">MENU</a>
+	<a href="logout" id="logout">LOGOUT</a>
+</div>
+<main>
+	<div id="intakelist">
+	
+		<?php
+		
+			$picksheetID = request()->input('id');
+			
+			if($picksheetID != ''){
+			?>
+			<div id="editBoxContainer">
+			
+				<?php
+					$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id=?";
+					$y = prepareExecuteQuery($x,'i',[$picksheetID]);
+ 				?>
+			
+			</div>
+			<?php
+			}
+		?>
+		<br/>
+		<br/>
+		<h1 class="int">Return</h1>
+		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go">
+		
+		<a href="intakeList.php" class="resetBtn">Clear</a>
+		<div class="datesearchcontainer">
+			<label>MONTH</label>
+			<select id="month">
+				<?php for($i=1;$i<13;$i++){ ?>
+					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+				<?php } ?>
+			</select>
+			 
+			<label>YEAR</label>
+			<select id="year">
+				<?php for($i=2018;$i<2020;$i++){ ?>
+					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+				<?php } ?>
+			</select>
+						
+		</div>
+		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
+			<?php
+				
+				
+				$x = "SELECT * FROM `pickerSheets` WHERE completed = 1";
+				$y = prepareExecuteQuery($x);
+				
+				while($row = mysqli_fetch_array($y)){
+				?>
+				<tr><td align="center" class="pos">
+
+					<a href="returnedIntakeList.php?id=<?php echo $row['id']; ?>" class="intake">
+						<table width="100%" border="0">
+							<tr>
+								<td width="100" align="left"></td>
+								<td align="center" style="font-size: 18px;"><?php echo 'INVOICE ' .  str_pad($row['id'],5,"0",STR_PAD_LEFT); ?></td>
+								<td width="100" align="right"><?php echo $date_received; ?></td>
+							</tr>
+						</table>
+					</a>
+					
+				</td></tr>
+				<?php
+				}
+			?>
+		</table>
+	</div>
+</main>
+<div id="btm"></div>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$('#instantSearch').keyup(function(){
+
+				var val = $('#instantSearch').val();
+				console.log(val);
+
+				var xhttp = new XMLHttpRequest();
+				xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+				  $('#intakeAjax').html(this.responseText);
+				}
+				};
+
+				xhttp.open("POST", "ajax/intakePageList.php", true);
+				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
+				xhttp.send("searchterm=" + val);
+			
+			});
+			
+			
+			$('#month').change(function(){
+				
+				month = $('#month').val();
+				year = $('#year').val();
+				
+				loadSearchDate(month, year);
+				
+			});
+			
+			$('#year').change(function(){
+				
+				month = $('#month').val();
+				year = $('#year').val();
+				
+				loadSearchDate(month, year);
+				
+			});
+			
+		});
+		
+		function loadSearchDate(month, year){
+			
+			$('#instantSearch').val('');
+			
+			console.log('month: ' + month);
+			console.log('year: ' + year);
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  $('#intakeAjax').html(this.responseText);
+			}
+			};
+
+			xhttp.open("POST", "ajax/intakePageListDate.php", true);
+			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
+			xhttp.send("month=" + month + '&year=' + year);
+
+			
+		}
+		
+		function deleteRow(intake_id, pallet_id){
+			if(confirm('Are you sure you want to delete this?')){
+				window.location.href = "scripts/deleteIntake.php?intake_id=" + intake_id;
+				// console.log(intake_id + '  ' + pallet_id);
+			}
+		}
+	</script>
+</body>
+</html>
