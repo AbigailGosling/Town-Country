@@ -11,6 +11,7 @@
  	$border = 0;
 	
 	$mpdf = new \Mpdf\Mpdf([
+		'tempDir' => __DIR__ . '/../docs',
         'mode' => 'utf-8',
         'format' => [210, 297],
 		'setAutoTopMargin' => 'stretch',
@@ -75,7 +76,7 @@
 	$filename = '/home/tandcphenixdevel/public_html/PDF/' . $filename2;
 	
  	
-	$mpdf->Output($filename,'F');
+	$mpdf->Output(__DIR__."/".$filename,'F');
 	
 	$x = "UPDATE `intake` SET finished = 1, pdf=? WHERE id=?";
     $y = prepareExecuteQuery($x,'si',[$filename2,$intake_id]);

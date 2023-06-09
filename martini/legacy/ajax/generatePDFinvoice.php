@@ -9,6 +9,7 @@
 	$perPage = 29;
  	$border = 0;
  	$mpdf = new \Mpdf\Mpdf([
+		'tempDir' => __DIR__ . '/../docs',
         'mode' => 'utf-8',
         'format' => [210, 297],
 		'setAutoTopMargin' => 'stretch',
@@ -534,7 +535,7 @@
 	$filename = '../PDF/' . $filename2;
 	
  	
-	$mpdf->Output($filename,'F');
+	$mpdf->Output(__DIR__."/".$filename,'F');
 
 	echo $filename2;
 ?>

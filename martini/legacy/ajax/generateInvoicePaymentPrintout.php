@@ -1,7 +1,7 @@
 <?php
 
 include_once(__DIR__.'/../functions.php');
-require_once('../scripts/PDFRenderer.php');
+require_once(__DIR__.'/../scripts/PDFRenderer.php');
 use InternalScripts\PDFRenderer;
 $statementDate = time();
 $fileName = 'CombinedInvoice_'.$userid.'_'.$statementDate.'.pdf';
