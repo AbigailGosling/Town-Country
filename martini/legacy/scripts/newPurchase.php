@@ -43,14 +43,13 @@
 	
 	
 	
-	$upload_dir='../documents/';
+	$upload_dir='/../documents/';
 
-	if($_FILES['dfile']['name']!=""){
-        $file_name=$_FILES['dfile']['name'];
-        $explode = explode(".",$file_name);
-        $file_name=time().".".$explode[count($explode)-1];
-        $tmp_name=$_FILES['dfile']['tmp_name'];
-        copy($tmp_name,$upload_dir.$file_name);
+	if(request()->file('dfile'))
+	{
+		$file_name=time().".".request()->file('dfile')->extension();
+		$tmp_name=request()->file('dfile')->path();
+		copy($tmp_name,$upload_dir.$file_name);
 	}
 	  
 	$speciesString = substr($speciesString,0,strlen($speciesString)-1);
