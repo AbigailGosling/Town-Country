@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	
-	$unit = $mysqli->real_escape_string( request()->input('unit'));	
+	global $mysqli;
+	$unit = $mysqli->real_escape_string( request()->input('unit'));
 	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
 	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
 	
@@ -36,7 +36,7 @@
 	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit) VALUES (?,?,?,?,?,?,?,?,?,?)";
 	$y = prepareExecuteQuery($x,'ssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$ubbb,$unit]);
 			
-	$product_id = mysqli_insert_id($conn); 
+	$product_id = $mysqli->insert_id; 
 	
 	
 	// echo '<br/><br/>';
@@ -100,5 +100,5 @@
 </div>
 <br/>
 <script>
-	window.location = '../intake.php?id=<?php  echo $intake_id; ?>';
+	window.location = 'intake.php?id=<?php  echo $intake_id; ?>';
 </script>
