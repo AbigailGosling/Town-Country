@@ -158,34 +158,36 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['string'],
-            'new-password' => ['string', Rules\Password::defaults()],
+            'password' => ['sometimes','string'],
+            'new-password' => ['sometimes','string', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
         ]);
         $input = $request->all();
 
         //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
         //to change their password.
-        if(isset($input['confirm_password']) && Auth::user()->id === $user->id)
+        if((isset($input['new-password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
         {
             //Use correct password check for each Hash method
-            switch($user->hash_method){
-                case 'BCRYPT':
-                    if(!Auth::guard('web')->validate([
-                        'email' => $user->email,
-                        'password' => $input['password']
-                    ])){
-                        return redirect()->back()->withErrors(__('auth.password'));
-                    };
-                    break;
-                case 'SHA1':
-                    if(!$this->checkSha1Hash($input['password'], $user->password))
-                    {
-                        return redirect()->back()->withErrors(__('auth.password'));
-                    }
-                    break;
+            if (Auth::user()->id === $user->id)
+            {
+                switch($user->hash_method){
+                    case 'BCRYPT':
+                        if(!Auth::guard('web')->validate([
+                            'email' => $user->email,
+                            'password' => $input['password']
+                        ])){
+                            return redirect()->back()->withErrors(__('auth.password'));
+                        };
+                        break;
+                    case 'SHA1':
+                        if(!$this->checkSha1Hash($input['password'], $user->password))
+                        {
+                            return redirect()->back()->withErrors(__('auth.password'));
+                        }
+                        break;
+                }
             }
-
             if($input['confirm_password'] === $input['new_password'])
             {
                 $user->password = Hash::make($input['confirm_password']);

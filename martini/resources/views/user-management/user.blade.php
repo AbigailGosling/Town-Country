@@ -50,10 +50,12 @@
                 @endcan
 
             </x-form-section>
-            @if(Auth::user()->id == $user->id)
+            @if(Auth::user()->id == $user->id || Auth::user()->can('admin'))
             <x-form-section title="Change Password" columns="1">
+            @if(Auth::user()->id == $user->id)
                 <x-input-label for="current-password" class="block mt-1 w-full" value="Current Password"/>
                 <x-text-input id="password" type="password" name="password"></x-text-input>
+            @endif
                 <x-input-label for="new-password"  value="New Password"/>
                 <x-text-input id="new-password" type="password" name="new_password"></x-text-input>
                 <x-input-label for="confirm-password" class="block mt-1 w-full" value="Confirm Password"/>
