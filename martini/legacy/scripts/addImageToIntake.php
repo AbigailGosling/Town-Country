@@ -1,15 +1,11 @@
 <?php
 	require(__DIR__.'/../functions.php');
-    
 
-	$upload_dir='../docs/';
-
-	if($_FILES['dfile']['name']!="")
+	$upload_dir=__DIR__.'/../docs/';
+	if(request()->file('dfile'))
 	{
-		$file_name=$_FILES['dfile']['name'];
-		$explode = explode(".",$file_name);
-		$file_name=time().".".$explode[count($explode)-1];
-		$tmp_name=$_FILES['dfile']['tmp_name'];
+		$file_name=time().".".request()->file('dfile')->extension();
+		$tmp_name=request()->file('dfile')->path();
 		copy($tmp_name,$upload_dir.$file_name);
 	}
 	
