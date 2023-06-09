@@ -159,14 +159,14 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['sometimes','string'],
-            'new-password' => ['sometimes','string', Rules\Password::defaults()],
+            'new_password' => ['sometimes','string', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
         ]);
         $input = $request->all();
 
         //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
         //to change their password.
-        if((isset($input['new-password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
+        if((isset($input['new_password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
         {
             //Use correct password check for each Hash method
             if (Auth::user()->id === $user->id)
