@@ -338,7 +338,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function countFromProductIDArray($PRODUCT_IDS){
 		global $mysqli;
 
-		$y = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id IN (".implode(",",array_fill(0,count($PRODUCT_IDS),"?")).")");
+		$y = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id IN (".implode(",",array_fill(0,count($PRODUCT_IDS),"?")).")",str_repeat("i",count($PRODUCT_IDS)),$PRODUCT_IDS);
 		$count = $y->num_rows;
 
 		return $count;
