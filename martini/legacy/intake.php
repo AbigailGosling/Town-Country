@@ -241,7 +241,7 @@
 		<h2 style="font-size: 20px;">Add Document</h2>
 		<form method="POST" action="scripts/addImageToIntake.php" enctype="multipart/form-data">
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
-			
+			<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
 			<label>Document Name</label><br/>
 			<input type="text" name="name" required>
 			<br/><br/>
