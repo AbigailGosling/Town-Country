@@ -6,6 +6,7 @@
 	require_once 'vendor/autoload.php';
 		
 	$mpdf = new \Mpdf\Mpdf([
+        'tempDir' => __DIR__ . '/docs',
         'mode' => 'utf-8',
         'format' => 'A4-L',
 		'setAutoTopMargin' => 'stretch',
@@ -355,6 +356,6 @@ INNER JOIN `weights` ON product.id = weights.product_id
 	$filename = 'PDF/' . $filename2;
 	
  	
-	$mpdf->Output($filename,'F');
+	$mpdf->Output(__DIR__."/".$filename,'F');
 ?>
 <script> window.location.href = '/<?php echo $filename; ?>'; </script>

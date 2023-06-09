@@ -10,6 +10,7 @@
  	$border = 0;
 	
 	$mpdf = new \Mpdf\Mpdf([
+		'tempDir' => __DIR__ . '/../docs',
         'mode' => 'utf-8',
         'format' => [210, 297],
 		'setAutoTopMargin' => 'stretch',
@@ -32,13 +33,13 @@
 	
 	$customer_id = $pickSheetRow['customer_id'];
 	
-	$x2 = "SELECT * FROM `customers` WHERE id='$customer_id'";
+	$x2 = "SELECT * FROM `customers` WHERE id=?";
 	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
 	
 	$customerRow = mysqli_fetch_array($y2); 
 
 	$customer_id = $pickSheetRow['customer_id'];
-	$x = "SELECT * FROM `customers` WHERE id='$customer_id'";
+	$x = "SELECT * FROM `customers` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y);
 	
@@ -540,7 +541,7 @@
 	$filename = '../PDF/' . $filename2;
 	
  	
-	$mpdf->Output($filename,'F');
+	$mpdf->Output(__DIR__."/".$filename,'F');
 
 	echo $filename;
 ?>
