@@ -481,8 +481,27 @@ $.ajaxSetup({
 		
 		$('#msgNotice3').html(msg);
 		
-		if(good == 1){
+		if(good == 1){			
 			var formName = '#addProductToPallet';
+			$.ajax({ // make an AJAX request
+				type: "POST",
+				headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
+				url:  $(formName).attr('action'), // it's the URL of your component B
+				data: $(formName).serialize(), // serializes the form's elements
+				error: function(xhr, error){
+					console.log(xhr);
+					console.log(error);
+					
+					$('#networkError').fadeIn();
+				},
+				success: function(data)
+				{	
+					console.log(data);
+					$('.palletidpopup').html(data);
+					// $('.palletnotepopup').fadeIn();
+				}
+			});
+			
 			var xhttp = new XMLHttpRequest();
 			xhttp.open("POST", $(formName).attr('action'), true);
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
