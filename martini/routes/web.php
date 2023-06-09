@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 Route::post('legacy/scripts/SLabsNotifier.php', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::any('images/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->where('path', '.*');
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');
 });
