@@ -159,7 +159,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['sometimes','string'],
-            'new_password' => ['sometimes','string', Rules\Password::defaults()],
+            'new_password' => ['sometimes','string', 'nullable', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
         ]);
         $input = $request->all();
