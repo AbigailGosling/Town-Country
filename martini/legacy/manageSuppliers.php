@@ -82,7 +82,7 @@
 
 		?>
 
-		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo '/scripts/updateSupplier.php'; } else { echo '/scripts/addSupplier.php'; } ?>">
+		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateSupplier.php'; } else { echo 'scripts/addSupplier.php'; } ?>">
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
