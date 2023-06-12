@@ -44,13 +44,16 @@
 	
 	$upload_dir='/../documents/';
 
-	if(request()->file('dfile'))
+	if(request()->hasFile('dfile'))
 	{
 		$file_name=time().".".request()->file('dfile')->extension();
 		$tmp_name=request()->file('dfile')->path();
 		copy($tmp_name,$upload_dir.$file_name);
 	}
-	  
+	else{
+		throw new \Exception("dfile not found: ".json_encode(request()->all()));
+		die();exit;
+	} 
 	$speciesString = substr($speciesString,0,strlen($speciesString)-1);
 	$cutString = substr($cutString,0,strlen($cutString)-1);
 	$unitsString = substr($unitsString,0,strlen($unitsString)-1); 
