@@ -815,11 +815,12 @@
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
     $('#changeIntakeSupplier').change(function(){
-		var formName = '#changeIntakeSupplierForm';
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", $(formName).attr('action'), true);
-			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send($(formName).serialize());
+		$.ajax({ // make an AJAX request
+			type: "POST",
+			headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
+			url: "scripts/changeIntakeSupplier.php", // it's the URL of your component B
+			data: $('#changeIntakeSupplierForm').serialize(), // serializes the form's elements
+		});
     });
     
 	$('.loadPalletBtn').click(function(){
