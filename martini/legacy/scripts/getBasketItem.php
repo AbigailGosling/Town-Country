@@ -1,6 +1,5 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	
 	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
 	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
 	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
@@ -9,9 +8,9 @@
 	$q = request()->input('q');
 	$comment = request()->input('comment');
 	
-	$x = "SELECT * FROM `product` WHERE pallet_id=?";
+	$x = "SELECT * FROM `product` WHERE id=?";
 	// exit();
-	$y = prepareExecuteQuery($x,'i',[$pallet_id]);
+	$y = prepareExecuteQuery($x,'i',[$product_id]);
 	$row = mysqli_fetch_array($y);
 	
 	$ubbb = $row['ubbb'];
