@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Testing\MimeType;
 class LegacyController extends Controller
 {
     public function entry_point()
@@ -42,7 +43,7 @@ class LegacyController extends Controller
             }
             catch (Exception $e)
             {
-                Log::debug($e,[$targetFile]);
+                Log::error($e,[$targetFile]);
                 abort(404);
             }
         }
@@ -72,7 +73,9 @@ class LegacyController extends Controller
             case "woff2":
                 return "font/woff2";
             default: 
-                throw new Exception("No Mime Type defined for extension: ".$ext);
+                $t = MimeType::get($ext);
+                if ($t != null && $t != "") return $t;
+                else throw new Exception("No Mime Type defined for extension: ".$ext);
         }
     }
 }
