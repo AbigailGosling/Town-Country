@@ -532,6 +532,10 @@
 					$('#tearWeightDiv').hide();
 					$('#grossWeightDiv').hide();
 
+					//cleard dates
+					$('#best_by').val('');
+					$('#best_by_range_from').val('');
+					$('#best_by_range_to').val('');
 					
 					$('.quantityWeightContainer').show();
 				}
