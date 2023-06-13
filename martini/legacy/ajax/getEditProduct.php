@@ -364,7 +364,7 @@
 
 	function deleteWeight(weight_id, weight_val, intake_id){
 		if (confirm('Are you sure you want to delete this weight? (' +  weight_val + 'kg)')) {
-			window.location.href = '/scripts/deleteWeight.php?id=' + weight_id + '&intakeid=' + intake_id;	
+			window.location.href = 'scripts/deleteWeight.php?id=' + weight_id + '&intakeid=' + intake_id;	
 		}
 	}
 
