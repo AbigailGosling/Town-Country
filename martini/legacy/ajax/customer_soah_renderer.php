@@ -1,6 +1,6 @@
 <?php
     require(__DIR__.'/../functions.php');
-    require('../scripts/SLabsEmailer.php');
+    require(__DIR__.'/../scripts/SLabsEmailer.php');
     use InternalScripts\SLabsEmailerStatus;
 
     $customer_id = request()->input('customer_id');
