@@ -2,9 +2,7 @@
 	require(__DIR__.'/../functions.php');
 	
 	$intakeID = request()->input('intakeid');
-	
-	$notes = $mysqli->real_escape_string( request()->input('notes'));
-	
+	$notes = request()->input('notes');
 	$x = "UPDATE `intake` SET notes=? WHERE id =?";
 	$y = prepareExecuteQuery($x,'si',[$notes,$intakeID]);
 	loggedDataChange("intake",$intakeID,$notes);
