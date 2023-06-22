@@ -47,8 +47,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', 'App\Http\Controllers\UserController');
 
 });
-Route::post('legacy/scripts/SLabsNotifier.php', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified']);
-Route::any('images/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');
 });
@@ -62,4 +60,10 @@ Route::get('legacy/logout', function () {
     return redirect('/logout');
 });
 //THIS MUST BE LAST!
+Route::post('legacy/scripts/SLabsNotifier.php', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified']);
+Route::any('legacy/images/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
+Route::any('legacy/css/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
+Route::any('legacy/fonts/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
+Route::any('legacy/js/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
+Route::any('legacy/img/{path}', [LegacyController::class,'entry_point'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class,'auth', 'verified'])->where('path', '.*');
 Route::any('/{path}', [LegacyController::class,'entry_point'])->name('legacy')->middleware(['auth', 'verified'])->where('path', '.*');
