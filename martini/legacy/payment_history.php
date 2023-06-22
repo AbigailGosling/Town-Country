@@ -14,7 +14,7 @@ include('includes/frontHeader.php');
 <div class="container" style="width:90%">
         <h2>Payment History</h2>
         <div class="loadingContainer">
-            <img src="legacy/img/loading.gif" alt="">
+            <img src="/legacy/img/loading.gif" alt="">
         </div>
         <table id="soaTable" class="table" width="100%">
             <thead>
