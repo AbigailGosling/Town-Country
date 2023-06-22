@@ -192,7 +192,45 @@
                         </form>
                     </td>
                     <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
-                    <td><?php echo $ubtext . ' ' . $smallestDate . ' - ' . $largestDate; ?></td>
+                    <?php
+                    if($ubbb != 2 && $temp_id == 1){
+                        $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
+                        $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
+                        if ($toDate2 < $toDate) $toDate = $toDate2;
+                        $cutQuery = mysqli_query($conn,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
+                        $cutResult= mysqli_fetch_assoc($cutQuery);
+                        $bgCol = "";
+                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        {
+                            $bgCol = 'style="background-color:LightGreen"';
+                            $now = time();
+                            $alreadyFlagged = false;
+                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                            {
+                                $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
+                                if ($pastWarning1 <= $now)
+                                {
+                                    $bgCol = 'style="background-color:LemonChiffon"';
+                                }
+                            }
+                            if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                            {
+                                $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
+                                if ($pastWarning2 <= $now)
+                                {
+                                    $bgCol = 'style="background-color:LightPink"';
+                                    $alreadyFlagged = true;
+                                }
+                            }
+                        }
+                        
+                        
+                        if(isset($smallestDate)) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $smallestDate . '-' . $largestDate.'</td>';
+                        else echo '<td>--</td>';
+                    }else{
+                        echo '<td>'.$ubtext . ' ' . $smallestDate . ' - ' . $largestDate.'</td>';
+                    }
+                    ?>
                     
                     <td class="bold"><?php 
 

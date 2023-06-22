@@ -305,12 +305,19 @@
                         $cutQuery = mysqli_query($conn,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
                         $cutResult= mysqli_fetch_assoc($cutQuery);
                         $bgCol = "";
-                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        if ($temp_id == 1 && ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")))
                         {
                             $bgCol = 'style="background-color:LightGreen"';
                             $now = time();
-                            $pastWarning2 = $now;
                             $alreadyFlagged = false;
+                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                            {
+                                $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
+                                if ($pastWarning1 <= $now)
+                                {
+                                    $bgCol = 'style="background-color:LemonChiffon"';
+                                }
+                            }
                             if (isset($cutResult['danger']) && $cutResult['danger'] != "")
                             {
                                 $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
@@ -318,14 +325,6 @@
                                 {
                                     $bgCol = 'style="background-color:LightPink"';
                                     $alreadyFlagged = true;
-                                }
-                            }
-                            if (isset($cutResult['warning']) && $cutResult['warning'] != "" && !$alreadyFlagged)
-                            {
-                                $pastWarning1 = $pastWarning2 - ($cutResult['warning'] * 86400);
-                                if ($pastWarning1 <= $now)
-                                {
-                                    $bgCol = 'style="background-color:LemonChiffon"';
                                 }
                             }
                         }

@@ -117,7 +117,8 @@ $customer = getCustomer($customerID);
 <div class="clearfix"></div>
 <script type="text/javascript">
     function mainForm(){
-	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+        genereatePaymentData();
+        if (validateForm()) {$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});}
 }
 function mainFormSucess(){
 	location.reload();
@@ -181,11 +182,6 @@ function mainFormSucess(){
     $(document).ready(function() {
 
         $('#invoices').select2();
-
-        $('#payment_entry').submit(function() {
-            genereatePaymentData();
-            return validateForm();
-        });
 
         $('#add-invoice').click(function() {
             var invoice_id = $("#invoices option:selected").text();

@@ -12,6 +12,7 @@
 	//$user_from_id = $_SESSION['USER'];
 	$user_from_id = request()->input('sales_person');
 	$addressid = request()->input('addressid');
+	$transaction_id = request()->input('transaction_id');
 	
 	if ($user_from_id == "" || $customer_id == 0 || $customer_id == "")
 	{
@@ -23,7 +24,6 @@
 <?php
 		die();
 	}
-
 	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
 	//$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
 
@@ -37,14 +37,18 @@
 	$addressQuery = "address{$addressid}_1='$addressline1', address{$addressid}_2='$addressline2', address{$addressid}_3='$addressline3', address{$addressid}_4='$addressline4', postcode_{$addressid}='$addresspostcode', address{$addressid}_number='$deliverynumber'";
 
 	$addressUpdateQuery = prepareExecuteQuery("UPDATE `customers` SET $addressQuery WHERE id = ? LIMIT 1",'i',[$customer_id]);
-
-
 		
 	$today = date('Y-m-d');
-
-	
-	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note) VALUES (?,?,?,?,?,?,?,?)";
-	$y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note],true);
+	if ($transaction_id != null && $transaction_id != "")
+	{
+		$transactCheck = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE transaction_id = ?",'s',[$transaction_id]);
+		if ($transactCheck->num_rows > 0) {
+			throw new \Exception("duplicate transaction");
+			die();
+		}
+	}
+	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,?,?,?,?)";
+	$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 	
 	$pickersheet_id = $y;
 	

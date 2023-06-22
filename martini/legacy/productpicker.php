@@ -85,6 +85,7 @@
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
 		<input type="submit" value="Send" id="sendreal" class="inputbox-button" style="display:none">
+		<input type="hidden" value="<?php use Illuminate\Support\Str;echo Str::random(50);?>" id="transaction_id" name="transaction_id">
 		<input type="button" value="Completed" id="sendfake" class="inputbox-button" disabled>
 	</div>
 </div>
@@ -270,7 +271,7 @@ function checkStock(){
 				}
 				else
 				{
-					$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess});
+					$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess,error:finalSaleFailure});
 				}
 			}
 		}, 2000);
@@ -278,12 +279,17 @@ function checkStock(){
 function completeSale()
 {
 	modalDialog.showMask();
-	$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess});
+	$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess,error:finalSaleFailure});
 }
 function finalSaleSucess()
 {
 	alert("Done!");
 	window.location = 'menu.php';
+}
+function finalSaleFailure()
+{
+	alert("An Error Occurred! Please check for a duplicate sale!");
+	window.location = 'salesconfirmationList.php';
 }
 function cancelSale()
 {
