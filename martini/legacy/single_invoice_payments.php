@@ -177,7 +177,7 @@ if (!empty($paymentID)) {
                 
                 $kg = $kg + $tw;
                 
-                $kg = number_format($kg, 2, '.', '');
+                $kg = number_format($kg, 3, '.', '');
             }
 
         ?>
