@@ -1,7 +1,7 @@
 <?php
 	include_once('legacy/functions.php');
 	
-	session_start();
+	session_start();session_write_close();
 	
 	if(isset($_SESSION['USER'])){
 		header('location:legacy/menu.php');

@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Log;
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="intakeAjax">
 			<?php
 			
-				session_start();
+				session_start();session_write_close();
 				
 				$userid = $_SESSION['USER'];
 				
