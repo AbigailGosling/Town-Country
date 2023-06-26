@@ -4,7 +4,7 @@
     $toSkip = request()->input('toSkip');
     $limit = 80;
 			
-    session_start();
+    session_start();session_write_close();
     $userid = $_SESSION['USER'];
     
     $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE completed='1' ORDER BY `id` DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);

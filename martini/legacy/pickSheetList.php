@@ -33,7 +33,7 @@
 	<div id="menu_wrasp" style="width:95%;">
  		<?php
 		
-			session_start();
+			session_start();session_write_close();
 			
 			$userid = $_SESSION['USER'];
 			

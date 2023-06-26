@@ -35,6 +35,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerate();
             session_start();
             $_SESSION['USER'] = Auth::user()->id;
+            session_write_close();
             return redirect()->intended(RouteServiceProvider::HOME);
         }
         else

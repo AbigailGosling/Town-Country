@@ -1,6 +1,6 @@
 <?php
 	ini_set('session.gc_maxlifetime', 3600);
-	session_start();
+	session_start();session_write_close();
     ini_set('post_max_size', '64M');
     ini_set('upload_max_filesize', '64M');
 	
@@ -475,8 +475,9 @@ use Ramsey\Uuid\Type\Decimal;
 		$count = $result->num_rows;
 		$row = $result->fetch_assoc();
 		if($count != 0){
-			
+			session_start();
 			$_SESSION['USER'] = $row['id'];
+			session_write_close();
 			$result = 1;
 			
 		}else{
