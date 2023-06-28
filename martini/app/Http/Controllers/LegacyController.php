@@ -28,11 +28,11 @@ class LegacyController extends Controller
                 require app_path('Http') . '/legacy.php';
                 $output = ob_get_clean();
 
-                if (time()-$s>0)
+                if (time()-$s>4)
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').':'.(time()-$s).':'.Auth::id().':'.$targetFile.PHP_EOL
+                        date('Y-m-d H:i:s').':'.(time()-$s).':'.Auth::id().':'.$targetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
 
