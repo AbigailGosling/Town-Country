@@ -395,7 +395,7 @@
 
 					<?php
 
-		$target = 13 - $numOfRows;
+		$target = 11 - $numOfRows;
 	 
 		for($i=0;$i<$target;$i++){ ?>
 					<tr class="productsRow">

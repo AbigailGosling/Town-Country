@@ -7,6 +7,7 @@
 	require('config.php');
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 	use Illuminate\Support\Facades\Log;
+	use Illuminate\Support\Facades\File;
 use Ramsey\Uuid\Type\Decimal;
 	global $mysqli;
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
@@ -52,7 +53,26 @@ use Ramsey\Uuid\Type\Decimal;
 		{
 			$stmt = $mysqli->prepare($sql);
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
+			$s = time();
 			$stmt->execute();
+
+			if (time()-$s>0)
+			{
+				File::append(
+					storage_path('/logs/slow-query.log'),
+					($vars && count($vars)>0)?	date('Y-m-d H:i:s') . ':'.(time()-$s).':'.$_SESSION['USER'] . $sql . ' [' . implode(', ', $vars) . ']' . PHP_EOL:
+												date('Y-m-d H:i:s') . ':'.(time()-$s).':'.$_SESSION['USER'] . $sql . PHP_EOL
+				);
+				$e = new \Exception();
+				for ($i=0;$i<5;$i++)
+				{
+					File::append(
+						storage_path('/logs/slow-query.log'),
+						"\t#$i:".$e->getTrace()[$i]['file']."(".$e->getTrace()[$i]['line'].")" . PHP_EOL
+					);
+				}
+			}
+
 			$res = $stmt->get_result();
 			if ($returnInsert)
 			{

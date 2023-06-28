@@ -191,9 +191,11 @@ var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); 
             return;
         }     
         else
-        $('.loadingContainer').hide();
-        $('.noprint').show();
-        renderCompleted = true;
+        {
+            $('.loadingContainer').hide();
+            $('.noprint').show();
+            renderCompleted = true;
+        }
         
     }
     function getInvoicesResp(data, status) {
