@@ -55,7 +55,7 @@ foreach ($list as $pick)
         break;
     }
     $sql = "SELECT SUM(amount) as amount FROM invoice_payments WHERE invoice_payments.payment_method != 'CREDIT_NOTE' && invoice_payments.invoice_id = ?";
-    $res = prepareExecuteQuery($sql,'i',[$pick['id']]) or die(mysqli_error($conn)." ". $sql);
+    $res = prepareExecuteQuery($sql,'i',[$pick['id']]) or die(mysqli_error($mysqli)." ". $sql);
    
     $thisInvTotal = number_format((double)invoiceTotal($pick['id']), 2, '.', '');
     $thisPayment = mysqli_fetch_assoc($res)['amount'];

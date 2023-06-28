@@ -133,7 +133,7 @@
                     
                     
                     $thisid = $row['species_id'];
-                    $y2 = mysqli_query($conn,"SELECT * FROM species WHERE id='$thisid'");
+                    $y2 = mysqli_query($mysqli,"SELECT * FROM species WHERE id='$thisid'");
                     $species = mysqli_fetch_array($y2);
                     $rand = 'z' . rand(6000,12212);
                         ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('cutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
@@ -227,7 +227,7 @@
                     product.nationality_id='$nationality_id' 
                     ORDER BY product.cut_id DESC";
                     
-                    $productsY2 = prepareExecuteQuery($productsX2) or die(mysqli_error($conn));
+                    $productsY2 = prepareExecuteQuery($productsX2) or die(mysqli_error($mysqli));
                     $products2Count = mysqli_num_rows($productsY2);
                     ####
                     $totalW = 0;

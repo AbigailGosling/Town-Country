@@ -1,7 +1,7 @@
 <?php
 require_once(__DIR__.'/../functions.php');
 $sql = "SELECT `created`,`start_date`,`end_date`,`start_invoice_id`,`end_invoice_id`,`sales`,`payments`,`id` FROM `finance_report_history` WHERE `user_id` = ".$userid;
-$res = mysqli_query($conn,$sql);
+$res = mysqli_query($mysqli,$sql);
 $rows= mysqli_fetch_all($res,MYSQLI_ASSOC);
 
 foreach ($rows as $sample) {

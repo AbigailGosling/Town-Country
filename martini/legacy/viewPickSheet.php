@@ -219,7 +219,7 @@
 						$weightgross = $weights['weight_gross'];
 						
 						// $weightsQuery2 = "SELECT id FROM `weights` WHERE product_id='$productID' && weight_gross='$weightgross'";
-						// $weightsResult2 = prepareExecuteQuery($conn, $weightsQuery2);
+						// $weightsResult2 = prepareExecuteQuery($mysqli, $weightsQuery2);
 						// $weightsRow = mysqli_fetch_array($weightsResult2);
 						// $ccount = mysqli_num_rows($weightsResult2);
 						

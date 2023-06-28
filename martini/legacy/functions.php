@@ -8,9 +8,7 @@
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 	use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Type\Decimal;
-	global $conn;
 	global $mysqli;
-	$conn = mysqli_connect($dbHost,$dbUser,$dbPass,$dbName);
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName); 
 
 
@@ -412,7 +410,7 @@ use Ramsey\Uuid\Type\Decimal;
     }
 
     function weightsAvailableOnProducts($productIDs){
-        global $conn;
+        global $mysqli;
 
         $x = "select count(*)
                     from
@@ -1827,15 +1825,18 @@ use Ramsey\Uuid\Type\Decimal;
 		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
 		$queries = array(
 			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' $allSearchControl",
-			"SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl",
-			"SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl",
 		);
+		if (strlen($name)>2)
+		{
+			$queries[]="SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl";
+		}
 		foreach ($tests as $test)
 		{
 			foreach ($queries as $query)
 			{
 				$x = sprintf($query,$test);			
-				$y = prepareExecuteQuery($x);
+				$y = loggedQuery($x);
 				$count = mysqli_num_rows($y);
 				if ($count > 0 && $count < 20)
 				{
@@ -1873,22 +1874,22 @@ use Ramsey\Uuid\Type\Decimal;
 		$y = prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
 	}
 	function debuglogging($body){
-		global $conn;
+		global $mysqli;
 		$userid = $_SESSION['USER'];
-		$body = mysqli_real_escape_string($conn,$body);
-		$arr = mysqli_real_escape_string($conn,json_encode(array("REQUEST"=>request()->all())));
-		$REQUEST_URI = mysqli_real_escape_string($conn,$_SERVER['REQUEST_URI']);
-		$session_id = mysqli_real_escape_string($conn,session_id());
+		$body = $mysqli->real_escape_string($body);
+		$arr = $mysqli->real_escape_string(json_encode(array("REQUEST"=>request()->all())));
+		$REQUEST_URI = $mysqli->real_escape_string($_SERVER['REQUEST_URI']);
+		$session_id = $mysqli->real_escape_string(session_id());
 		$x = "INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES ('".$REQUEST_URI."','".$arr."','$userid','".$session_id."','$body')";			
 		prepareExecuteQuery($x);
 	}
-	function queryproxy(mysqli $conn, string $query)
+	function queryproxy(mysqli $mysqli, string $query)
 	{
 		debuglogging($query);
-		$outcome = mysqli_query($conn,$query);
+		$outcome = mysqli_query($mysqli,$query);
 		if ($outcome == false)
 		{
-			debuglogging(mysqli_error($conn));
+			debuglogging(mysqli_error($mysqli));
 		}
 		return $outcome;
 	}

@@ -302,7 +302,7 @@
                         $toDate = DateTime::createFromFormat('d/m/Y',explode("-",$product2_dateranges[0])[0])->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',explode("-",$product2_dateranges[0])[1])->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;
-                        $cutQuery = mysqli_query($conn,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
+                        $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
                         $cutResult= mysqli_fetch_assoc($cutQuery);
                         $bgCol = "";
                         if ($temp_id == 1 && ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")))

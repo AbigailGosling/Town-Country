@@ -73,7 +73,7 @@
             // if($grosstareEmpty == false){
             //     $weightString = implode(',', $grossTareArray);		
             //     $x = "UPDATE `palletsOut` SET weight_ids='$weightString' WHERE id='$outPalletID'";
-            //     $y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+            //     $y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
             // }
 
         

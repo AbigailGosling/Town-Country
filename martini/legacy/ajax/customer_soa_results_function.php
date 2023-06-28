@@ -140,15 +140,16 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
             $outstanding = $outstanding + $pick['outstanding'];
         }
         $cacheRow['outstanding'] = $outstanding;
-        update_customer_outstanding_cache($cacheRow);
+        update_customer_outstanding_cache($customer_id,$cacheRow);
     }
     return $cacheRow;
 }
-function update_customer_outstanding_cache($cacheRow)
+function update_customer_outstanding_cache($customer_id,$cacheRow)
 {
-    global $conn;
-    
-    if ($cacheRow['newRow'] == true)
+    global $mysqli;
+    $cacheRow2 = prepareExecuteQuery("SELECT id FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
+    $cacheRow2 = mysqli_fetch_assoc($cacheRow2);
+    if ($cacheRow2 == null)
     {
         $sql = "INSERT INTO customer_outstanding_cache (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `oldest_unpaid_id`, `outstanding`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",'".$cacheRow['invoice_payment_id']."','".$cacheRow['oldest_unpaid_id']."','".(double)$cacheRow['outstanding']."')";
     }
@@ -183,7 +184,7 @@ function precredit_check($customer_id)
         $beyondDate = strtotime("-".$custR['credit_terms']." days");
         $closeToOverdue = strtotime("-".$custR['due_warning']." days");
         $returningObj['details'] = $details = check_customer_outstanding_cache($customer_id);
-        if ($details['outdated'] == true) update_customer_outstanding_cache($details);
+        if ($details['outdated'] == true) update_customer_outstanding_cache($customer_id,$details);
         $returningObj['oldest'] = $oldest = $details['oldest_unpaid_date'];
         $outstanding = $details['outstanding'];
         $returningObj['beyondDate'] = $beyondDate;

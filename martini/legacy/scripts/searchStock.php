@@ -89,7 +89,7 @@
         product.nationality_id='$nationality_id' 
         ORDER BY product.cut_id DESC";
         
-        $productsY2 = prepareExecuteQuery($productsX2) or die(mysqli_error($conn));
+        $productsY2 = prepareExecuteQuery($productsX2) or die(mysqli_error($mysqli));
         $products2Count = mysqli_num_rows($productsY2);
         ####
         $totalW = 0;

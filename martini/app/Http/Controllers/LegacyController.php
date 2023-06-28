@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Testing\MimeType;
 class LegacyController extends Controller
 {
@@ -18,12 +19,22 @@ class LegacyController extends Controller
         $ext = $ext[array_key_last($ext)];
         if ($ext == "php")
         {
+            $s = time();
             $pagePerm = PagePermission::where("file",basename($targetFile))->first();
             if ($pagePerm == null || User::find(Auth::id())->hasPermission(basename($targetFile)))
             {
+                DB::disconnect("tandc_live");
                 ob_start();
                 require app_path('Http') . '/legacy.php';
                 $output = ob_get_clean();
+
+                if (time()-$s>0)
+                {
+                    File::append(
+                        storage_path('/logs/slow-page.log'),
+                        date('Y-m-d H:i:s').':'.(time()-$s).':'.Auth::id().':'.$targetFile.PHP_EOL
+                    );
+                }
 
                 return Response::make($output,200);
             }

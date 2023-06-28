@@ -8,14 +8,14 @@
 	$picksheet_id = request()->input('id');
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id='$picksheet_id'";
-	$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+	$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 	$picksheet = mysqli_fetch_array($y);
 	
 	
 	
 	$customer_id = $picksheet['customer_id'];
 	$x1 = "SELECT * FROM `customers` WHERE id='$customer_id'";
-	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($conn));
+	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($mysqli));
 	$customer = mysqli_fetch_array($y1);
 	
 	$addressNumber = $row['address'.$picksheet['addressid'].'_number'];
