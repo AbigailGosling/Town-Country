@@ -48,8 +48,8 @@
 			$admin_email = $admin_email->fetch_assoc();
 			$admin_email = $admin_email['key_value'];
 			$subject = "CREDIT ALERT: ".$customerRow['businessname']." cannot progress with delivery $pickersheet_id.";
-			$htmlBody= $customerRow['businessname']." has passed there credit limit and a block has been placed on delivery $pickersheet_id";
-			die(SLabsEmailer::send_email($customer_id,SLabsEmailerType::CrdtAlert,array($admin_email),$subject,$htmlBody,'','',$pickersheet_id));
+			$htmlBody= $customerRow['businessname']." has passed their credit limit and a block has been placed on delivery $pickersheet_id";
+			SLabsEmailer::send_email($customer_id,SLabsEmailerType::CrdtAlert,array($admin_email),$subject,$htmlBody,'','',$pickersheet_id);
 		}
 ?>
 	<div class="row custom-warning-box" id="warning" style="background:#ff6666; border: 2px solid #ff0000">

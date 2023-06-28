@@ -25,9 +25,9 @@
 	$quantity++;
 	// $x = "INSERT into `pallets` (`intake_id`, `comments`) VALUES ('$intake_id','$comments')";
 	$x = "UPDATE `pallets` SET comments = '$comments' WHERE id = '$comments'";
-	$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+	$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 	
-	$pallet_id = mysqli_insert_id($conn);
+	$pallet_id = mysqli_insert_id($mysqli);
 
 	for($a = 1; $a < $quantity; $a++){
 		
@@ -38,27 +38,27 @@
 			$weight = request('weights' . $a);
 			$x = "INSERT into `products` (`pallet_id`, `species_id`,`cut_id`,`nationality_id`,`brand_id`,`temp`,`best_by`,`bb_from`,`bb_to`) VALUES ('$pallet_id','$species_id', '$cut_id','$nationality_id','$brand_id','$temperature_id','$best_by','$best_by_range_from','$best_by_range_to')";
 			$y = prepareExecuteQuery($x);
-			$product_id = mysqli_insert_id($conn);
+			$product_id = mysqli_insert_id($mysqli);
 			$x = "INSERT into `boxes` (`product_id`, `status_id`,`weight`,`unit`) VALUES ('$product_id','$status_id', '$weight', '$unit')";
-			$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+			$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 			
 		}else if($individualweights == 'D'){
 			# Dolav Weights
 			$weight = request()->input('single_weight_val');
 			$x = "INSERT into `products` (`pallet_id`, `species_id`,`cut_id`,`nationality_id`,`brand_id`,`temp`,`best_by`,`bb_from`,`bb_to`) VALUES ('$pallet_id','$species_id', '$cut_id','$nationality_id','$brand_id','$temperature_id','$best_by','$best_by_range_from','$best_by_range_to')";
 			$y = prepareExecuteQuery($x);
-			$product_id = mysqli_insert_id($conn);
+			$product_id = mysqli_insert_id($mysqli);
 			$x = "INSERT into `boxes` (`product_id`, `status_id`,`weight_tear`,`weight_gross`,`unit`) VALUES ('$product_id','$status_id', '$tear_weight_val','$gross_weight_val', '$unit')";
-			$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+			$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 			
 		}else{
 			# Single Weight Value
 			$weight = request()->input('single_weight_val');
 			$x = "INSERT into `products` (`pallet_id`, `species_id`,`cut_id`,`nationality_id`,`brand_id`,`temp`,`best_by`,`bb_from`,`bb_to`) VALUES ('$pallet_id','$species_id', '$cut_id','$nationality_id','$brand_id','$temperature_id','$best_by','$best_by_range_from','$best_by_range_to')";
 			$y = prepareExecuteQuery($x);
-			$product_id = mysqli_insert_id($conn);
+			$product_id = mysqli_insert_id($mysqli);
 			$x = "INSERT into `boxes` (`product_id`, `status_id`,`weight`,`unit`) VALUES ('$product_id','$status_id', '$weight', '$unit')";
-			$y = prepareExecuteQuery($x) or die(mysqli_error($conn));	
+			$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));	
 		}
 		
 
@@ -66,7 +66,7 @@
 		// $x = "INSERT into `products` (`pallet_id`, `species_id`,`cut_id`,`nationality_id`,`brand_id`,`temp`,`best_by`,`bb_from`,`bb_to`) VALUES ('$pallet_id','$species_id', '$cut_id','$nationality_id','$brand_id','$temperature_id','$best_by','$best_by_range_from','$best_by_range_to')";
 		// $y = prepareExecuteQuery($x);
 		
-		// $product_id = mysqli_insert_id($conn);
+		// $product_id = mysqli_insert_id($mysqli);
 		
 		// $x = "INSERT into `boxes` (`product_id`, `status_id`,`weight`,`unit`) VALUES ('$product_id','$status_id', '$weight', '$unit')";
 		// $y = prepareExecuteQuery($x);	

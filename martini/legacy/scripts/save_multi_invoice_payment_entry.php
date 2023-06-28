@@ -28,7 +28,7 @@
 		VALUES (?,?,?,?,?)";
 		$y = prepareExecuteQuery($x,'sssss',[$invoiceID,$paymentMethod,$amount,$metaData,$currentUser]);
          
-		$id = mysqli_insert_id($conn);
+		$id = mysqli_insert_id($mysqli);
 
     }
     

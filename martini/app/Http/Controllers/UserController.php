@@ -158,7 +158,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['sometimes','string'],
+            'password' => ['sometimes','string', 'nullable'],
             'new_password' => ['sometimes','string', 'nullable', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
         ]);

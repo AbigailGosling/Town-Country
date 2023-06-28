@@ -25,7 +25,7 @@
 		die();
 	}
 	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
-	//$y = prepareExecuteQuery($x) or die(mysqli_error($conn));
+	//$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 
 	$addressline1 = $mysqli->real_escape_string( request()->input('addressline1'));
 	$addressline2 = $mysqli->real_escape_string( request()->input('addressline2'));

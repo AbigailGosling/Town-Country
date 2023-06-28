@@ -32,6 +32,7 @@ class SLabsEmailer {
         );
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
+        global $mysqli;
         global $conn;
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
@@ -83,7 +84,7 @@ class SLabsEmailer {
         return "done";
     }
     public static function process_notification($data) {
-        global $conn;
+        global $mysqli;
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
        
@@ -131,7 +132,7 @@ class SLabsEmailer {
             }
         }
 
-        prepareExecuteQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($conn));
+        prepareExecuteQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($mysqli));
     }
 }
 abstract class SLabsEmailerType
@@ -174,7 +175,7 @@ abstract class SLabsEmailerStatus
         return $trafficColour;
     }
     static function getTextStatus($status,$secondary_code){
-        global $conn;
+        global $mysqli;
         $returningValue = null;
         switch ($status){
             case SLabsEmailerStatus::Sending:          
@@ -187,7 +188,7 @@ abstract class SLabsEmailerStatus
         }
         if ($returningValue == null)
         {
-            $q = prepareExecuteQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($conn));
+            $q = prepareExecuteQuery("SELECT `value` FROM `mail_tracking_codes` WHERE `id` = $secondary_code") or die(mysqli_error($mysqli));
             $returningValue = mysqli_fetch_assoc($q);
             $returningValue = $returningValue['value'];
         }

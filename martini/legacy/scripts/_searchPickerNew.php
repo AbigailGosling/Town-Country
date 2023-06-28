@@ -90,7 +90,7 @@
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
                     $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
-                    $pallet_comments_query = mysqli_query($conn,$pallet_comments_query_sql);
+                    $pallet_comments_query = mysqli_query($mysqli,$pallet_comments_query_sql);
                     $pallet_comments = "";
                     if (mysqli_num_rows($pallet_comments_query) > 0)
                     {
@@ -197,7 +197,7 @@
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;
-                        $cutQuery = mysqli_query($conn,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
+                        $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
                         $cutResult= mysqli_fetch_assoc($cutQuery);
                         $bgCol = "";
                         if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
