@@ -147,7 +147,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
 function update_customer_outstanding_cache($customer_id,$cacheRow)
 {
     global $mysqli;
-    $cacheRow2 = prepareExecuteQuery("SELECT id FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
+    $cacheRow2 = prepareExecuteQuery("SELECT customer_id FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow2 = mysqli_fetch_assoc($cacheRow2);
     if ($cacheRow2 == null)
     {
