@@ -1,6 +1,26 @@
 <?php
-
 	require(__DIR__.'/../../functions.php');
+
+	if (isset($_SESSION['SOAM_CACHING']))
+	{
+		if (time() > ($_SESSION['SOAM_CACHING'] + 600))
+		{
+			session_start();
+			$_SESSION['SOAM_CACHING'] = time();
+			session_write_close();
+		}
+		else
+		{
+			die("STOP");
+		}
+	}
+	else
+	{
+		session_start();
+		$_SESSION['SOAM_CACHING'] = time();
+		session_write_close();
+	}
+
     require(__DIR__.'/../customer_soa_results_function.php');
     $name = request()->input('searchterm');
 	$showBal = false;
@@ -84,6 +104,8 @@
 		</td></tr>
 	</table>
 	</div><?php
-
+	session_start();
+	$_SESSION['SOAM_CACHING'] = 0;
+	session_write_close();
 
 ?>
