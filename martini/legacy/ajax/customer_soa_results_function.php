@@ -41,7 +41,7 @@ function date_compare($element1, $element2) {
 } 
 function check_customer_outstanding_cache($customer_id,$forceReload = false)
 {
-    $cacheRow = prepareExecuteQuery("SELECT * FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
+    $cacheRow = prepareExecuteQuery("SELECT SQL_NO_CACHE *,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow = mysqli_fetch_assoc($cacheRow);
     if ($cacheRow == null || $forceReload == true) 
     {

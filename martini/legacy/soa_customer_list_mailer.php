@@ -38,11 +38,14 @@
 		$.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
+		var allowAutoRefresh = true;
 		$(document).ready(function(){
 
 			// load initial 80 rows
 			loadRows();
-
+			setTimeout(function(){
+				if (allowAutoRefresh) window.location.reload(1);
+			}, 60*1000);
 			$('#instantSearch').on('keypress',function(e) {
 				if(e.which == 13) {
 					doSearch();
@@ -65,6 +68,8 @@
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
+				if (this.responseText == "STOP") return;
+				allowAutoRefresh = false;
 				$('#intakeAjax').append(this.responseText);
 				
 
@@ -109,6 +114,8 @@
 
 			xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
+					if (this.responseText == "STOP") return;
+					allowAutoRefresh = false;
                     $('#intakeAjax').html(this.responseText);
 					$('i.img-mail-selector').hide();
 					$('a.mail-selector').click(function(e) {
