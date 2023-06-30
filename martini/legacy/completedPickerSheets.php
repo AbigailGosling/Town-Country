@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Log;
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script>
+	function loadRows(){
+		$("#loadRows").text("Please Wait... Loading...");
+		$("#mainTable tr").remove();
+		window.location.href = 'completedPickerSheets.php?loadAll=true';
+	}
 	$( function() {
 		$( "#datepicker" ).datepicker();
 	});
@@ -31,7 +36,7 @@ use Illuminate\Support\Facades\Log;
 	<div id="intakelist">
 		<h1 class="int">Completed Picksheets</h1>
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;display:none;" enterkeyhint="go">
-		<table width="100%" border="0" cellpadding="0" cellspacing="0" class="intakeAjax">
+		<table id="mainTable" width="100%" border="0" cellpadding="0" cellspacing="0" class="intakeAjax">
 			<?php
 			
 				session_start();session_write_close();
@@ -39,6 +44,7 @@ use Illuminate\Support\Facades\Log;
 				$userid = $_SESSION['USER'];
 				
 				$x = "SELECT * FROM `pickerSheets` WHERE completed='1' ORDER BY `date_completed` DESC";
+				if (!request()->has("loadAll")) $x = $x . " LIMIT 100";
 				$y = $mysqli->prepare($x);
 				$y->execute();
 				$y = $y->get_result();
@@ -75,9 +81,16 @@ use Illuminate\Support\Facades\Log;
 				</td></tr>
 				<?php
 				}
+			?>		
+		</table>
+		<?php
+				if (!request()->has("loadAll"))
+				{
 			?>
-			
-		</table>	
+			<div id="loadRows" class="loadMoreBtn" onclick="loadRows()">Load More</div>
+			<?php
+				}
+			?>	
 	</div>	
 </main>
 <div id="btm"></div>
