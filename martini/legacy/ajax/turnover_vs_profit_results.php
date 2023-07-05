@@ -133,7 +133,7 @@
 
         if($SPECIES_ID != "" && $SPECIES_ID != 0){
             
-            if($CUTGROUP_ID != 0){
+            if($CUTGROUP_ID != 0 && $CUTGROUP_ID != "..."){
                 $ARRAY_CUTS = cutsFromCutGroup($SPECIES_ID, $CUTGROUP_ID);
                 $cut_ids = implode(',', $ARRAY_CUTS);
             }else{
@@ -242,11 +242,11 @@
         }
 
         if($invoice['unit'] == 'PPC'){
-            $total_product_cost = $invoice['product_cost'] * $quantity;
-            $total_product_sell = $invoice['picker_price'] * $quantity;    
+            (double)$total_product_cost = (double)$invoice['product_cost'] * (double)$quantity;
+            (double)$total_product_sell = (double)$invoice['picker_price'] * (double)$quantity;    
         }else{
-            $total_product_cost = $invoice['product_cost'] * $weight_total;
-            $total_product_sell = $invoice['picker_price'] * $weight_total;
+            (double)$total_product_cost = (double)$invoice['product_cost'] * (double)$weight_total;
+            (double)$total_product_sell = (double)$invoice['picker_price'] * (double)$weight_total;
         }
         $date_completed = $invoice['date_completed'];
         $date_completed = str_replace('/', '-', $date_completed);

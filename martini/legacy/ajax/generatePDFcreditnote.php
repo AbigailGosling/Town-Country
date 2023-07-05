@@ -41,19 +41,19 @@
 	$pickersheet_id = request()->input('id');
 	
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
-	$y = loggedQuery($x,'i',[$pickersheet_id]);
+	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
 	$pickSheetRow = mysqli_fetch_array($y);
 	
 	$customer_id = $pickSheetRow['customer_id'];
 	
 	$x2 = "SELECT * FROM `customers` WHERE id=?";
-	$y2 = loggedQuery($x2,'i',[$customer_id]);
+	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
 	
 	$customerRow = mysqli_fetch_array($y2); 
 
 	$customer_id = $pickSheetRow['customer_id'];
 	$x = "SELECT * FROM `customers` WHERE id=?";
-	$y = loggedQuery($x,'i',[$customer_id]);
+	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y);
 	
 	$date = str_replace('/', '-', $pickSheetRow['date_completed']);
@@ -299,14 +299,14 @@
 						<td class="heading" colspan="2">Sub Total</td>
 					</tr>';
 			 	
-				$paymentsResult = loggedQuery("SELECT * FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
+				$paymentsResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
 
 				$total_qty_count = 0;
 				while($payment = mysqli_fetch_array($paymentsResult)){
 					$total_qty_count += $payment['quantity'];
 					$productID = $payment['product_id'];
 				
-					$productResult = loggedQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
+					$productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
 					$product = mysqli_fetch_array($productResult);
 					
 					if($productID == 0){

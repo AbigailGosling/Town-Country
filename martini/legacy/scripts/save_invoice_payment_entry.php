@@ -19,13 +19,13 @@
     
     if(empty($paymentID)){
         $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
-	    $y = loggedQuery($x,'i',[$customerID]);
+	    $y = prepareExecuteQuery($x,'i',[$customerID]);
         if($paymentMethod == 'CREDIT_NOTE'){
             $amount = 0;
         }
         $x = "INSERT into invoice_payments (invoice_id,payment_method,amount,meta_data,payment_recorded_by) 
 		VALUES (?,?,?,?,?)";
-		$id = loggedQuery($x,'issss',[$invoiceID,$paymentMethod,$amount,$metaData,$currentUser],true);
+		$id = prepareExecuteQuery($x,'issss',[$invoiceID,$paymentMethod,$amount,$metaData,$currentUser],true);
 
         if($paymentMethod == 'CREDIT_NOTE'){
             //credit_note_items
@@ -36,7 +36,7 @@
                 $quantity = request()->input('quantity')[$i];
                 $description = request()->input('description')[$i];
 
-                $y = loggedQuery("INSERT into `credit_note_items` (payment_id,product_id,quantity,price,`description`) VALUES (?,?,?,?,?)"
+                $y = prepareExecuteQuery("INSERT into `credit_note_items` (payment_id,product_id,quantity,price,`description`) VALUES (?,?,?,?,?)"
             ,'issss',[$id,$product_id,$quantity,$price,$description]);
                 
                 $i++;
@@ -45,10 +45,10 @@
 
     }else{
         $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
-	    $y = loggedQuery($x,'i',[$customerID]);
+	    $y = prepareExecuteQuery($x,'i',[$customerID]);
 
         $x = "UPDATE `invoice_payments` SET amount=?, payment_method=?, meta_data=? WHERE id =?";
-	    $y = loggedQuery($x,'sssi',[$amount,$paymentMethod,$metaData,$paymentID]);
+	    $y = prepareExecuteQuery($x,'sssi',[$amount,$paymentMethod,$metaData,$paymentID]);
 
         if($paymentMethod == 'CREDIT_NOTE'){
             $i = 0;
@@ -58,7 +58,7 @@
                 $DELETE_IDS = $mysqli->real_escape_string( request()->input('delete_ids'));
                 $DELETE_IDS = rtrim($DELETE_IDS, ',');
                 
-                loggedQuery("DELETE FROM `credit_note_items` WHERE id IN ($DELETE_IDS)");
+                prepareExecuteQuery("DELETE FROM `credit_note_items` WHERE id IN ($DELETE_IDS)");
                 
             }
 
@@ -68,7 +68,7 @@
                 $quantity = request()->input('quantity')[$i];
                 $description = request()->input('description')[$i];
                 
-                $y = loggedQuery("UPDATE `credit_note_items` SET quantity=?, price=?, `description`=? WHERE id=?",
+                $y = prepareExecuteQuery("UPDATE `credit_note_items` SET quantity=?, price=?, `description`=? WHERE id=?",
             'sssi',[$quantity,$price,$description,$credit_id]);
                  
                 $i++;

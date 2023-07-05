@@ -13,7 +13,7 @@ if (empty($invoiceID)) {
 $invoiceAmount = number_format((double)invoiceTotal($invoiceID), 2, '.', '');
 
 if (!empty($paymentID)) {
-    $selectedInvoicePayment = loggedQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ?",'ii',[$paymentID,$invoiceID]);
+    $selectedInvoicePayment = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ?",'ii',[$paymentID,$invoiceID]);
     $selectedPaymentData = mysqli_fetch_assoc($selectedInvoicePayment);
     //print_r($selectedPaymentData);
 }
@@ -49,7 +49,7 @@ if (!empty($paymentID)) {
         <tbody>
         <?php
 
-        $invoicePayments = loggedQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ?",'i',[$invoiceID]);
+        $invoicePayments = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ?",'i',[$invoiceID]);
 
         $runningBalance = $invoiceAmount;
         $i = 0;
@@ -121,7 +121,7 @@ if (!empty($paymentID)) {
 </tr>
 <?php
 
-    $outpalletResult = loggedQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
+    $outpalletResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
     $outpalletCount = mysqli_num_rows($outpalletResult);
 
     $total_weight_count = 0;
@@ -138,7 +138,7 @@ if (!empty($paymentID)) {
 
         foreach($weightids as $weightid){
             $x = "SELECT * FROM `weights` WHERE id=?";
-            $y = loggedQuery($x,'i',[$weightid]);
+            $y = prepareExecuteQuery($x,'i',[$weightid]);
             $weight = mysqli_fetch_array($y);
 
             if(!in_array($weight['product_id'], $productIDArray)){
@@ -150,7 +150,7 @@ if (!empty($paymentID)) {
         foreach($productIDArray as $productID){
             $kg = 0;
             $x1 = "SELECT * FROM `product` WHERE id=?";
-            $y1 = loggedQuery($x1,'i',[$productID]);
+            $y1 = prepareExecuteQuery($x1,'i',[$productID]);
             $product = mysqli_fetch_array($y1);
 
 
@@ -163,7 +163,7 @@ if (!empty($paymentID)) {
             array_unshift($qVars , $productID);
             $x2 = "SELECT * FROM `weights` WHERE product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
 
-            $y2 = loggedQuery($x2,str_repeat('i',count($qVars)),$qVars);
+            $y2 = prepareExecuteQuery($x2,str_repeat('i',count($qVars)),$qVars);
             $count = mysqli_num_rows($y2);
             
              
@@ -195,7 +195,7 @@ if (!empty($paymentID)) {
             <?php
                 $productID = $product['id'];
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
+                $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
                 $pickerItem = mysqli_fetch_array($howManyY);
                 $howMany = mysqli_num_rows($howManyY);
             ?>
@@ -303,7 +303,7 @@ if (!empty($paymentID)) {
                 $payment_id = $selectedPaymentData['id'];
 
                 
-                $creditNoteResult = loggedQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
+                $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
 
@@ -312,7 +312,7 @@ if (!empty($paymentID)) {
                 foreach($productIDs as $productID){
                     $i++;
                     
-                    $creditNoteResult = loggedQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
+                    $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
                      
 
                     if($productID == 0){
@@ -348,10 +348,10 @@ if (!empty($paymentID)) {
                     }else{
                         $creditNoteDetails = mysqli_fetch_array($creditNoteResult);
                         # get number of weights for this product
-                        $weightCountResult = loggedQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
+                        $weightCountResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
                         $count = mysqli_num_rows($weightCountResult);
                         
-                        $productResult = loggedQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
+                        $productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
                         $product = mysqli_fetch_array($productResult);
 
                         $rowClass = "customProductRow" . $i;
@@ -375,7 +375,7 @@ if (!empty($paymentID)) {
                     <?php
                         $productID = $product['id'];
                         $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                        $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
+                        $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
                         $pickerItem = mysqli_fetch_array($howManyY);
                         $howMany = mysqli_num_rows($howManyY);
                     ?>

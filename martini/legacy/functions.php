@@ -42,8 +42,11 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
-		Log::debug(new \Exception(),[$sql, $varTypes, $vars ,$returnInsert]);
-		return prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+		$e = new \Exception;
+		$s = (int)(microtime(true)*1000);
+		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+		if (((int)(microtime(true)*1000)-$s) > 2)Log::debug($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
+		return $r;
 	}
 	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
@@ -366,8 +369,8 @@ use Ramsey\Uuid\Type\Decimal;
 	function weightFromProductIDArray($PRODUCT_IDS){
 		global $mysqli;
 
-		$y = prepareExecuteQuery("SELECT weight_tear,weight_gross FROM `weights` WHERE product_id IN (".implode(",",array_fill(0,count($PRODUCT_IDS),"?")).")",
-	str_repeat("s",count($PRODUCT_IDS)),$PRODUCT_IDS);
+		$y = prepareExecuteQuery("SELECT weight_tear,weight_gross FROM `weights` WHERE `product_id` IN (".implode(",",array_fill(0,count($PRODUCT_IDS),"?")).")",
+	str_repeat("i",count($PRODUCT_IDS)),$PRODUCT_IDS);
 
 			
 		$weight = 0;
@@ -1548,8 +1551,8 @@ use Ramsey\Uuid\Type\Decimal;
 
 	function invoiceTotal($pickersheet_id){
 		global $mysqli;
-
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		
+		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE `pickersheet_id` = ?";
 		$outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
                 
 		$outpalletCount = $outpalletResult2->num_rows;
@@ -1560,8 +1563,8 @@ use Ramsey\Uuid\Type\Decimal;
  
 			$productIDArray = array();
 			
-			$x = "SELECT * FROM `weights` WHERE id IN (".$outpallet['weight_ids'].")";
-			$y = prepareExecuteQuery($x);
+			$x = "SELECT * FROM `weights` WHERE `id` IN (".implode(",",array_fill(0,count($weightids),"?")).")";
+			$y = prepareExecuteQuery($x,str_repeat('i',count($weightids)),$weightids);
 			$weightsByProductID = array();
 			while($weight = $y->fetch_assoc())
 			{
@@ -1572,20 +1575,24 @@ use Ramsey\Uuid\Type\Decimal;
 				$weightsByProductID[$weight['product_id']][] = $weight;
 			}
 			$pickerItemByProductID = array();	
-			foreach($productIDArray as $productID){
-				$x1 = "SELECT * FROM `product` WHERE id='$productID'";
-				$y1 = prepareExecuteQuery($x1);
-				$product = $y1->fetch_assoc();
+			if (count($productIDArray) == 0) continue;
+			$howManyX = "SELECT * FROM `pickerItems` WHERE `pickersheet_id` = $pickersheet_id";
+			$howManyY = prepareExecuteQuery($howManyX);
+			while ($pickItemByProd = $howManyY->fetch_assoc()){
+				$sheetproduct = $pickersheet_id . "_" . $pickItemByProd['product_id'];
+				if(!array_key_exists($sheetproduct, $weightsByProductID)){
+					$pickerItemByProductID[$sheetproduct] = $pickItemByProd;
+				}
+				
+			}
 
+			$x1 = "SELECT * FROM `product` WHERE `id` IN (".implode(",",array_fill(0,count($productIDArray),"?")).")";
+			$y1 = prepareExecuteQuery($x1,str_repeat('i',count($productIDArray)),$productIDArray);
+			while($product = $y1->fetch_assoc()){
+				$productID = $product['id'];
 				$count = count($weightsByProductID[$productID]);
 								
-				$productID = $product['id'];
 				$sheetproduct = $pickersheet_id . "_" . $productID;
-				if(!array_key_exists($sheetproduct, $weightsByProductID)){
-					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=$productID LIMIT 1";
-					$howManyY = prepareExecuteQuery($howManyX,'i',[$pickersheet_id]);
-					$pickerItemByProductID[$sheetproduct] = $howManyY->fetch_assoc();
-				}
 				
 				$pickerItem = $pickerItemByProductID[$sheetproduct];
 						
@@ -1740,7 +1747,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function doesInvoiceHaveReturns($invoice_id){
 		global $mysqli;
 
-		$result = prepareExecuteQuery("SELECT count(id) as count FROM `intake` WHERE returned=1 && delivery_note_number=?",'i',[$invoice_id]);
+		$result = loggedQuery("SELECT count(id) as `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number`=?",'s',[(string)$invoice_id]);
 		$data = $result->fetch_assoc();
 
 		if($data['count'] == 0){
