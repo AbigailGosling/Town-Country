@@ -175,6 +175,7 @@
 			<label>Delivery Note Number</label>
 			<?php if($intake['returned'] == 1){ ?>
 			<form method="POST" action="scripts/changeIntakeDeliveryNoteNumber.php" class="flex">
+				<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
 				<input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
 				<input type="text" name="delivery_note_number" value="<?php echo $intake['delivery_note_number']; ?>" style="width:140px;">
 				<input type="submit" value="Save">
