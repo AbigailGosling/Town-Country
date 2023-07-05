@@ -8,4 +8,4 @@
     
     $y = prepareExecuteQuery("UPDATE `intake` SET delivery_note_number=? WHERE id=? LIMIT 1",'si',[$delivery_note_number,$intake_id]);
 ?>
-<script> window.location.href = '/intake.php?id=<?php echo $intake_id; ?>'; </script>
+<script> window.location.href = '../intake.php?id=<?php echo $intake_id; ?>'; </script>
