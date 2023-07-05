@@ -11,7 +11,7 @@
 		}
 		else
 		{
-			die("STOP");
+			die("STOP");exit;
 		}
 	}
 	else
@@ -41,6 +41,7 @@
 		$customer['balNeg'] = false;
 		if ($showBal == true)
 		{
+			$t = time();
 			$cache_check = check_customer_outstanding_cache($customer['id']);
 			$customer['cache'] = $cache_check;
 			$customer['balance'] = (double) $cache_check['outstanding'];
@@ -55,7 +56,7 @@
 	foreach($workingSet as $customer)
 	{
 		if ($customer['balance'] == 0) continue;
-		$rollingTotal = $rollingTotal + $customer['balance'];
+		$rollingTotal = (double)$rollingTotal + (double)$customer['balance'];
 	?>
 	<table width="100%">
 		<tr><td align="center" class="pos">
@@ -105,7 +106,7 @@
 	</table>
 	</div><?php
 	session_start();
-	$_SESSION['SOAM_CACHING'] = 0;
+	$_SESSION['SOAM_CACHING'] = (time() - 599);
 	session_write_close();
 
 ?>
