@@ -176,6 +176,7 @@
 
     <th align="left">Intake ID</th>
     <th align="left">Plt ID</th>
+    <th align="left">Species</th>
     <th align="left">Nationality</th>
     <th align="left">Temp.</th>
     <th align="left">Category</th>
@@ -257,7 +258,8 @@
         $cell_nationality = getNationality($invoice['nationality_id']);
         $cell_temp = getTemp($invoice['cooling_id']);
         $cell_cutgroup = getCutGroupNameFromCut($invoice['cut_id']);
-        $cell_product = getSpeciesFromCutID($invoice['cut_id']) .' ' . getCut($invoice['cut_id']);
+        $cell_species = getSpeciesFromCutID($invoice['cut_id']);
+        $cell_product = $cell_species .' ' . getCut($invoice['cut_id']);
         $cell_brand = getBrand($invoice['brand_id']);
         $cell_supplier = getSupplier($invoice['supplier_id'])['name'];
 
@@ -269,6 +271,7 @@
             <td><?php echo $cell_customer_name; ?> </td>
             <td><?php echo $row_intake_id; ?></td>
             <td><?php echo $invoice['pallet_id']; ?></td>
+            <td><?php echo $cell_species; ?> </td>
             <td><?php echo $cell_nationality ?></td>
             <td><?php echo $cell_temp; ?></td>
             <td><?php echo $cell_cutgroup; ?></td>
@@ -374,6 +377,7 @@
             <td style="color:red;"><?php echo $cell_customer_name; ?> </td>
             <td style="color:red;"><?php echo $row_intake_id; ?></td>
             <td style="color:red;"><?php echo $creditItempallet_id; ?></td>
+            <td style="color:red;"><?php echo $cell_species ?></td>
             <td style="color:red;"><?php echo $cell_nationality ?></td>
             <td style="color:red;"><?php echo $cell_temp; ?></td>
             <td style="color:red;"><?php echo $cell_cutgroup; ?></td>
@@ -416,6 +420,7 @@
     }
 ?>
   <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
+    <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>
     <td>&nbsp;&nbsp;</td>

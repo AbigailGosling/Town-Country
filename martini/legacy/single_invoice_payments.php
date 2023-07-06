@@ -424,7 +424,7 @@ if (!empty($paymentID)) {
             <div class="col d-flex justify-content-start">
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
                 <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
-                <input class="btn btn-success" type="button" onclick="mainForm2()" value="SUBMIT" />  
+                <input id="payment_submit" class="btn btn-success" type="button" onclick="mainForm2()" value="SUBMIT" />  
             </div>
         </div>
     </form>    
@@ -522,6 +522,8 @@ function mainFormSucess(){
 	location.reload();
 }
 function mainForm2(){
+    $('#payment_submit').val("PLEASE WAIT...");
+    $('#payment_submit').prop('disabled', true);
 	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 }
     $(document).ready(function() {

@@ -44,6 +44,7 @@
 		$transactCheck = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE transaction_id = ?",'s',[$transaction_id]);
 		if ($transactCheck->num_rows > 0) {
 			throw new \Exception("duplicate transaction");
+			abort(500);
 			die();
 		}
 	}
@@ -51,7 +52,12 @@
 	$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 	
 	$pickersheet_id = $y;
-	
+	if ((int)$pickersheet_id !== $pickersheet_id)
+	{
+		abort(500);
+		die();
+	}
+
 	$index = 0;
 	foreach (request('basketRow') as $key => $value) {
 
