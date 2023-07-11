@@ -93,14 +93,11 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
         $cacheRow['payment_sha2'] = $paymentsha2;
         $cacheRow['invoice_payment_id_outdated'] = $cacheRow['outdated'] = true;
     }
-    
-    $cacheRow['debug'] = "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id FROM pickerSheets, pickerSheets.estimated_delivery_date LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ".$customer_id." AND (pickerSheets.id >= ".$oldest." OR invoice_payments.id > ".$lastpayment.") ORDER BY `pickerSheets`.`id` ASC";
-    $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
     $cacheRow['pending'] = null;
     $lastRow = null;
     if ($cacheRow['outdated'] == true || $forceReload)
     {
-        $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` DESC",'iii',[$customer_id,$oldest,$lastpayment]);
+        $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
         while($row = mysqli_fetch_assoc($checkQ))
         {  
             $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
@@ -116,8 +113,11 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     {
         $row = $cacheRow['pending'];
         $myDateTime = DateTime::createFromFormat('d/m/Y', $row['estimated_delivery_date']);
-        $newDateString = $myDateTime->format('Y-m-d');
-        if ($row['outstanding'] > 0) $cacheRow['oldest_unpaid_date'] = strtotime($newDateString);
+        $newDateString = strtotime($myDateTime->format('Y-m-d'));
+        if ($row['outstanding'] > 0) 
+        {
+            if (!$cacheRow['oldest_unpaid_date'] || $newDateString < $cacheRow['oldest_unpaid_date'])$cacheRow['oldest_unpaid_date'] = $newDateString;
+        }
         else $cacheRow['oldest_unpaid_date'] = strtotime("now");
         
         if (array_key_exists('oldest_unpaid_id',$cacheRow) == false || $row['id'] != $cacheRow['oldest_unpaid_id']) 
@@ -199,7 +199,6 @@ function precredit_check($customer_id)
         $returningObj['creditRating'] = $custR['credit_rating'];
 
         $returningObj['hideOnStmt'] = false;
-
         $calDayRem1 = $oldest -$beyondDate;
         $calDayRem = intdiv($calDayRem1,86400);
         if ($calDayRem < 0)
