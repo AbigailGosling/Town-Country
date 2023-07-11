@@ -653,15 +653,16 @@ function cancelSale()
 	function checkUBDates(dateText = null){
 		if (transactionAllowed){
 			if (dateText == null) dateText = $('#estimated_delivery_date').val();
-			console.log(dateText);
 			var ubs = $('#basketTable #ubDate');
+			var temps = $('#basketTable #temp_id');
 			if (ubs.length == 0 || dateText == null || dateText == "") return;
 			var date = parseDMY(dateText).getTime();
 			$('#sendfake').prop('disabled',false);
 			var pastBB = false; 
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
-				if (ub.innerHTML=="")
+				var temp = temps[x];
+				if (ub.innerHTML=="" || temp.innerHTML.trim() != 1)
 				{
 					continue;
 				}

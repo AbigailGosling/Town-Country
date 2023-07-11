@@ -61,7 +61,7 @@
 				</td>
 				<td>
 					<label>Vehicle Temp (°C)</label>
-					<input type="number" step="0.1" min="-100.0" max="100.0" width="184" name="vehicle_temperature" id="vehicle_temperature" placeholder="">
+					<input type="text" width="184" name="vehicle_temperature" id="vehicle_temperature" placeholder="">
 				</td>
 				</tr>
 				<tr>
@@ -71,7 +71,7 @@
 				</td>
 				<td>
 					<label>Product Temp (°C)</label>
-					<input type="number" step="0.1" min="-100.0" max="100.0" width="184" name="product_temperature" id="product_temperature" placeholder="">
+					<input type="text" width="184" name="product_temperature" id="product_temperature" placeholder="">
 				</td>
 				</tr>
 				<tr>
