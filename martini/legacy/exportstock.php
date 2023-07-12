@@ -118,7 +118,7 @@
             }else{
                 $weight_value = totalWeightOfProduct(array($productsRow['productid'])) ;
             }
-            if ($weight_value > 0.9)
+            if ($weight_value <= 0)
             {
                 $this_total_cost = (double)$productsRow['cost']*$weight_value;
                 array_push($single_row, $weight_value . 'kg');
