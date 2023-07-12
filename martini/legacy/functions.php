@@ -710,7 +710,7 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 		
 		
-		return (double)$weight;
+		return $weight;
         
     }
 

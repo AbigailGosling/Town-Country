@@ -228,7 +228,7 @@
             $locked = false;
             $lockedT = "n";
         }
-        if($totalWeightOfProduct <= 0.01 && $productsRow['unit'] != 'PPC'){ continue; }
+        if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
         $overallQuantity = $overallQuantity + $quantityTotal;
         $overallWeight = $overallWeight + $totalWeightOfProduct;
         ?>
