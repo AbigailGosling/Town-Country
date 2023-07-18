@@ -269,7 +269,7 @@
                 var location = $(this).parent().find('select[name="location"]').val();
                 var pallet = $(this).parent().find('[name="pallet_id"]').val();
                 console.log(location);
-                $.get("<?php echo $domain; ?>ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
+                $.get("ajax/saveLocation.php?location="+location+'&pallet='+pallet, function(data, status){
                     console.log(data);
                 });
             });
