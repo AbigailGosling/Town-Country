@@ -57,7 +57,7 @@
 <script type="text/javascript">
 	
 	function printPallet(intake_id, pallet_id){
-		var x = "/printContent.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
+		var x = "printContent.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 		
         window.open(x, '_blank');
 	}
