@@ -32,7 +32,7 @@ class LegacyController extends Controller
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').':'.(time()-$s).':'.Auth::id().':'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
 
