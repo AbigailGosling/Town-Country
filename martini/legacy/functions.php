@@ -63,8 +63,8 @@ use Ramsey\Uuid\Type\Decimal;
 			{
 				File::append(
 					storage_path('/logs/slow-query.log'),
-					($vars && count($vars)>0)?	date('Y-m-d H:i:s') . ':'.(time()-$s).':'.$_SESSION['USER']. ":" . $sql . ' [' . implode(', ', $vars) . ']' . PHP_EOL:
-												date('Y-m-d H:i:s') . ':'.(time()-$s).':'.$_SESSION['USER']. ":" . $sql . PHP_EOL
+					($vars && count($vars)>0)?	date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . ' [' . implode(', ', $vars) . ']' . PHP_EOL:
+												date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . PHP_EOL
 				);
 				$e = new \Exception();
 				for ($i=0;$i<5;$i++)
