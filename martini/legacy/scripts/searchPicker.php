@@ -583,13 +583,13 @@ $('.overviewcomment').each(function(){
             var productid = $(this).attr('productid');
             // var productid = 10;
             
-            // $.get("<?php echo $domain; ?>ajax/saveCommentPicker.php?comment="+currentComment+'&productid=1'+productid, function(data, status){
+            // $.get("ajax/saveCommentPicker.php?comment="+currentComment+'&productid=1'+productid, function(data, status){
                 // console.log(data);
             // });
             
             $.ajax({
                 method: "POST",
-                url: "<?php echo $domain; ?>ajax/saveCommentPicker.php",
+                url: "ajax/saveCommentPicker.php",
                 data: {
                     comment:currentComment,
                     productid:productid
