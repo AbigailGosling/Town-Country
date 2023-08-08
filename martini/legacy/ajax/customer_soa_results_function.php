@@ -95,20 +95,20 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     }
     $cacheRow['pending'] = null;
     $lastRow = null;
-    if ($cacheRow['outdated'] == true || $forceReload)
-    {
-        $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
-        while($row = mysqli_fetch_assoc($checkQ))
-        {  
-            $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
-            if ($row['outstanding'] > 0)
-            {
-                $cacheRow['pending'] = $row;           
-                break;
-            }
-            $lastRow = $row;
+
+    $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
+    while($row = mysqli_fetch_assoc($checkQ))
+    {  
+        if ($cacheRow['outdated'] == true || $forceReload) $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
+        else $row['outstanding'] = 1;
+        if ($row['outstanding'] > 0)
+        {
+            $cacheRow['pending'] = $row;           
+            break;
         }
+        $lastRow = $row;
     }
+
     if ($cacheRow['pending'] != null)
     {
         $row = $cacheRow['pending'];
