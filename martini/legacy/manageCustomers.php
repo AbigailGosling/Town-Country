@@ -307,7 +307,7 @@
 				<tr>
 					<td class="label"><label>Credit Checking</label></td>
 					<td>
-						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override"><?php if($data['credit_enabled'] == 0){ ?>Enable Credit Check<?php } else { ?>Disable Credit Check<?php } ?></a>
+						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 						
 					</td>
 				</tr>
@@ -315,7 +315,7 @@
 				<tr>
 					<td class="label"><label>Override Credit Check</label></td>
 					<td>
-						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"><?php if($data['override'] == 0){ ?>Override Credit Check<?php } else { ?>Remove Override<?php } ?></a>
+						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
 				<tr height="140"><td colspan="2"></td></tr> 
@@ -507,17 +507,33 @@ function mainForm2(){
 	}
 	function overrideSales(ele, id){
 		var q = $('#overrider');
-		if (q.text() != "Override Credit Check") q.text("Override Credit Check");
-		else q.text("Remove Override");
-		$.post("<?php echo $domain; ?>ajax/overrideSales.php",{
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");			
+			setTimeout(alert,10,["Override Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");			
+			setTimeout(alert,10,["Override Enabled!"]);
+		}
+		$.post("ajax/overrideSales.php",{
 			id: id,
 		});
  	}
 	 function creditChecking(ele, id){
 		var q = $('#credit_enabled');
-		if (q.text() != "Enable Credit Check") q.text("Enable Credit Check");
-		else q.text("Disable Credit Check");
-		$.post("<?php echo $domain; ?>ajax/toggleCredit.php",{
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Credit Checking Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Credit Checking Enabled!"]);
+		}
+		$.post("ajax/toggleCredit.php",{
 			id: id,
 		});
 	}
