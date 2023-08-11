@@ -2,8 +2,21 @@
 function get_customer_soa_results($customer_id,$adv)
 {
     $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
+    $pickSheets1 = mysqli_fetch_all($customerPicksheets,MYSQLI_ASSOC);
+    $knownPickIDs = [];
+    $pickSheets = [];
+    foreach($pickSheets1 as $picksheet){
+        $picksheet['hasReturns'] = false;
+        $pickSheets[$picksheet['id']] = $picksheet;
+        $knownPickIDs[] = $picksheet['id'];
+    }
+    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) as `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+    $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
+    foreach ($customerReturns as $return){
+        $pickSheets[$return['delivery_note_number']]['hasReturns'] = ($return['count'] > 0);
+    }
     $ret = [];
-    while($picksheet = mysqli_fetch_assoc($customerPicksheets)){
+    foreach($pickSheets as $picksheet){
 
         $picksheet['credited'] = $picksheet['credit'] = (double) round(totalValueCreditedOnInvoiceID($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
         $picksheet['price'] = (double) round(invoiceTotal($picksheet['id']),2,PHP_ROUND_HALF_DOWN);
@@ -21,7 +34,7 @@ function get_customer_soa_results($customer_id,$adv)
         }
 	    $picksheet['outstanding'] = round((double) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'],2,PHP_ROUND_HALF_DOWN);
         if ($adv == true && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
-        $picksheet['hasReturns'] = doesInvoiceHaveReturns($picksheet['id']);
+        
         $picksheet['creditNotes'] = getInvoiceCreditNotes($picksheet['id']);
         $picksheet['hasCreditNote'] = (count($picksheet['creditNotes'])>0);
 
@@ -99,8 +112,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
     while($row = mysqli_fetch_assoc($checkQ))
     {  
-        if ($cacheRow['outdated'] == true || $forceReload) $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
-        else $row['outstanding'] = 1;
+        $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
         if ($row['outstanding'] > 0)
         {
             $cacheRow['pending'] = $row;           
