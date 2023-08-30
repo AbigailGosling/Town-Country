@@ -4,75 +4,75 @@
 	$colValue = array();
 
 	$colNames[] = '`businessname`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('businessname'));
+	$colValue[] = request()->input('businessname');
 
 	$colNames[] = '`tradingas`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('tradingas'));
+	$colValue[] = request()->input('tradingas');
 
 	$colNames[] = '`nameofbuyer`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('nameofbuyer'));
+	$colValue[] = request()->input('nameofbuyer');
 
 	$colNames[] = '`contactnumber`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('contactnumber'));
+	$colValue[] = request()->input('contactnumber');
 
 	$colNames[] = '`customer_email`=?';
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('customer_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', request()->input('customer_email'));
 
 	$colNames[] = '`companyregno`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('companyregno'));
+	$colValue[] = request()->input('companyregno');
 
 	$colNames[] = '`accounts_address_1`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_1'));
+	$colValue[] = request()->input('accounts_address_1');
 
 	$colNames[] = '`accounts_address_2`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_2'));
+	$colValue[] = request()->input('accounts_address_2');
 
 	$colNames[] = '`accounts_address_3`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_3'));
+	$colValue[] = request()->input('accounts_address_3');
 
 	$colNames[] = '`accounts_address_4`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_address_4'));
+	$colValue[] = request()->input('accounts_address_4');
 
 	$colNames[] = '`accounts_contact`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_contact'));
+	$colValue[] = request()->input('accounts_contact');
 
 	$colNames[] = '`tel_number`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('tel_number'));
+	$colValue[] = request()->input('tel_number');
 
 	$colNames[] = '`internal_email`=?';
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('internal_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', request()->input('internal_email'));
 
 	$colNames[] = '`credit_terms`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('credit_terms'));
+	$colValue[] = request()->input('credit_terms');
 
 	$colNames[] = '`pricedefault`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('pricedefault'));
+	$colValue[] = request()->input('pricedefault');
 
 	$colNames[] = '`credit_rating`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('credit_rating'));
+	$colValue[] = request()->input('credit_rating');
 
 	$colNames[] = '`flaguplimit`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('flaguplimit'));
+	$colValue[] = request()->input('flaguplimit');
 
-	$current_outstanding = $mysqli->real_escape_string( request()->input('current_outstanding'));	
-	$payment_received = $mysqli->real_escape_string( request()->input('payment_received'));	
+	$current_outstanding = request()->input('current_outstanding');	
+	$payment_received = request()->input('payment_received');	
 	$colNames[] = '`current_outstanding`=?';
 	$colValue[] = (float) $current_outstanding - (float) $payment_received;
 
 	$colNames[] = '`accounts_email`=?';
-	$colValue[] = str_replace(array("\r", "\n"), '', $mysqli->real_escape_string( request()->input('accounts_email')));
+	$colValue[] = str_replace(array("\r", "\n"), '', request()->input('accounts_email'));
 
 	$colNames[] = '`accounts_comments`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('accounts_comments'));
+	$colValue[] = request()->input('accounts_comments');
 
 	$colNames[] = '`default_salesman_id`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('default_salesman_id'));
+	$colValue[] = request()->input('default_salesman_id');
 
 	$colNames[] = '`credit_grace`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('credit_grace'));
+	$colValue[] = request()->input('credit_grace');
 
 	$colNames[] = '`due_warning`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('due_warning'));
+	$colValue[] = request()->input('due_warning');
 
 	$colNames[] = '`disabled`=?';
 	$colValue[] = (request()->input('disabled') !== null && request()->input('disabled') == "1")?"1":"0";
@@ -98,7 +98,7 @@
 		$colNames[] = "`address".$u."_number` = ?";
 		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_number'));
 	}
-	$colValue[] = $mysqli->real_escape_string( request()->input('id'));
+	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";
 	$y = loggedQuery($x,str_repeat("s",count($colValue)),$colValue);
 ?>
