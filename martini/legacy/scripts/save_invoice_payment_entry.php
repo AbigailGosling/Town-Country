@@ -55,7 +55,7 @@
 
             if(request()->input('delete_ids') != null){
                 
-                $DELETE_IDS = $mysqli->real_escape_string( request()->input('delete_ids'));
+                $DELETE_IDS = request()->input('delete_ids');
                 $DELETE_IDS = rtrim($DELETE_IDS, ',');
                 
                 prepareExecuteQuery("DELETE FROM `credit_note_items` WHERE id IN ($DELETE_IDS)");

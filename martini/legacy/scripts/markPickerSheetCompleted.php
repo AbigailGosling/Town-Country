@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	$id = $mysqli->real_escape_string( request()->input('id'));
-	$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
-	$type = $mysqli->real_escape_string( request()->input('sheet_type'));
+	$id = request()->input('id');
+	$pickersheet_id = request()->input('id');
+	$type = request()->input('sheet_type');
 
 	/* START - Get all product IDs on the picksheet */
 	$product_ids = array();
@@ -87,6 +87,7 @@
 		$x2 = "UPDATE `pickerItems` SET `status` = '1' WHERE pickersheet_id=?";
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
 	}
+	shell_exec("php /var/www/html/martini/artisan run:credit_precheck $customer_id > /dev/null 2>&1 &");
 ?>
 <script>
 	alert("Picking Sheet Submitted!");

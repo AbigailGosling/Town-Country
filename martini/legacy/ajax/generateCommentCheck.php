@@ -4,11 +4,11 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 $queryArray = array();
-$entity_id = $mysqli->real_escape_string(request()->input('entity_id'));
-$type_id = $mysqli->real_escape_string(request()->input('type_id'));
-$user_id = $mysqli->real_escape_string(request()->input('user_id'));
-$date_start = $mysqli->real_escape_string(request()->input('date_start'));
-$date_end = $mysqli->real_escape_string(request()->input('date_end'));
+$entity_id = request()->input('entity_id');
+$type_id = request()->input('type_id');
+$user_id = request()->input('user_id');
+$date_start = request()->input('date_start');
+$date_end = request()->input('date_end');
 if (isset($entity_id) && $entity_id != null && $entity_id != "")
     $queryArray[] = "`comment_logging`.`entity_id` = '".$entity_id."'";
 if (isset($type_id) && $type_id != null && $type_id != "")

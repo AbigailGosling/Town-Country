@@ -1,8 +1,8 @@
 <?php
     require(__DIR__.'/../functions.php');
     
-	$name = $mysqli->real_escape_string( request()->input('name'));
-	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
+	$name = request()->input('name');
+	$species_id = request()->input('species_id');
     
     $y = prepareExecuteQuery("SELECT * FROM `cutgroups` WHERE `species_id`= ? && `name`= ?",'ss',[$species_id,$name]);
     $count = mysqli_num_rows($y);

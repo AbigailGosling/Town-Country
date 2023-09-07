@@ -232,19 +232,7 @@
 						</select>
 					</td>
 				</tr>
-				<tr>
-					<td class="label"><label>Price Markup/Markdown</label></td>
-					<td>
-						<select name="markup_type">
-						<option value="FLAT" <?php if($data['markup_type'] == "FLAT" && $data != ''){ echo 'selected'; } ?>>Flat</option>   
-                            <option value="PERCENT" <?php if($data['markup_type'] == "PERCENT" && $data != ''){ echo 'selected'; } ?>>Percentage Based</option> 
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<td class="label"><label>Markup/Markdown Amount</label></td>
-					<td><input type="number" class="input" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"></td>
-				</tr>
+					<tr></tr><tr></tr>
 				<tr height="40"><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Default User</label></td>
@@ -279,6 +267,7 @@
 					<td class="label"><label>Current outstanding</label></td>
 					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']);?>"></td>
 				</tr>
+				
 				<!--<tr>
 					<td class="label"><label>Payments received</label></td>
 					<td><input type="text" class="input" name="payment_received"></td>
@@ -311,14 +300,26 @@
 						
 					</td>
 				</tr>
-				<tr height="140"><td colspan="2"></td></tr> 
+				<tr height="45"><td colspan="2"></td></tr> 
 				<tr>
 					<td class="label"><label>Override Credit Check</label></td>
 					<td>
 						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
-				<tr height="140"><td colspan="2"></td></tr> 
+				<tr height="45"><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Price Markup/Markdown</label></td>
+					<td>
+						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+
+					</td>
+				</tr>
+				<tr height="45"><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Markup/Markdown Amount</label></td>
+					<td><input type="number" class="input" id="markup_amount" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"><label> %</label></td>
+				</tr>
 			</table>
 		</div>
 	</div>
@@ -537,7 +538,23 @@ function mainForm2(){
 			id: id,
 		});
 	}
-	
+	function markupEnabled(ele, id){
+		var q = $('#markup_enabled');
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Price Markup Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Price Markup Enabled!"]);
+		}
+		$.post("ajax/toggleMarkup.php",{
+			id: id,
+			amount: $('#markup_amount').val()
+		});
+	}
 </script>
 
 <div id="btm"></div>

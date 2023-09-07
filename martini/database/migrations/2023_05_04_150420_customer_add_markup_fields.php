@@ -28,8 +28,13 @@ return new class extends Migration
     {
         try{
             Schema::connection('tandc_live')->table('customers', function (Blueprint $table) {
-                $table->dropColumn('markup_type');
-                $table->dropColumn('markup_amount');
+                $table->dropColumn('markup_type');         
+            });
+        }
+        catch (\Exception $e) {}
+        try{
+            Schema::connection('tandc_live')->table('customers', function (Blueprint $table) {
+                $table->dropColumn('markup_amount');  
             });
         }
         catch (\Exception $e) {}

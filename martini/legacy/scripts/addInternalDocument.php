@@ -14,9 +14,9 @@
 		die();exit;
 	}
     
-	$pickersheet_id = $mysqli->real_escape_string( request()->input('pickersheet_id'));
-    $type = $mysqli->real_escape_string( request()->input('type'));
-    $message = $mysqli->real_escape_string( request()->input('message'));
+	$pickersheet_id = request()->input('pickersheet_id');
+    $type = request()->input('type');
+    $message = request()->input('message');
     
     $user_id = $_SESSION['USER'];
 

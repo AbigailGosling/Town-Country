@@ -3,7 +3,7 @@
 	
 	if(request()->input('id') != ''){
 		
-		$id = $mysqli->real_escape_string( request()->input('id'));
+		$id = request()->input('id');
 		
 		$x = "SELECT * FROM `purchase_form` WHERE id=?";
 		$y = $mysqli->prepare($x);
@@ -13,8 +13,15 @@
 		
 		$purchase = $y->fetch_assoc();
 		$edit=true;
+		$site_id = $purchase['site_id'];
+		$date_due = str_replace('/', '-', $purchase['date_due']);
+		$date_due = date('d/m/Y H:00', strtotime($date_due));
 		
-	}else{ $edit=false; }
+	}else{ 
+		$edit=false; 
+		if (request()->has('site_id')) $site_id = request()->input('site_id');
+		if (request()->has('date')) $date_due =  date('d/m/Y H:00', strtotime(request()->input('date')));
+	}	
 ?>
 <!doctype html>
 <html>
@@ -40,12 +47,11 @@
 </div>
 <main class="int">
 	<div id="product">
-		<div id="product_heading" class="printhide"><?php if($edit){ echo 'Edit'; }else{ echo 'New'; } ?> Purchase</div>		
+		<div id="product_heading" class="printhide"><?php if($edit){ echo 'Edit'; }else{ echo 'New'; } ?> Arrival</div>		
 		<form id="mainForm" method="POST" enctype="multipart/form-data" id="mainForm" action="scripts/<?php if($edit){ echo 'editPurchase.php'; } else { echo 'newPurchase.php'; } ?>" autocomplete="off">
 		<input autocomplete="off" name="hidden" type="text" style="display:none;">
         <div id="product_options" style="display:flex;flex-wrap:wrap;width:190px;">
-			<?php if($edit){ ?><a href="javascript:myprint();" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Print Purchase</a><?php } ?>
-			<input type="button" onclick="mainForm()" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Purchase" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
+			<input type="button" onclick="mainForm()" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Arrival" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
 			
 			<?php
 				$purchaseid = $purchase['id'];
@@ -55,12 +61,8 @@
 				$txcount = $ty->num_rows;
 				$intake = $ty->fetch_assoc();
 				if($edit){
-					if($txcount > 0){
-					?><a href="intake.php?id=<?php echo $intake['id']; ?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">View Intake</a><?php
-					}else{
-					?><a href="newDelivery.php?purchaseid=<?php echo $purchaseid; ?>" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Create Intake</a><?php
+					?><a href="scripts/deletePurchase.php?id=<?php echo $purchase['id']; ?>&ts=<?php echo strtotime($purchase['date_due']);?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Delete Arrival</a><?php
 					}
-				}
             ?>
             
 		</div>
@@ -89,15 +91,20 @@
 					</div> 
 				</td>
 				<td>
-					<label class="printinput">Purchased By</label>
-					<input type="text"  name="purchased_by" value="<?php echo $purchase['purchased_by']; ?>">
-				 
+					<!--<label class="printinput">Purchased By</label>
+					<input type="text"  name="purchased_by" value="<?php //echo $purchase['purchased_by']; ?>">-->
+					<label class="printinput">Location</label>
+					<select name="site_id" id="site_id" style="width:192px;height:30px;">
+						<option selected disabled>Choose an option..</option>
+						<option value="1" <?php if($site_id == 1){ echo 'selected'; } ?>>Wolverhampton</option>
+						<option value="2" <?php if($site_id == 2){ echo 'selected'; } ?>>Gatwick</option>
+					</select>
 				</td>
 				</tr>
 				<tr>
 				<td>
 					<label class="printinput">Booking Ref No</label>
-					<input type="text" name="booking_ref_number" value="<?php echo $purchase['booking_ref_number']; ?>">
+					<input type="text" id="booking_ref_number" name="booking_ref_number" value="<?php echo $purchase['booking_ref_number']; ?>">
 				</td>
 				<td>
 					<label class="printinput">Chill/Frz</label>
@@ -118,17 +125,28 @@
 				<tr>
 				<td>
 					<label class="printinput">Haulier</label>
-					<input type="text" name="haulier" value="<?php echo $purchase['haulier']; ?>">
+					<input type="text" id="haulier" name="haulier" value="<?php echo $purchase['haulier']; ?>">
 				</td>
 				<td>
-					<label>Direct Drop</label>
+					<div style="display:none;">
+					<label>Date Due</label>
+					</div>
+					
+					<div id="datetimepicker" class="input-append date">
+					  <label>Date Due</label>
+					  <input type="text" id="date_due" name="date_due" value="<?php echo $date_due; ?>" required></input>
+					  <span class="add-on printhide">
+						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+					  </span>
+					</div>
+					<!--<label>Direct Drop</label>
 					<select name="direct_drop" id="direct_drop" style="width:192px;height:30px;">
-						<option value="0" <?php if($purchase['direct_drop'] == 0){ echo 'selected'; } ?>>No</option>
-						<option value="1" <?php if($purchase['direct_drop'] == 1){ echo 'selected'; } ?>>Yes</option>
-					</select>
+						<option value="0" <?php //if($purchase['direct_drop'] == 0){ echo 'selected'; } ?>>No</option>
+						<option value="1" <?php //if($purchase['direct_drop'] == 1){ echo 'selected'; } ?>>Yes</option>
+					</select>-->
 				</td>
 				</tr>
-				<tr>
+				<!--<tr>
 				<td>
 					<?php
 						if($edit){
@@ -138,12 +156,12 @@
 					?>
 					<div style="display:none;">
 						<label>Date Purchased</label>
-						<input type="text" name="date_puriuhsaiuhsachased" value="<?php if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" id="date_purchased" required>
+						<input type="text" name="date_puriuhsaiuhsachased" value="<?php //if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" id="date_purchased" required>
 					</div>
 					
 					<div id="datetimepicker2" class="input-append date">
 					  <label>Date Purchased</label>
-					  <input type="text" name="date_purchased" value="<?php if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" required></input>
+					  <input type="text" name="date_purchased" value="<?php //if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" required></input>
 					  <span class="add-on printhide">
 						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
 					  </span>
@@ -151,47 +169,30 @@
 					
 				</td> 
 				<td>
-					<?php
-						if($edit){
-							$date_due = str_replace('/', '-', $purchase['date_due']);
-							$date_due = date('d/m/Y H:00', strtotime($date_due));
-						}
-					?>
-					<div style="display:none;">
-					<label>Date Due</label>
-					<input type="text" name="datasde_due" id="date_due" value="<?php if($edit){ echo $date_due; } ?>">
-					</div>
 					
-					<div id="datetimepicker" class="input-append date">
-					  <label>Date Due</label>
-					  <input type="text" name="date_due" value="<?php echo $date_due; ?>" required></input>
-					  <span class="add-on printhide">
-						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
-					  </span>
-					</div>
 					
 					 
 					
 				</td> 
-				</tr>
+				</tr>-->
 				<tr>
-				<td colspan="2">
+				<!--<td colspan="2">
 					<label>Attachment <?php if($purchase['dfile'] != ''){ ?>- <a href="<?php echo $domain . 'documents/' . $purchase['dfile']; ?>" target="_blank">Click here to view file</a><?php } ?></label>
-					<?php if($purchase['dfile'] != ''){ ?>
+					<?php //if($purchase['dfile'] != ''){ ?>
 					 
-					<?php } ?>
+					<?php //} ?>
 					<input type="file"name="dfile" style="width:600px;border:1px solid #cacaca;padding:5px;">
-				</td>
+				</td>-->
 				</tr>
 				<tr>
 				<td colspan="2">
-					<label>Comments</label>
-					<textarea name="comments" style="width:600px;height:110px;resize:none;padding:5px;"><?php echo $purchase['purchase_comments']; ?></textarea>
+					<label>Products</label>
+					<textarea id="comments" name="comments" maxlength="50" style="width:600px;height:1.5em;resize:none;padding:5px;"><?php echo $purchase['purchase_comments']; ?></textarea>
 				</td>
 				</tr>
 			</tbody>
 		</table>
-		<b style="margin:0;padding-top:20px;display:block;">Products  <a href="javascript:;" onclick="newProduct()">[+]</a></b><br/>
+		<!--<b style="margin:0;padding-top:20px;display:block;">Products  <a href="javascript:;" onclick="newProduct()">[+]</a></b><br/>
 			<div class="productsList">
 				<?php
 					if($edit){
@@ -209,10 +210,10 @@
 							?>
 							<div>
 							
-							<input type="text" name="species[]" class="producttext" value="<?php echo $species[$i]; ?>">
-							<input type="text" name="cuts[]" class="producttext" value="<?php echo $cuts[$i]; ?>">
-							<input type="text" name="units[]" class="producttext" value="<?php echo $units[$i]; ?>" style="width:120px;">
-							<input type="text" name="prices[]" class="producttext" value="<?php echo $prices[$i]; ?>" style="width:120px;">
+							<input type="text" name="species[]" class="producttext" value="<?php //echo $species[$i]; ?>">
+							<input type="text" name="cuts[]" class="producttext" value="<?php //echo $cuts[$i]; ?>">
+							<input type="text" name="units[]" class="producttext" value="<?php //echo $units[$i]; ?>" style="width:120px;">
+							<input type="text" name="prices[]" class="producttext" value="<?php //echo $prices[$i]; ?>" style="width:120px;">
  
 							<span class="printhide"onclick="removeProduct(this);">[-]</span>
 							</div>
@@ -223,7 +224,7 @@
 					<?php
 					}
 				?>
-			</div>
+			</div>-->
 		</form>
 	</div>
 	 
@@ -231,10 +232,55 @@
 <div id="btm"></div>
 <script>
 function mainForm(){
-	$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	var allPass = true;
+	if ($('#supplier_id').val() == '') {
+		allPass = false;
+		$('#supplier_search').css("border","1px solid red");
+	}
+	else
+	{
+		$('#supplier_search').css("border","");
+	}
+	if ($('#booking_ref_number').val() == '') {
+		allPass = false;
+		$('#booking_ref_number').css("border","1px solid red");
+	}
+	else
+	{
+		$('#booking_ref_number').css("border","");
+	}
+	if ($('#haulier').val() == '') {
+		allPass = false;
+		$('#haulier').css("border","1px solid red");
+	}
+	else
+	{
+		$('#haulier').css("border","");
+	}
+	if ($('#temperature_id').val() == '' || $('#temperature_id').val() == null) {
+		allPass = false;
+		$('#temperature_id').css("border","1px solid red");
+	}
+	else
+	{
+		$('#temperature_id').css("border","");
+	}
+	if ($('#comments').val() == '' || $('#comments').val() == null) {
+		allPass = false;
+		$('#comments').css("border","1px solid red");
+	}
+	else
+	{
+		$('#comments').css("border","");
+	}
+	if (allPass)$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	else alert("Please complete all highlighted fields!");
 }
 function mainFormSucess(){
-	location.reload();
+	var dateParts = $('#date_due').val().split(" ")[0].split("/");
+
+	var dateObject = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
+	window.location.href = "calendar.php?ts="+dateObject.getTime()/1000;
 }
 	
 	function newProduct(){
@@ -264,39 +310,28 @@ function mainFormSucess(){
 				$('#viewIntake').fadeIn();
 			}
 		});
-		// $( "#date_purchased" ).datepicker({ dateFormat: 'dd/mm/yy' });
-			
-		// $( "#date_due" ).datepicker({ dateFormat: 'dd/mm/yy' });
-		// $( "#date_due" ).datetimepicker({format: 'yyyy-mm-dd hh:ii'});
-
-		 
+	 
 		$('#supplier_search').keydown(function(event){
-			if (event.keyCode === 13)
-			{
-				var val = $('#supplier_search').val();
-				if(val != ''){
-					$('#supplier_search_results').fadeIn();
-				}else{
-					$('#supplier_search_results').fadeOut();
-				}
-				
-				var species = $('#species_id').val();
-				
-				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function() {
-				if (this.readyState == 4 && this.status == 200) {
-				// document.getElementById("demo").innerHTML = this.responseText;
-				$('#supplier_search_results').html(this.responseText);
-				}
-				};
-				xhttp.open("POST", "ajax/getSupplierDropdown.php", true);
-				xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-				xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-				xhttp.send("searchterm=" + val + "&species_id=" + species);
-				
-				event.preventDefault();
-				return false;
-			}
+		var val = $('#supplier_search').val();
+		if(val != ''){
+			$('#supplier_search_results').fadeIn();
+		}else{
+			$('#supplier_search_results').fadeOut();
+		}
+		if (val.length < 3)
+		var species = $('#species_id').val();
+		
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+		// document.getElementById("demo").innerHTML = this.responseText;
+		$('#supplier_search_results').html(this.responseText);
+		}
+		};
+		xhttp.open("POST", "ajax/getSupplierDropdown.php", true);
+		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
+		xhttp.send("searchterm=" + val + "&species_id=" + species);
 		
 		}); 
 	});

@@ -2,11 +2,11 @@
 	require(__DIR__.'/../functions.php');
 	
 	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
+	$intake_id = request()->input('intake_id');
 	echo "<br/>";
-	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
+	$pallet_id = request()->input('pallet_id');
 	echo "<br/>";
-	$product_id  = $mysqli->real_escape_string( request()->input('product_id'));
+	$product_id  = request()->input('product_id');
 	
 	
 	# if($product_id != '' && $pallet_id != ''){

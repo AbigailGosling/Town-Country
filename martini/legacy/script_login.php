@@ -2,8 +2,8 @@
 	include_once('functions.php');
 	
 	
-	$email = $mysqli->real_escape_string( request()->input('email'));
-	$password = $mysqli->real_escape_string( request()->input('password'));
+	$email = request()->input('email');
+	$password = request()->input('password');
 	
 	
 	$result = check_login($email, $password);

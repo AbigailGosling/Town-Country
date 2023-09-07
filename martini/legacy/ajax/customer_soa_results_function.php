@@ -1,7 +1,14 @@
 <?php
+
+use Illuminate\Support\Facades\Log;
+
 function get_customer_soa_results($customer_id,$adv)
 {
-    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
+    $overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',prepareExecuteQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
+    $customer = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
+    $customer = $customer->fetch_assoc();
+
+    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
     $pickSheets1 = mysqli_fetch_all($customerPicksheets,MYSQLI_ASSOC);
     $knownPickIDs = [];
     $pickSheets = [];
@@ -10,7 +17,15 @@ function get_customer_soa_results($customer_id,$adv)
         $pickSheets[$picksheet['id']] = $picksheet;
         $knownPickIDs[] = $picksheet['id'];
     }
-    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) as `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+
+    $invoiceLastPaidQ = prepareExecuteQuery("SELECT `invoice_id`,MAX(`created_at`) AS `created_at` FROM `invoice_payments` WHERE `invoice_id` IN (".implode(",",$knownPickIDs).") GROUP BY `invoice_id`");
+    $invoiceLastPaidQ = $invoiceLastPaidQ->fetch_all(MYSQLI_ASSOC);
+    $invoicesLastPaid = array();
+    foreach($invoiceLastPaidQ as $invoiceLastPaid){
+        $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
+    }
+    $now = time();
+    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
     $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
     foreach ($customerReturns as $return){
         $pickSheets[$return['delivery_note_number']]['hasReturns'] = ($return['count'] > 0);
@@ -25,9 +40,37 @@ function get_customer_soa_results($customer_id,$adv)
         $picksheet['datetime'] = strtotime($picksheet['date']);
         $picksheet['date'] = date('d/m/Y', $picksheet['datetime']);
 
+        $picksheet['creation_date'] = str_replace('/', '-', $picksheet['creation_date']);
+        $picksheet['creation_date'] = strtotime($picksheet['creation_date']);
+
 	    $picksheet['paid'] = (double) round($picksheet['paid'],2,PHP_ROUND_HALF_DOWN);
         $picksheet['invoicePaid'] = false;
+        $picksheet['paidPunctuality']  = "ONTIME";
         $epsilon = 0.00001;
+
+        if ($customer['markup_enabled']==1 && $picksheet['creation_date'] > $overriderStart)
+        {
+            $mark = number_format(applyCustomerMarkup($customer['id'],$picksheet['price']),2);
+            $paybydate = new DateTime();
+            $paybydate->setTimestamp($picksheet['creation_date']);
+            $paybydate->modify("+ ".$customer['credit_terms']." day");
+            $paybydate = $paybydate->getTimestamp();
+
+            $overdue = new DateTime();
+			$overdue->setTimestamp($picksheet['creation_date']);
+			$overdue->modify("+ ".$customer['grace_period']." day");
+            $overdue = $overdue->getTimestamp();
+            if (array_key_exists($picksheet['id'],$invoicesLastPaid))
+            {
+                $paidEarly = ($invoicesLastPaid[$picksheet['id']] < $paybydate && (($picksheet['price'] - $mark) - $picksheet['paid'] <= $epsilon));
+            }
+            if ($now < $paybydate || $paidEarly) {//DOESNT NEED TO BE PAID YET OR WAS PAID EARLY
+                $picksheet['credit'] += $mark;
+            }else if ($now > $overdue) {//WITHIN GRACE
+            }else {// LATE
+                $picksheet['price'] += $mark;
+            }
+        }
 
         if(($picksheet['price'] - $picksheet['paid']) <= $epsilon){
             $picksheet['invoicePaid'] = true;

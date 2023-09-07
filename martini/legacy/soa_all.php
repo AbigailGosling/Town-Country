@@ -114,15 +114,15 @@
         </p>
     </form>
     <?php
-        $form_user_id = $mysqli->real_escape_string( request()->input('user_id'));
+        $form_user_id = request()->input('user_id');
         
         // if the form has been submitted
         if($form_user_id != null){
 
             // Dates were selected
             if(request()->input('date_start') != '' && request()->input('date_end') != ''){
-                $date_start = $mysqli->real_escape_string( request()->input('date_start'));
-                $date_end = $mysqli->real_escape_string( request()->input('date_end'));
+                $date_start = request()->input('date_start');
+                $date_end = request()->input('date_end');
 
                 $date_start = str_replace('/', '-', $date_start);
                 $date_start = date('Y-m-d', strtotime($date_start));

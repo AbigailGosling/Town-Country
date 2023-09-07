@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include('includes/frontHeader.php');   
 ?>
 <div id="top">
@@ -265,6 +269,19 @@
                 $('.totalSellValue').text('£' + formatNumber(totalSellValue));
                 $('.totalCostValue').text('£' + formatNumber(totalCostValue));
                 
+                <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+
+                var totalActualCostValue = 0.00;
+                $('.actualCostValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalActualCostValue = (parseFloat(totalActualCostValue) + val).toFixed(2);
+                 });
+                var totalActualProfitValue = (totalSellValue -totalActualCostValue).toFixed(2);
+                var totActProfitPerc= (((totalSellValue - totalActualCostValue) / totalActualCostValue) * 100).toFixed(2);
+                $('.totalActualProfitValue').text('£' + formatNumber(totalActualProfitValue));
+                $('.totalActualProfitPercent').text(formatNumber(totActProfitPerc) + "%");
+                $('.totalActualCostValue').text('£' + formatNumber(totalActualCostValue));
+                <?php } ?>
             }, 1000);
         
 

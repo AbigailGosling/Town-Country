@@ -17,65 +17,46 @@
 	}
 	
 	if(request()->input('temperature_id') != 0){
-		$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
+		$temperature_id = request()->input('temperature_id');
 		
 		$temperatureQueryPiece = "&& temperature_id='$temperature_id'"; 
 	}else{
 		$temperature_id = 0;
 	}
-	
-	$d = date('d');
-	$week = request()->input('w') ?: 1;
-	$month = request()->input('m') ?: date('m');
-	$year = request()->input('y') ?: date('Y');
-	
-	$running_day_temp = date('w',mktime(0,0,0,$month,0,$year));
-	
-	if($week == 1){
-		$weekOffset = ($week * 7) - 7;	
-	}else if($week == 2){
-		// $weekOffset = (7 - $running_day_temp) + (($week - 1)* 7);
-		$weekOffset = (7 - $running_day_temp);		
-	}else{
-		// $weekOffset = (7 - $running_day_temp) + (($week - 1)* 7) - 7;
-		$weekOffset = (7 - $running_day_temp) + (($week - 2)* 7);
-		
-		// $weekOffset = (7 - $running_day_temp) + ($week * 7) - 7;
+	if (request()->has('display_col') != "" && request()->input('display_col') != "") {
+		$display_col = request()->input('display_col');
 	}
-	
-	$dayOfWeek = date('w',mktime(0,0,0,$month,1,$year));
-	
-	$headings = array('Mon','Tue','Wed','Thu','Fri','Sat','Sun');
-	
-	$running_day = date('w',mktime(0,0,0,$month,0,$year));
-	$days_in_month = date('t',mktime(0,0,0,$month,1,$year));
-	
-	$startTime = 6; # 6am - 4pm
-	$hourCount = 11;
-	
-	$date = date($year . '-' . $month . '-' . 1);
-	
-	if($weekOffset == 0){
-		$running_day = date('w',mktime(0,0,0,$month,0,$year));		
-	}else{ $running_day = 0; }
-	
-
-	$weekStartDate = 1;
-	$weekEndDate = 7;
-
-	$weekStartDate = $weekStartDate + $weekOffset;
-	$weekEndDate = $weekEndDate + $weekOffset;
-	
-	
-	$weeksToJump = floor(($d / 7) + ($running_day/7)); 
-	$weeksToJump++;
-	 
-	
-	if(request()->input('w') === null){
-		
-	?><script> window.location.href = 'calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo $weeksToJump; ?>&temperature_id=<?php echo $temperature_id; ?>'; </script> <?php
+	else {
+		$display_col = "*";
 	}
-	
+	if (request()->has('site_id') != "" && request()->input('site_id') != "" && request()->input('site_id') != "*") {
+		$show_site_id = request()->input('site_id');
+		$siteQueryPiece = "&& site_id='$show_site_id'";
+	}
+	else {
+		$siteQueryPiece = "";
+		$show_site_id = "*";
+	}
+	$startTime = 4; # 4am - 8pm
+	$hourCount = 17;
+	$shownWeekStart = new DateTime('now');
+	if (request()->has('ts')){
+		$shownWeekStart->setTimestamp(request()->input('ts'));
+	}
+	else {
+		if (request()->has('y')) $shownWeekStart->setDate(request()->input('y'),$shownWeekStart->format('m'),$shownWeekStart->format('d'));
+		if (request()->has('m')) $shownWeekStart->setDate($shownWeekStart->format('Y'),request()->input('m'),$shownWeekStart->format('d'));
+		else if (request()->has('w')) {
+			$shownWeekStart->setDate($shownWeekStart->format('Y'),1,1);
+			$shownWeekStart->modify("+ ".request()->input('w')." weeks");
+		}		
+	}
+	while ($shownWeekStart->format('l')!="Monday"){
+		$shownWeekStart->modify("-1 day");
+	}
+	$year = $shownWeekStart->format('Y');
+	$month = $shownWeekStart->format('m');
+	$week = $shownWeekStart->format('W');
 ?>
 <div class="caltop">
 	<div>
@@ -107,75 +88,190 @@
 
 		<select name="temperature_id" class="calMonth" id="temperature_id" style="width:150px">
 			<option disabled selected>Chilled/Frozen</option>
-			<option value="0" <?php if($temperature_id == 0){ echo 'selected'; } ?>>All Fresh & Frozen</option>
+			<option value="0" <?php if($temperature_id == 0){ echo 'selected'; } ?>>All Temps</option>
 			<option value="1" <?php if($temperature_id == 1){ echo 'selected'; } ?>>Fresh</option>
 			<option value="2" <?php if($temperature_id == 2){ echo 'selected'; } ?>>Frozen</option>
+			<option value="3" <?php if($temperature_id == 3){ echo 'selected'; } ?>>Chilled to Frozen</option>
+		</select>
+
+		<select name="display_col" class="calMonth" id="display_col" style="width:150px">
+			<option value="*" selected>Display All</option>
+			<option value="supplier_id" <?php if($display_col == "supplier_id"){ echo 'selected'; } ?>>Supplier & Product</option>
+			<option value="haulier" <?php if($display_col == "haulier"){ echo 'selected'; } ?>>Haulier & Booking Ref</option>
+		</select>
+
+		<select name="site_id" class="calMonth" id="site_id" style="width:150px">
+			<option value="*" selected>Display All</option>
+			<option value="1" <?php if($show_site_id == "1"){ echo 'selected'; } ?>>Wolverhampton</option>
+			<option value="2" <?php if($show_site_id == "2"){ echo 'selected'; } ?>>Gatwick</option>
 		</select>
 	</div>
 	<div>
-		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week - 1); ?>&temperature_id=<?php echo $temperature_id; ?>" onclick="javascript:;" class="calprev"><</a>
-		<a href="calendar.php?m=<?php echo $month; ?>&y=<?php echo $year; ?>&w=<?php echo ($week + 1); ?>&temperature_id=<?php echo $temperature_id; ?>" onclick="javascript:;" class="calnext">></a>
+		<?php
+			$previousWeek = new DateTime();
+			$previousWeek->setTimestamp($shownWeekStart->getTimestamp());
+			$previousWeek->modify("- 7 days");
+			$nextWeek = new DateTime();
+			$nextWeek->setTimestamp($shownWeekStart->getTimestamp());
+			$nextWeek->modify("+ 7 days");
+
+		?>
+		<a href="calendar.php?ts=<?php echo $previousWeek->getTimestamp(); ?>&temperature_id=<?php echo $temperature_id; ?>&display_col=<?php echo $display_col; ?>&site_id=<?php echo $show_site_id; ?>" onclick="javascript:;" class="calprev"><</a>
+		<a href="calendar.php?ts=<?php echo $nextWeek->getTimestamp(); ?>&temperature_id=<?php echo $temperature_id; ?>&display_col=<?php echo $display_col; ?>&site_id=<?php echo $show_site_id; ?>" onclick="javascript:;" class="calnext">></a>
 	</div>
 </div>
 <table style="border-collapse:collapse;">
 	<tr>
 			<td class="calendar_head_box time"></td>
-		<?php foreach($headings as $heading){  ?>
+		<?php 
+		$headings = ["Mon","Tue","Wed","Thr","Fri","Sat","Sun"];
+		foreach($headings as $heading){  ?>
 			<td class="calendar_head_box"><?php echo $heading; ?></td>
 		<?php } ?>
 	</tr>
 	<tr>
-		<td class="calendar_blank_box slim" colspan="<?php echo $running_day + 1; ?>" align="left"><?php  echo date('F Y', strtotime($date)); ?> (week <?php echo $week; ?>)</td>
-		<?php for($day = $weekStartDate; $day <= ($weekEndDate - $running_day); $day++){
-				
-				if($day < ($days_in_month + 1)){
-				$date = date($year . '-' . $month . '-' . $day);
-				?><td class="calendar_box slim"><?php echo date('jS', strtotime($date)); ?> </td><?php
-				}else{
-				$date = date($year . '-' . $month . '-' . ($day - ($days_in_month)));
-				?><td class="calendar_box slim"><?php //echo date('jS', strtotime($date)); ?> </td><?php
-				}
+		<td class="calendar_blank_box slim" align="left"><?php echo $shownWeekStart->format('F Y'); ?></td>
+		<?php
+		$fakeCols = 0;
+		?>
+		<?php 
+		$workingDate = new DateTime();
+		$workingDate->setTimestamp($shownWeekStart->getTimestamp());
+		do{	
+			$dayNumOut = $workingDate->format('jS');
+			if ($dayNumOut == "1st") {
+				$dayNumOut = $dayNumOut . " ".$workingDate->format('M')."";
 			}
+			?><td class="calendar_box slim"><?php echo $dayNumOut; ?> </td><?php
+			$workingDate->modify('+ 1 day');
+		} while ($workingDate->format('l') != "Monday");
 		?>
 	</tr>
 		<?php
+			$divHeightForNoEntries = 119; //Height in pixels of Site / Day gap where no entries are present
+			$divHeightIndividualEntry = 58; //Height in pixels of a single Site / Day entry
 
+			$items = [];
 			for($x = 0; $x < $hourCount; $x++){
 				$number = $startTime + $x;
 				$i = str_pad($number, 2, '0', STR_PAD_LEFT);
 			?>
-				<tr>
-					<td class="calendar_box time"><?php echo $i; ?>:00 <?php if($i < 12){ echo 'AM'; }else{ echo 'PM'; } ?></td>
-					<?php for($rd = 0; $rd < $running_day; $rd++){ ?>
-						<td class="calendar_blank_box"></td>
-					<?php } ?>
+				<tr style="height: 120px">
+					<td class="calendar_box time" style="background-color:<?php
+					if ($i % 2 == 0) {
+						echo "darkgray";				
+					}
+					else {
+						echo "lightgray";
+					}
+					?>;vertical-align:top;"><?php echo $i; ?>:00 <?php if($i < 12){ echo 'AM'; }else{ echo 'PM'; } ?></td>
 					<?php
-
-						for($day = $weekStartDate; $day <= ($weekEndDate - $running_day); $day++){
-							if($day < ($days_in_month + 1)){ # this month
-							$formatedDate = $year . '-' . str_pad($month, 2, '0', STR_PAD_LEFT) .'-'. str_pad($day, 2, '0', STR_PAD_LEFT) . ' ' . $i . ':00:00';
-							
-							$xxx = "SELECT * FROM purchase_form WHERE date_due = ? && direct_drop = '0' && booking_ref_number != '' $temperatureQueryPiece";
-							$y = prepareExecuteQuery($xxx,'i',[$formatedDate]);
+						$workingDate->setTimestamp($shownWeekStart->getTimestamp());
+						do{	
+							$formatedDate = $workingDate->format('Y-m-d'). ' '. $i .':00:00';
+							$xxx = "SELECT * FROM purchase_form WHERE date_due = ? && deleted = '0' && direct_drop = '0' && booking_ref_number != '' $temperatureQueryPiece $siteQueryPiece";
+							$purchases = prepareExecuteQuery($xxx,'s',[$formatedDate]);
+							$thisBatch = [];
 							?>
-							<td class="calendar_box">
-								<br/>
-								<?php while($row = $y->fetch_assoc()){ $supplier = getSupplier($row['supplier_id']); ?>
-								<a href="#delivery<?php echo str_replace(' ','_', $row['id']); ?>" data-lity>
-								<?php
-									echo $supplier['name'];
-									if($row['haulier']) { echo '<br/>' . $row['haulier']; } 
-									echo '<br/>#' . $row['booking_ref_number'];
-									echo '<br/><br/>';
+							<td class="calendar_box" style="vertical-align:top;background-color:<?php
+								if ($i % 2 == 0) {
+									echo "darkgray";				
+								}
+								else {
+									echo "lightgray";
+								}
+								?>;">
+								<?php while($row = $purchases->fetch_assoc()){ 
+									$items[] = $row;
+									$thisBatch[$row["site_id"]][] = $row;
+								}
+								if (!array_key_exists(1,$thisBatch)&&($show_site_id == "*"||$show_site_id == "1")) $thisBatch[1]=[];
+								if (!array_key_exists(2,$thisBatch)&&($show_site_id == "*"||$show_site_id == "2")) $thisBatch[2]=[];
+								ksort($thisBatch);
+								$hasUnknown=false;
+								foreach ($thisBatch as $site_id=>$delsToSite)
+								{
+									switch ($site_id)
+									{
+										case "0":
+										{
+											$hasUnknown = true;
+											$header = "Unknown";
+											break;
+										}
+										case "1":
+										{
+											$header = "Wolverhampton";
+											break;
+										}
+										case "2":
+										{
+											$header = "Gatwick";
+											break;
+										}
+									}
+									$href = "site_id=".$site_id."&date=".urlencode($formatedDate);
+									$atleast1 = false;
+									if ($header == "Unknown" ||(!$hasUnknown && $header == "Wolverhampton" && ($show_site_id == "*" || $show_site_id == "1"))){
+									?>
+										<div style="position:relative;width:100%;top:0px;height:20px;">
+											<a style="color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;width:100%;text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+&nbsp;</span></a>
+										</div>
+
+									<?php
+									} else if ($show_site_id == "*" || $show_site_id == "2"){
+									?>
+									<div style="position:relative;width:100%;height:20px;">
+									<a style="border-top: 1px solid grey;color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;width:100%;text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+ &nbsp;</span></a>
+									</div>
+									<?php
+									}
+									foreach ($delsToSite as $row) {
+										$divPadding++;
+										$supplier = getSupplier($row['supplier_id']); ?>
+										<div style="margin:2pt;background:#<?php echo ($row['temperature_id'] == 1)? "c0392b" : "2980b9"; ?>;">
+										<a style="margin:2pt;color:white;min-height:3em;width:100%;display:flex;" href="#delivery<?php echo str_replace(' ','_', $row['id']); ?>" data-lity>
+										<?php
+											if ($display_col == "*" || $display_col == "supplier_id") 
+											{ 
+												echo $supplier['name'] . '<br>' ;
+												echo $row['purchase_comments'] . '<br>' ;
+											}
+											if($row['haulier'] && ($display_col == "*" || $display_col == "haulier")) 
+											{ 
+												echo $row['haulier']. '<br>'; 
+												echo '#' . $row['booking_ref_number'] . '<br>' ;
+											} 
+										?>
+										</a>
+										</div>
+								<?php 
+									}
+									for ($j=0;$j<$neededRow;$j++){
+										?>
+										<div style="margin:4pt;min-height:3em"></div></div>
+										<?php
+									}
+
+									if ($divPadding < 2) { //We need to Pad this Day / Time / Site Entry block
+										if ($divPadding == 0) { //No entries - pad the empty space
+											echo "<div style='position:relative;height:" . $divHeightForNoEntries . "px;'></div>";
+										}
+										else {
+											while ($divPadding > 0) { //For each empty block - pad it!
+												echo "<div style='position:relative;height:" . $divHeightIndividualEntry . "px;'></div>";
+												$divPadding -=1;
+											}	
+											
+										}
+									}
+								}
+								$divPadding = 0;
 								?>
-								</a>
-								<?php } ?>
 							</td>
 							<?php
-							}else{ # next month
-							?><td class="calendar_box"><?php //echo $i; ?><?php //echo $day -($days_in_month); ?></td><?php
-							}
-						}
+							$workingDate->modify('+ 1 day');
+						} while ($workingDate->format('l') != "Monday");
 					?>
 				</tr>
 				<?php
@@ -185,11 +281,7 @@
 </table>
 
 <?php
-
-	$x = "SELECT * FROM `purchase_form` WHERE booking_ref_number != '' $temperatureQueryPiece";
-	$y = prepareExecuteQuery($x);
-	
-	while($row = $y->fetch_assoc()){
+	foreach($items as $row){
 		$purchaseid = $row['id'];
 		
 		$supplier = getSupplier($row['supplier_id']);
@@ -198,7 +290,10 @@
 			<h2><?php echo $supplier['name']; ?></h2>
 			<b>Booking Ref</b>
 			<p style="margin-top:5px;">#<?php echo $row['booking_ref_number']; ?></p>
-			
+			<?php if($row['site_id'] && $row['site_id']!=0){ ?>
+				<b>Site</b>
+				<p style="margin-top:5px;"><?php echo ($row['site_id'] == 1) ? "Wolverhampton" : "Gatwick" ; ?></p>
+			<?php } ?>
 			<?php if($row['haulier']){ ?>
 				<b>Haulier</b>
 				<p style="margin-top:5px;"><?php echo $row['haulier']; ?></p>
@@ -248,42 +343,46 @@
 				$intake = $ty->fetch_assoc();
 			?>
 			<br/>
-			<a href="createPurchase.php?id=<?php echo $purchaseid; ?>" class="btn">View Purchase</a>
-			<?php				
-				if($txcount > 0){
-				?><a href="intake.php?id=<?php echo $intake['id']; ?>" class="btn">View Intake</a><?php
-				}else{
-				?><a href="newDelivery.php?purchaseid=<?php echo $purchaseid; ?>" class="btn">Create Intake</a><?php
-				}
-			?>
+			<a href="createPurchase.php?id=<?php echo $purchaseid; ?>" class="btn">View Arrival</a>
+			<a href="scripts/deletePurchase.php?id=<?php echo $purchaseid; ?>&ts=<?php echo $shownWeekStart->getTimestamp(); ?>" class="btn">Delete Arrival</a>
 		</div>
 		<?php
-	}
+	}	
 ?>
 
 <script>
-	let month = '<?php echo $month; ?>';
-	let year = '<?php echo $year; ?>';
-	let chilled_filter = 0;
-	let week = '<?php echo $week; ?>';
+	var year = '<?php echo $year; ?>';
+	var chilled_filter = '<?php echo $temperature_id; ?>';
+	var week = '<?php echo $week; ?>';
+	var display_col = '<?php echo $display_col; ?>';
+	var site_id = '<?php echo $show_site_id; ?>';
 
 	$('#calMonth').change(function(){
-		month = $(this).val();
-		
-		updateCalendar(month, year, chilled_filter, week);
+		var month = $(this).val();
+		console.log(month);
+		updateCalendarByMonth(year, chilled_filter, month,display_col,site_id);
 	});
 	
 	$('#calYear').change(function(){
 		year = $(this).val();
 		
-		updateCalendar(month, year, chilled_filter, week);
+		updateCalendar(year, chilled_filter, week,display_col,site_id);
 	});
 
 	$('#temperature_id').change(function(){
 		chilled_filter = $(this).val();
-		updateCalendar(month, year, chilled_filter, week);
+		updateCalendar(year, chilled_filter, week,display_col,site_id);
 	});
 
+	$('#display_col').change(function(){
+		display_col = $(this).val();
+		updateCalendar(year, chilled_filter, week,display_col,site_id);
+	});
+
+	$('#site_id').change(function(){
+		site_id = $(this).val();
+		updateCalendar(year, chilled_filter, week,display_col,site_id);
+	});
 	
 
 </script>

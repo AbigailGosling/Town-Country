@@ -1,10 +1,10 @@
 <?php
 	require(__DIR__.'/../functions.php');
-	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
-	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
-	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
-	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
-	$dateParsed = $mysqli->real_escape_string( request()->input('date'));
+	$product_id = request()->input('product_id');
+	$pallet_id = request()->input('pallet_id');
+	$species_id = request()->input('species_id');
+	$cut_id = request()->input('cut_id');
+	$dateParsed = request()->input('date');
 	$q = request()->input('q');
 	$comment = request()->input('comment');
 	

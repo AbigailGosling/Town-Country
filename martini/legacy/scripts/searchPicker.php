@@ -1,3 +1,9 @@
+<?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+?>
 <script type="text/javascript">
     $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
@@ -37,7 +43,7 @@
 	        <th class="searchRContent__date-range">Date Range</th>
 	        <th>Volume</th>
 	        <th>Cost</th>
-	        <th>RRP</th>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th>Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th> 
         </tr>
     </thead>
@@ -116,18 +122,33 @@
     
     $whereString = implode(' && ',$whereArray);
 
-    $productsX = "SELECT *, product.comments as productcomments, product.id as productid, cuts.name as cutname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
-    INNER JOIN `weights` ON product.id = weights.product_id
-    JOIN `cuts` ON product.cut_id = cuts.id
-    JOIN `nationality` ON product.nationality_id = nationality.id
-    WHERE $whereString
-    GROUP BY pallet.intake_id, product.cut_id,product.nationality_id ORDER BY product.cut_id DESC";
+    $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
+    INNER JOIN `weights` ON `product`.`id` = `weights`.`product_id`
+    JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
+    JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
+    WHERE $whereString";
+
     $productsY = prepareExecuteQuery($productsX);
-    $productsCount = mysqli_num_rows($productsY);
      
     $totalW = 0;
     
-    $products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
+    $products2 = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
+    $products = [];
+    $knownCombo = [];
+    foreach ($products2 as $productRow)
+    {
+        $alasCombo = $productRow['intake_id'] . "-" . $productRow['cut_id'] . "-" . $productRow['nationality_id'];
+        if (!array_key_exists($alasCombo,$knownCombo))
+        {
+            $knownCombo[$alasCombo] = $alasCombo;
+            $products[] = $productRow;
+        }
+    }
+    usort($products, function ($item1,$item2){
+        return $item2['cut_id'] <=> $item1['cut_id'];
+    });
+    $products2 = null; 
+    $productsCount = count($products);
     $overallQuantity =0;
     $overallWeight =0;
     foreach($products as $productsRow){
@@ -178,6 +199,8 @@
         $product2_temperatures = array();
         $product2_dateranges = array();
         $product2_quantity = 0;
+        $startdates = array();
+        $enddates = array();
         foreach ($products2 as $product2) 
         {
             array_push($product2_palletids, $product2['pallet_id']);
@@ -199,6 +222,8 @@
                 array_push($product2_nationalities, $product2['nationality_id']);
                 array_push($product2_temperatures, $product2['cooling_id']);
                 array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+                if ($product2['range_from'] != "")$startdates[]=$product2['range_from'];
+                if ($product2['range_to'] != "")$enddates[]=$product2['range_to'];
             }
 
         }
@@ -207,7 +232,62 @@
         $uniqueNationalities = count(array_unique($product2_nationalities));
         $uniqueTemperatures = count(array_unique($product2_temperatures));
         $uniqueDateranges = count(array_unique($product2_dateranges));
+        $bgCol = '';
+        $earliestStartDate = '';
+        $latestEndDate = '';
+        if($uniqueDateranges == 1){
+            $earliestStartDate = explode("-",$product2_dateranges[0])[0];
+            $latestEndDate = explode("-",$product2_dateranges[0])[1];
+        }
+        else if ($uniqueDateranges>0) {
+            $earliestStartDateTS=DateTime::createFromFormat('d/m/Y',$startdates[0])->getTimestamp();
+            foreach($startdates as $startdate){
+                $internalTS = DateTime::createFromFormat('d/m/Y',$startdate)->getTimestamp();
+                if ($internalTS < $earliestStartDateTS) $earliestStartDateTS = $internalTS;
+            }
+            $internalDate = new DateTime();
+            $internalDate->setTimestamp($earliestStartDateTS);
+            $earliestStartDate = $internalDate->format('d/m/Y');
 
+            $latestEndDateTS=DateTime::createFromFormat('d/m/Y',$enddates[0])->getTimestamp();
+            foreach($enddates as $enddate){
+                $internalTS = DateTime::createFromFormat('d/m/Y',$enddate)->getTimestamp();
+                if ($internalTS > $latestEndDateTS) $latestEndDateTS = $internalTS;
+            }
+            $internalDate = new DateTime();
+            $internalDate->setTimestamp($latestEndDateTS);
+            $latestEndDate = $internalDate->format('d/m/Y');
+        }
+        if($ubbb != 2 && $earliestStartDate != "" && $latestEndDate != ""){
+            $toDate = DateTime::createFromFormat('d/m/Y',$earliestStartDate)->getTimestamp();
+            $toDate2 = DateTime::createFromFormat('d/m/Y',$latestEndDate)->getTimestamp();
+            if ($toDate2 < $toDate) $toDate = $toDate2;
+            $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
+            $cutResult= mysqli_fetch_assoc($cutQuery);
+            if ($temp_id == 1 && ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")))
+            {
+                $bgCol = '';
+                $now = time();
+                $alreadyFlagged = false;
+                if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                {
+                    $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
+                    if ($pastWarning1 <= $now)
+                    {
+                        $bgCol = 'style="background-color:#FFBF00"';
+                    }
+                }
+                if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                {
+                    $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
+                    if ($pastWarning2 <= $now)
+                    {
+                        $bgCol = 'style="background-color:red"';
+                        $alreadyFlagged = true;
+                    }
+                }
+            }
+        }
         if($product2_quantity != 0) $quantityTotal = $product2_quantity;
         else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
@@ -229,10 +309,13 @@
             $lockedT = "n";
         }
         if($totalWeightOfProduct < 1 && $productsRow['unit'] != 'PPC'){ continue; }
+        if($productsRow['unit'] == 'PPC')$totalWeightOfProduct = $quantityTotal;
         $overallQuantity = $overallQuantity + $quantityTotal;
         $overallWeight = $overallWeight + $totalWeightOfProduct;
+        $currentCost = (float)$productsRow['cost'];
+        $overallCost = $overallCost + ($totalWeightOfProduct * $currentCost);
         ?>
-        <tr class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
+        <tr <?php if(isset($product2_dateranges[0])) echo $bgCol; ?> class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
             <td colspan="1">
                 <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
                     <?php if($locked){ ?>
@@ -295,46 +378,12 @@
             </td>
 			
             <?php
-                if($uniqueDateranges > 1){
-                    echo '<td>--</td>';                    
+                if($ubbb != 2){
+                        
+                    if($earliestStartDate != "" && $latestEndDate != "") echo '<td>'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate.'</td>';
+                    else echo '<td>--</td>';
                 }else{
-                    if($ubbb != 2){
-                        $toDate = DateTime::createFromFormat('d/m/Y',explode("-",$product2_dateranges[0])[0])->getTimestamp();
-                        $toDate2 = DateTime::createFromFormat('d/m/Y',explode("-",$product2_dateranges[0])[1])->getTimestamp();
-                        if ($toDate2 < $toDate) $toDate = $toDate2;
-                        $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
-                        $cutResult= mysqli_fetch_assoc($cutQuery);
-                        $bgCol = "";
-                        if ($temp_id == 1 && ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")))
-                        {
-                            $bgCol = 'style="background-color:LightGreen"';
-                            $now = time();
-                            $alreadyFlagged = false;
-                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
-                            {
-                                $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
-                                if ($pastWarning1 <= $now)
-                                {
-                                    $bgCol = 'style="background-color:LemonChiffon"';
-                                }
-                            }
-                            if (isset($cutResult['danger']) && $cutResult['danger'] != "")
-                            {
-                                $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
-                                if ($pastWarning2 <= $now)
-                                {
-                                    $bgCol = 'style="background-color:LightPink"';
-                                    $alreadyFlagged = true;
-                                }
-                            }
-                        }
-                        
-                        
-                        if(isset($product2_dateranges[0])) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $product2_dateranges[0].'</td>';
-                        else echo '<td>--</td>';
-                    }else{
-                        echo '<td>'.$ubtext.'</td>';
-                    }
+                    echo '<td>'.$ubtext.'</td>';
                 }
             ?>
             <td class="bold"><?php 
@@ -355,8 +404,8 @@
                 }
 
  				?></td>
-			<td class="bold"><?php if($productsRow['cost']){ echo '£' . number_format(applyCustomerMarkup($customer_id,(float)$productsRow['cost']), 2, '.', ''); } ?></td>
-			<td class="bold"><?php if($productsRow['price']){ echo '£' . number_format(applyCustomerMarkup($customer_id,(float)$productsRow['price']), 2, '.', ''); } ?></td>
+			<td class="bold"><?php if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
             <td></td>
         </tr>
     <?php  ?>
@@ -385,8 +434,8 @@
     <td>
     </td>
     <td></td>
-    <td class="bold"><?php echo floorDec($overallWeight,3) . "kg"; ?></td>
-    <td class="bold"></td>
+    <td class="bold"><?php echo number_format(floorDec($overallWeight,3),3,".",",") . "kg"; ?></td>
+    <td class="bold"><?php echo "£".number_format(floorDec($overallCost,2),2,".",","); ?></td>
     <td class="bold"></td>
     <td></td>
 </tr>

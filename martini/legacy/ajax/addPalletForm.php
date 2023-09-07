@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
+	$intake_id = request()->input('intake_id');
 	
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);

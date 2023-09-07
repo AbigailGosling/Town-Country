@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include('includes/frontHeader.php');
 	
 	$picksheetid = request()->input('id');
@@ -25,7 +29,7 @@
 
 ?>
 <style type="text/css">
-	#addtoPalletForm{
+	#palletAddBtnForm{
 		margin-bottom: 12vh;
 	}
 
@@ -49,7 +53,67 @@
 	<a href="<?php echo $domain; ?>pickSheetList.php" class="backbtn">< Back</a>
 	
 	<h1>PICK FORM</h1>
-	
+	<?php
+		$notification = prepareExecuteQuery("SELECT * FROM `pickerNotifications` WHERE `pickersheet_id` = ? ORDER BY id DESC LIMIT 1",'i',[$picksheetid])->fetch_assoc();
+		$pickIsLocked = false;
+		$userC = User::find(Auth::id());
+		if ($notification)
+		{
+			$sendingUser =  prepareExecuteQuery("SELECT * FROM `users` WHERE `id` = ?",'i',[$notification['user_id']])->fetch_assoc();
+			if ($notification['locked'] == "1" && $notification['lock_release'] == "0"){
+				$pickIsLocked = true;
+				$controlLock = ($userC->hasPermission("send_picker_notification") && ($userC->id == $notification['user_id'] || User::find($userid)->hasPermission("admin")));
+				?>
+				<div class="row custom-warning-box" id="warning" style="<?php if ($controlLock) //echo "width:75%;";?>background:rgb(255, 102, 102); border: 2px solid rgb(255, 0, 0)">
+					Locked by <?php echo $sendingUser['name']; ?> : <?php echo $notification['message']; ?>
+					<?php
+						
+					?>
+				</div>
+				<?php
+				if ($controlLock){
+					?>
+					<div style="margin:10px;width:100%">
+					<form method="POST" action="scripts/releaseNotificationLock.php">
+						<?php echo csrf_field(); ?>
+						<input type="hidden" name="pick_id" value="<?php echo $picksheetid; ?>">
+						<input type="hidden" name="pick_type" value="<?php echo $type; ?>">
+						<input type="hidden" name="id" value="<?php echo $notification['id']; ?>">
+						<input type="submit" value="Release Lock" style="width:24%;height:30px;margin-bottom:10px;">
+					</form>
+				</div>
+					<?php
+				}
+			}
+			else
+			{
+				?>
+				<div class="row custom-warning-box" id="warning" style="background:rgb(144, 238, 144); border: 2px solid rgb(0, 255, 0)">
+					Message from <?php echo $sendingUser['name']; ?> : <?php echo $notification['message']; ?>
+				</div>
+				<?php
+			}
+		}
+		if ($userC->hasPermission("send_picker_notification")){
+			?>
+			<div style="padding:10px;font-size: 18px;width: 100%;border: solid 1px black;">
+			<label>Contact Picker</label>
+				<form method="POST" action="scripts/sendPickNotification.php" style="width: 100%;">
+					<?php echo csrf_field(); ?>
+					<input type="hidden" name="pick_id" value="<?php echo $picksheetid; ?>">
+					<input type="hidden" name="pick_type" value="<?php echo $type; ?>">
+					<input type="textarea" name="message" style="width:100%;height:50px;">
+					<table><tr>
+					<td style="width:33%"><input type="checkbox" id="checkbox_id" name="lock_pick">
+					<label for="checkbox_id">Lock Pick?</label></td>
+					<td style="width:80%"></td>
+					<td><input type="submit" value="Send Message" style="width:110px;height:30px;margin-bottom:10px;right:0px"></td>
+					</tr></table>
+				</form>
+				</div>
+			<?php
+		}
+	?>
 	<div>
 		<?php if($pickerSheet['completed'] == '1'){ ?>
 
@@ -69,7 +133,7 @@
 				<label><b>Delivery Date:</b> <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
 			</div>
 
-			<div style="padding-bottom:10px;font-size: 18px;width:100%;">
+			<div style="padding-bottom:10px;font-size: 18px;width:50%;">
 				<label><b>Delivery Address:</b>
 			<div class="deliverybox">
 				<p>
@@ -97,7 +161,7 @@
 
 		</div>
 	</div>
-	<form method="POST" id="addtoPalletForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
+	<form method="POST" id="palletAddBtnForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
 	<?php
 		
 		##########################
@@ -278,14 +342,14 @@
 			<input type="text" id="functype" name="functype" style="display:none;">
 			<input type="text" id="newweightvals" name="newweightvals" style="display:none">
 			<input type="button" onclick="mainForm()" style="display:none;">
- 			<input type="button" id="addToPallet" value="Add to Pallet" style="width:323px;height:34px;margin-bottom:10px;display:block;">
-			<input type="button" id="nextPallet" value="Next Pallet" style="width:323px;height:34px;margin-bottom:10px;display: block;">
+ 			<input type="button" id="palletAddBtn" value="Add to Pallet" style="width:323px;height:34px;margin-bottom:10px;display:block;"<?php if($pickIsLocked) echo " disabled"?>>
+			<!--<input type="button" id="nextPallet" value="Next Pallet" style="width:323px;height:34px;margin-bottom:10px;display: block;">-->
 		</form>
 		<br/>
 		<form method="POST" action="scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
 		<input type="hidden" name="sheet_type" value="<?php echo request()->input('type'); ?>">
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
-			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0){ ?> disabled <?php } ?>>
+			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0 || $pickIsLocked){ ?> disabled <?php } ?>>
 		</form>
 
 	</div>
@@ -396,7 +460,7 @@
 <div id="btm"></div>
 <script>
  function mainForm(){
-	$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 }
 function mainFormSucess(){
 	location.reload();
@@ -503,7 +567,7 @@ function mainFormSucess(){
 		checkSelectedWeightsAndSubmit();
 	});
 		
-	$('#addToPallet').click(function(){
+	$('#palletAddBtn').click(function(){
 		$('#functype').val('ADD');
 		checkSelectedWeightsAndSubmit();
 	});
@@ -524,6 +588,7 @@ function mainFormSucess(){
 		});
 
 		console.log('Total Got: ' + totalGot);
+
 
 		var formName = '#markCompletedForm';
 		$('#markCompletedForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:markCompletedSucess});
@@ -589,7 +654,10 @@ function mainFormSucess(){
 			askForIncompleteSelectionApprovalAndSubmit();
 			return false;
 		 }
-		$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+		$('#palletAddBtn').prop("disabled", true);
+		$('#completeFormBtn').prop("disabled", true);
+		console.log(1);
+		$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 	}
 
 	function askForIncompleteSelectionApprovalAndSubmit()
@@ -603,7 +671,9 @@ function mainFormSucess(){
 			confirmButtonText: 'Continue'
 		}).then((result) => {
 			if (result.value) {
-				$('#addtoPalletForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+				$('#palletAddBtn').attr("disabled", true);
+				$('#completeFormBtn').attr("disabled", true);
+				$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 			}
 		});
 	}

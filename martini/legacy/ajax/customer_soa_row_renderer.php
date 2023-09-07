@@ -44,7 +44,7 @@
         <td data-sort="<?php echo $picksheet['sortableDueDateFormat']; ?>" width="100"><?php echo $picksheet['date']; ?></td>
         <td align="right" width="100" class="digit_value" value="<?php echo number_format($picksheet['price'],2,".",""); ?>"><?php if($picksheet['price'] != 0) { echo '£' . number_format($picksheet['price'],2,".",","); } ?></td>
         <td align="right" width="100" class="digit_paid" value="<?php echo number_format($picksheet['paid'],2,".",""); ?>"><?php if($picksheet['paid'] != 0){ echo '£' . number_format($picksheet['paid'], 2, ".", ","); } ?></td>
-        <td align="right" style="color:red;" class="digit_credit" value="<?php echo number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ""); ?>"><?php if(totalValueCreditedOnInvoiceID($picksheet['id'])){ echo '£' . number_format(totalValueCreditedOnInvoiceID($picksheet['id']), 2, ".", ","); }?></td>
+        <td align="right" style="color:red;" class="digit_credit" value="<?php echo number_format($picksheet['credit'], 2, ".", ""); ?>"><?php if($picksheet['credit']){ echo '£' . number_format($picksheet['credit'], 2, ".", ","); }?></td>
         <td align="right" width="100" class="digit_outstanding" value="<?php echo number_format($picksheet['outstanding'], 2, ".", ""); ?>" <?php if($picksheet['outstanding'] < 0) { echo 'style="color:red;"'; } ?> ><?php if(number_format($picksheet['outstanding'], 2, ".", ",") != 0){ echo '£' . number_format($picksheet['outstanding'], 2, ".", ","); } ?></td>
     </tr>
     <?php

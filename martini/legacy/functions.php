@@ -18,7 +18,7 @@ use Ramsey\Uuid\Type\Decimal;
 	$userid = $_SESSION['USER'];
 	
 	
-	$pageName = request()->server('REQUEST_URI');
+	$pageName = str_replace("?".request()->server('QUERY_STRING'),'',request()->server('REQUEST_URI'));
 	
 	$exit = 1;
 	switch ($pageName)
@@ -26,11 +26,11 @@ use Ramsey\Uuid\Type\Decimal;
 		case '/':
 		case '/index.php':
 		case '/legacy/script_login.php':
+		case '/legacy/ajax/generatePDFsaleconfirm.php':
 		case '/legacy/ajax/generatePDFstatement2.php':
 		case '/legacy/scripts/SLabsNotifier.php':
 			$exit = 0;
 	}
-	
 	if(!$_SESSION['USER'] && $exit == 1){ header('location:/logout'); exit; die();}
 	
 	if($userid != ''){
@@ -45,16 +45,20 @@ use Ramsey\Uuid\Type\Decimal;
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
 		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
-		if (((int)(microtime(true)*1000)-$s) > 2)Log::debug($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
+		Log::debug($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
+	global $knownStatements;
 	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
 		global $mysqli;
+		global $knownStatements;
+		if (!$knownStatements){$knownStatements = [];}
 		$res = null;
 		try
 		{
-			$stmt = $mysqli->prepare($sql);
+			if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
+			$stmt = $knownStatements[$sql."_".$varTypes];
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
 			$s = time();
 			$stmt->execute();
@@ -268,21 +272,20 @@ use Ramsey\Uuid\Type\Decimal;
 		
 	}
 	
-	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop, $temperature_id){
-		global $mysqli;
+	function createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number, $haulier, $direct_drop, $temperature_id,$site_id){
 		
-		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop,temperature_id) 
-		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		return prepareExecuteQuery($x,'issssssssssssss',
-			[$supplier_id,$speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$purchase_comments,$file_name,$booking_ref_number,$transportation,$haulier,$direct_drop,$temperature_id],true);
+		$x = "INSERT into purchase_form (supplier_id,species,cut,price,units,date_purchased,purchased_by,date_due,purchase_comments,dfile,booking_ref_number,transportation,haulier,direct_drop,temperature_id,site_id) 
+		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		return prepareExecuteQuery($x,'isssssssssssssss',
+			[$supplier_id,$speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$purchase_comments,$file_name,$booking_ref_number,$transportation,$haulier,$direct_drop,$temperature_id,$site_id],true);
 	}
 	
 	
-	function updatePurchase($id, $transportation, $supplier_id,$speciesString,$cutString,$unitsString, $priceString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number,$haulier, $direct_drop, $temperature_id){
+	function updatePurchase($id, $transportation, $supplier_id,$speciesString,$cutString,$unitsString, $priceString, $date_purchased, $purchased_by, $date_due, $purchase_comments, $file_name, $booking_ref_number,$haulier, $direct_drop, $temperature_id,$site_id){
 		global $mysqli;
 		
-		$x ="UPDATE `purchase_form` SET transportation=?, supplier_id=?,species=?, cut=?,units=?, price=?, date_purchased=?,purchased_by=?,date_due=?,purchase_comments=?";
-		$vars = [$transportation,$supplier_id,$speciesString,$cutString,$unitsString,$priceString,$date_purchased,$purchased_by,$date_due,$purchase_comments];
+		$x ="UPDATE `purchase_form` SET transportation=?, supplier_id=?,species=?, cut=?,units=?, price=?, date_purchased=?,purchased_by=?,date_due=?,purchase_comments=?,site_id=?";
+		$vars = [$transportation,$supplier_id,$speciesString,$cutString,$unitsString,$priceString,$date_purchased,$purchased_by,$date_due,$purchase_comments,$site_id];
         if($file_name != ''){
             $x .=",dfile=?";
 			$vars[] =$file_name;
@@ -526,7 +529,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function deletePurchase($id){
 		global $mysqli;
 		
-		$x = "DELETE FROM purchase_form WHERE id=? LIMIT 1";
+		$x = "UPDATE purchase_form SET deleted = 1 WHERE id=? LIMIT 1";
 		$y = prepareExecuteQuery($x,'i',[$id]);
 	}
 	
@@ -1576,8 +1579,8 @@ use Ramsey\Uuid\Type\Decimal;
 			}
 			$pickerItemByProductID = array();	
 			if (count($productIDArray) == 0) continue;
-			$howManyX = "SELECT * FROM `pickerItems` WHERE `pickersheet_id` = $pickersheet_id";
-			$howManyY = prepareExecuteQuery($howManyX);
+			$howManyX = "SELECT * FROM `pickerItems` WHERE `pickersheet_id` = ?";
+			$howManyY = prepareExecuteQuery($howManyX,'i',[$pickersheet_id]);
 			while ($pickItemByProd = $howManyY->fetch_assoc()){
 				$sheetproduct = $pickersheet_id . "_" . $pickItemByProd['product_id'];
 				if(!array_key_exists($sheetproduct, $weightsByProductID)){
@@ -1747,7 +1750,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function doesInvoiceHaveReturns($invoice_id){
 		global $mysqli;
 
-		$result = loggedQuery("SELECT count(id) as `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number`=?",'s',[(string)$invoice_id]);
+		$result = prepareExecuteQuery("SELECT count(id) as `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number`=?",'s',[(string)$invoice_id]);
 		$data = $result->fetch_assoc();
 
 		if($data['count'] == 0){
@@ -1863,7 +1866,7 @@ use Ramsey\Uuid\Type\Decimal;
 			foreach ($queries as $query)
 			{
 				$x = sprintf($query,$test);			
-				$y = loggedQuery($x);
+				$y = prepareExecuteQuery($x);
 				$count = mysqli_num_rows($y);
 				if ($count > 0 && $count < 20)
 				{
@@ -1880,17 +1883,15 @@ use Ramsey\Uuid\Type\Decimal;
 		$customerEntry = null;
 		if (!array_key_exists($customer_id,$knownCustomerMarkups))
 		{
-			$qR = prepareExecuteQuery("SELECT markup_type,markup_amount FROM customers WHERE id = ?",'i',[$customer_id]);
-			$knownCustomerMarkups[$customer_id] = $qR->fetch_assoc();
+			$knownCustomerMarkups[$customer_id] = 
+				prepareExecuteQuery("SELECT `customers`.`markup_enabled`,`customers`.`markup_amount` FROM `customers` WHERE `customers`.`id` = ?",'i',[$customer_id])->fetch_assoc();
 		}
 		$customerEntry = $knownCustomerMarkups[$customer_id];
-		if ($customerEntry['markup_amount'] == null || $customerEntry['markup_amount'] == "" || $customerEntry['markup_amount'] == 0) return $price;
-		
-		if ($customerEntry['markup_type'] == "FLAT") return $price + $customerEntry['markup_amount'];
-		if ($customerEntry['markup_type'] == "PERCENT") {
-			$percent = $customerEntry['markup_amount'] / 100;
-			return $price + ($price*$percent);
-		}		
+		if ($customerEntry['markup_enabled'] == 0 || $customerEntry['markup_amount'] == null || 
+			$customerEntry['markup_amount' ] == ""|| $customerEntry['markup_amount'] == 0 )
+			return 0;
+		$percent = $customerEntry['markup_amount'] / 100;
+		return $price*$percent;	
 	}
 	function loggedDataChange($type,$entity_id,$body){
 		Log::debug(new \Exception(),[$type,$entity_id,$body]);
@@ -1899,26 +1900,6 @@ use Ramsey\Uuid\Type\Decimal;
 		$body = $mysqli->real_escape_string($body);
 		$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";			
 		$y = prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
-	}
-	function debuglogging($body){
-		global $mysqli;
-		$userid = $_SESSION['USER'];
-		$body = $mysqli->real_escape_string($body);
-		$arr = $mysqli->real_escape_string(json_encode(array("REQUEST"=>request()->all())));
-		$REQUEST_URI = $mysqli->real_escape_string($_SERVER['REQUEST_URI']);
-		$session_id = $mysqli->real_escape_string(session_id());
-		$x = "INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES ('".$REQUEST_URI."','".$arr."','$userid','".$session_id."','$body')";			
-		prepareExecuteQuery($x);
-	}
-	function queryproxy(mysqli $mysqli, string $query)
-	{
-		debuglogging($query);
-		$outcome = mysqli_query($mysqli,$query);
-		if ($outcome == false)
-		{
-			debuglogging(mysqli_error($mysqli));
-		}
-		return $outcome;
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>

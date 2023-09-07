@@ -222,7 +222,7 @@
 	function removeFromList(id, pallet_id, product_id){
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
-
+		checkUBDates();
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
@@ -232,49 +232,54 @@ function checkStock(){
     var readyToSubmit = 1;
 
     var group = $('input[name="basketRow[]"]');
-		group.each(function (index) {
-            var value = $(this).val();
-            var bits = value.split('-');
-            var product_id = bits[0];
-            var quantity_wanted = bits[1];
+	var allPass = true;
+	var target = group.length;
 
-            $.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
-				var product_stock_count = parseInt(num);
-				
-                if(quantity_wanted <= product_stock_count){
- 
-				}else{
-                    $('.product' + product_id).css('background-color','red');
+	group.each(function (index) {
+		var value = $(this).val();
+		var bits = value.split('-');
+		var product_id = bits[0];
+		var quantity_wanted = bits[1];
 
-                    readyToSubmit = 0;
-                }
-            });
-        });
+		$.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
+			var product_stock_count = parseInt(num);
+			
+			if(quantity_wanted <= product_stock_count){
 
-        setTimeout(function(){
-			if(readyToSubmit == 0){
-				Swal.fire({
+			}else{
+				allPass = false;
+				$('.product' + product_id).css('background-color','red');
+			}
+			target--;
+		});
+	});
+
+	var intervalPoll = setInterval(function() {
+		if (target>0)return;
+		else clearInterval(intervalPoll);
+		if (!allPass)
+		{
+			modalDialog.hideMask();
+			Swal.fire({
 					title: "Some of the selected items are already sold",
 					text: "Please search stock again to view available items",
 					icon: "warning",
+					allowOutsideClick: false,
+					allowEscapeKey: false,
 					showCancelButton: false,
 					showConfirmButton: false,
-					dangerMode: true,
 					showCloseButton: true
 				});
 
-				$('#sendfake').prop('disabled', false);
-			}else{
-				if (showPriceCheck)
-				{
-					modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale)
-				}
-				else
-				{
-					$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess,error:finalSaleFailure});
-				}
-			}
-		}, 2000);
+			$('#sendfake').prop('disabled', false);
+		}
+		else
+		{
+			$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess,error:finalSaleFailure});
+		}
+		
+	},5)
+
 }
 function completeSale()
 {
@@ -357,7 +362,6 @@ function cancelSale()
 		border-collapse: collapse;
 		text-align: center;
 		font-size: 14px;
-		table-layout: fixed;
 		width: 100%;
 	}
 
@@ -536,14 +540,17 @@ function cancelSale()
 			}
 		});
 		
-		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet){
+		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
 			checkStock();
 			return false;
 		}else{
+			
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
-
+			else if (showPriceCheck) {
+				modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale)
+			}
 			$('#sendfake').prop('disabled', false);
 
 		}		
@@ -558,7 +565,6 @@ function cancelSale()
 		});
 	}
 	function setCustomerCreditFeedback(data){
-		console.log("test");
 		if (data == "") data = getCustomResult;
 		$('#address').html(data);
 			$('.rating').fadeIn();
@@ -658,24 +664,28 @@ function cancelSale()
 			if (ubs.length == 0 || dateText == null || dateText == "") return;
 			var date = parseDMY(dateText).getTime();
 			$('#sendfake').prop('disabled',false);
-			var pastBB = false; 
+			var beyondBB = false; 
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
 				var temp = temps[x];
-				if (ub.innerHTML=="" || temp.innerHTML.trim() != 1)
+				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1) && customerID != "420")
 				{
 					continue;
 				}
 				var ubd = parseDMY(ub.innerHTML).getTime();
 				if (ubd < date)
 				{
-					pastBB = true;
-					break;
+					$(ub).css('background', "#ff6666");
+					beyondBB = true;
+				}
+				else
+				{
+					$(ub).css('background', "#ffffff");
 				}
 			}
-			if (pastBB)
+			if (beyondBB)
 			{
-				$('#sendfake').prop('disabled',false);
+				$('#sendfake').prop('disabled',true);
 				$('#warning').css('background', "#ff6666");
 				$('#warning').css('border', "2px solid #ff0000");
 				$('#warning').css('display', "inline-block");

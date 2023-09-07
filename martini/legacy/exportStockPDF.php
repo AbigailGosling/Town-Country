@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	require('functions.php');
     ini_set('max_execution_time','256');
 	ini_set('memory_limit', '1536M');
@@ -168,9 +172,9 @@
                     <td class="heading" width="110">Date Range</td>
                     <td class="heading" width="50"></td>
                     <td class="heading" width="80">Volume Kg</td>
-                    <td class="heading" width="110" align="right">Cost</td>
-                    <td class="heading" width="110" align="right">RRP</td>
-                </tr>
+                    <td class="heading" width="110" align="right">Cost</td>';
+    if (User::find(Auth::id())->hasPermission("viewcosts")) $header .= '                <td class="heading" width="110" align="right">Actual Cost</td>';
+    $header .= '            </tr>
                 </table>';
 
 
@@ -320,7 +324,7 @@ INNER JOIN `weights` ON product.id = weights.product_id
         $total_price += number_format((double)$productsRow['price'], 2, '.', '');
 
         $html .= '<td class="cell cost">£' . number_format((double)$productsRow['cost'], 2, '.', '') . '</td>';
-        $html .= '<td class="cell price">£' .  number_format((double)$productsRow['price'], 2, '.', '') . '</td>';
+        if (User::find(Auth::id())->hasPermission("viewcosts")) $html .= '<td class="cell price">£' .  number_format((double)$productsRow['price'], 2, '.', '') . '</td>';
         $html .='</tr>';
     }
     $html .= '<tr>';
@@ -336,7 +340,7 @@ INNER JOIN `weights` ON product.id = weights.product_id
     $html .= '<td class="cell ppc"></td>';
     $html .= '<td class="cell unit">'. number_format((double)$total_weight, 3, '.', ',') .'</td>';
     $html .= '<td class="cell cost"><b style="font-size:8px;">£' . $total_cost . '</b></td>';
-    $html .= '<td class="cell price"><b style="font-size:8px;">£' . $total_price . '</b></td>';
+    if (User::find(Auth::id())->hasPermission("viewcosts")) $html .= '<td class="cell price"><b style="font-size:8px;">£' . $total_price . '</b></td>';
     $html .='</tr></table>';
 
 

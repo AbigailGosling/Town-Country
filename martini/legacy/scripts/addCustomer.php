@@ -72,9 +72,6 @@
 	$colNames[] = "`credit_grace`";
 	$colValue[] = request()->input('credit_grace');
 
-	$colNames[] = "`markup_type`";
-	$colValue[] = request()->input('markup_type');
-
 	$colNames[] = "`markup_amount`";
 	$colValue[] = request()->input('markup_amount');
 

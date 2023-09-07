@@ -19,8 +19,8 @@
 	
 
 	if(request()->input('deleteInternalDocument') !== null && $user['user_type'] == 'A'){
-		$internal_doc_id = $mysqli->real_escape_string( request()->input('deleteInternalDocument'));
-		$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
+		$internal_doc_id = request()->input('deleteInternalDocument');
+		$pickersheet_id = request()->input('id');
 
 		prepareExecuteQuery("DELETE FROM `pickersheet_documents` WHERE id=? LIMIT 1",'i',[$internal_doc_id]);
 
@@ -39,7 +39,7 @@
 	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
 <main class="int int--extra-padding">	
 <?php
-	if ($creditCheck['overcredit']) {
+	if ($creditCheck['overcredit'] && !$customerRow['allowPrint']) {
 		$admin_email = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE document_id = ? AND `type` = ?",'is',[$pickersheet_id,SLabsEmailerType::CrdtAlert]);
 		if ($admin_email->num_rows == 0)
 		{
@@ -174,7 +174,7 @@
 			</tr>
 		</table>
 		<?php
-			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE type='DELIVERY_NOTE' && pickersheet_id=? ORDER BY id DESC",'i',[$pickersheet_id]);
+			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE type='DELIVERY_NOTE' && pickersheet_id=? ORDER BY id DESC",'s',[$pickersheet_id]);
 			$internalDocCount = $internalDocResult->num_rows;
 
 			if($internalDocCount > 0){
@@ -575,10 +575,6 @@
 	function palletDetail(id){
 		
 		$('.palletDetail-' + id).toggle();
-	}
-	
-	function printPallet(intake_id, pallet_id){
-		window.location.href = "http://tandc.phenixdevelopment.co.uk/printContent.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 	}
 	
 	function printIntake(intake_id){

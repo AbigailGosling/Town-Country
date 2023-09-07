@@ -174,13 +174,18 @@ var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); 
         return renderCompleted;
     }
     function getInvoices() {
-        if (dataParsed.length> 0)
+        if (dataParsed.length == 0) {
+            $('.loadingContainer').hide();
+            $('.noprint').show();
+            renderCompleted = true;
+        }
+        else if (dataParsed.length> 0)
         {
             var id = dataParsed.shift();
             var t = dataParsed.shift();
             var url = "";
             if (t == "i") url = "invoice.php";
-            else url = "viewSalesconfirmation.php"
+            else url = "viewSalesconfirmation.php";
             crCount = 0;
             $.get(url, {
                 id: id,
@@ -188,19 +193,22 @@ var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); 
                 or: 1
             },
             getInvoicesResp);
-            return;
-        }     
-        else
-        {
+        }             
+    }
+    var items = [];
+    function getInvoicesResp(data, status) {
+        items.push(data);
+        if (dataParsed.length == 0){
+            for (var item in items){
+                $('#invoiceZone').append(data);
+            }
             $('.loadingContainer').hide();
             $('.noprint').show();
             renderCompleted = true;
         }
-        
-    }
-    function getInvoicesResp(data, status) {
-        $('#invoiceZone').append(data);
-        getInvoices();
+        else {
+            getInvoices();
+        }
     }
     function beforePrint() {
         //$(".printer").hide();

@@ -27,12 +27,12 @@
 	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
 	//$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 
-	$addressline1 = $mysqli->real_escape_string( request()->input('addressline1'));
-	$addressline2 = $mysqli->real_escape_string( request()->input('addressline2'));
-	$addressline3 = $mysqli->real_escape_string( request()->input('addressline3'));
-	$addressline4 = $mysqli->real_escape_string( request()->input('addressline4'));
-	$addresspostcode = $mysqli->real_escape_string( request()->input('addresspostcode'));
-	$deliverynumber = $mysqli->real_escape_string( request()->input('deliverynumber'));
+	$addressline1 = request()->input('addressline1');
+	$addressline2 = request()->input('addressline2');
+	$addressline3 = request()->input('addressline3');
+	$addressline4 = request()->input('addressline4');
+	$addresspostcode = request()->input('addresspostcode');
+	$deliverynumber = request()->input('deliverynumber');
 		
 	$addressQuery = "address{$addressid}_1='$addressline1', address{$addressid}_2='$addressline2', address{$addressid}_3='$addressline3', address{$addressid}_4='$addressline4', postcode_{$addressid}='$addresspostcode', address{$addressid}_number='$deliverynumber'";
 
@@ -87,8 +87,7 @@
 	}
 	$x = "UPDATE `customers` SET override = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
-	require_once(__DIR__.'/../ajax/generatePDFsaleconfirm.php');
-	renderPDF($pickersheet_id);
+	shell_exec("php /var/www/html/martini/artisan run:send_sale_confirmation $pickersheet_id > /dev/null 2>&1 &");
 	
 ?>
 <script>

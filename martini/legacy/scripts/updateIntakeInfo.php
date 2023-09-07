@@ -1,12 +1,12 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$supplier_id = $mysqli->real_escape_string( request()->input('supplier'));
-	$vehicle_reg = $mysqli->real_escape_string( request()->input('vehicle_reg'));
-	$date = $mysqli->real_escape_string( request()->input('date'));
-	$vehicle_temp = $mysqli->real_escape_string( request()->input('vehicle_temp'));
-	$product_temp = $mysqli->real_escape_string( request()->input('product_temp'));
-	$delivery_note_number = $mysqli->real_escape_string( request()->input('delivery_note_number'));
+	$supplier_id = request()->input('supplier');
+	$vehicle_reg = request()->input('vehicle_reg');
+	$date = request()->input('date');
+	$vehicle_temp = request()->input('vehicle_temp');
+	$product_temp = request()->input('product_temp');
+	$delivery_note_number = request()->input('delivery_note_number');
 	
 	$id = request()->input('id');
 	

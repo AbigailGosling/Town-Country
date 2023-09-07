@@ -17,8 +17,8 @@
 	$customerRow = $y2->fetch_assoc(); 
 	
 	if(request()->input('deleteInternalDocument') != '' && $user['user_type'] == 'A'){
-		$internal_doc_id = $mysqli->real_escape_string( request()->input('deleteInternalDocument'));
-		$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
+		$internal_doc_id = request()->input('deleteInternalDocument');
+		$pickersheet_id = request()->input('id');
 
 		prepareExecuteQuery("DELETE FROM `pickersheet_documents` WHERE id=? LIMIT 1",'i',[$internal_doc_id]);
 
@@ -234,13 +234,19 @@
 				<br>
 				<table width="100%" border="0">
 					<tr class="productsHeading" style="background-color: #7fabce9e;">
+					<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<th align="left">Intake ID</th>
 						<th align="left">Plt ID</th>
 						<th align="left" colspan="5"></th>
+					<?php } else { ?>
+						<th align="left" colspan="10"></th>
+					<?php } ?>
+					<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<th align="center">Qty</th>
 						<th align="left">Unit</th>
 						<th align="right">Weight</th>
 						<th align="right" class="price">Price</th>
+					<?php } ?>
 						<th align="right" class="price">Total</th>
 					</tr>
 
@@ -306,6 +312,7 @@
 						?>
 					<tr class="productsRow">
 						<?php $numOfRows++; ?>
+						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<td align="left"><span
 								class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
 						<td align="left"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
@@ -315,15 +322,49 @@
 						</td>
 						<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
 						</td>
-						<td align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
+						<?php } ?>
+						<td <?php if ($pickSheetRow['isSupplemental'] == 1) echo 'colspan="10" ';?>align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
+						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<td align="left"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
+						<?php } ?>
 						<?php
                             $productID = $product['id'];
                             $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
                             $howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
                             $pickerItem = mysqli_fetch_array($howManyY);
                             $howMany = mysqli_num_rows($howManyY);
+
+							$qBit = '';
+                                
+                                $kg = 0;
+
+                                $xxWeight = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
+                                $yyWeight = prepareExecuteQuery($xxWeight);
+                                
+                                while($weightRow = mysqli_fetch_array($yyWeight)){
+                                    
+                                    if($weightRow['weight_tear'] == $weightRow['weight_gross']){
+                                        $tw = (double)$weightRow['weight_gross'];
+                                    }else{
+                                        $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
+                                    }
+                                    
+                                    $kg = $kg + $tw;
+                                    
+                                    $kg = number_format($kg, 3, '.', '');
+                                }
+                                
+                                if($product['unit'] == 'PPC'){
+									$totalPriceRow = number_format((double)$count * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
+									$total_case_count += $count;
+                                }else{
+									$totalPriceRow = number_format((double)$kg * $pickerItem['price'], 2, '.', '');
+									$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
+									$total_weight_count += $kg;
+								}
                         ?>
+						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<td align="left"><b class="quantity"><?php echo $count; ?></b></td>
 						<td align="left">
 							<b class="unit">
@@ -347,38 +388,12 @@
 						</td>
 						<td align="left">
 							<b class="weight">
-								<?php
-                            
-                                $qBit = '';
-                                
-                                $kg = 0;
-
-                                $xxWeight = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
-                                $yyWeight = prepareExecuteQuery($xxWeight);
-                                
-                                while($weightRow = mysqli_fetch_array($yyWeight)){
-                                    
-                                    if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-                                        $tw = (double)$weightRow['weight_gross'];
-                                    }else{
-                                        $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
-                                    }
-                                    
-                                    $kg = $kg + $tw;
-                                    
-                                    $kg = number_format($kg, 3, '.', '');
-                                }
-                                
+								<?php                                
                                 if($product['unit'] == 'PPC'){
 									echo $count . ' Cases';
-									$totalPriceRow = number_format((double)$count * $pickerItem['price'], 2, '.', '');
-									$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
-									$total_case_count += $count;
+	
                                 }else{
                                     echo $kg . ' kg';
-									$totalPriceRow = number_format((double)$kg * $pickerItem['price'], 2, '.', '');
-									$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
-									$total_weight_count += $kg;
 								}
                                 
                             ?>
@@ -386,15 +401,68 @@
 						</td>
 						<td align="right" class="price">
 							£<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?></td>
+							<?php } ?>
 						<td align="right" class="price">£<?php echo $totalPriceRow; ?></td>
 					</tr>
 					<?php
                         }
                     }
-                ?>
-
-					<?php
-
+		$overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',prepareExecuteQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
+		if ($customerRow['markup_enabled'] == 1 && $product['pallet_id'] != -1 && $date->getTimestamp() > $overriderStart) {
+			$now = time();
+			$mark = number_format(applyCustomerMarkup($customerRow['id'],$totalPrice),2);
+			$overdue = new DateTime();
+			$overdue->setTimestamp($date->getTimestamp());
+			$overdue->modify("+ ".$customerRow['grace_period']." day");
+			if ($date->getTimestamp() > $now) {
+				$totalPrice -= $mark;
+				$numOfRows++;
+				?>
+				<tr class="productsRow">
+						<td align="left"><span class="palletid">.</span></td>
+						<td align="left"><b class="species"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="right"><b class="cut">Early Payment Discount</b></td>
+						<td align="left"><b class="brand"></b></td>
+						<td align="left"><b class="quantity"></b></td>
+						<td align="left">
+							<b class="unit"></b>
+						</td>
+						<td align="left">
+							<b class="weight"></b>
+						</td>
+						<td align="left" class="price"></td>
+						<td align="right" class="price">-£<?php echo $mark;?></td>
+					</tr>
+				<?php
+			}
+			else if ($now > $overdue) {
+				$totalPrice += $mark;
+				$numOfRows++;
+				?>
+				<tr class="productsRow">
+						<td align="left"><span class="palletid">.</span></td>
+						<td align="left"><b class="species"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="left"><b class="cut"></b></td>
+						<td align="right"><b class="cut">Late Payment Charge</b></td>
+						<td align="left"><b class="brand"></b></td>
+						<td align="left"><b class="quantity"></b></td>
+						<td align="left">
+							<b class="unit"></b>
+						</td>
+						<td align="left">
+							<b class="weight"></b>
+						</td>
+						<td align="left" class="price"></td>
+						<td align="right" class="price">£<?php echo $mark;?></td>
+					</tr>
+				<?php
+			}
+		}
 		$target = 11 - $numOfRows;
 	 
 		for($i=0;$i<$target;$i++){ ?>
@@ -416,11 +484,16 @@
 					<?php } ?>
 
 					<tr class="productsHeading" style="background-color: #7fabce9e;">
+					<?php if ($pickSheetRow['isSupplemental'] == 1) {?>
+						<th align="left" colspan="10">Total:</th>
+					<?php } else { ?>
 						<th align="left" colspan="7">Total:</th>
+					<?php } ?>
+					<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<th align="center"><?php echo $total_qty_count; ?></th>
 						<th align="left"></th>
 						<th align="right"><?php echo $total_weight_count; ?>kg (+ <?php echo $total_case_count; ?>
-							cases)</th>
+							cases)</th><?php } ?>
 						<th align="price" colspan="2" class="price"></th>
 					</tr>
 				</table>
@@ -632,11 +705,6 @@
 	function palletDetail(id) {
 
 		$('.palletDetail-' + id).toggle();
-	}
-
-	function printPallet(intake_id, pallet_id) {
-		window.location.href = "http://tandc.phenixdevelopment.co.uk/printContent.php?intake_id=" + intake_id +
-			"&pallet_id=" + pallet_id;
 	}
 
 	function printIntake(intake_id) {

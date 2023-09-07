@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
+	$intake_id = request()->input('intake_id');
+	$pallet_id = request()->input('pallet_id');
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);
 	$intake = mysqli_fetch_array($y);
