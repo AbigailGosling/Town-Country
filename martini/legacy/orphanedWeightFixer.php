@@ -1,7 +1,7 @@
 <?php
 require_once('functions.php');
 
-$pickersheet_id = $mysqli->real_escape_string(request()->input('pick'));
+$pickersheet_id = request()->input('pick');
 
 $itemProdQ = mysqli_query($mysqli,"SELECT GROUP_CONCAT(DISTINCT `product_id`) as `ids` FROM `pickerItems` WHERE `pickersheet_id` = ".$pickersheet_id);
 $product_ids = explode(",",mysqli_fetch_assoc($itemProdQ)['ids']);

@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
     ini_set('memory_limit','32M');
 	require(__DIR__.'/../functions.php');
 
@@ -106,9 +110,38 @@
                     if($productsRow2['grosspallet'] == 1){
                         if($this_row_weight == 0){ continue; }
                     }
-
+                    if($ubbb != 2 && $temp_id == 1){
+                        $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
+                        $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
+                        if ($toDate2 < $toDate) $toDate = $toDate2;
+                        $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
+                        $cutResult= mysqli_fetch_assoc($cutQuery);
+                        $bgCol = "";
+                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        {
+                            $now = time();
+                            $alreadyFlagged = false;
+                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                            {
+                                $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
+                                if ($pastWarning1 <= $now)
+                                {
+                                    $bgCol = 'background-color:#FFBF00"';
+                                }
+                            }
+                            if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                            {
+                                $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
+                                if ($pastWarning2 <= $now)
+                                {
+                                    $bgCol = 'style="background-color:red"';
+                                    $alreadyFlagged = true;
+                                }
+                            }
+                        }
+                    }
                     ?>
-                    <tr class="subrow <?php echo $class; ?>">
+                    <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
                     <td colspan="1">
                     <?php if($productsRow2['storage_location'] == "Coldstore" || $locked){ ?>
                         <i class="fa fa-lock"></i>
@@ -202,7 +235,7 @@
                         $bgCol = "";
                         if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
                         {
-                            $bgCol = 'style="background-color:LightGreen"';
+                            $bgCol = '';
                             $now = time();
                             $alreadyFlagged = false;
                             if (isset($cutResult['warning']) && $cutResult['warning'] != "")
@@ -244,7 +277,7 @@
                     }
                     ?></td>
                     <td></td>
-                    <td></td>
+                    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
                     <td>
                     <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
                         <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>

@@ -1,10 +1,10 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
-	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
-	$weight_id = $mysqli->real_escape_string( request()->input('weight_id'));
+	$intake_id = request()->input('intake_id');
+	$pallet_id = request()->input('pallet_id');
+	$product_id = request()->input('product_id');
+	$weight_id = request()->input('weight_id');
 	
 	$x1 = "SELECT * FROM `product` WHERE id = ?";
 	$y1 = prepareExecuteQuery($x1,'i',[$product_id]);

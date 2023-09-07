@@ -1,15 +1,16 @@
 <?php
 	require(__DIR__.'/../functions.php');
+	Log::debug(request()->all());
 	
-	
-	$supplier_id = $mysqli->real_escape_string( request()->input('supplier_id'));
-	$purchased_by = $mysqli->real_escape_string( request()->input('purchased_by'));
-	$date_purchased = $mysqli->real_escape_string( request()->input('date_purchased'));
-	$date_due = $mysqli->real_escape_string( request()->input('date_due'));
-	$transportation = $mysqli->real_escape_string( request()->input('transportation'));
-	$haulier = $mysqli->real_escape_string( request()->input('haulier'));
-	$direct_drop = $mysqli->real_escape_string( request()->input('direct_drop'));
-	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
+	$supplier_id = request()->input('supplier_id');
+	$purchased_by = request()->input('purchased_by');
+	$date_purchased = request()->input('date_purchased');
+	$date_due = request()->input('date_due');
+	$transportation = request()->input('transportation');
+	$haulier = request()->input('haulier');
+	$direct_drop = request()->input('direct_drop',0);
+	$temperature_id = request()->input('temperature_id');
+	$site_id = request()->input('site_id');
 	
 	$date_purchased = str_replace('/', '-', $date_purchased);
 	$date_purchased = date('Y-m-d 00:00:00', strtotime($date_purchased));
@@ -17,8 +18,8 @@
 	$date_due = str_replace('/', '-', $date_due);
 	$date_due = date('Y-m-d H:00:00', strtotime($date_due));
 	
-	$comments = $mysqli->real_escape_string( request()->input('comments'));
-	$booking_ref_number = $mysqli->real_escape_string( request()->input('booking_ref_number'));
+	$comments = request()->input('comments');
+	$booking_ref_number = request()->input('booking_ref_number');
 	
 	$speciesString = '';
 	$cutString = '';
@@ -44,16 +45,12 @@
 	
 	
 	$upload_dir='/../documents/';
-
+	$file_name="";
 	if(request()->hasFile('dfile'))
 	{
 		$file_name=time().".".request()->file('dfile')->extension();
 		$tmp_name=request()->file('dfile')->path();
 		copy($tmp_name,$upload_dir.$file_name);
-	}
-	else{
-		throw new \Exception("dfile not found: ".json_encode(request()->all()));
-		die();exit;
 	}
 	$speciesString = substr($speciesString,0,strlen($speciesString)-1);
 	$cutString = substr($cutString,0,strlen($cutString)-1);
@@ -67,7 +64,7 @@
     $priceString = rtrim($priceString, '|');
 
 	
-	$purchase_id = createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$comments,$file_name,$booking_ref_number,$haulier, $direct_drop, $temperature_id);
+	$purchase_id = createPurchase($supplier_id,$transportation, $speciesString,$cutString,$priceString,$unitsString,$date_purchased,$purchased_by,$date_due,$comments,$file_name,$booking_ref_number,$haulier, $direct_drop, $temperature_id,$site_id);
 	
 	
 	// $delivery_note_number = '';

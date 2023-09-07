@@ -1,19 +1,5 @@
 <?php
 	include('functions.php');
-	
-	if(request()->input('id') != ''){
-		
-		$id = $mysqli->real_escape_string( request()->input('id'));
-		
-		$x = "SELECT * FROM `purchase_form` WHERE id=?";
-		$y = $mysqli->prepare($x);
-		$y->bind_param('i', $id);
-		$y->execute();
-		$y = $y->get_result();
-		$purchase = $y->fetch_assoc();
-		$edit=true;
-		
-	}else{ $edit=false; }
 ?>
 <!doctype html>
 <html>
@@ -42,28 +28,16 @@
 			$.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
-			var count = 0;
-			function moveCalendar(ID){
-				if(ID == '+1' ){
-					count++;
-				}else{
-					count--;
-				}
-								
-				$.get("get_calendar2.php?id=" + count, function(data, status){
+			function updateCalendar(year, chilled_filter, week, display_col,site_id){
+
+				$.get("get_calendar2.php?y=" + year + "&w=" + week + '&temperature_id=' + chilled_filter + '&display_col=' + display_col + '&site_id=' + site_id, function(data, status){
 					$('#calendar').html(data);
 				});
-			}
-			
-			function showEvent(element){
-				$('.allevents').fadeOut();
-				$('#' + element).fadeIn();
-			}
-			
 				
-			function updateCalendar(month, year, chilled_filter, week){
+			}
+			function updateCalendarByMonth(year, chilled_filter, month, display_col,site_id){
 
-				$.get("get_calendar2.php?m=" + month + "&y=" + year + "&w=" + week + '&temperature_id=' + chilled_filter, function(data, status){
+				$.get("get_calendar2.php?y=" + year + "&m=" + month + '&temperature_id=' + chilled_filter + '&display_col=' + display_col + '&site_id=' + site_id, function(data, status){
 					$('#calendar').html(data);
 				});
 				

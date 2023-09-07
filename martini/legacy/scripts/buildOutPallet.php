@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$pickersheet_id = $mysqli->real_escape_string( request()->input('id'));
+	$pickersheet_id = request()->input('id');
     
 	$functype = request()->input('functype');
     

@@ -15,7 +15,7 @@
 	
 	$intakeID = request()->input('intakeid');
 	
-	$name = $mysqli->real_escape_string( request()->input('name'));
+	$name = request()->input('name');
 	
 	$x = "INSERT INTO `intakeDocs` (`name`,`dfile`,`intakeid`) VALUES (?,?,?)";
 	$y = prepareExecuteQuery($x,'sss',[$name,$file_name,$intakeID]);

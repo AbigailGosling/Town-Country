@@ -1,41 +1,41 @@
 <?php
 	include('functions.php');
-	$unit = $mysqli->real_escape_string( request()->input('unit'));	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
-	$status_id = $mysqli->real_escape_string( request()->input('statuses_id'));
-	$ubbb = $mysqli->real_escape_string( request()->input('ubbb'));
-	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
-	$best_by = $mysqli->real_escape_string( request()->input('best_by'));
-	$range_from = $mysqli->real_escape_string( request()->input('best_by_range_from'));
-	$range_to = $mysqli->real_escape_string( request()->input('best_by_range_to'));
-	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
-	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
-	$comments = $mysqli->real_escape_string( request()->input('comments'));
-	$product_temp = $mysqli->real_escape_string( request()->input('product_temp'));
+	$unit = request()->input('unit');	
+	$intake_id = request()->input('intake_id');
+	$status_id = request()->input('statuses_id');
+	$ubbb = request()->input('ubbb');
+	$cut_id = request()->input('cut_id');
+	$best_by = request()->input('best_by');
+	$range_from = request()->input('best_by_range_from');
+	$range_to = request()->input('best_by_range_to');
+	$species_id = request()->input('species_id');
+	$temperature_id = request()->input('temperature_id');
+	$comments = request()->input('comments');
+	$product_temp = request()->input('product_temp');
 	
 	
-	$gross_weight_val = $mysqli->real_escape_string( request()->input('gross_weight_val'));
+	$gross_weight_val = request()->input('gross_weight_val');
 	
-	$original_intake_id = $mysqli->real_escape_string( request()->input('original_intake_id'));
-	$original_pallet_id = $mysqli->real_escape_string( request()->input('original_pallet_id'));
+	$original_intake_id = request()->input('original_intake_id');
+	$original_pallet_id = request()->input('original_pallet_id');
 	
 	
-	$pallet_tare = $mysqli->real_escape_string( request()->input('pallet_tare'));
-	$tare_per_carton = $mysqli->real_escape_string( request()->input('tare_per_carton'));
-	$number_of_cartons = $mysqli->real_escape_string( request()->input('number_of_cartons'));
+	$pallet_tare = request()->input('pallet_tare');
+	$tare_per_carton = request()->input('tare_per_carton');
+	$number_of_cartons = request()->input('number_of_cartons');
 
 	
-	$unit = $mysqli->real_escape_string( request()->input('unit'));
-	$bin = $mysqli->real_escape_string( request()->input('bin'));
+	$unit = request()->input('unit');
+	$bin = request()->input('bin');
 	
 	
-	$note_units = $mysqli->real_escape_string( request()->input('note_units'));
-	$note_weight = $mysqli->real_escape_string( request()->input('note_weight'));
+	$note_units = request()->input('note_units');
+	$note_weight = request()->input('note_weight');
 	
-	$akg = $mysqli->real_escape_string( request()->input('akg'));
+	$akg = request()->input('akg');
 	
 	
-	$single_weight_val = $mysqli->real_escape_string( request()->input('single_weight_val'));
+	$single_weight_val = request()->input('single_weight_val');
 	
 	$individualweights = request()->input('individualweights');
 	
@@ -48,8 +48,8 @@
 		$status = 0;
 	}
 	
-	$nationality_id = $mysqli->real_escape_string( request()->input('nationality_id'));
-	$brand_id = $mysqli->real_escape_string( request()->input('brand_id'));
+	$nationality_id = request()->input('nationality_id');
+	$brand_id = request()->input('brand_id');
 	
 	
 	if($individualweights == 'D'){ # Dolav Pallet
@@ -125,7 +125,7 @@
 			
 		}
 	}
-	$storage_location = $mysqli->real_escape_string( request()->input('storage_location'));
+	$storage_location = request()->input('storage_location');
 	$palletx = "UPDATE `pallet` SET `storage_location`=? WHERE `id`=?";
 	$pallety = prepareExecuteQuery($palletx,'si',[$storage_location,$pallet_id]);
 	if(request()->input('dupe') == 'true'){

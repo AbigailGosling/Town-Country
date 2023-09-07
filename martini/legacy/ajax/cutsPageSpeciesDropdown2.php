@@ -1,8 +1,8 @@
 <?php
 	require(__DIR__.'/../functions.php');
     ini_set("memory_limit", "-1");
-    $cutID = $mysqli->real_escape_string( request()->input('cutid'));
-    $speciesID = $mysqli->real_escape_string( request()->input('speciesid'));
+    $cutID = request()->input('cutid');
+    $speciesID = request()->input('speciesid');
 
     $cutsArray = Array();
 

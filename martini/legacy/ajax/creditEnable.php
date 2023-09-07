@@ -3,7 +3,7 @@
 	require(__DIR__.'/../functions.php');
 	
 	
-	$id = $mysqli->real_escape_string( request()->input('id'));
+	$id = request()->input('id');
 	
 	if($id != ''){
 		

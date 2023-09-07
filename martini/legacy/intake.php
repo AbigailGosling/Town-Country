@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include('includes/frontHeader.php');
     ini_set('memory_limit','15M'); //this might kill the process - keep in mind
 	$id = request()->input('id');
@@ -33,14 +37,23 @@
 		$intakeid = request()->input('intakeid');
 		
 		for($i=0;$i<$size;$i++){
-			$product_id = "(" . $mysqli->real_escape_string($productids[$i]) . ")"; 
+			$product_id = "(" . $productids[$i] . ")"; 
 			$cost = sprintf('%0.2f', request()->input('cost')[$i]);
 			$price = sprintf('%0.2f', request()->input('price')[$i]);
 			
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != ''){
-				$x = "UPDATE `product` SET cost=?, price=?, weightnote=? WHERE id IN $product_id";
- 				$y = prepareExecuteQuery($x,'sss',[$cost,$price,$weightnote]);
+				if (User::find(Auth::id())->hasPermission("viewcosts")) 
+				{
+					$x = "UPDATE `product` SET cost=?, price=?, weightnote=? WHERE id IN $product_id";
+ 					$y = prepareExecuteQuery($x,'sss',[$cost,$price,$weightnote]);
+				}
+				else
+				{
+					$x = "UPDATE `product` SET cost=?, weightnote=? WHERE id IN $product_id";
+ 					$y = prepareExecuteQuery($x,'ss',[$cost,$weightnote]);
+				}
+				
 				 loggedDataChange('pallet',request()->input('pallet_id'),$weightnote);
 			}
 		}
@@ -335,7 +348,7 @@
 				<th style="background:#3faddd;">Comments</th>
  				<th style="background:#3faddd;">Total Weight</th>
  				<th style="background:#3faddd;">Cost</th>
-				<th style="background:#3faddd;">RRP</th>
+				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;">Actual Cost</th><?php } ?>
 			</tr>
 			<?php
 				
@@ -477,9 +490,11 @@
 						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 2, '.', ''); ?>">
 					</td>
+					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
 					<td>
 						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 2, '.', ''); ?>">
 					</td>
+					<?php } ?>
 				</tr>
 			<?php } ?>
 			<tr>

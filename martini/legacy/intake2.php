@@ -290,7 +290,7 @@
  				<th style="background:#3faddd;">Total Weight</th>
  				<th style="background:#3faddd;">new</th>
 				<th style="background:#3faddd;">Cost</th>
-				<th style="background:#3faddd;">RRP</th>
+				<th style="background:#3faddd;">Actual Cost</th>
 			</tr>
 			<?php
 				

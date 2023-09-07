@@ -157,7 +157,7 @@
             <th align="left">Date Range</th>
             <th align="left">Volume</th>
             <th align="left">Cost</th>
-            <th align="left">RRP</th>
+            <th align="left">Actual Cost</th>
             <th align="left"></th>
             
            <?php 

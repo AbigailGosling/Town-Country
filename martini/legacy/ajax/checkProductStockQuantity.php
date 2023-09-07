@@ -1,7 +1,7 @@
 <?php
     require(__DIR__.'/../functions.php');
 	
-	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
+	$product_id = request()->input('product_id');
 
     $numOfWeights = numWeightsAvailableFromProductID($product_id);
 

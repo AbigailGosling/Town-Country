@@ -1,7 +1,7 @@
 <?php
     include_once('includes/frontHeader.php');
     if(request()->input('delid') != ''){
-        $delid = $mysqli->real_escape_string( request()->input('delid'));
+        $delid = request()->input('delid');
         $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=? WHERE id=?",'ii',[$userid,$delid]);
         $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id=?",'i',[$delid]);
         $palletsOutResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$delid]);

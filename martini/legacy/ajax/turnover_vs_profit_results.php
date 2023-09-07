@@ -1,29 +1,33 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
    	require(__DIR__.'/../functions.php');
 
        if(request()->input('user_id') != '' || request()->input('customer_id') != '' || request()->input('species_id') != '' || request()->input('intake_id') != '' || request()->input('pallet_id') != '' || request()->input('invoice_id') != ''  || request()->input('brand_id') != '' || request()->input('nationality_id') != ''){
         
-        $INVOICE_ID = $mysqli->real_escape_string( request()->input('invoice_id'));
-        $INTAKE_ID = $mysqli->real_escape_string( request()->input('intake_id'));
-        $PALLET_ID = $mysqli->real_escape_string( request()->input('pallet_id'));
-        $USER_ID = $mysqli->real_escape_string( request()->input('user_id'));
-        $CUSTOMER_ID = $mysqli->real_escape_string( request()->input('customer_id'));
-        $SPECIES_ID = $mysqli->real_escape_string( request()->input('species_id'));
-        $CUTGROUP_ID = $mysqli->real_escape_string( request()->input('cutgroup_id'));
-        $COOLING_ID = $mysqli->real_escape_string( request()->input('cooling_id'));
-        $BRAND_ID = $mysqli->real_escape_string( request()->input('brand_id'));
-        $NATIONALITY_ID = $mysqli->real_escape_string( request()->input('nationality_id'));
-        $SUPPLIER_ID = $mysqli->real_escape_string( request()->input('supplier_id'));
+        $INVOICE_ID = request()->input('invoice_id');
+        $INTAKE_ID = request()->input('intake_id');
+        $PALLET_ID = request()->input('pallet_id');
+        $USER_ID = request()->input('user_id');
+        $CUSTOMER_ID = request()->input('customer_id');
+        $SPECIES_ID = request()->input('species_id');
+        $CUTGROUP_ID = request()->input('cutgroup_id');
+        $COOLING_ID = request()->input('cooling_id');
+        $BRAND_ID = request()->input('brand_id');
+        $NATIONALITY_ID = request()->input('nationality_id');
+        $SUPPLIER_ID = request()->input('supplier_id');
         $QUERY_VARS = array();
         if(request()->input('date_start') != ''){
-            $date_start = $mysqli->real_escape_string( request()->input('date_start'));
+            $date_start = request()->input('date_start');
             $date_start = str_replace('/', '-', $date_start);
             $date_start = date('Y-m-d', strtotime($date_start));
             
             if(request()->input('date_end') == ''){
                 $date_end = date('d/m/Y');
             }else{
-                $date_end = $mysqli->real_escape_string( request()->input('date_end'));
+                $date_end = request()->input('date_end');
             }
 
             $date_end = str_replace('/', '-', $date_end);
@@ -144,7 +148,7 @@
                 $cut_ids = implode(',', $cut_ids);
             }
 
-            $searchResults = loggedQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
+            $searchResults = prepareExecuteQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost, `product`.`price` as `actual_cost`, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
@@ -155,7 +159,7 @@
 
         }else{
 
-            $searchResults = loggedQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
+            $searchResults = prepareExecuteQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost,`product`.`price` as `actual_cost`, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
                         JOIN `product` ON product.id = pickerItems.product_id
                         JOIN `pallet` ON product.pallet_id = pallet.id
@@ -188,8 +192,10 @@
     <th align="left">kg</th>
 
     <th align="left">Cost</th>
+    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th align="left">Actual Cost</th><?php } ?>
     <th align="left">Sell</th>
     <th align="left">Profit</th>
+    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th align="left">Actual Profit</th><?php } ?>
 </tr>
 
 <?php
@@ -241,13 +247,22 @@
             $weight_total = weightValueOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
             $weight_total_store[$invoice['pick_id'] ."_". $invoice['product_id']] = $weight_total;
         }
-
         if($invoice['unit'] == 'PPC'){
-            (double)$total_product_cost = (double)$invoice['product_cost'] * (double)$quantity;
-            (double)$total_product_sell = (double)$invoice['picker_price'] * (double)$quantity;    
+            (double)$total_product_cost         = (double)$invoice['product_cost'] * (double)$quantity;
+            (double)$total_product_sell         = (double)$invoice['picker_price'] * (double)$quantity;   
+
+            if ($invoice['actual_cost' ] != null && $invoice['actual_cost' ] != "" && $invoice['actual_cost' ] != 0.00 && $invoice['actual_cost' ] != "0.00")
+                (double)$total_actual_product_cost  = (double)$invoice['actual_cost' ] * (double)$quantity;
+            else
+                (double)$total_actual_product_cost  = (double)$invoice['product_cost'] * (double)$quantity;
         }else{
-            (double)$total_product_cost = (double)$invoice['product_cost'] * (double)$weight_total;
-            (double)$total_product_sell = (double)$invoice['picker_price'] * (double)$weight_total;
+            (double)$total_product_cost         = (double)$invoice['product_cost'] * (double)$weight_total;
+            (double)$total_product_sell         = (double)$invoice['picker_price'] * (double)$weight_total;
+
+            if ($invoice['actual_cost' ] != null && $invoice['actual_cost' ] != "" && $invoice['actual_cost' ] != 0.00 && $invoice['actual_cost' ] != "0.00")
+                (double)$total_actual_product_cost  = (double)$invoice['actual_cost' ] * (double)$weight_total;
+            else
+                (double)$total_actual_product_cost  = (double)$invoice['product_cost'] * (double)$weight_total;
         }
         $date_completed = $invoice['date_completed'];
         $date_completed = str_replace('/', '-', $date_completed);
@@ -304,19 +319,36 @@
                 <input type="hidden" class="costValue" value="<?php echo $cost; ?>">
                 £<?php echo $cost_formatted; ?>
             </td>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+            <td>
+                <?php
+                    $cost_formatted = number_format($total_actual_product_cost, 2);
+                    $cost = str_replace(",","",$cost_formatted);
+                ?>
+                <input type="hidden" class="actualCostValue" value="<?php echo $cost; ?>">
+                £<?php echo $cost_formatted; ?>
+            </td>
+            <?php } ?>
             <td>
                 <?php
                     $sell_formatted = number_format($total_product_sell, 2);
                     $sell = str_replace(",","",$sell_formatted);
                 ?>
                 <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
-                £<?php echo $sell_formatted; ?></td>
+                £<?php echo $sell_formatted; ?>
+            </td>
             <td>
                 £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
             </td>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+                <td>
+                £<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>
+            </td>
+            <?php } ?>
         </tr>
 
         <?php
+            $actualCost = 0;
             $credit_value = 0;
             $credit_qty = 0;
             $weightReturned = 0;
@@ -342,7 +374,7 @@
 
                     $returned_product_count = mysqli_num_rows($returned_product_result);
                     if($returned_product_count > 0){
-                        $creditNoteCheck = prepareExecuteQuery("SELECT `credit_note_items`.*,`product`.cost,`product`.pallet_id FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id' AND `product`.original_pallet_id = ?",'i',[$invoice['pallet_id']]);
+                        $creditNoteCheck = prepareExecuteQuery("SELECT `credit_note_items`.*,`product`.cost,`product`.`price` as `actual_cost`,`product`.pallet_id FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id' AND `product`.original_pallet_id = ?",'i',[$invoice['pallet_id']]);
                         
                         while($creditItem = mysqli_fetch_array($creditNoteCheck)){
                             $creditItempallet_id = $creditItem['pallet_id'];
@@ -350,6 +382,8 @@
                             $weightReturned += $weight;
                             $credit_value += number_format((double)$creditItem['price'] * $weight, 2, '.', '');
                             $cost_value += number_format((double)$creditItem['cost'] * $weight, 2, '.', '');
+                            if ($creditItem['actual_cost'] != null && $creditItem['actual_cost'] != 0)$actualCost += number_format((double)$creditItem['actual_cost'] * $weight, 2, '.', '');
+                            else $actualCost += number_format((double)$creditItem['cost'] * $weight, 2, '.', '');
                             $credit_qty += $creditItem['quantity'];
                         }
                     }
@@ -407,6 +441,11 @@
             <td style="color:red;">
                 £<?php echo number_format($cost_value, 2); ?>
             </td>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+            <td style="color:red;">
+                £<?php echo number_format($actualCost, 2); ?>
+            </td>
+            <?php }?>
             <td style="color:red;">
             <?php
                 $profit = $cost_value - $credit_value;
@@ -414,6 +453,14 @@
                 <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
                 £<?php echo number_format($profit, 2); ?>
             </td>
+            <?php
+            if (User::find(Auth::id())->hasPermission("viewcosts")) { 
+                $profit = $actualCost - $credit_value;
+            ?>
+            <td style="color:red;">
+                £<?php echo number_format($profit, 2); ?>
+            </td>
+            <?php } ?>
         </tr>
         <?php
             }
@@ -437,6 +484,12 @@
     <td>&nbsp;&nbsp;</td>
     <td><div class="totalWeightValue" style="font-size:13px;"></div></td>
     <td><div class="totalCostValue" style="font-size:13px;"></div></td>
+    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+    <td><div class="totalActualCostValue" style="font-size:13px;"></div></td>
+    <?php } ?>
     <td><div class="totalSellValue" style="font-size:13px;"></div></td>
     <td><div class="totalProfitValue" style="font-size:13px;"></div><div class="totalProfitPercent" style="font-size:13px;"></div></td>
+    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+    <td><div class="totalActualProfitValue" style="font-size:13px;"></div><div class="totalActualProfitPercent" style="font-size:13px;"></div></td>
+    <?php } ?>
 </tr>

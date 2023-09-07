@@ -1,24 +1,24 @@
 <?php
 	require(__DIR__.'/../functions.php');
 
-    $addressid = $mysqli->real_escape_string( request()->input('addressid'));
-    $customerid = $mysqli->real_escape_string( request()->input('customerid'));
-    $picksheetid = $mysqli->real_escape_string( request()->input('picksheetid'));
-    $picksheet_note = $mysqli->real_escape_string( request()->input('picksheet_note'));
-    $user_from_id = $mysqli->real_escape_string( request()->input('user_from_id'));
+    $addressid = request()->input('addressid');
+    $customerid = request()->input('customerid');
+    $picksheetid = request()->input('picksheetid');
+    $picksheet_note = request()->input('picksheet_note');
+    $user_from_id = request()->input('user_from_id');
 
 
-    $addressline1 = $mysqli->real_escape_string( request()->input('addressline1'));
-    $addressline2 = $mysqli->real_escape_string( request()->input('addressline2'));
-    $addressline3 = $mysqli->real_escape_string( request()->input('addressline3'));
-    $addressline4 = $mysqli->real_escape_string( request()->input('addressline4'));
-    $addresspostcode = $mysqli->real_escape_string( request()->input('addresspostcode'));
-    $deliverynumber = $mysqli->real_escape_string( request()->input('deliverynumber'));
+    $addressline1 = request()->input('addressline1');
+    $addressline2 = request()->input('addressline2');
+    $addressline3 = request()->input('addressline3');
+    $addressline4 = request()->input('addressline4');
+    $addresspostcode = request()->input('addresspostcode');
+    $deliverynumber = request()->input('deliverynumber');
     
-    $orderReferenceNumber = $mysqli->real_escape_string( request('orderReferenceNumber'));
+    $orderReferenceNumber = request()->input('orderReferenceNumber');
 
     
-    $estimated_delivery_date = $mysqli->real_escape_string( request()->input('estimated_delivery_date')); #picksheet
+    $estimated_delivery_date = request()->input('estimated_delivery_date'); #picksheet
  
     $y = prepareExecuteQuery("UPDATE `pickerSheets` SET user_from_id=?, estimated_delivery_date=?, orderReferenceNumber=?, addressid=?,picksheet_note=? WHERE id=? LIMIT 1",
 'isssss',[$user_from_id,$estimated_delivery_date,$orderReferenceNumber,$addressid,$picksheet_note,$picksheetid]);

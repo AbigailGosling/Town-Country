@@ -96,6 +96,12 @@ class ModalDialog
         $("#msgSpinner").show();
         $("#msgBox").hide();
     }
+    hideMask()
+    {
+        $("#msg").hide();
+        $("#msgSpinner").hide();
+        $("#msgBox").hide();
+    }
     showDialog(title, body, yesText, noText, yesFunc, noFunc) {
         $("#msg").show();
         $("#msgBox").show();

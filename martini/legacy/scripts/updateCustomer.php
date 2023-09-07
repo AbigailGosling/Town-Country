@@ -77,26 +77,23 @@
 	$colNames[] = '`disabled`=?';
 	$colValue[] = (request()->input('disabled') !== null && request()->input('disabled') == "1")?"1":"0";
 
-	$colNames[] = '`markup_type`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('markup_type'));
-
-	$colNames[] = '`markup_amount`=?';
-	$colValue[] = $mysqli->real_escape_string( request()->input('markup_amount'));
+	$colNames[] = "`markup_amount`=?";
+	$colValue[] = request()->input('markup_amount');
 
 	for ($u=1;$u<10;$u++)
 	{
 		$colNames[] = "`address".$u."_1` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_1'));
+		$colValue[] = request()->input('address'.$u.'_1');
 		$colNames[] = "`address".$u."_2` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_2'));
+		$colValue[] = request()->input('address'.$u.'_2');
 		$colNames[] = "`address".$u."_3` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_3'));
+		$colValue[] = request()->input('address'.$u.'_3');
 		$colNames[] = "`address".$u."_4` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_4'));
+		$colValue[] = request()->input('address'.$u.'_4');
 		$colNames[] = "`postcode_".$u."` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('postcode_'.$u));
+		$colValue[] = request()->input('postcode_'.$u);
 		$colNames[] = "`address".$u."_number` = ?";
-		$colValue[] = $mysqli->real_escape_string( request('address'.$u.'_number'));
+		$colValue[] = request()->input('address'.$u.'_number');
 	}
 	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";

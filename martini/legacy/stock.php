@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
     include('includes/frontHeader.php');
 ?>
 <script>
@@ -242,15 +246,15 @@
 	        <th class="searchRContent__date-range">Date Range</th>
 	        <th>Volume</th>
 	        <th>Cost</th>
-	        <th>RRP</th>
+	        <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th>Actual Cost</th><?php } ?>
             
            <?php 
                 ?><div class="gifContainer"><center><img src="/legacy/img/loading.gif" style="padding-top:40px;padding-bottom:40px;width:40px;text-align:center;"></center></div><?php
                 
-                $cutgroup_id = $mysqli->real_escape_string(request()->input('cutgroup_id'));
-                $species_id = $mysqli->real_escape_string(request()->input('species'));
-                $pallet_id = $mysqli->real_escape_string(request()->input('pallet_id'));
-                $intake_id = $mysqli->real_escape_string(request()->input('intake_id'));
+                $cutgroup_id = request()->input('cutgroup_id');
+                $species_id = request()->input('species');
+                $pallet_id = request()->input('pallet_id');
+                $intake_id = request()->input('intake_id');
                 
                 $whereArray = [];
 
@@ -420,7 +424,7 @@
                              }
                                 ?>kg</td>
                             <td><?php  if($productsRow['cost']){ echo '£' . number_format((double)$productsRow['cost'], 2, '.', ''); } ?></td>
-                            <td><?php  if($productsRow['price']){ echo '£' . number_format((double)$productsRow['price'], 2, '.', ''); } ?></td>
+                            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td><?php  if($productsRow['price']){ echo '£' . number_format((double)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
                         </tr>
                     <?php }?>
             

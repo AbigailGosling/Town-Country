@@ -7,7 +7,7 @@
         use InternalScripts\PDFRenderer;
         if(request()->input('id') != ''){
     
-            $delid = $mysqli->real_escape_string( request()->input('id'));
+            $delid = request()->input('id');
 
             $customerResult = loggedQuery("SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
             $customerID = mysqli_fetch_array($customerResult)['customer_id'];

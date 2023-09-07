@@ -1,9 +1,9 @@
 <?php
     require(__DIR__.'/../functions.php');
     
-	$product_id = $mysqli->real_escape_string( request()->input('product_id'));
-	$weightIDs = $mysqli->real_escape_string( request()->input('weightid'));
-    $intakeID = $mysqli->real_escape_string( request()->input('intakeid'));
+	$product_id = request()->input('product_id');
+	$weightIDs = request()->input('weightid');
+    $intakeID = request()->input('intakeid');
 
 
     $weightIDs = rtrim($weightIDs, ',');

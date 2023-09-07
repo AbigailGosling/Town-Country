@@ -29,15 +29,21 @@
 	<div class="row">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
-			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
+			<textarea class="form-control" id="picksheet_note" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
-		<div class="col"></div>
+		<div class="col">			
+			<label>Type</label><br/>
+			<select id="sup_type" name="sup_type" class="form-control">
+			<option value="invoice" selected>Invoice</option>
+			<option value="credit">Credit</option>
+			</select>
+</div>
 	</div>
 	
 	<div class="row">
 		<div class="col">
 			<label>	Order Reference Number</label><br/>
-			<input class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
+			<input class="form-control" type="text" class="inputbox" id="orderReferenceNumber" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
 		</div>
 		<div class="col"></div>
 	</div>
@@ -84,6 +90,7 @@
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
 		<input type="submit" value="Send" id="sendreal" class="inputbox-button" style="display:none">
+		<input type="hidden" value="<?php use Illuminate\Support\Str;echo Str::random(50);?>" id="transaction_id" name="transaction_id">
 		<input type="button" value="Completed" id="sendfake" class="inputbox-button" disabled>
 	</div>
 </div>
@@ -303,21 +310,21 @@
 		}
 
     });
+	var pos = 0;
+	var items = [];
 	function add() {
 		var name = $('#itemname').val();
 		var cost = $('#itemcost').val();
-		$.post("ajax/supplimentryItemAdd.php", { 'name':name, 'cost':cost }, addComplete);
+		items[pos.toString()] = {name:name,cost:cost};
+		$('.basketTable').append('<tr id="basketRow-'+pos+'" name="basketRow-'+pos+'"><td>'+name+'</td><td id="price">'+cost+'</td><td><a href="javascript:;" onclick="deleteRow('+pos+')"><i class="fa fa-trash" aria-hidden="true" style="margin-left:30px;font-size:24px;color:#000;"></i></a></td></tr>');
+		pos++;
 	}
-	function addComplete(data){
-		$('.basketTable').append(data);
-	}
+
 	function deleteRow(id){
-		$.post("ajax/supplimentryItemRemove.php", { 'id':id }, deleteComplete);
+		delete items[id.toString()];
+		$('#basketRow-' + id).remove();
 	}
-	function deleteComplete(data){
-		console.log(data);
-		$('#basketRow-' + data).remove();
-	}
+
 	var customerID = null;
 	var transactionAllowed = false;
 	var showWarning = false;
@@ -338,6 +345,8 @@
 		var date = $('#estimated_delivery_date').val();
 		var sellAsUser = $('#sales_person').val();
 		var UserSet = false;
+		var transaction_id = $('#transaction_id').val();
+		var sup_type = $('#sup_type').val();
 		dateEntered = false;
 		
 		if (customer_id != undefined) {
@@ -354,6 +363,13 @@
 			UserSet = false;
  			$('#sales_person').css('border','1px solid red');
 		}
+		if (sup_type != undefined) {
+			UserSet = true;
+			$('#sup_type').css('border-color', '#f2f2f2');
+		} else{
+			UserSet = false;
+ 			$('#sup_type').css('border','1px solid red');
+		}
 		
 		if (date != '') {
 			dateEntered = true;
@@ -363,12 +379,10 @@
  			$('#estimated_delivery_date').css('border','1px solid red');
 		}
 		var overOnce = false;
-		var underOnce = false;
 		var ustomerEntered = true;
 		var priceEntered = true;
 		var pricedCorrectly = true;
 		var doneOnce = false;
-		console.log("value");
 		$('#price').each(function(index,element){
 			doneOnce = true;
  			var value = $(element).val();
@@ -388,9 +402,26 @@
 				showPriceCheck = true;
 			}
 		});
-		
-		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet){
-			$('#sendreal').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+		if(doneOnce && customerEntered && dateEntered && priceEntered){
+			$.ajax({
+				type: 'POST',
+				url: 'scripts/buildPicker2.php',
+				data: 
+					{
+						"items" : items,
+						"customer_id": customer_id,
+						"transaction_id": transaction_id,
+						"date": date,
+						"user": sellAsUser,
+						"sup_type": sup_type,
+						"picksheet_note": $('#picksheet_note').val(),
+						"orderReferenceNumber": $('#orderReferenceNumber').val()
+					},
+				success: function (data) {
+					if (data != "N/A")window.location.href = 'invoice.php?id='+data;
+					else alert("An Error Occurred!");
+				}
+			});
 			return false;
 		}else{
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
@@ -454,41 +485,8 @@
 				$('#searcher').attr('disabled', false);
 			}
 		});
-	}
-	ready = true;
-	setInterval(function(){
-		ready = true;
-		var totalPrice = 0;
-		
-		$('.price').each(function(){
-			var q = $(this).attr('q');
-			
-			if(this.value != ''){
-				var finalVal = (parseFloat(this.value)) * q;
-				
-				totalPrice += finalVal;
-			}else{
-				ready = false;
-			}
-			
-		});
-		
-		
- 	}, 300);
-	
-		
-	
+	}	
 	$(document).ready(function(){  
-
-		$.each(document.cookie.split(/; */), function(){
-		  var splitCookie = this.split('=');
-
-			
-			if(splitCookie[0].includes('quantity-')){
-				document.cookie = splitCookie[0] + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';	
-			}
-		});
-	  
 		$( "#estimated_delivery_date" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 		});

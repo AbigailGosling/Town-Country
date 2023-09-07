@@ -1,33 +1,33 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	global $mysqli;
-	$unit = $mysqli->real_escape_string( request()->input('unit'));
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
-	$pallet_id = $mysqli->real_escape_string( request()->input('pallet_id'));
+	$unit = request()->input('unit');
+	$intake_id = request()->input('intake_id');
+	$pallet_id = request()->input('pallet_id');
 	
 	
-	$status_id = $mysqli->real_escape_string( request()->input('statuses_id'));
-	$ubbb = $mysqli->real_escape_string( request()->input('ubbb'));
-	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
+	$status_id = request()->input('statuses_id');
+	$ubbb = request()->input('ubbb');
+	$cut_id = request()->input('cut_id');
 	
-	$best_by = $mysqli->real_escape_string( request()->input('best_by'));
-	$range_from = $mysqli->real_escape_string( request()->input('best_by_range_from'));
-	$range_to = $mysqli->real_escape_string( request()->input('best_by_range_to'));
-	$weight = $mysqli->real_escape_string( request()->input('weight'));
+	$best_by = request()->input('best_by');
+	$range_from = request()->input('best_by_range_from');
+	$range_to = request()->input('best_by_range_to');
+	$weight = request()->input('weight');
 	
-	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
-	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
-	
-	
-	$nationality_id = $mysqli->real_escape_string( request()->input('nationality_id'));
-	$brand_id = $mysqli->real_escape_string( request()->input('brand_id'));
-	
-	$pallet_tare = $mysqli->real_escape_string( request()->input('pallet_tare'));
-	$tare_per_carton = $mysqli->real_escape_string( request()->input('tare_per_carton'));
-	$number_of_cartons = $mysqli->real_escape_string( request()->input('number_of_cartons'));
+	$species_id = request()->input('species_id');
+	$temperature_id = request()->input('temperature_id');
 	
 	
-	$akg = $mysqli->real_escape_string( request()->input('akg'));
+	$nationality_id = request()->input('nationality_id');
+	$brand_id = request()->input('brand_id');
+	
+	$pallet_tare = request()->input('pallet_tare');
+	$tare_per_carton = request()->input('tare_per_carton');
+	$number_of_cartons = request()->input('number_of_cartons');
+	
+	
+	$akg = request()->input('akg');
 
 	
 	$quantity=request()->input('quantity'); # Fix the loop from starting at 0

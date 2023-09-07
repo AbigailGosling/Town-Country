@@ -1,25 +1,25 @@
 <?php
 	include('functions.php');
 	
-	$unit = $mysqli->real_escape_string( request()->input('unit'));	
-	$intake_id = $mysqli->real_escape_string( request()->input('intake_id'));
-	$status_id = $mysqli->real_escape_string( request()->input('statuses_id'));
-	$cut_id = $mysqli->real_escape_string( request()->input('cut_id'));
-	$best_by = $mysqli->real_escape_string( request()->input('best_by'));
-	$best_by_range_from = $mysqli->real_escape_string( request()->input('best_by_range_from'));
-	$best_by_range_to = $mysqli->real_escape_string( request()->input('best_by_range_to'));
-	$species_id = $mysqli->real_escape_string( request()->input('species_id'));
-	$temperature_id = $mysqli->real_escape_string( request()->input('temperature_id'));
-	$comments = $mysqli->real_escape_string( request()->input('comments'));
+	$unit = request()->input('unit');	
+	$intake_id = request()->input('intake_id');
+	$status_id = request()->input('statuses_id');
+	$cut_id = request()->input('cut_id');
+	$best_by = request()->input('best_by');
+	$best_by_range_from = request()->input('best_by_range_from');
+	$best_by_range_to = request()->input('best_by_range_to');
+	$species_id = request()->input('species_id');
+	$temperature_id = request()->input('temperature_id');
+	$comments = request()->input('comments');
 	
 	
-	$tear_weight_val = $mysqli->real_escape_string( request()->input('tear_weight_val'));
-	$gross_weight_val = $mysqli->real_escape_string( request()->input('gross_weight_val'));
+	$tear_weight_val = request()->input('tear_weight_val');
+	$gross_weight_val = request()->input('gross_weight_val');
 	
-	$unit = $mysqli->real_escape_string( request()->input('unit'));
+	$unit = request()->input('unit');
 	
-	$nationality_id = $mysqli->real_escape_string( request()->input('nationality_id'));
-	$brand_id = $mysqli->real_escape_string( request()->input('brand_id'));
+	$nationality_id = request()->input('nationality_id');
+	$brand_id = request()->input('brand_id');
 	
 	$quantity = request()->input('quantity'); # Fix the loop from starting at 0
 	$quantity++;

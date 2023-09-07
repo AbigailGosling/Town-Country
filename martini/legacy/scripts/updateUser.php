@@ -1,15 +1,15 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	
-	$name = $mysqli->real_escape_string( request()->input('name'));
-	$email = $mysqli->real_escape_string( request()->input('email'));
-	$password = sha1($mysqli->real_escape_string( request()->input('password')));
+	$name = request()->input('name');
+	$email = request()->input('email');
+	$password = sha1(request()->input('password'));
 	
 	$pages = implode(',', request()->input('pages'));
-	$view_intake_prices = $mysqli->real_escape_string( request()->input('view_intake_prices'));
-	$allow_override_salesman = $mysqli->real_escape_string( request()->input('allow_override_salesman'));
+	$view_intake_prices = request()->input('view_intake_prices');
+	$allow_override_salesman = request()->input('allow_override_salesman');
 	
-	$user_type = $mysqli->real_escape_string( request()->input('user_type'));
+	$user_type = request()->input('user_type');
 
 	$id = request()->input('id');
 	

@@ -4,7 +4,7 @@
     if(request()->input('delid') != ''){
     
 
-        $delid = $mysqli->real_escape_string( request()->input('delid'));
+        $delid = request()->input('delid');
 
 
         $x = "DELETE FROM `users` WHERE id=?";

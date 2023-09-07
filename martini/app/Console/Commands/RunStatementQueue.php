@@ -21,7 +21,7 @@ class RunStatementQueue extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'process statements queue';
 
     /**
      * Execute the console command.
