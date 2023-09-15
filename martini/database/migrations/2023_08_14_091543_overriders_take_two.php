@@ -26,13 +26,21 @@ return new class extends Migration
             });
         }
         catch (\Exception $e) {}
+        try{
         Schema::connection('tandc_live')->table('customers', function (Blueprint $table) {
             $table->boolean('markup_enabled')->default(false);
-            $table->decimal("markup_amount",8,3)->nullable();
         });
-        $sysSet = SystemSetting::firstOrCreate([`key_name` => 'OVERRIDER_START_DATE']);
-        if ($sysSet->key_value == null || $sysSet->key_value == "") $sysSet->key_value = '2023/01/01 00:00:00';
-        $sysSet->save();
+        }
+        catch (\Exception $e) {}
+        try{
+            Schema::connection('tandc_live')->table('customers', function (Blueprint $table) {
+                $table->decimal("markup_amount",8,3)->nullable();
+            });
+        }
+        catch (\Exception $e) {}
+        //$sysSet = SystemSetting::firstOrCreate([`key_name` => 'OVERRIDER_START_DATE']);
+        //if ($sysSet->key_value == null || $sysSet->key_value == "") $sysSet->key_value = '2025/01/01 00:00:00';
+        //$sysSet->save();
     }
 
     /**

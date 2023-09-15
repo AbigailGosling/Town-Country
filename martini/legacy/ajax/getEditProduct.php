@@ -47,7 +47,7 @@
 		
 		<div style="display:none;">
 			<label>status</label>
-			<select name="statuses_idq">
+			<select name="statuses_id">
 				<option value="0" <?php if($weightRow['status_id'] == '0'){ echo 'selected'; } ?>>Available</option>
 				<option value="1" <?php if($weightRow['status_id'] == '1'){ echo 'selected'; } ?>>Sold</option>
 			</select>

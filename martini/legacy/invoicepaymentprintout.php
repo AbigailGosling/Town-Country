@@ -200,7 +200,7 @@ var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); 
         items.push(data);
         if (dataParsed.length == 0){
             for (var item in items){
-                $('#invoiceZone').append(data);
+                $('#invoiceZone').append(items[item]);
             }
             $('.loadingContainer').hide();
             $('.noprint').show();
