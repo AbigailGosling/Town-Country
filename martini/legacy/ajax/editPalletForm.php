@@ -19,7 +19,7 @@
 		
 		<div style="display:none;">
 			<label>status</label>
-			<select name="statuses_idq">
+			<select name="statuses_id">
 				<option value="0">Available</option>
 				<option value="1">Sold</option>
 			</select>

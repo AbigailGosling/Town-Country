@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+ini_set('memory_limit', '1G');
 ?>
 <script type="text/javascript">
     $.ajaxSetup({

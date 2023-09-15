@@ -67,13 +67,13 @@
 	$colValue[] = request()->input('default_salesman_id');
 	
 	$colNames[] = "`due_warning`";
-	$colValue[] = request()->input('due_warning');
+	$colValue[] = (request()->input('due_warning')!=null && request()->input('due_warning') != "")?request()->input('due_warning'):"0";
 
 	$colNames[] = "`credit_grace`";
-	$colValue[] = request()->input('credit_grace');
+	$colValue[] = (request()->input('credit_grace')!=null && request()->input('credit_grace') != "")?request()->input('credit_grace'):"0";
 
 	$colNames[] = "`markup_amount`";
-	$colValue[] = request()->input('markup_amount');
+	$colValue[] = (request()->input('credit_grace')!=null && request()->input('credit_grace') != "")?request()->input('markup_amount'):"0";
 
 	for ($u=1;$u<10;$u++)
 	{

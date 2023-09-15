@@ -45,7 +45,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
 		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
-		Log::debug($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
+		Log::error($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
 	global $knownStatements;
