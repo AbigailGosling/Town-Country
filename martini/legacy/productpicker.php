@@ -668,8 +668,7 @@ function cancelSale()
 			for(var x = 0; x < ubs.length; x++){
 				var ub = ubs[x];
 				var temp = temps[x];
-				if (customerID == "420") break;
-				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
+				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1) && customerID != "420")
 				{
 					continue;
 				}
