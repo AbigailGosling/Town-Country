@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
     include_once('includes/frontHeader.php');
     if(request()->input('delid') != ''){
         $delid = request()->input('delid');
@@ -11,7 +15,6 @@
 
         ?> <script> window.location.href = '/pickSheetList.php'; </script> <?php
     }
-
 ?>
 <!doctype html>
 <html class="int">
@@ -36,7 +39,6 @@
 			session_start();session_write_close();
 			
 			$userid = $_SESSION['USER'];
-			
  			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%y') ASC";
 			$y = prepareExecuteQuery($x);
 			
@@ -128,9 +130,16 @@
                             </tr>
                         </table>
                     </div>
+                    <?php
+                        $currentUser = User::find(Auth::id());
+                        if ($currentUser->hasPermission("deletePick")){
+                    ?>
                      <div class="actions">
                         <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $row['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
                     </div>
+                    <?php
+                        }
+                    ?>
                 </div>
             <?php
             }
