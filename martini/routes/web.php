@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
@@ -46,6 +48,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
 
+    Route::get('/customers/overrides', [CustomerOverridesController::class, 'index'])->name('overrides.index');
+    Route::get('/customers/overrides/search', [CustomerOverridesController::class, 'search'])->name('overrides.search');
+    Route::get('/customers/overrides/edit/{customer}', [CustomerOverridesController::class, 'edit'])->name('overrides.edit');
+    Route::post('/customers/overrides/update_credit/{customer}', [CustomerOverridesController::class, 'updateCredit'])->name('overrides.update_credit');
+    Route::post('/customers/overrides/update_del/{customer}', [CustomerOverridesController::class, 'updateDel'])->name('overrides.update_del');
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');
