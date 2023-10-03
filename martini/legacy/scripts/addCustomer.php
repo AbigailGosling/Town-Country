@@ -95,6 +95,24 @@
 		$colNames[] = '`address'.$u.'_number`';
 		$colValue[] = "'".request()->input('address'.$u.'_number')."'";
 	}
+	define('DEL_SUNDAY',     1);
+	define('DEL_SATURDAY',   2);
+	define('DEL_FRIDAY',     4);
+	define('DEL_THURSDAY',   8);
+	define('DEL_WEDNESDAY', 16);
+	define('DEL_TUESDAY',   32);
+	define('DEL_MONDAY',    64);
+	$days = 0;
+	if (request()->has('del_monday') 	&& request()->input('del_monday') == 1) 	$days += DEL_MONDAY;
+	if (request()->has('del_tuesday') 	&& request()->input('del_tuesday') == 1) 	$days += DEL_TUESDAY;
+	if (request()->has('del_wednesday') && request()->input('del_wednesday') == 1) 	$days += DEL_WEDNESDAY;
+	if (request()->has('del_thursday') 	&& request()->input('del_thursday') == 1) 	$days += DEL_THURSDAY;
+	if (request()->has('del_friday') 	&& request()->input('del_friday') == 1) 	$days += DEL_FRIDAY;
+	if (request()->has('del_saturday') 	&& request()->input('del_saturday') == 1) 	$days += DEL_SATURDAY;
+	if (request()->has('del_sunday') 	&& request()->input('del_sunday') == 1) 	$days += DEL_SUNDAY;
+
+	$colNames[] = '`delivery_days`';
+	$colValue[] = $days;
 
 	$x = "INSERT INTO `customers` (".implode(",",$colNames).") 
 	VALUES

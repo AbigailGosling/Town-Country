@@ -6,6 +6,8 @@
     <div class="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center rounded-l-md">
     @elseif($background === 'orange')
     <div class="bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center rounded-l-md">
+    @elseif($background === 'red')
+    <div class="bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center rounded-l-md">
     @endif
     <div class="m-auto" style="vertical-align: center !important">
         <span>

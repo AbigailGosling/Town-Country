@@ -80,7 +80,7 @@ $customer = mysqli_fetch_array($y1);
 $current_outstanding = (float) $customer['current_outstanding'];
 $newVal = $current_outstanding + (float) $val;
 
-$x = "UPDATE `customers` SET current_outstanding = ?,`override` = 0 WHERE id = ? LIMIT 1";
+$x = "UPDATE `customers` SET current_outstanding = ?,`override` = 0, `delivery_day_override` = 0 WHERE id = ? LIMIT 1";
 $y = prepareExecuteQuery($x,'si',[$newVal,$customer_id]);
 # END update customer price
 

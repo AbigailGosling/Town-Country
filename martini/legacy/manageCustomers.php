@@ -1,5 +1,12 @@
 <?php
 	include('functions.php');
+	define('DEL_SUNDAY',     1);
+	define('DEL_SATURDAY',   2);
+	define('DEL_FRIDAY',     4);
+	define('DEL_THURSDAY',   8);
+	define('DEL_WEDNESDAY', 16);
+	define('DEL_TUESDAY',   32);
+	define('DEL_MONDAY',    64);
 	$showDisabled = 0;
 	if (request()->input('showDisabled') !== null)
 	{
@@ -110,7 +117,7 @@
 				<?php
 					for ($u=1;$u<10;$u++)
 					{
-						if ($u>1)$style1 = "display:none;";
+						if ($u>1 && $data['address'.$u.'_1']=="")$style1 = "display:none;";
 				?>
 				<tr style="vertical-align: top;">
 					<td class="label"><label>Delivery Address <?php echo $u; ?></label></td>
@@ -253,8 +260,16 @@
 	</div>
 	
 	<div id="flexContainerTwo">
-		<div class="fullbox">
+		<div class="fullbox controls">
 			<table width="100%">
+				<tr>
+					<td class="label"><label>Credit Checking</label></td>
+					<td>
+						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+						
+					</td>
+				</tr>
+				<tr height=""><td colspan="2"></td></tr> 	
 				<tr>
 					<td class="label"><label>Credit Rating</label></td>
 					<td><input type="text" class="input" name="credit_rating" value="<?php echo number_format((double)$data['credit_rating'], 2, '.', ''); ?>"></td>
@@ -267,7 +282,26 @@
 					<td class="label"><label>Current outstanding</label></td>
 					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']);?>"></td>
 				</tr>
-				
+				<tr height=""><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Override Credit Check</label></td>
+					<td>
+						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+					</td>
+				</tr>
+				<tr height=""><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Price Markup/Markdown</label></td>
+					<td>
+						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+
+					</td>
+				</tr>
+				<tr height=""><td colspan="2"></td></tr> 
+				<tr>
+					<td class="label"><label>Markup/Markdown Amount</label></td>
+					<td><input type="number" class="input" id="markup_amount" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"><label> %</label></td>
+				</tr>
 				<!--<tr>
 					<td class="label"><label>Payments received</label></td>
 					<td><input type="text" class="input" name="payment_received"></td>
@@ -294,31 +328,45 @@
 		<div class="fullbox controls">
 			<table width="100%">
 				<tr>
-					<td class="label"><label>Credit Checking</label></td>
+					<td class="label"><label>Delivery Date Checks</label></td>
 					<td>
-						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-						
+						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
-				<tr height="45"><td colspan="2"></td></tr> 
 				<tr>
-					<td class="label"><label>Override Credit Check</label></td>
-					<td>
-						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-					</td>
+					<td class="label"><label>Monday</label></td>
+					<td><input type="checkbox" id="del_monday" name="del_monday" value="1" <?php echo ($data['delivery_days'] & DEL_MONDAY)?"checked":""; ?>></td>
 				</tr>
-				<tr height="45"><td colspan="2"></td></tr> 
 				<tr>
-					<td class="label"><label>Price Markup/Markdown</label></td>
-					<td>
-						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-
-					</td>
+					<td class="label"><label>Tuesday</label></td>
+					<td><input type="checkbox" id="del_tuesday" name="del_tuesday" value="1" <?php echo ($data['delivery_days'] & DEL_TUESDAY)?"checked":""; ?>></td>
 				</tr>
-				<tr height="45"><td colspan="2"></td></tr> 
 				<tr>
-					<td class="label"><label>Markup/Markdown Amount</label></td>
-					<td><input type="number" class="input" id="markup_amount" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"><label> %</label></td>
+					<td class="label"><label>Wednesday</label></td>
+					<td><input type="checkbox" id="del_wednesday" name="del_wednesday" value="1" <?php echo ($data['delivery_days'] & DEL_WEDNESDAY)?"checked":""; ?>></td>
+				</tr>
+				<tr>
+					<td class="label"><label>Thursday</label></td>
+					<td><input type="checkbox" id="del_thursday" name="del_thursday" value="1" <?php echo ($data['delivery_days'] & DEL_THURSDAY)?"checked":""; ?>></td>
+				</tr>
+				<tr>
+					<td class="label"><label>Friday</label></td>
+					<td><input type="checkbox" id="del_friday" name="del_friday" value="1" <?php echo ($data['delivery_days'] & DEL_FRIDAY)?"checked":""; ?>></td>
+				</tr>
+				<tr>
+					<td class="label"><label>Saturday</label></td>
+					<td><input type="checkbox" id="del_saturday" name="del_saturday" value="1" <?php echo ($data['delivery_days'] & DEL_SATURDAY)?"checked":""; ?>></td>
+				</tr>
+				<tr>
+					<td class="label"><label>Sunday</label></td>
+					<td><input type="checkbox" id="del_sunday" name="del_sunday" value="1" <?php echo ($data['delivery_days'] & DEL_SUNDAY)?"checked":""; ?>></td>
+				</tr>
+				
+				<tr>
+					<td class="label"><label>Delivery Date Overide</label></td>
+					<td>
+						<a href="javascript:;" id="delivery_day_override" onclick="delDayOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+					</td>
 				</tr>
 			</table>
 		</div>
@@ -397,7 +445,7 @@
 							<td width="100" align="left">ID: <?php echo $row['id']; ?></td>
 							<td align="center" style="font-size: 18px;"><?php echo $row['businessname']; ?></td>
 							<td width="100" align="right">
-								<a href="manageCustomers.php?id=<?php echo $row['id']; ?>" style="right:-35px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>
+								<!--<a href="manageCustomers.php?id=<?php //echo $row['id']; ?>" style="right:-35px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-pencil" style="padding-right:4px;" aria-hidden="true"></i></a>-->
 								<a href="javascript:;" onclick="deleteRow(<?php echo $row['id']; ?>, <?php echo $existingPicksheetsCount; ?>)" style="right:-70px;height:40px;padding-top:6px;top:0px;" id="delete_intake"><i class="fa fa-trash" style="padding-right:5px;" aria-hidden="true"></i></a>
 							</td>
 						</tr>
@@ -553,6 +601,45 @@ function mainForm2(){
 		$.post("ajax/toggleMarkup.php",{
 			id: id,
 			amount: $('#markup_amount').val()
+		});
+	}
+	function delDayEnabled(ele, id){
+		var q = $('#delivery_day_checking');
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Delivery Day Checking Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Delivery Day Checking Enabled!"]);
+		}
+		$.post("ajax/toggleDeliveryDate.php",{
+			id: id,
+			mo: $('#del_monday').is(":checked")?1:0,
+			tu: $('#del_tuesday').is(":checked")?1:0,
+			we: $('#del_wednesday').is(":checked")?1:0,
+			th: $('#del_thrusday').is(":checked")?1:0,
+			fr: $('#del_friday').is(":checked")?1:0,
+			sa: $('#del_saturday').is(":checked")?1:0,
+			su: $('#del_sunday').is(":checked")?1:0,
+		});
+	}
+	function delDayOverride(ele, id){
+		var q = $('#delivery_day_override');
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Delivery Day Override Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Delivery Day Override Enabled!"]);
+		}
+		$.post("ajax/toggleDeliveryOverride.php",{
+			id: id,
 		});
 	}
 </script>

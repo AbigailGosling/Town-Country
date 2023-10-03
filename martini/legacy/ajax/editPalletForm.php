@@ -354,6 +354,18 @@ $.ajaxSetup({
 		
 		var good = 1;
 		var msg = "";
+		var nationality = $('#nationality_id').val();
+		if(nationality == '--'){
+			nationality = '';
+		}
+		if(nationality == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('#nationality_id').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#nationality_id').css('border','1px solid grey');
+		}
+			
 		
 		if(best_by == ''){
 			msg = "The highlighted fields cannot be blank!";

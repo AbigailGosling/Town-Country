@@ -16,6 +16,8 @@
 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
 	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
 	showHigherWarning 	= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
+	delCheckingOn		= <?php echo ($row['delivery_day_checking'] == 1 && $row['delivery_day_override'] == 0)?"true":"false"; ?>;
+	delDays				= <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
 	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo $creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
 </script>
 <div class="col">
@@ -153,7 +155,7 @@
 					$addressOneEmpty = false;
 				}
 		?>
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?= $u ?>)">
+		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?php echo ($u>0)?$u:'1'; ?>)">
 			<span><?php
 				if($addressOneEmpty){
 					echo 'Empty';

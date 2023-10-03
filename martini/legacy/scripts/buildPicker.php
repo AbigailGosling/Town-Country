@@ -85,7 +85,7 @@
 	 
 		$index++;
 	}
-	$x = "UPDATE `customers` SET override = 0 WHERE id = ?";
+	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 	shell_exec("php /var/www/html/martini/artisan run:send_sale_confirmation $pickersheet_id > /dev/null 2>&1 &");
 	

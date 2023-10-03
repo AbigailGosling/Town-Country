@@ -171,6 +171,11 @@
 	var showWarning = false;
 	var showHigherWarning = false;
 	var warningMessage = "";
+	var customerID = null;
+	var infoMessage = "";
+	var showPriceCheck = false;
+	var delCheckingOn = false;
+	var delDays = 0;
     $(document).ready(function() {
         var formHasChanged = false;
         var submitted = false;
@@ -468,13 +473,7 @@ function cancelSale()
 
 </style>
 <script type="text/javascript">
-	var customerID = null;
-	var transactionAllowed = false;
-	var showWarning = false;
-	var showHigherWarning = false;
-	var warningMessage = "";
-	var infoMessage = "";
-	var showPriceCheck = false;
+
     setTimeout(function(){
         $('.select2-container').css('display', 'none');
         $('.select2-container').first().css('display', 'inline-block');
@@ -604,14 +603,35 @@ function cancelSale()
 			}
 			else
 			{
-				$('#warning').css('background', "#90EE90");
-				$('#warning').css('border', "2px solid #00FF00");
-				$('#warning').css('display', "inline-block");
-				$('#warning').html(warningMessage);
-				$('#sendfake').attr('disabled', false);
-				$('#searcher').attr('disabled', false);
+				var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+				if (dateObj != null && delCheckingOn){
+					var daySelected = dateObj.getDay();
+					var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+					var weekdayLookup = [01			,64			,32			,16			,08			,04			,02			];
+					var weekdayInt = weekdayLookup[daySelected];
+				}
+				if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0) 
+				{	
+					day = weekday[daySelected];
+					$('#sendfake').attr('disabled', true);
+					$('#searcher').attr('disabled', true);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+					$('#warning').css('display', "inline-block");
+					$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+				}
+				else {
+					$('#warning').css('background', "#90EE90");
+					$('#warning').css('border', "2px solid #00FF00");
+					$('#warning').css('display', "inline-block");
+					$('#warning').html(warningMessage);
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					if (recursionProtection == false && dateObj != null)checkUBDates($('#estimated_delivery_date').val());
+				}
 			}
 	}
+
 	ready = true;
 	setInterval(function(){
 		ready = true;
@@ -654,11 +674,47 @@ function cancelSale()
 		
 	});
 	function ddChanged(dateText, inst){
-		checkUBDates(dateText);
+		if (typeof customer_id === 'undefined' || typeof address_id === 'undefined') checkUBDates(dateText);
+		else
+		{
+			$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data){
+				getCustomResult = data;
+				setCustomerCreditFeedback(data);
+			});
+		}
+		
 	}
+	var recursionProtection = false;
 	function checkUBDates(dateText = null){
+		if (dateText == null) dateText = $('#estimated_delivery_date').val();
+		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+		if (dateObj != null && delCheckingOn){
+			var daySelected = dateObj.getDay();
+			var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
+			var weekdayInt = weekdayLookup[daySelected];
+		}
+		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0) 
+		{	
+			day = weekday[daySelected];
+			$('#sendfake').attr('disabled', true);
+			$('#searcher').attr('disabled', true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+			return;
+		}
+		else if (warningMessage){
+			$('#warning').css('background', "#90EE90");
+			$('#warning').css('border', "2px solid #00FF00");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html(warningMessage);
+			$('#sendfake').attr('disabled', false);
+			$('#searcher').attr('disabled', false);
+		}
+		
 		if (transactionAllowed){
-			if (dateText == null) dateText = $('#estimated_delivery_date').val();
 			var ubs = $('#basketTable #ubDate');
 			var temps = $('#basketTable #temp_id');
 			if (ubs.length == 0 || dateText == null || dateText == "") return;
@@ -694,7 +750,9 @@ function cancelSale()
 			}
 			else
 			{
+				recursionProtection = true;
 				setCustomerCreditFeedback();
+				recursionProtection = false;
 			}
 
 		}

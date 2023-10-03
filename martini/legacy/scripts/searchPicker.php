@@ -126,7 +126,7 @@ ini_set('memory_limit', '1G');
     $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
     INNER JOIN `weights` ON `product`.`id` = `weights`.`product_id`
     JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
-    JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
+    LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
     WHERE $whereString";
 
     $productsY = prepareExecuteQuery($productsX);
