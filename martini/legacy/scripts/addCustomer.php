@@ -78,22 +78,22 @@
 	for ($u=1;$u<10;$u++)
 	{
 		$colNames[] = '`address'.$u.'_1`';
-		$colValue[] = "'".request()->input('address'.$u.'_1')."'";
+		$colValue[] = request()->input('address'.$u.'_1');
 
 		$colNames[] = '`address'.$u.'_2`';
-		$colValue[] = "'".request()->input('address'.$u.'_2')."'";
+		$colValue[] = request()->input('address'.$u.'_2');
 
 		$colNames[] = '`address'.$u.'_3`';
-		$colValue[] = "'".request()->input('address'.$u.'_3')."'";
+		$colValue[] = request()->input('address'.$u.'_3');
 
 		$colNames[] = '`address'.$u.'_4`';
-		$colValue[] = "'".request()->input('address'.$u.'_4')."'";
+		$colValue[] = request()->input('address'.$u.'_4');
 
 		$colNames[] = '`postcode_'.$u.'`';
-		$colValue[] = "'".request()->input('postcode_'.$u)."'";
+		$colValue[] = request()->input('postcode_'.$u);
 
 		$colNames[] = '`address'.$u.'_number`';
-		$colValue[] = "'".request()->input('address'.$u.'_number')."'";
+		$colValue[] = request()->input('address'.$u.'_number');
 	}
 	define('DEL_SUNDAY',     1);
 	define('DEL_SATURDAY',   2);
