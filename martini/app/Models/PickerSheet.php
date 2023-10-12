@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $deleted_by_user_id
  * @property string|null $picksheet_note
  * @property bool $admin_approved
+ * @property string|null $transaction_id
+ * @property bool $isSupplemental
  *
  * @package App\Models
  */
@@ -50,7 +52,8 @@ protected $connection = 'tandc_live';
 		'sent' => 'int',
 		'deleted' => 'int',
 		'deleted_by_user_id' => 'int',
-		'admin_approved' => 'bool'
+		'admin_approved' => 'bool',
+		'isSupplemental' => 'bool'
 	];
 
 	protected $dates = [
@@ -79,6 +82,8 @@ protected $connection = 'tandc_live';
 		'deleted',
 		'deleted_by_user_id',
 		'picksheet_note',
-		'admin_approved'
+		'admin_approved',
+		'transaction_id',
+		'isSupplemental'
 	];
 }

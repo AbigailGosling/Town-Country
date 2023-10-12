@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $haulier
  * @property int $direct_drop
  * @property int|null $temperature_id
+ * @property int $site_id
+ * @property bool $deleted
  *
  * @package App\Models
  */
@@ -38,7 +40,9 @@ protected $connection = 'tandc_live';
 
 	protected $casts = [
 		'direct_drop' => 'int',
-		'temperature_id' => 'int'
+		'temperature_id' => 'int',
+		'site_id' => 'int',
+		'deleted' => 'bool'
 	];
 
 	protected $fillable = [
@@ -56,6 +60,8 @@ protected $connection = 'tandc_live';
 		'transportation',
 		'haulier',
 		'direct_drop',
-		'temperature_id'
+		'temperature_id',
+		'site_id',
+		'deleted'
 	];
 }

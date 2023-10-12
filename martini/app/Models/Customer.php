@@ -52,6 +52,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $address2_number
  * @property string|null $address3_number
  * @property int $override
+ * @property int $credit_enabled
  * @property string|null $users
  * @property string|null $accounts_email
  * @property string|null $accounts_comments
@@ -94,6 +95,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $address7_number
  * @property string|null $address8_number
  * @property string|null $address9_number
+ * @property bool $markup_enabled
+ * @property bool $allowPrint
+ * @property float|null $markup_amount
+ * @property bool $delivery_day_checking
+ * @property bool $delivery_day_override
+ * @property int $delivery_days
  *
  * @package App\Models
  */
@@ -110,7 +117,14 @@ protected $connection = 'tandc_live';
 		'flaguplimit' => 'float',
 		'current_outstanding' => 'float',
 		'override' => 'int',
-		'disabled' => 'bool'
+		'credit_enabled' => 'int',
+		'disabled' => 'bool',
+		'markup_enabled' => 'bool',
+		'allowPrint' => 'bool',
+		'markup_amount' => 'float',
+		'delivery_day_checking' => 'bool',
+		'delivery_day_override' => 'bool',
+		'delivery_days' => 'int'
 	];
 
 	protected $fillable = [
@@ -154,6 +168,7 @@ protected $connection = 'tandc_live';
 		'address2_number',
 		'address3_number',
 		'override',
+		'credit_enabled',
 		'users',
 		'accounts_email',
 		'accounts_comments',
@@ -195,6 +210,12 @@ protected $connection = 'tandc_live';
 		'address6_number',
 		'address7_number',
 		'address8_number',
-		'address9_number'
+		'address9_number',
+		'markup_enabled',
+		'allowPrint',
+		'markup_amount',
+		'delivery_day_checking',
+		'delivery_day_override',
+		'delivery_days'
 	];
 }
