@@ -8,6 +8,7 @@
 	$best_by = request()->input('best_by');
 	$range_from = request()->input('best_by_range_from');
 	$range_to = request()->input('best_by_range_to');
+	$range_extension = request()->input('best_by_range_extension');
 	$species_id = request()->input('species_id');
 	$temperature_id = request()->input('temperature_id');
 	$comments = request()->input('comments');
@@ -73,9 +74,9 @@
 		# # #
 		
 		# # # Create Product
-		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit,best_by) VALUES
+		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by) VALUES
 		(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		$product_id = prepareExecuteQuery($x,'ssssssssssssssssss',[$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$ubbb,$unit,$best_by],true);
+		$product_id = prepareExecuteQuery($x,'ssssssssssssssssss',[$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by],true);
 		# # #
 		
 		
@@ -94,9 +95,9 @@
 		# # #
 		
 		# # # Create Product
-		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit,best_by,comments) VALUES
-		(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		$product_id = prepareExecuteQuery($x,'sssssssssssssssssss',[$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$ubbb,$unit,$best_by,$comments],true);
+		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by,comments) VALUES
+		(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		$product_id = prepareExecuteQuery($x,'ssssssssssssssssssss',[$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by,$comments],true);
 		# # #
 		
 		

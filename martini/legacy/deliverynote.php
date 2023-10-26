@@ -1,7 +1,13 @@
 <?php
+
+use Illuminate\Support\Facades\Log;
+
+$e = new \Exception;
+$s = (int)(microtime(true));
 	include('includes/frontHeader.php');
 	require_once("ajax/customer_soa_results_function.php");
 	require_once("scripts/SLabsEmailer.php");
+
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
@@ -17,7 +23,6 @@
 	
 	$customerRow = $y2->fetch_assoc(); 
 	
-
 	if(request()->input('deleteInternalDocument') !== null && $user['user_type'] == 'A'){
 		$internal_doc_id = request()->input('deleteInternalDocument');
 		$pickersheet_id = request()->input('id');
@@ -138,7 +143,6 @@
 						echo $customer['address'.$pickSheetRow['addressid'].'_2'] . '<br/>';
 						echo $customer['address'.$pickSheetRow['addressid'].'_3'] . '<br/>';
 						echo $customer['postcode_'.$pickSheetRow['addressid'].''] . '<br/>';
-
 						
 					?>
 				</p>
@@ -211,7 +215,8 @@
 		<?php } ?>
  	</form>
 	<br/><br/>
-	<?php } ?>
+	<?php 
+		} ?>
 
 	<table width="100%" border="0">
 		<tr class="productsHeading">
@@ -237,7 +242,6 @@
 				$total_qty_count = 0;
 				$total_weight_count = 0;
 				$total_case_count = 0;
-
                 while($outpallet = $outpalletResult2->fetch_assoc()){
                     $weightids = explode(',', $outpallet['weight_ids']);
 					

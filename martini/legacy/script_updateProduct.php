@@ -13,6 +13,7 @@
 	$ubbb = request()->input('ubbb');	
 	$best_by_range_from = request()->input('best_by_range_from');	
 	$best_by_range_to = request()->input('best_by_range_to');	
+	$best_by_range_extension = request()->input('best_by_range_extension');
 	$temperature_id = request()->input('temperature_id');	
 	$comments = request()->input('comments');	
 	
@@ -37,9 +38,9 @@
 	$original_intake_id = request()->input('original_intake_id');
 	$original_pallet_id = request()->input('original_pallet_id');
 	$product_temp = request()->input('product_temp');
-	$x = "UPDATE `product` SET original_intake_id = ?, original_pallet_id = ?, pallet_id=?, best_by=?, cut_id=?, brand_id=?,nationality_id=?,cooling_id=?,status=?,range_from=?,range_to=?, ubbb=?,unit=?,comments=?,product_temp = ?";
-	$varsArr =[$original_intake_id,$original_pallet_id,$pallet_id,$best_by,$cut_id,$brand_id,$nationality_id,$temperature_id,0,$best_by_range_from,$best_by_range_to,$ubbb,$unit,$comments,$product_temp];
-	$varStr  ='iiisiiiiissssss';
+	$x = "UPDATE `product` SET original_intake_id = ?, original_pallet_id = ?, pallet_id=?, best_by=?, cut_id=?, brand_id=?,nationality_id=?,cooling_id=?,status=?,range_from=?,range_to=?, range_extension=?, ubbb=?,unit=?,comments=?,product_temp = ?";
+	$varsArr =[$original_intake_id,$original_pallet_id,$pallet_id,$best_by,$cut_id,$brand_id,$nationality_id,$temperature_id,0,$best_by_range_from,$best_by_range_to,$best_by_range_extension,$ubbb,$unit,$comments,$product_temp];
+	$varStr  ='iiisiiiiisssssss';
 	if($cost != NULL){
 		$x .= ", cost=?, price=?";
 		$varsArr[]=$cost;

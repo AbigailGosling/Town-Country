@@ -248,7 +248,8 @@ INNER JOIN `weights` ON product.id = weights.product_id
             array_push($product2_brands, $product2['brand_id']);
             array_push($product2_nationalities, $product2['nationality_id']);
             array_push($product2_temperatures, $product2['cooling_id']);
-            array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+            if ($product2['range_extension'] == null || $product2['range_extension'] == '') array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+            else array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_extension']);
 
         }
         

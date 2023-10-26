@@ -40,6 +40,18 @@ use Ramsey\Uuid\Type\Decimal;
 		$user = $y->fetch_assoc();
 		if ($user===false || $user['pages'] == ''){ Log::error(new Exception("Failed to find legacy pages for user_id:".$userid));header('location:/logout'); }
 	}
+	global $rollingError;
+	global $rollingTimestamp;
+	function timingLogging()
+	{
+		global $rollingError;
+		global $rollingTimestamp;
+		if ($rollingError){
+			Log::error($rollingError->getTrace()[0]['file']."(".$rollingError->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$rollingTimestamp));
+		}
+		$rollingError = new \Exception;
+		$rollingTimestamp = (int)(microtime(true)*1000);
+	}
 	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
 		$e = new \Exception;
@@ -1798,6 +1810,7 @@ use Ramsey\Uuid\Type\Decimal;
 					product.status AS 'product_status',
 					product.range_from AS 'product_range_from',
 					product.range_to AS 'product_range_to',
+					product.range_extension AS 'product_range_extension',
 					product.ubbb AS 'product_ubbb',
 					product.unit AS 'product_unit',
 					product.comments AS 'product_comments',

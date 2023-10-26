@@ -105,6 +105,7 @@
         }
         $range_from = ($productsRow['range_from'] != '')?$productsRow['range_from']:'N/A';
         $range_to = ($productsRow['range_to'] != '')?$productsRow['range_to']:'N/A';
+        if ($productsRow['range_extension'] != null && $productsRow['range_extension'] != '') $range_to = $productsRow['range_extension'];
         array_push($single_row, $ubtext);
         array_push($single_row, $range_from);
         array_push($single_row, $range_to);

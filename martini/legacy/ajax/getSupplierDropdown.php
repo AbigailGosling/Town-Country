@@ -5,7 +5,7 @@
 	$name = request()->input('searchterm');
 	$species_id = request()->input('species_id');
 	
-	$cutX = "SELECT * FROM `supplier` WHERE `name` LIKE ?";
+	$cutX = "SELECT * FROM `supplier` WHERE `disabled` = 0 AND `name` LIKE ?";
 	$cutY = prepareExecuteQuery($cutX,'s',['%'.$name.'%']);
 	$count = mysqli_num_rows($cutY);
 	

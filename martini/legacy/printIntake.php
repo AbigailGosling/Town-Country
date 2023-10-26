@@ -234,7 +234,7 @@
 								<?php echo '[Pallet ID: <b>' . $pallet_id .'</b>]'; ?>
 								<?php echo '[<b>' . $types[$product['ubbb']] .'</b>]'; ?>
 								<?php if($product['range_from']) { echo '<span style="color:grey;">(' . $product['range_from'] . ' - '; ?>
-								<?php echo $product['range_to'] . ')</span>'; } ?>
+								<?php echo ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'] . ')</span>'; } ?>
 
 								 
 

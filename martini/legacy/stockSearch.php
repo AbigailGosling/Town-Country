@@ -48,7 +48,7 @@
 				$temp_id = $productsRow['cooling_id'];
 				$ubbb = $productsRow['ubbb'];
 				$smallestDate = $productsRow['range_from'];
-				$largestDate = $productsRow['range_to'];
+				$largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
 				
 				$nationality_id = $productsRow['nationality_id'];
 				
@@ -159,7 +159,7 @@
 		if($products2Count > 0){
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
 				$smallestDate = $productsRow2['range_from'];
-				$largestDate = $productsRow2['range_to'];
+				$largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
 				$pallet_id = $productsRow2['pallet_id'];
 				$product_id = $productsRow2['productid'];
 				

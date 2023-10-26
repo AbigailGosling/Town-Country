@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 	include_once('functions.php');
 ?>
@@ -48,6 +49,7 @@ use Illuminate\Support\Facades\Log;
 				$y = $mysqli->prepare($x);
 				$y->execute();
 				$y = $y->get_result();
+				$usermodel = User::find(Auth::id());
 				while($row = $y->fetch_assoc()){
 					$customer_id = $row['customer_id'];
 					

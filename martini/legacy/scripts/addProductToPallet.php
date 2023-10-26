@@ -13,6 +13,7 @@
 	$best_by = request()->input('best_by');
 	$range_from = request()->input('best_by_range_from');
 	$range_to = request()->input('best_by_range_to');
+	$range_extension = request()->input('best_by_range_extension');
 	$weight = request()->input('weight');
 	
 	$species_id = request()->input('species_id');
@@ -33,8 +34,8 @@
 	$quantity=request()->input('quantity'); # Fix the loop from starting at 0
 	$quantity++;
 	
-	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,ubbb,unit) VALUES (?,?,?,?,?,?,?,?,?,?)";
-	$y = prepareExecuteQuery($x,'ssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$ubbb,$unit]);
+	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+	$y = prepareExecuteQuery($x,'sssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit]);
 			
 	$product_id = $mysqli->insert_id; 
 	
@@ -89,6 +90,7 @@
 	best_by: <?php echo $best_by; ?><br/>
 	range_from: <?php echo $range_from; ?><br/>
 	range_to: <?php echo $range_to; ?><br/>
+	range_extension: <?php echo $range_extension; ?><br/>
 	weight: <?php echo $weight; ?><br/>
 	species_id: <?php echo $species_id; ?><br/>
 	temperature_id: <?php echo $temperature_id; ?><br/>

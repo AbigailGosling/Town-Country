@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class User extends Model
+class OldUser extends Model
 {
     protected $connection = 'tandc_live';
 	protected $table = 'users';

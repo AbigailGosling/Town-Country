@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\Permission;
+use App\Models\User;
+
 	include('includes/frontHeader.php');
 ?>
 <div id="top">
@@ -50,9 +54,10 @@
 			<label> Salesperson</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
-					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
+					$_users = User::where(['disabled'=>0])->orderBy('name')->get();
 	
-					while ($_user = mysqli_fetch_array($_users)) {
+					foreach ($_users as $_user) {
+						if (!$_user->hasPermission(Permission::find(1))) continue;
 						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
 					}
 				?>

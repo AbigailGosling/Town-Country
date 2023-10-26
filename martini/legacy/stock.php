@@ -307,7 +307,7 @@ use Illuminate\Support\Facades\Auth;
                     $temp_id = $productsRow['cooling_id'];
                     $ubbb = $productsRow['ubbb'];
                     $smallestDate = $productsRow['range_from'];
-                    $largestDate = $productsRow['range_to'];
+                    $largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
                     $intake_id = intakeIDfromPalletID($pallet_id);
                     $nationality_id = $productsRow['nationality_id'];
                     $cut = getCut($productsRow['cut_id']);

@@ -61,7 +61,7 @@
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
                 $temp_id = $productsRow2['cooling_id'];
 				$smallestDate = $productsRow2['range_from'];
-				$largestDate = $productsRow2['range_to'];
+				$largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
 				$pallet_id = $productsRow2['pallet_id'];
 				$product_id = $productsRow2['productid'];
 			    ?>

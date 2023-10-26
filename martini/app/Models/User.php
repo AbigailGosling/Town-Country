@@ -108,6 +108,11 @@ class User extends Authenticatable
         }
         
     }
+    public function canViewCustomer(int $customer_id)
+    {
+        if ($this->hasPermission("restrictedaccess") == false) return true;
+        //return Customer;
+    }
     public function isAdmin()
     {
         return ($this->hasPermission("admin") || $this->isSuperAdminElevated());

@@ -52,7 +52,10 @@
 			<label>To</label>
 			<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()">
 		</div>
-		
+		<div id="best_by_range_extension_container">
+			<label>Extension</label>
+			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()">
+		</div>
 		<label>Fresh/Frozen</label>
 		<select name="temperature_id">
 			<?php
@@ -247,7 +250,11 @@ $.ajaxSetup({
 			changeYear: true,
 			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
-		
+		$( "#best_by_range_extension" ).datepicker({
+			dateFormat: 'dd/mm/yy',
+			changeYear: true,
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
+		});
 		// $('#closeAddPallet').click(function(){
 			// $('#editBox').fadeOut();
 		// });

@@ -4,7 +4,7 @@
 	$species_id = request()->input('species_id');
 	// $cutXtemp = "SELECT * FROM `cuts` WHERE species_id = '$speciesID' AND name LIKE '%$name%'";
 	// $cutYtemp = prepareExecuteQuery($cutXtemp);
-	$cutX = "SELECT * FROM `cuts` WHERE `name` LIKE ? && species_id = ?";
+	$cutX = "SELECT * FROM `cuts` WHERE `name` LIKE ? && `species_id` = ? && `disabled` = 0";
 	$cutY = prepareExecuteQuery($cutX,'si',['%'.$name.'%',$species_id]);
 	$count = mysqli_num_rows($cutY);
 	if($count > 0){

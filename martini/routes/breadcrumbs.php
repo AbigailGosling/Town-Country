@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use Diglactic\Breadcrumbs\Breadcrumbs;
 use Diglactic\Breadcrumbs\Generator as BreadcrumbTrail;
 use Illuminate\Http\Request;
@@ -28,3 +29,21 @@ Breadcrumbs::for('users.edit', function(BreadcrumbTrail $trail, User $user){
     $trail->push($user->name);
 });
 
+Breadcrumbs::for('overrides.index', function(BreadcrumbTrail $trail){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Overrides');
+});
+
+Breadcrumbs::for('overrides.search', function(BreadcrumbTrail $trail){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Overrides', route('overrides.index'));
+    if($search = request()->input('search')) {
+        $trail->push($search);
+    }
+});
+
+Breadcrumbs::for('overrides.edit', function(BreadcrumbTrail $trail, Customer $user){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Overrides', route('overrides.index'));
+    $trail->push($user->businessname);
+});

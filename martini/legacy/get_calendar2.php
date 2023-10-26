@@ -1,5 +1,8 @@
 <?PHP
-	
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include_once('functions.php');
 	
 	function checkEvents($date){
@@ -344,7 +347,9 @@
 			?>
 			<br/>
 			<a href="createPurchase.php?id=<?php echo $purchaseid; ?>" class="btn">View Arrival</a>
-			<a href="scripts/deletePurchase.php?id=<?php echo $purchaseid; ?>&ts=<?php echo $shownWeekStart->getTimestamp(); ?>" class="btn">Delete Arrival</a>
+			<?php if ((User::find(Auth::id()))->hasPermission("createPurchase.php")) { ?>
+				<a href="scripts/deletePurchase.php?id=<?php echo $purchaseid; ?>&ts=<?php echo $shownWeekStart->getTimestamp(); ?>" class="btn">Delete Arrival</a>
+			<?php } ?>
 		</div>
 		<?php
 	}	

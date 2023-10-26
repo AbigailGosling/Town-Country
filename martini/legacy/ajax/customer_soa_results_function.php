@@ -4,11 +4,11 @@ use Illuminate\Support\Facades\Log;
 
 function get_customer_soa_results($customer_id,$adv)
 {
-    $overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',prepareExecuteQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
-    $customer = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
+    $overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',loggedQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
+    $customer = loggedQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
     $customer = $customer->fetch_assoc();
 
-    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
+    $customerPicksheets = loggedQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
     $pickSheets1 = mysqli_fetch_all($customerPicksheets,MYSQLI_ASSOC);
     $knownPickIDs = [];
     $pickSheets = [];
@@ -18,14 +18,14 @@ function get_customer_soa_results($customer_id,$adv)
         $knownPickIDs[] = $picksheet['id'];
     }
 
-    $invoiceLastPaidQ = prepareExecuteQuery("SELECT `invoice_id`,MAX(`created_at`) AS `created_at` FROM `invoice_payments` WHERE `invoice_id` IN (".implode(",",$knownPickIDs).") GROUP BY `invoice_id`");
+    $invoiceLastPaidQ = loggedQuery("SELECT `invoice_id`,MAX(`created_at`) AS `created_at` FROM `invoice_payments` WHERE `invoice_id` IN (".implode(",",$knownPickIDs).") GROUP BY `invoice_id`");
     $invoiceLastPaidQ = $invoiceLastPaidQ->fetch_all(MYSQLI_ASSOC);
     $invoicesLastPaid = array();
     foreach($invoiceLastPaidQ as $invoiceLastPaid){
         $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
     }
     $now = time();
-    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+    $customerReturns = loggedQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
     $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
     foreach ($customerReturns as $return){
         $pickSheets[$return['delivery_note_number']]['hasReturns'] = ($return['count'] > 0);
@@ -96,7 +96,7 @@ function date_compare($element1, $element2) {
 } 
 function check_customer_outstanding_cache($customer_id,$forceReload = false)
 {
-    $cacheRow = prepareExecuteQuery("SELECT SQL_NO_CACHE *,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
+    $cacheRow = loggedQuery("SELECT SQL_NO_CACHE *,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow = mysqli_fetch_assoc($cacheRow);
     if ($cacheRow == null || $forceReload == true) 
     {
@@ -116,7 +116,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     
     
     $invoiceList = array();
-    $check = prepareExecuteQuery("SELECT id FROM pickerSheets WHERE customer_id = ? ORDER BY `pickerSheets`.`id` DESC",'i',[$customer_id]);
+    $check = loggedQuery("SELECT id FROM pickerSheets WHERE customer_id = ? ORDER BY `pickerSheets`.`id` DESC",'i',[$customer_id]);
     $row = mysqli_fetch_assoc($check);
     if ($row == null)
     {
@@ -139,7 +139,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
         $cacheRow['pickersheet_sha2'] = $invoicesha2;
         $cacheRow['pickersheet_id_outdated'] = $cacheRow['outdated'] = true;
     }
-    $check = prepareExecuteQuery("SELECT MAX(id) as max_id, GROUP_CONCAT(id) as ids FROM invoice_payments WHERE invoice_id IN (".$invoiceList.")");
+    $check = loggedQuery("SELECT MAX(id) as max_id, GROUP_CONCAT(id) as ids FROM invoice_payments WHERE invoice_id IN (".$invoiceList.")");
     $checka = mysqli_fetch_assoc($check);
     $paymentsha2 = hash("sha256",$checka['ids']);
     $check = $checka['max_id'];
@@ -152,7 +152,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     $cacheRow['pending'] = null;
     $lastRow = null;
 
-    $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
+    $checkQ = loggedQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
     while($row = mysqli_fetch_assoc($checkQ))
     {  
         $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
@@ -207,7 +207,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
 function update_customer_outstanding_cache($customer_id,$cacheRow)
 {
     global $mysqli;
-    $cacheRow2 = prepareExecuteQuery("SELECT SQL_NO_CACHE customer_id,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
+    $cacheRow2 = loggedQuery("SELECT SQL_NO_CACHE customer_id,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow2 = mysqli_fetch_assoc($cacheRow2);
     if ($cacheRow2 == null)
     {
@@ -217,11 +217,11 @@ function update_customer_outstanding_cache($customer_id,$cacheRow)
     {
         $sql = "UPDATE customer_outstanding_cache SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = '".$cacheRow['invoice_payment_id']."', `outstanding` = '".(double)$cacheRow['outstanding']."', `oldest_unpaid_id` = '".$cacheRow['oldest_unpaid_id']."', `pickersheet_sha2` = '".$cacheRow['pickersheet_sha2']."', `payment_sha2` = '".$cacheRow['payment_sha2']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
     }
-    $x = prepareExecuteQuery($sql);
+    $x = loggedQuery($sql);
 }
 function precredit_check($customer_id)
 {
-    $customerQ = prepareExecuteQuery("SELECT * FROM `customers` WHERE `id` = ?",'i',[$customer_id]);
+    $customerQ = loggedQuery("SELECT * FROM `customers` WHERE `id` = ?",'i',[$customer_id]);
     $custR = mysqli_fetch_assoc($customerQ);
     $returningObj['showWarning'] = false;
     $returningObj['saleAllowed'] = true;
