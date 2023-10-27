@@ -338,10 +338,12 @@ use Illuminate\Support\Facades\Auth;
                 £<?php echo $sell_formatted; ?>
             </td>
             <td>
+                <input type="hidden" class="profitValue" value="<?php echo $total_product_sell - $total_product_cost; ?>">
                 £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
             </td>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
                 <td>
+                <input type="hidden" class="actualProfitValue" value="<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>">
                 £<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>
             </td>
             <?php } ?>
@@ -432,25 +434,28 @@ use Illuminate\Support\Facades\Auth;
             </td>
             <td style="color:red;"><?php echo $weightReturned; ?> kg</td>
             <td style="color:red;">
-                <?php
-                    $sell_formatted = number_format($credit_value, 2);
-                    $sell = str_replace(",","",$sell_formatted);
-                ?>
-                £<?php echo $sell_formatted; ?></td>
-            </td>
-            <td style="color:red;">
+            <input type="hidden" class="costValue" value="<?php echo $cost_value; ?>">
                 £<?php echo number_format($cost_value, 2); ?>
             </td>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
             <td style="color:red;">
+            <input type="hidden" class="actualCostValue" value="<?php echo $actualCost; ?>">
                 £<?php echo number_format($actualCost, 2); ?>
             </td>
             <?php }?>
             <td style="color:red;">
+                <?php
+                    $sell_formatted = number_format($credit_value, 2);
+                    $sell = str_replace(",","",$sell_formatted);
+                ?>
+                <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
+                £<?php echo $sell_formatted; ?></td>
+            </td>
+            <td style="color:red;">
             <?php
                 $profit = $cost_value - $credit_value;
             ?>
-                <input type="hidden" class="costValue" value="<?php echo abs($profit); ?>">
+                <input type="hidden" class="profitValue" value="<?php echo $profit; ?>">
                 £<?php echo number_format($profit, 2); ?>
             </td>
             <?php
@@ -458,6 +463,7 @@ use Illuminate\Support\Facades\Auth;
                 $profit = $actualCost - $credit_value;
             ?>
             <td style="color:red;">
+            <input type="hidden" class="actualProfitValue" value="<?php echo $profit; ?>">
                 £<?php echo number_format($profit, 2); ?>
             </td>
             <?php } ?>
