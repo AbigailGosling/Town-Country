@@ -1,15 +1,18 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	require(__DIR__.'/../functions.php');
 	
 	$term = request()->input('searchterm');
-	
+	$usermodel = User::find(Auth::id());
 	if($term != ''){
 		
 		# Get any customers that match the search term
 		$customerQuery = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || REPLACE(businessname, ' ', '') = ?",'ss',['%'.$term.'%','%'.$term.'%']);
 		$customerIDs = array(0);
-		while($customer = mysqli_fetch_array($customerQuery)){ array_push($customerIDs, $customer['id']); }
+		while($customer = mysqli_fetch_array($customerQuery)){ if (!$usermodel->canViewCustomer($customer_id)) continue;array_push($customerIDs, $customer['id']); }
 		$customerIDs = implode(',', $customerIDs);
 		
 		

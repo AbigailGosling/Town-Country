@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,7 +42,7 @@ use Illuminate\Support\Facades\Auth;
 			$userid = $_SESSION['USER'];
  			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%y') ASC";
 			$y = prepareExecuteQuery($x);
-			
+			$usermodel = User::find(Auth::id());
 			while($row = mysqli_fetch_assoc($y)){
                 $product_ids = array();
                 
@@ -85,7 +86,7 @@ use Illuminate\Support\Facades\Auth;
                     
                     
                 $customer_id = $row['customer_id'];
-				
+				if (!$usermodel->canViewCustomer($customer_id)) continue;
 				$date = $row['date'];
 				
 				$date=date_create($date);
@@ -113,6 +114,9 @@ use Illuminate\Support\Facades\Auth;
             {
                 $t = "FRESH";
                 if ($isFrozen == true) $t = "FROZEN";
+                foreach ($locs as $key=>$value){
+                    $locs[$key] = Location::find($value)->name;
+                }
                 if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
                 else if (count($locs) > 1) $loc = implode("<br/>",$locs);
                 else $loc = $locs[0];

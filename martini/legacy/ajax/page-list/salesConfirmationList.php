@@ -1,17 +1,20 @@
 <?php
     require(__DIR__.'/../../functions.php');
     require(__DIR__.'/../../scripts/SLabsEmailer.php');
-    use InternalScripts\SLabsEmailerStatus;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use InternalScripts\SLabsEmailerStatus;
     $toSkip = request()->input('toSkip');
     $limit = 80;
     $searchterm = request()->input('searchterm');
-	
+	$usermodel = User::find(Auth::id());
 	if($searchterm != ''){      
         # Check if any customer names match the search input
         $customerIDs = [];
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?"
     ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
-        while($customer = mysqli_fetch_array($customerResult)){ array_push($customerIDs, $customer['id']); }
+        while($customer = mysqli_fetch_array($customerResult)){ if (!$usermodel->canViewCustomer($customer['id'])) continue;array_push($customerIDs, $customer['id']); }
 
         $x = "SELECT * FROM `pickerSheets` WHERE id = ? || id LIKE ?";
 
@@ -22,7 +25,7 @@
         $x .= " ORDER BY date DESC";
         $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
     }else{
-        $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+        $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
     }
     $count = mysqli_num_rows($queryResult);
 
@@ -33,6 +36,7 @@
     $totalRowsInDatabase = $totalRowsData['count'];
 
     while($picksheet = mysqli_fetch_assoc($queryResult)){
+        $customer_id = $picksheet['customer_id'];
         $date_purchased = date('d/m/Y', strtotime($picksheet['date']));
     ?>
         <tr class="pages"><td align="center" class="pos">
@@ -43,7 +47,7 @@
                         <td align="left" style="font-size: 14px;">
                             <?php
                             
-                                $customer_id = $picksheet['customer_id'];
+                                
                                 $x1 = "SELECT * from `customers` WHERE id=?";
                                 $y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
                                 

@@ -15,6 +15,9 @@
 	<th align="left">Actual Cost</th>
 	<th align="left"></th>
 <?php
+
+use App\Models\Location;
+
 	require(__DIR__.'/../functions.php');
 	
 	$cut = request()->input('cut');
@@ -177,7 +180,7 @@
 						 
 					?>
 					<form method="post">
-						<input type="text" name="location" class="location" value="<?php echo $pallet['storage_location']; ?>" placeholder="location" style="width:90px;">
+						<input type="text" name="location" class="location" value="<?php echo Location::find($pallet['storage_location'])->name; ?>" placeholder="location" style="width:90px;">
 						<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 					</form>
 				</td>

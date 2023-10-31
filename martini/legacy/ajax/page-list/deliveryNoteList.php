@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
     require(__DIR__.'/../../functions.php');
 
     $toSkip = request()->input('toSkip');
@@ -6,15 +10,15 @@
 
     session_start();session_write_close();
     $userid = $_SESSION['USER'];
-    
-    $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE completed='1' ORDER BY `id` DESC LIMIT $toSkip, $limit");
+    $usermodel = User::find(Auth::id());
+    $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE completed='1' AND customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY `id` DESC LIMIT $toSkip, $limit");
     $count = mysqli_num_rows($queryResult);
     $newSkipCount = ($toSkip + $count);
 
     $totalRowsQueryResult = prepareExecuteQuery("SELECT count(id) as count FROM `pickerSheets` WHERE completed='1'");
     $totalRowsData = mysqli_fetch_array($totalRowsQueryResult);
     $totalRowsInDatabase = $totalRowsData['count'];
-
+    
     while($row = mysqli_fetch_array($queryResult)){
         
         $customer_id = $row['customer_id'];

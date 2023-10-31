@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	require(__DIR__.'/../functions.php');
 	
 	$term = request()->input('searchterm');
-    
+    $usermodel = User::find(Auth::id());
     $x = "SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
     
@@ -34,7 +37,7 @@
             }
 
             $customer_id = $row['customer_id'];
-					
+			if (!$usermodel->canViewCustomer($customer_id)) continue;		
             $date = $row['estimated_delivery_date'];
             
             $date=date_create($date);

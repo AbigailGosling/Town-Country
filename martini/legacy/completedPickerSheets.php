@@ -43,16 +43,16 @@ use Illuminate\Support\Facades\Auth;
 				session_start();session_write_close();
 				
 				$userid = $_SESSION['USER'];
-				
-				$x = "SELECT * FROM `pickerSheets` WHERE completed='1' ORDER BY `date_completed` DESC";
+				$usermodel = User::find(Auth::id());
+				$x = "SELECT * FROM `pickerSheets` WHERE completed='1' AND customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY `date_completed` DESC";
 				if (!request()->has("loadAll")) $x = $x . " LIMIT 100";
 				$y = $mysqli->prepare($x);
 				$y->execute();
 				$y = $y->get_result();
-				$usermodel = User::find(Auth::id());
+				
 				while($row = $y->fetch_assoc()){
 					$customer_id = $row['customer_id'];
-					
+
 					$date = $row['estimated_delivery_date'];
 					
 					$date=date_create($date);

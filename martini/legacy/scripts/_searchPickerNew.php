@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -82,7 +83,7 @@ use Illuminate\Support\Facades\Auth;
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
-                    if ($productsRow2['storage_location'] == "Coldstore" || $locked){
+                    if (Location::find($productsRow2['storage_location'])->name == "Coldstore" || $locked){
                         $class = request()->input('class') . " searchAccordTitle locked";
                     }
                     else {
@@ -143,7 +144,7 @@ use Illuminate\Support\Facades\Auth;
                     ?>
                     <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
                     <td colspan="1">
-                    <?php if($productsRow2['storage_location'] == "Coldstore" || $locked){ ?>
+                    <?php if(Location::find($productsRow2['storage_location'])->name == "Coldstore" || $locked){ ?>
                         <i class="fa fa-lock"></i>
                     <?php } ?>
                         <?php echo $numInPicking; ?>
@@ -160,7 +161,7 @@ use Illuminate\Support\Facades\Auth;
                             $otherLoc = "";
                             $coldstore = "";
                             
-                            switch ($productsRow2['storage_location'])
+                            switch (Location::find($productsRow2['storage_location'])->name)
                             {
                                 case "Unit 11":
                                     $unit11 = " selected";
@@ -279,7 +280,7 @@ use Illuminate\Support\Facades\Auth;
                     <td></td>
                     <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
                     <td>
-                    <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
+                    <?php if(Location::find($productsRow2['storage_location'])->name != "Coldstore" && $locked != true){ ?>
                         <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                     <?php } ?>                    
                     </td>

@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	require(__DIR__.'/../functions.php');
 	
     $intake_picksheet_ids = array();
@@ -9,8 +12,9 @@
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
     
     $customerids = '';
-    
+    $usermodel = User::find(Auth::id());
     while($row = mysqli_fetch_array($y)){
+        if (!$usermodel->canViewCustomer($row['id'])) continue;
         $rowid = $row['id'];
         $customerids .= " OR completed='1' && customer_id='$rowid'";
     }
@@ -52,7 +56,7 @@
             }
 
             $customer_id = $row['customer_id'];
-					
+			if (!$usermodel->canViewCustomer($customer_id)) continue;		
             $date = $row['estimated_delivery_date'];
             
             $date=date_create($date);

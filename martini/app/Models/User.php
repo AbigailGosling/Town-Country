@@ -111,7 +111,15 @@ class User extends Authenticatable
     public function canViewCustomer(int $customer_id)
     {
         if ($this->hasPermission("restrictedaccess") == false) return true;
-        //return Customer;
+        $c = Customer::find($customer_id);
+        return ($c->default_salesman_id == $this->id);
+    }
+    public function listViewableCustomers() 
+    {
+        if ($this->hasPermission("restrictedaccess") == false)
+            return Customer::all()->pluck('id')->toArray();
+        else
+            return Customer::where('default_salesman_id',$this->id)->pluck('id')->toArray();
     }
     public function isAdmin()
     {

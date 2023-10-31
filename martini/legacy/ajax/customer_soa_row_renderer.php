@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
     require(__DIR__.'/../functions.php');
     $customerPicksheets = json_decode(request()->input('picksheet'),true);
     $customer_id = request()->input('customer_id');
@@ -21,11 +25,17 @@
             
             ?> 
         </td>
-        <?php if(!$picksheet['invoicePaid']) { ?>
-            <td><a href="single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
+        <?php 
+        $usermodel = User::find(Auth::id());
+        if (!$usermodel->hasPermission("restrictedaccess")) { ?>
+            <?php if(!$picksheet['invoicePaid']) { ?>
+                <td><a href="single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
+            <?php }else{ ?>
+                <td><a href="single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
+            <?php }?>
         <?php }else{ ?>
-            <td><a href="single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Invoice Paid</a></td>
-        <?php }?>
+            <td></td>
+        <?php } ?>
         <td data-sort="<?php echo $picksheet['sortableDueDateFormat']; ?>">
             <?php
                 echo $picksheet['estimated_delivery_date'];

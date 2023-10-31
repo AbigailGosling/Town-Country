@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -226,7 +227,7 @@ use Illuminate\Support\Facades\Auth;
 					<td>Intake ID</td>
 					<td></td>
 					<td>Pallet ID</td>
-					<td><?php if($pallet['storage_location']){ echo $pallet['storage_location']; }?></td>
+					<td><?php if($pallet['storage_location']){ echo Location::find($pallet['storage_location'])->name; }?></td>
 					<td colspan="3"></td>
 					<td>Advised Weight</td>
 				</tr>
