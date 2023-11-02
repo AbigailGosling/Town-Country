@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Location;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -151,58 +152,11 @@ use Illuminate\Support\Facades\Auth;
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
                     <td colspan="1">
                         <form method="post">
-                        <?php
-                            $unit11 = "";
-                            $unit13 = "";
-                            $unit23 = "";
-                            $unitGatwick = "";
-                            $unitDry = "";
-                            $DirectDelivery = "";
-                            $otherLoc = "";
-                            $coldstore = "";
-                            
-                            switch (Location::find($productsRow2['storage_location'])->name)
-                            {
-                                case "Unit 11":
-                                    $unit11 = " selected";
-                                    break;
-                                case "Unit 13 - 14":
-                                    $unit13 = " selected";
-                                    break;
-                                case "Unit 23":
-                                    $unit23 = " selected";
-                                    break;
-                                case "Gatwick":
-                                    $unitGatwick = " selected";
-                                    break;
-                                case "Dry Store":
-                                    $unitDry = " selected";
-                                    break;
-                                case "Unit 15 - 17":
-                                    $unit15 = " selected";
-                                    break;
-                                case "Direct Drop":
-                                    $DirectDelivery = " selected";
-                                    break;
-                                case "Other":
-                                    $otherLoc = " selected";
-                                    break;
-                                case "Coldstore":
-                                    $coldstore = " selected";
-                                    break;
-                            }
-                        ?>
+
                         <select style="width:100%" name="location">
-                                <option></option>
-                                <option <?php echo $unit11; ?>>Unit 11</option>
-                                <option <?php echo $unit13; ?>>Unit 13 - 14</option>
-                                <option <?php echo $unit23; ?>>Unit 23</option>
-                                <option <?php echo $unitGatwick; ?>>Gatwick</option>
-                                <option <?php echo $unitDry; ?>>Dry Store</option>
-                                <option <?php echo $unit15; ?>>Unit 15 - 17</option>			
-                                <option <?php echo $DirectDelivery; ?>>Direct Drop</option>
-                                <option <?php echo $coldstore; ?>>Coldstore</option>
-			                    <option <?php echo $otherLoc; ?>>Other</option>
+                                <?php
+                                echo Site::generateOldHTMLList(Location::find($productsRow2['storage_location'])->name);
+                                ?>
                         </select>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
                         </form>

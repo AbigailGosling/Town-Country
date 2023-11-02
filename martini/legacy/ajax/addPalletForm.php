@@ -77,7 +77,7 @@ use App\Models\Site;
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<?php echo Site::generateHTMLList();?>
+				<?php echo Site::generateOldHTMLList();?>
 		</select>
 		
 		<label>comments</label>

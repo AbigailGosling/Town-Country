@@ -49,8 +49,12 @@
 	$xProduct = "SELECT * FROM `product` WHERE id=?";
 	$yProduct = prepareExecuteQuery($xProduct,'i',[$product_id]);
 	$rowProduct = mysqli_fetch_array($yProduct);
+
+	$pallet = "SELECT * FROM pallet WHERE id = ?";
+	$pallet = prepareExecuteQuery($pallet,'i',[$pallet_id]);
+	$pallet = mysqli_fetch_assoc($pallet);
 ?>
-<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?>">
+<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $pallet['storage_location']; ?> ">
 	<td><?php echo intakeIDfromPalletID($pallet_id); ?></td>
 	<td><?php echo $pallet_id; ?></td>
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>

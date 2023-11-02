@@ -6,7 +6,10 @@
 	
 	require('config.php');
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
-	use Illuminate\Support\Facades\Log;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 	use Illuminate\Support\Facades\File;
 use Ramsey\Uuid\Type\Decimal;
 	global $mysqli;
@@ -1857,6 +1860,11 @@ use Ramsey\Uuid\Type\Decimal;
 	function fuzzyCustomerSearch($name,$allSearch=false)
 	{
 		global $mysqli;
+		$thisUser = User::find(Auth::id());
+		$restrictionString = "";
+		if ($thisUser->hasPermission("restrictedaccess")){
+			$restrictionString = " `default_salesman_id` = $thisUser->id AND";
+		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(
 			$name,
@@ -1867,12 +1875,12 @@ use Ramsey\Uuid\Type\Decimal;
 		$allSearchControl = "";
 		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
 		$queries = array(
-			"SELECT * FROM `customers` WHERE businessname LIKE '%%%s%%' $allSearchControl",
+			"SELECT * FROM `customers` WHERE$restrictionString businessname LIKE '%%%s%%' $allSearchControl",
 		);
 		if (strlen($name)>2)
 		{
-			$queries[]="SELECT * FROM `customers` WHERE MATCH(businessname) AGAINST ('%s') $allSearchControl";
-			$queries[]="SELECT * FROM `customers` WHERE businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString MATCH(businessname) AGAINST ('%s') $allSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl";
 		}
 		foreach ($tests as $test)
 		{

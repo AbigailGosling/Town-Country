@@ -25,7 +25,7 @@ return new class extends Migration
         $oldPerm->name = '<span class="small">Manage</span> Locations';
         $newPerm->label = $newPerm->description = "Manage Locations";
         $oldPerm->column = $newPerm->group = 3;
-        $oldPerm->file = $newPerm->name =  $newPerm->file = "locations";
+        $oldPerm->file = $newPerm->name =  $newPerm->file = "../sites";
         $newPerm->save();
         $oldPerm->id = $newPerm->id;
         $oldPerm->save();

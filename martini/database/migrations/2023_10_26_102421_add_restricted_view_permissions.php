@@ -16,7 +16,7 @@ return new class extends Migration
     public function up()
     {
         $newPerm = new Permission();
-        $newPerm->label = $newPerm->description = "Restricted Access";
+        $newPerm->label = $newPerm->description = "Personal User View Only";
         $newPerm->group = 3;
         $newPerm->name = "restrictedaccess";
         $newPerm->file = "";

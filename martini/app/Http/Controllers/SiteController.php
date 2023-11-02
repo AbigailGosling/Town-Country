@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Site;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SiteController extends Controller
 {
@@ -16,9 +17,14 @@ class SiteController extends Controller
     public function index(Request $request)
     {
         $showDisabled = $request->input('showDisabled', false);
-        if (!$showDisabled)$sites = Site::where('disabled', false)->paginate($this::$defaultPaginate);
-        else $sites = Site::paginate($this::$defaultPaginate);
-        return view('sites.index', compact('sites'));
+        return view(
+            'sites.index', [
+                'sites' => $showDisabled ? Site::paginate($this::$defaultPaginate)
+                    : Site::where('disabled', false)->paginate($this::$defaultPaginate),
+                        'search_term' => '',
+                'show_disabled' => $showDisabled
+            ]
+        );
     }
 
     /**
@@ -56,9 +62,14 @@ class SiteController extends Controller
      * @param  \App\Models\Site  $site
      * @return \Illuminate\Http\Response
      */
-    public function show(Site $site)
+    public function show(Request $request,Site $site)
     {
-        return view('sites.edit', compact('site'));
+        $showDisabled = $request->input('showDisabled', false);
+        return view('sites.edit', ['site' => $site,'locations' => 
+            ($showDisabled) ? 
+            $site->locations()->orderBy("name")->get() :
+            $site->locations()->orderBy("name")->where("disabled",false)->get(),
+            'isNew' => false]);
     }
 
     /**
@@ -67,9 +78,9 @@ class SiteController extends Controller
      * @param  \App\Models\Site  $site
      * @return \Illuminate\Http\Response
      */
-    public function edit(Site $site)
+    public function edit(Request $request,Site $site)
     {
-        return $this->show($site);
+        return $this->show($request,$site);
     }
 
     /**
@@ -81,6 +92,7 @@ class SiteController extends Controller
      */
     public function update(Request $request, Site $site)
     {
+        Log::debug($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'abbr' => ['required', 'string', 'max:255'],

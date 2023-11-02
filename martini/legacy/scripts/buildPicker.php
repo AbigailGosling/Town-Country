@@ -1,4 +1,9 @@
 <?php
+
+use App\Models\Location;
+use App\Models\Pallet;
+use App\Models\Product;
+
 	require(__DIR__.'/../functions.php');
 	
 	$picker_id = request()->input('picker_id');
@@ -48,42 +53,66 @@
 			die();
 		}
 	}
-	$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,?,?,?,?)";
-	$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
-	
-	$pickersheet_id = $y;
-	if ((int)$pickersheet_id !== $pickersheet_id)
-	{
-		abort(500);
-		die();
-	}
-
-	$index = 0;
+	$baskets = [];
+	$priceTypeSorted = [];
+	$price_types = request()->input('price_type');
 	foreach (request('basketRow') as $key => $value) {
 
 		$details = explode('-', $value);
 		$product_id = $details[0];
-		$quantity = $details[1];
-		$cut_id = $details[2];
-		
-		$price_type = request()->input('price_type');
-		$target_weight = (int) request('target_weight_' . $product_id);
-		
-		if(empty($target_weight)){ $target_weight = 0; }
-		
-		if(!is_int($target_weight)){ $target_weight = 0; }
-	
-		
-		$price_type = $price_type[$index];
-		
-		$price = request('price_' . $product_id);
-		
-		for($i=0;$i<$quantity;$i++){
-			$x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-			$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+		$priceTypeSorted[$product_id] = $price_types[$key];
+		$location = Location::find(
+			Pallet::find(
+				Product::find(
+					$product_id
+					)->pallet_id
+				)->storage_location
+			);
+		$found = false;
+		foreach ($location->sale_rules as $locID=>$valIsAlwaysTrue){
+			if (array_key_exists($locID,$baskets)){
+				$found = true;
+				$baskets[$locID][] = $value;
+				break;
+			}
 		}
-	 
-		$index++;
+		if ($found == false) {
+			$baskets[$location->id] = [$value];
+		}
+	}
+	foreach ($baskets as $basket) {
+		$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,?,?,?,?)";
+		$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
+		$transaction_id = null;
+		$pickersheet_id = $y;
+		if ((int)$pickersheet_id !== $pickersheet_id)
+		{
+			abort(500);
+			die();
+		}
+
+		
+		foreach ($basket as $value) {
+
+			$details = explode('-', $value);
+			$product_id = $details[0];
+			$quantity = $details[1];
+			$cut_id = $details[2];
+			
+			
+			$target_weight = (int) request('target_weight_' . $product_id);
+			
+			if(empty($target_weight)){ $target_weight = 0; }
+			
+			if(!is_int($target_weight)){ $target_weight = 0; }
+			
+			$price = request('price_' . $product_id);
+			$price_type = $priceTypeSorted[$product_id];
+			for($i=0;$i<$quantity;$i++){
+				$x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
+				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+			}
+		}
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);

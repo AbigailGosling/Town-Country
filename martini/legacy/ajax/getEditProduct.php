@@ -113,7 +113,7 @@ use App\Models\Site;
 		?>
 		<select name="storage_location" id ="storage_location">
 			<option></option>
-			<?php echo Site::generateHTMLList($selected);?>			
+			<?php echo Site::generateOldHTMLList($selected);?>			
 		</select>
 		
 		<label>comments</label>

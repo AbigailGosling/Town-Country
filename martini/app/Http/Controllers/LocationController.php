@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Location;
 use App\Models\Site;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LocationController extends Controller
 {
@@ -27,9 +28,14 @@ class LocationController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Site $site)
     {
-        return view('locations.edit', ['location' => new Location, 'isNew' => true]);
+        return view('locations.edit', ['site' => $site,
+                                        'otherSites' => Site::generateHTMLList($site->name),
+                                        'location' => new Location, 
+                                        'otherLocations' => $site->locations()->where('disabled',false)->orderBy("name")->get(), 
+                                        'rules' => [],
+                                        'isNew' => true]);
     }
 
     /**
@@ -47,9 +53,10 @@ class LocationController extends Controller
         $input = $request->all();
         $location = new Location;
         $location->name = $input['name'];
-        $location->site_id = Site::find($input['site_id']);
+        $location->site_id = Site::find($input['site_id'])->id;
         $location->save();
-        redirect(route('locations.index'))->with(['message' => "Successfully created $location->name"]);
+        $location->bulkUpdateSaleRule((array_key_exists('rules',$input))?$input['rules']:[]);
+        redirect(route('sites.edit',$location->site_id))->with(['message' => "Successfully created $location->name"]);
     }
 
     /**
@@ -58,9 +65,15 @@ class LocationController extends Controller
      * @param  \App\Models\Location  $location
      * @return \Illuminate\Http\Response
      */
-    public function show(Location $location)
+    public function show(Site $site, Location $location)
     {
-        return view('locations.edit', compact('location'));
+        return view('locations.edit', ['site' => $site,
+                                    'otherSites' => Site::generateHTMLList($site->name),
+                                    'location' => $location, 
+                                    'otherLocations' => $site->locations()->
+                                                where([['disabled','=',false],['id','<>',$location->id]])->orderBy("name")->get(), 
+                                    'rules' => $location->sale_rules,
+                                    'isNew' => false]);
     }
 
     /**
@@ -69,9 +82,9 @@ class LocationController extends Controller
      * @param  \App\Models\Location  $location
      * @return \Illuminate\Http\Response
      */
-    public function edit(Location $location)
+    public function edit(Site $site, Location $location)
     {
-        return $this->show($location);
+        return $this->show($site,$location);
     }
 
     /**
@@ -81,18 +94,20 @@ class LocationController extends Controller
      * @param  \App\Models\Location  $location
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Location $location)
+    public function update(Request $request, Site $site, Location $location)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'site_id' => ['required', 'int'],
         ]);
         $input = $request->all();
+        Log::debug($input);
         $location->name = $input['name'];
-        $location->site_id = Site::find($input['site_id']);
+        $location->site_id = Site::find($input['site_id'])->id;
         $location->disabled = array_key_exists("disabled", $input);
         $location->save();
-        return redirect(route('locations.index'))->with(['message' => "Successfully updated $location->name"]);
+        $location->bulkUpdateSaleRule((array_key_exists('rules',$input))?$input['rules']:[]);
+        return redirect(route('sites.edit',$site->id))->with(['message' => "Successfully updated $location->name"]);
     }
 
     /**
@@ -128,5 +143,12 @@ class LocationController extends Controller
                 'search_term' => $searchTerm
             ]
         );
+    }
+    public function generateSiteList():array{
+        $siteList = [];
+        foreach(Site::where('disabled',false)->get() as $site){
+            $siteList[] = ['value'=>$site->id,'test'=>$site->name];
+        }
+        return $siteList;
     }
 }

@@ -54,7 +54,7 @@ class Site extends Model
     {
         return $this->hasMany(Location::class,"site_id","id");
     }
-    public static function generateHTMLList($selected = "") :string {
+    public static function generateOldHTMLList($selected = "") :string {
         $output = "";
         foreach (self::where("disabled",false)->get() as $site) {
             $onlyOne = true;
@@ -67,6 +67,14 @@ class Site extends Model
                 $selectFlag = ($selected != "" && $selected == $location->name) ? " selected" : "";
                 $output = $output . "<option value='".$location->id."'".$selectFlag.">" . $abbr . $location->name . "</option>\n";
             }
+        }
+        return $output;
+    }
+    public static function generateHTMLList($selected = "") :string {
+        $output = "";
+        foreach (self::where("disabled",false)->get() as $site) {
+            $selectFlag = ($selected != "" && $selected == $site->name) ? " selected" : "";
+			$output = $output . "<option value='".$site->id."'".$selectFlag.">" . $site->name . "</option>\n";
         }
         return $output;
     }

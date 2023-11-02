@@ -691,6 +691,7 @@ function cancelSale()
 	}
 	var recursionProtection = false;
 	function checkUBDates(dateText = null){
+		if (!checkSites()) return;
 		if (dateText == null) dateText = $('#estimated_delivery_date').val();
 		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
 		if (dateObj != null && delCheckingOn){
@@ -761,6 +762,31 @@ function cancelSale()
 			}
 
 		}
+	}
+	function checkSites(){
+		var allPass = true;
+		var siteid = null;
+		var elems = $('#basketTable > tbody > tr');
+		for(var i = 0; i < elems.length; i++){
+			element = elems[i];
+			var classString = element.getAttribute("class");
+			if (classString != null) {
+				if (siteid == null) {
+					siteid = classString.split(" ")[2].replace("siteid","");
+				}
+				else if (siteid != classString.split(" ")[2].replace("siteid","")){
+					allPass = false;
+				}
+			}
+		}
+		if (allPass == false){
+			$('#sendfake').prop('disabled',true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell from multiple sites</td>");
+		}
+		return allPass;
 	}
 	function parseDMY(value) {
 		var date = value.split("/");
