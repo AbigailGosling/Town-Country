@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 include('includes/frontHeader.php');
 include_once('ajax/customer_soa_results_function.php');
 ?>
@@ -66,7 +70,7 @@ include_once('ajax/customer_soa_results_function.php');
             ?>
         </h2>
         <a id="viewAllLabel" href="">Show All</a>
-        <a class="mp" href="multi_invoice_payments.php?customer_id=<?php echo request()->input('id'); ?>">Make / View payments</a>
+        <?php if (!User::find(Auth::id())->hasPermission("restrictedaccess")) {?><a class="mp" href="multi_invoice_payments.php?customer_id=<?php echo request()->input('id'); ?>">Make / View payments</a><?php }?>
         <div class="loadingContainer">
             <img src="img/loading.gif" alt="">
         </div>
