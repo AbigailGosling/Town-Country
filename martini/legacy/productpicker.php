@@ -113,7 +113,7 @@ use App\Models\User;
 					</select>
 				</td>
 				<td style="width:25%"><select id="SearchCutgroups" name="cutgroup_id" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
-						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
+						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select subcat...</option>
 						<?php
 							$x = "SELECT * FROM `cutgroups`";
 							$y = prepareExecuteQuery($x);
