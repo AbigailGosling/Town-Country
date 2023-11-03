@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\Location;
+use App\Models\Site;
+
 	require(__DIR__.'/../functions.php');
 	
 	$intake_id = request()->input('intake_id');
@@ -80,7 +84,11 @@
 			<label>To</label>
 			<input name="best_by_range_to" id="best_by_range_to" value="<?php echo $productRow['range_to']; ?>" type="text" onfocus="blur()">
 		</div>
-	 
+
+		<div id="best_by_range_extension_container">
+			<label>Extension</label>
+			<input name="best_by_range_extension" id="best_by_range_extension" value="<?php echo $productRow['range_extension']; ?>" type="text" onfocus="blur()">
+		</div>
 		
 		<label>Fresh/Frozen</label>
 		<select name="temperature_id">
@@ -99,57 +107,13 @@
 		</div>
 		<label>Location</label>
 		<?php
-			$unit11 = "";
-			$unit13 = "";
-			$unit23 = "";
-			$unitGatwick = "";
-			$unitDry = "";
-			$DirectDelivery = "";
-			$otherLoc = "";
-			$coldstore = "";
-			switch ($palletRow['storage_location'])
-			{
-				case "Unit 11":
-					$unit11 = " selected";
-					break;
-				case "Unit 13 - 14":
-					$unit13 = " selected";
-					break;
-				case "Unit 23":
-					$unit23 = " selected";
-					break;
-				case "Gatwick":
-					$unitGatwick = " selected";
-					break;
-				case "Dry Store":
-					$unitDry = " selected";
-					break;
-				case "Unit 15 - 17":
-					$unit15 = " selected";
-					break;
-				case "Direct Drop":
-					$DirectDelivery = " selected";
-					break;
-				case "Other":
-					$otherLoc = " selected";
-					break;
-				case "Coldstore":
-					$coldstore = " selected";
-					break;
-			}
+
+			$selected = Location::find($palletRow['storage_location'])->name;
+			
 		?>
 		<select name="storage_location" id ="storage_location">
 			<option></option>
-			<option value="Unit 11" <?php echo $unit11; ?>>Unit 11</option>
-			<option value="Unit 13 - 14" <?php echo $unit13; ?>>Unit 13 - 14</option>
-			<option value="Unit 23" <?php echo $unit23; ?>>Unit 23</option>
-			<option value="Gatwick" <?php echo $unitGatwick; ?>>Gatwick</option>
-			<option value="Dry Store" <?php echo $unitDry; ?>>Dry Store</option>
-			<option value="Unit 15 - 17" <?php echo $unit15; ?>>Unit 15 - 17</option>
-			<option value="Direct Drop" <?php echo $DirectDelivery; ?>>Direct Drop</option>			
-			<option value="Coldstore" <?php echo $coldstore; ?>>Coldstore</option>
-			<option value="Other" <?php echo $otherLoc; ?>>Other</option>
-			
+			<?php echo Site::generateOldHTMLList($selected);?>			
 		</select>
 		
 		<label>comments</label>
@@ -308,7 +272,11 @@
 			changeYear: true,
 			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
-		
+		$( "#best_by_range_extension" ).datepicker({
+			dateFormat: 'dd/mm/yy',
+			changeYear: true,
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
+		});
 		$('#cut_search').keyup(function(){
 			var val = $('#cut_search').val();
 			// $('#test2d').text(val);

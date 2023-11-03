@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include('functions.php');
 	
 	if(request()->input('id') != ''){
@@ -75,7 +79,7 @@
 				<td>
 					<label>Supplier</label>
 					<?php
-						if($edit){
+						if($edit && (User::find(Auth::id()))->hasPermission("createPurchase.php")){
 							$supplier_id = $purchase['supplier_id'];
 							
 							$x ="SELECT * FROM `supplier` WHERE id=?";

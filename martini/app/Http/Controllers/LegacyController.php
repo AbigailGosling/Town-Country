@@ -14,12 +14,12 @@ class LegacyController extends Controller
 {
     public function entry_point()
     {
+        $s = time();
         $targetFile = str_replace("?".request()->server('QUERY_STRING'),'',request()->server('REQUEST_URI'));
         $ext = explode(".",$targetFile);
         $ext = $ext[array_key_last($ext)];
         if ($ext == "php")
         {
-            $s = time();
             $pagePerm = PagePermission::where("file",basename($targetFile))->first();
             if ($pagePerm == null || User::find(Auth::id())->hasPermission(basename($targetFile)))
             {
@@ -39,7 +39,14 @@ class LegacyController extends Controller
                 return Response::make($output,200);
             }
             else
-            {
+            {   
+                if (time()-$s>4)
+                {
+                    File::append(
+                        storage_path('/logs/slow-page.log'),
+                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                    );
+                }
                 abort(403);
             }
         }
@@ -50,10 +57,24 @@ class LegacyController extends Controller
                 $file = File::get(__DIR__.'/../../..'. $targetFile);
                 $response = Response::make($file,200);
                 $response->header('Content-Type', $this->getMimeType($ext));
+                if (time()-$s>4)
+                {
+                    File::append(
+                        storage_path('/logs/slow-page.log'),
+                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                    );
+                }
                 return $response;
             }
             catch (Exception $e)
             {
+                if (time()-$s>4)
+                {
+                    File::append(
+                        storage_path('/logs/slow-page.log'),
+                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                    );
+                }
                 Log::error($e,[$targetFile]);
                 abort(404);
             }

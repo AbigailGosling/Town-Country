@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $contact_name
  * @property int|null $user_id
  * @property string|null $internal_number
+ * @property bool $disabled
  *
  * @package App\Models
  */
@@ -28,7 +29,8 @@ protected $connection = 'tandc_live';
 	public $timestamps = false;
 
 	protected $casts = [
-		'user_id' => 'int'
+		'user_id' => 'int',
+		'disabled' => 'bool'
 	];
 
 	protected $fillable = [
@@ -37,6 +39,7 @@ protected $connection = 'tandc_live';
 		'contact_number',
 		'contact_name',
 		'user_id',
-		'internal_number'
+		'internal_number',
+		'disabled'
 	];
 }

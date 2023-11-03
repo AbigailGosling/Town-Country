@@ -161,7 +161,23 @@
 				</td>
 
 			</tr>
+			<tr>
 
+				<td>
+
+					<label>Disabled?</label>
+
+					<input type="checkbox" id="disabled" name="disabled" value="1" <?php echo ($data['disabled'] == 1)?"checked":""; ?>>
+
+				</td>
+			</tr>
+			
+			<tr>
+			<td style="width:20px" colspan="3">
+			<br/>
+				</td>
+			</tr>
+			
 			<tr>
 
 				<td colspan="3">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -203,11 +204,11 @@ use Illuminate\Support\Facades\Auth;
 	<?php 
 		
 		$smallestDate = $product['range_from'];
-		$largestDate = $product['range_to'];
+		$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
 
 		$ubbb = $product['ubbb'];
 		$smallestDate = $product['range_from'];
-		$largestDate = $product['range_to'];
+		$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
 
 		$nationality_id = $product['nationality_id'];
 
@@ -226,7 +227,7 @@ use Illuminate\Support\Facades\Auth;
 					<td>Intake ID</td>
 					<td></td>
 					<td>Pallet ID</td>
-					<td><?php if($pallet['storage_location']){ echo $pallet['storage_location']; }?></td>
+					<td><?php if($pallet['storage_location']){ echo Location::find($pallet['storage_location'])->name; }?></td>
 					<td colspan="3"></td>
 					<td>Advised Weight</td>
 				</tr>

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Location;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -82,7 +84,7 @@ use Illuminate\Support\Facades\Auth;
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
-                    if ($productsRow2['storage_location'] == "Coldstore" || $locked){
+                    if (Location::find($productsRow2['storage_location'])->name == "Coldstore" || $locked){
                         $class = request()->input('class') . " searchAccordTitle locked";
                     }
                     else {
@@ -90,7 +92,7 @@ use Illuminate\Support\Facades\Auth;
                     }
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = $productsRow2['range_from'];
-                    $largestDate = $productsRow2['range_to'];
+                    $largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
                     $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
@@ -143,65 +145,18 @@ use Illuminate\Support\Facades\Auth;
                     ?>
                     <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
                     <td colspan="1">
-                    <?php if($productsRow2['storage_location'] == "Coldstore" || $locked){ ?>
+                    <?php if(Location::find($productsRow2['storage_location'])->name == "Coldstore" || $locked){ ?>
                         <i class="fa fa-lock"></i>
                     <?php } ?>
                         <?php echo $numInPicking; ?>
                     <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
                     <td colspan="1">
                         <form method="post">
-                        <?php
-                            $unit11 = "";
-                            $unit13 = "";
-                            $unit23 = "";
-                            $unitGatwick = "";
-                            $unitDry = "";
-                            $DirectDelivery = "";
-                            $otherLoc = "";
-                            $coldstore = "";
-                            
-                            switch ($productsRow2['storage_location'])
-                            {
-                                case "Unit 11":
-                                    $unit11 = " selected";
-                                    break;
-                                case "Unit 13 - 14":
-                                    $unit13 = " selected";
-                                    break;
-                                case "Unit 23":
-                                    $unit23 = " selected";
-                                    break;
-                                case "Gatwick":
-                                    $unitGatwick = " selected";
-                                    break;
-                                case "Dry Store":
-                                    $unitDry = " selected";
-                                    break;
-                                case "Unit 15 - 17":
-                                    $unit15 = " selected";
-                                    break;
-                                case "Direct Drop":
-                                    $DirectDelivery = " selected";
-                                    break;
-                                case "Other":
-                                    $otherLoc = " selected";
-                                    break;
-                                case "Coldstore":
-                                    $coldstore = " selected";
-                                    break;
-                            }
-                        ?>
+
                         <select style="width:100%" name="location">
-                                <option></option>
-                                <option <?php echo $unit11; ?>>Unit 11</option>
-                                <option <?php echo $unit13; ?>>Unit 13 - 14</option>
-                                <option <?php echo $unit23; ?>>Unit 23</option>
-                                <option <?php echo $unitGatwick; ?>>Gatwick</option>
-                                <option <?php echo $unitDry; ?>>Dry Store</option>
-                                <option <?php echo $unit15; ?>>Unit 15 - 17</option>			
-                                <option <?php echo $DirectDelivery; ?>>Direct Drop</option>
-                                <option <?php echo $coldstore; ?>>Coldstore</option>
-			                    <option <?php echo $otherLoc; ?>>Other</option>
+                                <?php
+                                echo Site::generateOldHTMLList(Location::find($productsRow2['storage_location'])->name);
+                                ?>
                         </select>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
                         </form>
@@ -279,7 +234,7 @@ use Illuminate\Support\Facades\Auth;
                     <td></td>
                     <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
                     <td>
-                    <?php if($productsRow2['storage_location'] != "Coldstore" && $locked != true){ ?>
+                    <?php if(Location::find($productsRow2['storage_location'])->name != "Coldstore" && $locked != true){ ?>
                         <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                     <?php } ?>                    
                     </td>

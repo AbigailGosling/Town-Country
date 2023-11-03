@@ -7,10 +7,18 @@
 	$name = request()->input('name');
 	$warning = request()->input('warning');
 	$danger = request()->input('danger');
+	$enabled = (int)request()->input('disabled',0);
 	if ($warning == null)$warning = "NULL";
 	if ($danger == null)$danger = "NULL";
-	$x = "UPDATE `cuts` SET species_id='$species_id', cutgroup_id='$cutgroup_id', name='$name', warning=$warning, danger=$danger WHERE id = '$id'";
-	$y = prepareExecuteQuery($x);
+	$x = "UPDATE `cuts` SET 
+		species_id=?, 
+		cutgroup_id=?, 
+		name=?, 
+		warning=?, 
+		danger=?, 
+		`disabled`=? 
+		WHERE id = ?";
+	$y = prepareExecuteQuery($x,'sssssii',[$species_id,$cutgroup_id,$name,$warning,$danger,$enabled,$id]);
 ?>
 <script>
 	window.location = '../manageCuts.php';

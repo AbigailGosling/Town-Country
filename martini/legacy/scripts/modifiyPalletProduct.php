@@ -8,6 +8,7 @@
 	$best_by = request()->input('best_by');
 	$best_by_range_from = request()->input('best_by_range_from');
 	$best_by_range_to = request()->input('best_by_range_to');
+	$best_by_range_extension = request()->input('best_by_range_extension');
 	$species_id = request()->input('species_id');
 	$temperature_id = request()->input('temperature_id');
 	$comments = request()->input('comments');

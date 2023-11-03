@@ -15,6 +15,9 @@
 	<th align="left">Actual Cost</th>
 	<th align="left"></th> 
 <?php
+
+use App\Models\Location;
+
 	require(__DIR__.'/../functions.php');
 	
 	$cutgroup_id = request()->input('cutgroup_id');
@@ -67,7 +70,7 @@
         $temp_id = $productsRow['cooling_id'];
         $ubbb = $productsRow['ubbb'];
         $smallestDate = $productsRow['range_from'];
-        $largestDate = $productsRow['range_to'];
+        $largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
         $intake_id = intakeIDfromPalletID($pallet_id);
         $nationality_id = $productsRow['nationality_id'];
         $cut = getCut($productsRow['cut_id']);
@@ -201,7 +204,7 @@
 		if($products2Count > 0){
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
 				$smallestDate = $productsRow2['range_from'];
-				$largestDate = $productsRow2['range_to'];
+				$largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
 				$pallet_id = $productsRow2['pallet_id'];
 				$product_id = $productsRow2['productid'];
 			?>
@@ -216,7 +219,7 @@
 						 
 					?>
 					<form method="post">
-						<input type="text" name="location" class="location" value="<?php echo $productsRow['storage_location']; ?>" placeholder="location" style="width:90px;">
+						<input type="text" name="location" class="location" value="<?php echo Location::find($productsRow['storage_location'])->name; ?>" placeholder="location" style="width:90px;">
 						<input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow['pallet_id']; ?>" style="display:none;">
 					</form>
 				</td>

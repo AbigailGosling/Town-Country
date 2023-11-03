@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	include('functions.php');
 ?>
 <!doctype html>
@@ -49,7 +53,8 @@
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			<?php
-				$queryResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned=1 ORDER BY date_received DESC");
+			$usermodel = User::find(Auth::id());
+				$queryResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned=1 AND supplier_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date_received DESC");
 				while($returnedIntake = mysqli_fetch_array($queryResults)){
 					$date_received = date('d/m/Y', strtotime($returnedIntake['date_received']));
 				?>

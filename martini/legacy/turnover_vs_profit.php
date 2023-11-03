@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -91,11 +92,20 @@ use Illuminate\Support\Facades\Auth;
         <option value="" disabled selected>Select Supplier..</option>
         <option value="0">All Suppliers</option>
 		<?php
-			$x = "SELECT * FROM `supplier` where `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
+			$x = "SELECT * FROM `supplier` where `disabled` = 0 AND `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+        <option value="" disabled>Disabled Suppliers</option>
+        <?php
+			$x = "SELECT * FROM `supplier` where `disabled` = 1 AND `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
+			$y = prepareExecuteQuery($x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 	</select>
@@ -123,15 +133,24 @@ use Illuminate\Support\Facades\Auth;
 	</select>
 
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
-        <option value="" disabled selected>Select salesman..</option>
-        <option value="0">All sales team</option>
+        <option value="" disabled selected>Select salespeople..</option>
+        <option value="0">All sales team</option>   
 		<?php
-			$x = "SELECT * FROM `users`";
-			$y = prepareExecuteQuery($x);
-			
-			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			$users = User::orderBy("name")->get();
+            $disabledUsers = [];
+            $sellPermission = Permission::find(1);
+			foreach ($users as $row){
+                if ($row['disabled'] == 0 && $row->hasPermission($sellPermission)){
+                    ?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                }
+                else $disabledUsers[] = $row;
 			}
+            ?>
+            <option value="" disabled>Other Users</option>
+            <?php
+            foreach ($disabledUsers as $row){
+                ?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+            }
 		?>
 	</select>
 
@@ -140,11 +159,20 @@ use Illuminate\Support\Facades\Auth;
         <option value="" disabled selected>Select customer..</option>
         <option value="0">All customers</option>
 		<?php
-			$x = "SELECT * FROM `customers` order by businessname ASC";
+			$x = "SELECT * FROM `customers` where `disabled` = 0 order by businessname ASC";
 			$y = prepareExecuteQuery($x);
 			
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
+			}
+		?>
+        <option value="" disabled>Disabled Customers</option>
+        <?php
+			$x = "SELECT * FROM `customers` where `disabled` = 1 order by businessname ASC";
+			$y = prepareExecuteQuery($x);
+			
+			while($row = mysqli_fetch_array($y)){
+			?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
 			}
 		?>
 	</select>
@@ -260,7 +288,11 @@ use Illuminate\Support\Facades\Auth;
                     totalSellValue = (parseFloat(totalSellValue) + val).toFixed(2);
                 });
 
-                totalProfitValue = (totalSellValue -totalCostValue).toFixed(2);
+                totalProfitValue = 0.00;
+                $('.profitValue').each(function(){
+                    var val = parseFloat($(this).val());
+                    totalProfitValue = (parseFloat(totalProfitValue) + val).toFixed(2);
+                });
                 var totProfitPerc= (((totalSellValue - totalCostValue) / totalCostValue) * 100).toFixed(2);
                 $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
                 $('.totalQuantityValue').text(totalQuantity);
@@ -276,11 +308,15 @@ use Illuminate\Support\Facades\Auth;
                     var val = parseFloat($(this).val());
                     totalActualCostValue = (parseFloat(totalActualCostValue) + val).toFixed(2);
                  });
-                var totalActualProfitValue = (totalSellValue -totalActualCostValue).toFixed(2);
+                var totalActualProfitValue = 0.00;
+                $('.actualProfitValue').each(function(){
+                    var val = parseFloat($(this).val().replace("£",""));
+                    totalActualProfitValue = (parseFloat(totalActualProfitValue) + val).toFixed(2);
+                 });
                 var totActProfitPerc= (((totalSellValue - totalActualCostValue) / totalActualCostValue) * 100).toFixed(2);
+                $('.totalActualCostValue').text('£' + formatNumber(totalActualCostValue));
                 $('.totalActualProfitValue').text('£' + formatNumber(totalActualProfitValue));
                 $('.totalActualProfitPercent').text(formatNumber(totActProfitPerc) + "%");
-                $('.totalActualCostValue').text('£' + formatNumber(totalActualCostValue));
                 <?php } ?>
             }, 1000);
         

@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\Location;
+
     ini_set('memory_limit','16M');
 	require(__DIR__.'/../functions.php');
 	
@@ -61,7 +64,7 @@
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
                 $temp_id = $productsRow2['cooling_id'];
 				$smallestDate = $productsRow2['range_from'];
-				$largestDate = $productsRow2['range_to'];
+				$largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
 				$pallet_id = $productsRow2['pallet_id'];
 				$product_id = $productsRow2['productid'];
 			    ?>
@@ -73,7 +76,7 @@
 				</td>
 				<td colspan="1">
 					<form method="post">
-						<input type="text" name="location" class="location-input" value="<?php echo $productsRow2['storage_location']; ?>" placeholder="location">
+						<input type="text" name="location" class="location-input" value="<?php echo Location::find($productsRow2['storage_location'])->name; ?>" placeholder="location">
 						<input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
 					</form>
 				</td>

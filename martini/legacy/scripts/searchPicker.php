@@ -160,7 +160,7 @@ ini_set('memory_limit', '1G');
         $temp_id = $productsRow['cooling_id'];
         $ubbb = $productsRow['ubbb'];
         $smallestDate = $productsRow['range_from'];
-        $largestDate = $productsRow['range_to'];
+        $largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
         // ??: Don't we already have the intake_id from the query?
         //$intake_id = intakeIDfromPalletID($pallet_id);
         $intake_id = $productsRow['intake_id'];
@@ -222,9 +222,15 @@ ini_set('memory_limit', '1G');
                 array_push($product2_brands, $product2['brand_id']);
                 array_push($product2_nationalities, $product2['nationality_id']);
                 array_push($product2_temperatures, $product2['cooling_id']);
-                array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+                if ($product2['range_extension'] == null || $product2['range_extension'] == ''){
+                    array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);
+                    if ($product2['range_to'] != "")$enddates[]=$product2['range_to'];
+                }
+                else {
+                    array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_extension']);
+                    if ($product2['range_extension'] != "")$enddates[]=$product2['range_extension'];
+                }
                 if ($product2['range_from'] != "")$startdates[]=$product2['range_from'];
-                if ($product2['range_to'] != "")$enddates[]=$product2['range_to'];
             }
 
         }

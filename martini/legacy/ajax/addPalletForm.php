@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\Site;
+
 	require(__DIR__.'/../functions.php');
 	
 	$intake_id = request()->input('intake_id');
@@ -52,7 +55,10 @@
 		<label>To</label>
 		<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()">
 		</div>
-		 
+		<div id="best_by_range_extension_container">
+			<label>Extension</label>
+			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()">
+		</div>
 		<label>Chilled/Frozen</label>
 		<select name="temperature_id">
 			<option selected="true" disabled></option>
@@ -71,15 +77,7 @@
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<option value="Unit 11">Unit 11</option>
-				<option value="Unit 13 - 14">Unit 13 - 14</option>
-				<option value="Unit 23">Unit 23</option>
-				<option value="Gatwick">Gatwick</option>
-				<option value="Dry Store">Dry Store</option>
-				<option value="Unit 15 - 17">Unit 15 - 17</option>
-				<option value="Direct Drop">Direct Drop</option>
-				<option value="Coldstore">Coldstore</option>
-				<option value="Other">Other</option>
+				<?php echo Site::generateOldHTMLList();?>
 		</select>
 		
 		<label>comments</label>
@@ -288,7 +286,12 @@
 			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
 		});
 		
-		
+		$( "#best_by_range_extension" ).datepicker({
+			dateFormat: 'dd/mm/yy',
+			changeYear: true,
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
+		});
+
 		$('#cut_search').keyup(function(){
 			var val = $('#cut_search').val();
 			

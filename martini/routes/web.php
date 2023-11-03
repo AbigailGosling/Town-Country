@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\LegacyController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -47,6 +49,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
     Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
+
+    Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
+    Route::resource('sites', 'App\Http\Controllers\SiteController');
+
+    Route::get('/sites/{site}/locations/create', [LocationController::class, 'create'])->name('locations.create');
+    Route::post('/sites/{site}/locations/store', [LocationController::class, 'store'])->name('locations.store');
+    Route::get('/sites/{site}/locations/{location}/edit', [LocationController::class, 'edit'])->name('locations.edit');
+    Route::put('/sites/{site}/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
 
     Route::get('/customers/overrides', [CustomerOverridesController::class, 'index'])->name('overrides.index');
     Route::get('/customers/overrides/search', [CustomerOverridesController::class, 'search'])->name('overrides.search');

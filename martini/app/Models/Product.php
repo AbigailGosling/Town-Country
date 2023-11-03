@@ -60,6 +60,7 @@ protected $connection = 'tandc_live';
 		'status',
 		'range_from',
 		'range_to',
+		'range_extension',
 		'ubbb',
 		'unit',
 		'comments',

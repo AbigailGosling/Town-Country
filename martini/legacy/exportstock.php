@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\Location;
+
     require('functions.php');
     $headings = array();
    
@@ -81,7 +84,7 @@
           
         array_push($single_row, $intake_id);
         array_push($single_row, $pallet_id);
-        array_push($single_row, $productsRow['storage_location']);
+        array_push($single_row, Location::find($productsRow['storage_location'])->name);
         array_push($single_row, $quantityTotal);
 
 
@@ -105,6 +108,7 @@
         }
         $range_from = ($productsRow['range_from'] != '')?$productsRow['range_from']:'N/A';
         $range_to = ($productsRow['range_to'] != '')?$productsRow['range_to']:'N/A';
+        if ($productsRow['range_extension'] != null && $productsRow['range_extension'] != '') $range_to = $productsRow['range_extension'];
         array_push($single_row, $ubtext);
         array_push($single_row, $range_from);
         array_push($single_row, $range_to);

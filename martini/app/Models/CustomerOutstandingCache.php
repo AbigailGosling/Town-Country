@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $invoice_payment_id
  * @property int $oldest_unpaid_id
  * @property float $outstanding
+ * @property string|null $pickersheet_sha2
+ * @property string|null $payment_sha2
  *
  * @package App\Models
  */
@@ -39,6 +41,8 @@ protected $connection = 'tandc_live';
 		'pickersheet_id',
 		'invoice_payment_id',
 		'oldest_unpaid_id',
-		'outstanding'
+		'outstanding',
+		'pickersheet_sha2',
+		'payment_sha2'
 	];
 }

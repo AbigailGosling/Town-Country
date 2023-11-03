@@ -3,23 +3,27 @@
 	require(__DIR__.'/../../functions.php');
     require(__DIR__.'/../../scripts/SLabsEmailer.php');
 	require_once(__DIR__.'/../customer_soa_results_function.php');
-    use InternalScripts\SLabsEmailerStatus;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use InternalScripts\SLabsEmailerStatus;
     $name = request()->input('searchterm');
+	$usermodel = User::find(Auth::id());
 ?>
 <div class="cutsContainer">
 <?php
 if($name != ''){
 
-	$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE businessname LIKE ? || id = ?",'ss',['%'.$name.'%',$name]);
+	$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE (businessname LIKE ? || id = ?) AND id IN (".implode(",",$usermodel->listViewableCustomers()).")",'ss',['%'.$name.'%',$name]);
 }else{
-	$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0");
+	$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0 AND id IN (".implode(",",$usermodel->listViewableCustomers()).")");
 }				
 while($customer = mysqli_fetch_array($customerQueryResult)){
 	$title = "";
 	$style = "";
 	if (request()->input('history') !== null)
 	{
-		$historyQuery = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE customer_id = ? AND `type` = 'STATEMENT'  ORDER BY `mail_tracking`.`id` DESC",'i',[$customer['id']]);
+		$historyQuery = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE customer_id = ? AND `type` = 'STATEMENT' ORDER BY `mail_tracking`.`id` DESC",'i',[$customer['id']]);
 		if (mysqli_num_rows($historyQuery) > 0)
 		{
 			$history = null;

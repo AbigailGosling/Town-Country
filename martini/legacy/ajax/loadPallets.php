@@ -184,7 +184,7 @@
 										
 										?></td>
 									<td><?php if($product2['range_from'] != ''){ echo $product2['range_from']; }else { echo 'N/A'; } ?></td>
-									<td><?php if($product2['range_to'] != ''){ echo $product2['range_to']; }else { echo 'N/A'; } ?></td>
+									<td><?php if($product2['range_to'] != ''){ echo ($product2['range_extension']!= null && $product2['range_extension']!= '')?$product2['range_extension']:$product2['range_to']; }else { echo 'N/A'; } ?></td>
 									<?php
 										$product_id = $product2['id'];
 										
