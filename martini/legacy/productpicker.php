@@ -97,64 +97,75 @@ use App\Models\User;
 </form>
 
 <div class="leftPanel" style="position:relative;">
-    <form id="searchForm">
-	<select id="SearchSpecies" style="width:300px;height:40px;">
-        <option value="" disabled selected>Select species..</option>
-		<?php
-			$x = "SELECT * FROM `species`";
-			$y = prepareExecuteQuery($x);
-			
-			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
-			}
-		?>
-	</select>
-    
-    <select id="SearchCutgroups" name="cutgroup_id" style="width:300px;height:40px;">
-            <option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
-            <?php
-                $x = "SELECT * FROM `cutgroups`";
-                $y = prepareExecuteQuery($x);
-                
-                $i=0;
-                while($row = mysqli_fetch_array($y)){
-                    
-                    
-                    $thisid = $row['species_id'];
-                    $y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
-                    $species = mysqli_fetch_array($y2);
-                    $rand = 'z' . rand(6000,12212);
-                        ?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
-                    }
-            ?>
-	</select>
-	<select id="SearchBrand" style="width:300px;height:40px;">
-        <option value="" disabled selected>Select Brand..</option>
-		<?php
-			$x = "SELECT * FROM `brands` ORDER BY `name`";
-			$y = prepareExecuteQuery($x);
-			
-			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
-			}
-		?>
-	</select>
-	<select id="SearchNationality" style="width:300px;height:40px;">
-        <option value="" disabled selected>Select Nationality..</option>
-		<?php
-			$x = "SELECT * FROM `nationality` ORDER BY `name`";
-			$y = prepareExecuteQuery($x);
-			
-			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
-			}
-		?>
-	</select>
-    &nbsp;&nbsp;&nbsp;
-    <input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:100px;height: 33px;padding-left: 10px;">
-    <input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:100px;height: 33px;padding-left: 10px;">
-    <input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;" disabled>
-    </form>
+	<form id="searchForm">
+		<table style="border-collapse: collapse;">
+			<tr>
+				<td style="width:25%"><select id="SearchSpecies" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+					<option value="" disabled selected>Select species..</option>
+					<?php
+						$x = "SELECT * FROM `species`";
+						$y = prepareExecuteQuery($x);
+						
+						while($row = mysqli_fetch_array($y)){
+						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+						}
+					?>
+					</select>
+				</td>
+				<td style="width:25%"><select id="SearchCutgroups" name="cutgroup_id" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>...</option>
+						<?php
+							$x = "SELECT * FROM `cutgroups`";
+							$y = prepareExecuteQuery($x);
+							
+							$i=0;
+							while($row = mysqli_fetch_array($y)){
+								
+								
+								$thisid = $row['species_id'];
+								$y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
+								$species = mysqli_fetch_array($y2);
+								$rand = 'z' . rand(6000,12212);
+									?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+								}
+						?>
+					</select>
+				</td>
+				<td style="width:25%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+					<option value="" disabled selected>Select Brand..</option>
+					<?php
+						$x = "SELECT * FROM `brands` ORDER BY `name`";
+						$y = prepareExecuteQuery($x);
+						
+						while($row = mysqli_fetch_array($y)){
+						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+						}
+					?>
+					</select>
+				</td>
+				<td style="width:25%">
+					<select id="SearchNationality" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+						<option value="" disabled selected>Select Nationality..</option>
+						<?php
+							$x = "SELECT * FROM `nationality` ORDER BY `name`";
+							$y = prepareExecuteQuery($x);
+							
+							while($row = mysqli_fetch_array($y)){
+							?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+							}
+						?>
+					</select>
+				</td>
+				<td></td>
+				<td><input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:65px;height: 33px;padding-left: 10px; border-radius: 0;"></td>
+				<td><input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:65px;height: 33px;padding-left: 10px; border-radius: 0;"></td>
+				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;" disabled></td>
+			</tr>
+		</table>
+		
+		</form>
+
+
     <div class="weightTotal" style="display:none;">Total Weight: <span class="weightVal">0</span>kg</div>
 	
 	<div id="loadResults" class="resultsContainer"></div>
