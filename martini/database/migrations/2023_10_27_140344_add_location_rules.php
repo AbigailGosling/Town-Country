@@ -107,7 +107,7 @@ return new class extends Migration
         }
         Schema::connection("tandc_live")->drop("site");
         Schema::connection("tandc_live")->drop("location");
-        $newPerm = Permission::where("name","../sites")->first();
+        $newPerm = Permission::where("name","locations")->first();
         $oldPerm = PagePermission::find($newPerm->id);
         foreach (User::all() as $user)
         {
