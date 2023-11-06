@@ -293,11 +293,11 @@ use Illuminate\Support\Facades\Auth;
                     var val = parseFloat($(this).val());
                     totalProfitValue = (parseFloat(totalProfitValue) + val).toFixed(2);
                 });
-                var totProfitPerc= (totalProfitValue / totalCostValue);
+                var totProfitPerc= (((totalSellValue - totalCostValue) / totalCostValue) * 100).toFixed(2);
                 $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
                 $('.totalQuantityValue').text(totalQuantity);
                 $('.totalProfitValue').text('£' + formatNumber(totalProfitValue));
-                $('.totalProfitPercent').text(formatNumber((totProfitPerc*100).toFixed(2)) + "%");
+                $('.totalProfitPercent').text(formatNumber(totProfitPerc) + "%");
                 $('.totalSellValue').text('£' + formatNumber(totalSellValue));
                 $('.totalCostValue').text('£' + formatNumber(totalCostValue));
                 
@@ -313,10 +313,10 @@ use Illuminate\Support\Facades\Auth;
                     var val = parseFloat($(this).val().replace("£",""));
                     totalActualProfitValue = (parseFloat(totalActualProfitValue) + val).toFixed(2);
                  });
-                var totActProfitPerc= (totalActualProfitValue / totalActualCostValue);
+                var totActProfitPerc= (((totalSellValue - totalActualCostValue) / totalActualCostValue) * 100).toFixed(2);
                 $('.totalActualCostValue').text('£' + formatNumber(totalActualCostValue));
                 $('.totalActualProfitValue').text('£' + formatNumber(totalActualProfitValue));
-                $('.totalActualProfitPercent').text(formatNumber((totActProfitPerc*100).toFixed(2)) + "%");
+                $('.totalActualProfitPercent').text(formatNumber(totActProfitPerc) + "%");
                 <?php } ?>
             }, 1000);
         

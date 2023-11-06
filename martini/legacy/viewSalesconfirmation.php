@@ -370,10 +370,6 @@
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
 	function mainForm(){
-		if ($('#estimated_delivery_date').val() == "") {
-			alert("Delivery Date cannot be empty");
-			return;
-		}
 		$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 	}
 	function mainFormSucess(){
