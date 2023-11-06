@@ -28,11 +28,11 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::connection('tandc_live')->table('cuts', function (Blueprint $table) {
+        /*Schema::connection('tandc_live')->table('cuts', function (Blueprint $table) {
             $table->dropColumn("enabled");
         });
         Schema::connection('tandc_live')->table('supplier', function (Blueprint $table) {
             $table->dropColumn("enabled");
-        });
+        });*/
     }
 };
