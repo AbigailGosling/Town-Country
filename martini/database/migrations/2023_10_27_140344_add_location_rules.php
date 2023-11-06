@@ -102,11 +102,11 @@ return new class extends Migration
     public function down()
     {
         
-       /* foreach (Location::all()->toArray() as $location){
+        foreach (Location::all()->toArray() as $location){
             Pallet::where("storage_location","=",$location['id'])->update(["storage_location"=>$location['name']]);
         }
         Schema::connection("tandc_live")->drop("site");
-        Schema::connection("tandc_live")->drop("location");*/
+        Schema::connection("tandc_live")->drop("location");
         $newPerm = Permission::where("name","../sites")->first();
         $oldPerm = PagePermission::find($newPerm->id);
         foreach (User::all() as $user)
