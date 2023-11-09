@@ -34,7 +34,7 @@ class SiteController extends Controller
      */
     public function create()
     {
-        return view('sites.edit', ['site' => new Site, 'isNew' => true]);
+        return view('sites.edit', ['site' => new Site,'locations' => [], 'isNew' => true]);
     }
 
     /**
@@ -47,11 +47,12 @@ class SiteController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'abbr' => ['required', 'string', 'max:255'],
+            'abbr' => ['nullable', 'string', 'max:255'],
         ]);
         $input = $request->all();
         $site = new Site;
         $site->name = $input['name'];
+        $site->abbreviation = $input['abbr'];
         $site->save();
         redirect(route('sites.index'))->with(['message' => "Successfully created $site->name"]);
     }
@@ -95,10 +96,11 @@ class SiteController extends Controller
         Log::debug($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'abbr' => ['required', 'string', 'max:255'],
+            'abbr' => ['nullable', 'string', 'max:255'],
         ]);
         $input = $request->all();
         $site->name = $input['name'];
+        $site->abbreviation = $input['abbr'];
         $site->disabled = array_key_exists("disabled", $input);
         $site->save();
         return redirect(route('sites.index'))->with(['message' => "Successfully updated $site->name"]);

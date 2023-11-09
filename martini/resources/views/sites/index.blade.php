@@ -6,7 +6,7 @@
     </x-slot>
     <div class="grid grid-cols-1 md:grid-cols-4 pl-4">
         <div><x-form-button title="{{ 'Create Site' }}" iconClass="fa-pencil" background="green"
-                   route="locations.create">
+                   route="sites.create">
     </x-form-button></div>
     <div></div>
     <div></div>

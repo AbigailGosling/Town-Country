@@ -47,32 +47,32 @@ return new class extends Migration
         });
         $wolverhampton = new Site();
         $wolverhampton->name = "Wolverhampton";
-        $wolverhampton->abbreviation = "WLV";
+        $wolverhampton->abbreviation = "";
         $wolverhampton->save();
 
         $gatwick = new Site();
         $gatwick->name = "Gatwick";
-        $gatwick->abbreviation = "GAT";
+        $gatwick->abbreviation = "";
         $gatwick->save();
 
         $dryStore = new Site();
         $dryStore->name = "Dry Store";
-        $dryStore->abbreviation = "DRY";
+        $dryStore->abbreviation = "";
         $dryStore->save();
 
         $directDrop = new Site();
         $directDrop->name = "Direct Drop";
-        $directDrop->abbreviation = "DRD";
+        $directDrop->abbreviation = "";
         $directDrop->save();
 
         $coldStore = new Site();
         $coldStore->name = "Coldstore";
-        $coldStore->abbreviation = "CLD";
+        $coldStore->abbreviation = "";
         $coldStore->save();
 
         $other = new Site();
         $other->name = "Other";
-        $other->abbreviation = "OTH";
+        $other->abbreviation = "";
         $other->save();
 
         foreach (Pallet::distinct()->get(["storage_location"]) as $storage_location){

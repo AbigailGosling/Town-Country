@@ -63,7 +63,8 @@ class Site extends Model
                 $onlyOne = false;
             }
             foreach ($site->locations()->where("disabled",false)->orderBy("name")->get() as $location) {
-                $abbr = ($onlyOne) ? "" : $site->abbreviation . " - ";
+                //$abbr = ($onlyOne && strlen($site->abbreviation)>0) ? "" : $site->abbreviation . " ";
+                $abbr= "";
                 $selectFlag = ($selected != "" && $selected == $location->name) ? " selected" : "";
                 $output = $output . "<option value='".$location->id."'".$selectFlag.">" . $abbr . $location->name . "</option>\n";
             }
