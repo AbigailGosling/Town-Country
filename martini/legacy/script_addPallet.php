@@ -74,9 +74,10 @@
 		# # #
 		
 		# # # Create Product
+		$vars = [$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by];
 		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by) VALUES
-		(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		$product_id = prepareExecuteQuery($x,'ssssssssssssssssss',[$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by],true);
+		(".implode(",",array_fill(0,count($vars),"?")).")";
+		$product_id = prepareExecuteQuery($x,str_repeat("s",count($vars)),$vars,true);
 		# # #
 		
 		
