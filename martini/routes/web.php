@@ -51,8 +51,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', 'App\Http\Controllers\UserController');
 
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
+    
     Route::resource('sites', 'App\Http\Controllers\SiteController');
-
     Route::get('/sites/{site}/locations/create', [LocationController::class, 'create'])->name('locations.create');
     Route::post('/sites/{site}/locations/store', [LocationController::class, 'store'])->name('locations.store');
     Route::get('/sites/{site}/locations/{location}/edit', [LocationController::class, 'edit'])->name('locations.edit');

@@ -74,6 +74,7 @@ use App\Models\User;
 		<tr align="left" style="background:#3FADDD;height:30px;color:#FFF;">
 			<th>Intake ID</th>
 			<th>Plt ID</th>
+			<th>Site</th>
 			<th>Product</th>
 			<th>Nationality</th>
 			<th>Brand</th>
@@ -449,7 +450,7 @@ function cancelSale()
 		width: 48px;
 		}
 		.searchRContent__location {
-			width: 60px;
+			width: 80px;
 		}
 
 		.searchRContent__dropdown {

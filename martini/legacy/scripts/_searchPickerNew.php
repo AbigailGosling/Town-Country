@@ -153,7 +153,7 @@ use Illuminate\Support\Facades\Auth;
                     <td colspan="1">
                         <form method="post">
 
-                        <select style="width:100%" name="location">
+                        <select style="min-width: 95px;width:100%" name="location">
                                 <?php
                                 echo Site::generateOldHTMLList(Location::find($productsRow2['storage_location'])->name);
                                 ?>

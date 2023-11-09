@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::connection('tandc_live')->table('cuts', function (Blueprint $table) {
-            $table->boolean("disabled")->default(false);
+            if (!Schema::connection('tandc_live')->hasColumn('cuts',"disabled"))$table->boolean("disabled")->default(false);
         });
         Schema::connection('tandc_live')->table('supplier', function (Blueprint $table) {
-            $table->boolean("disabled")->default(false);
+            if (!Schema::connection('tandc_live')->hasColumn('supplier',"disabled"))$table->boolean("disabled")->default(false);
         });
     }
 
