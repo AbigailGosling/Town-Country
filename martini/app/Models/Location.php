@@ -8,8 +8,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Log;
-use stdClass;
 
 /**
  * Class User
@@ -60,6 +58,14 @@ class Location extends Model
     }
     public function bulkUpdateSaleRule(array $newRules)
     {
+        $myRules = [];
+        foreach($newRules as $property => $value)
+        {
+            $myRules[$property] = true;
+        }
+        $myRules[$this->id] = true;
+        $this->sale_rules = $myRules;
+        $this->save();
         foreach(self::all() as $otherLocation){
             if ($otherLocation->id == $this->id) continue;
 
@@ -70,21 +76,22 @@ class Location extends Model
                 }
             }
             else {
-                if (array_key_exists($otherLocation->id,$newRules)) {
-                    $otherRules[$this->id] = true;
+                if (array_key_exists($otherLocation->id,$myRules)) 
+                {
+                    $otherRules = $myRules;
                 }
-                else if (array_key_exists($this->id,$otherRules)){
-                    unset($otherRules[$this->id]);
+                else 
+                {
+                    foreach($myRules as $property => $value)
+                    {
+                        unset($otherRules[$property]);
+                    }
                 }
+                
             }
             $otherLocation->sale_rules = $otherRules;
             $otherLocation->save();
         }
-        $myRules = [];
-        foreach($newRules as $property => $value){
-            $myRules[$property] = true;
-        }
-        $this->sale_rules = $myRules;
-        $this->save();
+        
     }
 }

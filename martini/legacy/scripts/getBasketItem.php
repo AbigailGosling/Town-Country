@@ -53,10 +53,14 @@
 	$pallet = "SELECT * FROM pallet WHERE id = ?";
 	$pallet = prepareExecuteQuery($pallet,'i',[$pallet_id]);
 	$pallet = mysqli_fetch_assoc($pallet);
+
+	$siteid = prepareExecuteQuery("SELECT site_id FROM `location` WHERE id = ".$pallet['storage_location'])->fetch_assoc()['site_id'];
+	$site = prepareExecuteQuery("SELECT * FROM `site` WHERE id = ".$siteid)->fetch_assoc();
 ?>
-<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $pallet['storage_location']; ?> ">
+<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>">
 	<td><?php echo intakeIDfromPalletID($pallet_id); ?></td>
 	<td><?php echo $pallet_id; ?></td>
+	<td><?php echo $site['abbreviation']; ?></td>
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>
 	<td><?php echo getNationality($nationality_id); ?></td>
 	<td><?php echo getBrand($brand_id); ?></td>
