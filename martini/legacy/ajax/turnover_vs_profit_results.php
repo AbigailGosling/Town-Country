@@ -432,11 +432,14 @@ use Illuminate\Support\Facades\Auth;
                     }
                 ?>
             </td>
-            <td style="color:red;"><?php echo $weightReturned; ?> kg</td>
+            <td style="color:red;"><?php echo number_format($weightReturned,3); ?> kg</td>
             <td style="color:red;">
-            <input type="hidden" class="costValue" value="<?php echo $cost_value; ?>">
-                £<?php echo number_format($cost_value, 2); ?>
-            </td>
+            <?php
+                    $sell_formatted = number_format($credit_value, 2);
+                    $sell = str_replace(",","",$sell_formatted);
+                ?>
+                <input type="hidden" class="costValue" value="<?php echo $sell; ?>">
+                £<?php echo $sell_formatted; ?></td>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
             <td style="color:red;">
             <input type="hidden" class="actualCostValue" value="<?php echo $actualCost; ?>">
@@ -444,12 +447,10 @@ use Illuminate\Support\Facades\Auth;
             </td>
             <?php }?>
             <td style="color:red;">
-                <?php
-                    $sell_formatted = number_format($credit_value, 2);
-                    $sell = str_replace(",","",$sell_formatted);
-                ?>
-                <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
-                £<?php echo $sell_formatted; ?></td>
+                
+                <input type="hidden" class="sellValue" value="<?php echo abs($cost_value)/-1; ?>">
+                £<?php echo number_format(abs($cost_value)/-1, 2); ?>
+            </td>
             </td>
             <td style="color:red;">
             <?php
@@ -460,11 +461,11 @@ use Illuminate\Support\Facades\Auth;
             </td>
             <?php
             if (User::find(Auth::id())->hasPermission("viewcosts")) { 
-                $profit = $actualCost - $credit_value;
+                $actualprofit = $actualCost - $credit_value;
             ?>
             <td style="color:red;">
-            <input type="hidden" class="actualProfitValue" value="<?php echo $profit; ?>">
-                £<?php echo number_format($profit, 2); ?>
+            <input type="hidden" class="actualProfitValue" value="<?php echo $actualprofit; ?>">
+                £<?php echo number_format($actualprofit, 2); ?>
             </td>
             <?php } ?>
         </tr>
