@@ -69,7 +69,7 @@ use App\Models\Product;
 				)->storage_location
 			);
 		$found = false;
-		foreach ($location->sale_rules as $locID=>$valIsAlwaysTrue){
+		foreach ($location->sale_rules as $locID => $valIsAlwaysTrue){
 			if (array_key_exists($locID,$baskets)){
 				$found = true;
 				$baskets[$locID][] = $value;
@@ -77,7 +77,8 @@ use App\Models\Product;
 			}
 		}
 		if ($found == false) {
-			$baskets[$location->id] = [$value];
+			if (!array_key_exists($location->id,$baskets)) $baskets[$location->id] = array();
+			$baskets[$location->id][] = $value;
 		}
 	}
 	foreach ($baskets as $basket) {
@@ -92,9 +93,9 @@ use App\Models\Product;
 		}
 
 		
-		foreach ($basket as $value) {
+		foreach ($basket as $item) {
 
-			$details = explode('-', $value);
+			$details = explode('-', $item);
 			$product_id = $details[0];
 			$quantity = $details[1];
 			$cut_id = $details[2];
@@ -113,10 +114,11 @@ use App\Models\Product;
 				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
 			}
 		}
+		shell_exec("php /var/www/html/martini/artisan run:send_sale_confirmation $pickersheet_id > /dev/null 2>&1 &");
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
-	shell_exec("php /var/www/html/martini/artisan run:send_sale_confirmation $pickersheet_id > /dev/null 2>&1 &");
+	
 	
 ?>
 <script>

@@ -38,8 +38,8 @@ use Illuminate\Support\Facades\Auth;
 		
 		for($i=0;$i<$size;$i++){
 			$product_id = "(" . $productids[$i] . ")"; 
-			$cost = sprintf('%0.2f', request()->input('cost')[$i]);
-			$price = sprintf('%0.2f', request()->input('price')[$i]);
+			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
+			$price = number_format((double)request()->input('price')[$i],3,".",",");
 			
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != ''){
@@ -488,11 +488,11 @@ use Illuminate\Support\Facades\Auth;
 					</td>
 					<td>
 						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
-						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 2, '.', ''); ?>">
+						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
 					<td>
-						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 2, '.', ''); ?>">
+						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
 					<?php } ?>
 				</tr>
