@@ -343,7 +343,7 @@ use Illuminate\Support\Facades\Auth;
             </td>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
                 <td>
-                <input type="hidden" class="actualProfitValue" value="<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>">
+                <input type="hidden" class="actualProfitValue" value="<?php echo $total_product_sell - $total_actual_product_cost; ?>">
                 £<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>
             </td>
             <?php } ?>
