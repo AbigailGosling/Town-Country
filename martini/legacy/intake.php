@@ -40,8 +40,8 @@ use Illuminate\Support\Facades\Auth;
 			$product_id = "(" . $productids[$i] . ")"; 
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
 			$price = number_format((double)request()->input('price')[$i],3,".",",");
-			if ($cost == 0) $cost = "";
-			if ($price == 0) $price = "";
+			if ($cost == 0) $cost = null;
+			if ($price == 0) $price = null;
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != ''){
 				if (User::find(Auth::id())->hasPermission("viewcosts")) 

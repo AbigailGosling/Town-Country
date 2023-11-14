@@ -1535,7 +1535,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$palletData = $palletResult->fetch_assoc();
 		$pallet_ids = $palletData['ids'];		
 		if (!$pallet_ids || strlen($pallet_ids) == 0) return 0;
-		$productResult = prepareExecuteQuery("SELECT count(id) as count FROM product WHERE (cost is null && pallet_id IN ($pallet_ids)) || (cost = '0.00' && pallet_id IN ($pallet_ids))");
+		$productResult = prepareExecuteQuery("SELECT count(id) as count FROM product WHERE (cost is null || cost = '0.000' || cost = '') && pallet_id IN ($pallet_ids)");
 		$productData = $productResult->fetch_assoc();
 
 		return $productData['count'];
