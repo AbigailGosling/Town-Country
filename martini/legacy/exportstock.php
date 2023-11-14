@@ -134,7 +134,7 @@ use App\Models\Location;
                 continue;
             }
         }
-        array_push($single_row, "£" . number_format($productsRow['cost'], 2, '.', ','));
+        array_push($single_row, "£" . number_format((double)$productsRow['cost'], 2, '.', ','));
         $TOTAL_COST += $this_total_cost;
         $final_array[] = $single_row;
     }
@@ -153,8 +153,8 @@ use App\Models\Location;
     array_push($final_row, '');
     array_push($final_row, '');
     array_push($final_row, '');
-    array_push($final_row, number_format($TOTAL_WEIGHT, 3, '.', ',') . 'kg');
-    array_push($final_row, "£" . number_format(floorDec($TOTAL_COST), 2, '.', ','));
+    array_push($final_row, number_format((double)$TOTAL_WEIGHT, 3, '.', ',') . 'kg');
+    array_push($final_row, "£" . number_format((double)floorDec($TOTAL_COST), 2, '.', ','));
     $final_array[] = $final_row;
 
     require('vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');
