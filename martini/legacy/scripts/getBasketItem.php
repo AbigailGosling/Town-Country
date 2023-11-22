@@ -36,7 +36,7 @@
 	}
 	
 	
-	$smallestDate = $row['range_from'];
+	$smallestDate = ($row['range_extension']!= null && $row['range_extension']!= '')?$row['range_extension']:$row['range_from'];
 	$largestDate = ($row['range_extension']!= null && $row['range_extension']!= '')?$row['range_extension']:$row['range_to'];
 	
 	
