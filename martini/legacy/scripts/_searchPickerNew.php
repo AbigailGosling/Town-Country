@@ -91,7 +91,7 @@ use Illuminate\Support\Facades\Auth;
                         $class = request()->input('class');
                     }
                     $temp_id = $productsRow2['cooling_id'];
-                    $smallestDate = $productsRow2['range_from'];
+                    $smallestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_from'];
                     $largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
