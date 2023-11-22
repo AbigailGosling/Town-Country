@@ -74,41 +74,31 @@ class UserObserver
         }
         $oldUser->password = $newUser->password;
         $pages = [];
-        
+        $has_view_intake_prices = false;
+        $has_allow_override_salesman = false;
+        $user_is_admin = false;
         foreach($newUser->permissions as $newPermission)
         {
             foreach(PagePermission::where("file",$newPermission->file)->get() as $oldp)
             {
                 if ($newPermission->group != 0)$pages[] = $oldp->id;
-                else
-                {
-                    if ($newPermission->name == 'view_intake_prices')
-                    {
-                        $oldUser->view_intake_prices = 1;
-                    }
-                    else
-                    {
-                        $oldUser->view_intake_prices = 0;
-                    }
-                    if ($newPermission->name == 'allow_override_salesman')
-                    {
-                        $oldUser->allow_override_salesman = 1;
-                    }
-                    else
-                    {
-                        $oldUser->allow_override_salesman = 0;
-                    }
-                    if ($newPermission->name == 'admin')
-                    {
-                        $oldUser->user_type = "A";
-                    }
-                    else
-                    {
-                        $oldUser->user_type = "M";
-                    }
-                }
+            }           
+            if ($newPermission->name == 'view_intake_prices')
+            {
+                $has_view_intake_prices = true;
+            }
+            if ($newPermission->name == 'allow_override_salesman')
+            {
+                $has_allow_override_salesman = true;
+            }
+            if ($newPermission->name == 'admin')
+            {
+                $user_is_admin = true;
             }
         }
+        $oldUser->view_intake_prices = ($has_view_intake_prices)?1:0;
+        $oldUser->allow_override_salesman = ($has_allow_override_salesman)?1:0;
+        $oldUser->user_type = ($user_is_admin)?"A":"M";
         $oldUser->pages = implode(",",$pages);
         $oldUser->save();
     }
