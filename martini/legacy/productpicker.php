@@ -572,6 +572,7 @@ function cancelSale()
 		}		
 	});
 	var getCustomResult;
+	var addressID;
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
 		
@@ -691,10 +692,10 @@ function cancelSale()
 		
 	});
 	function ddChanged(dateText, inst){
-		if (typeof customer_id === 'undefined' || typeof address_id === 'undefined') checkUBDates(dateText);
+		if (customerID == null) checkUBDates(dateText);
 		else
 		{
-			$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data){
+			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false', function(data){
 				getCustomResult = data;
 				setCustomerCreditFeedback(data);
 			});
@@ -921,7 +922,6 @@ function cancelSale()
 	function changeAddress(customer_id, address_id){
 
 		$('#addressid').val(address_id);
-
 
 		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
