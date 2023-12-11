@@ -40,7 +40,7 @@ use Illuminate\Support\Facades\Auth;
 			session_start();session_write_close();
 			
 			$userid = $_SESSION['USER'];
- 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%y') ASC";
+ 			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%Y') ASC";
 			$y = prepareExecuteQuery($x);
 			$usermodel = User::find(Auth::id());
 			while($row = mysqli_fetch_assoc($y)){
