@@ -1857,7 +1857,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
 		return ($final == -0 ? 0 : $final);
 	} 
-	function fuzzyCustomerSearch($name,$allSearch=false)
+	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false)
 	{
 		global $mysqli;
 		$thisUser = User::find(Auth::id());
@@ -1872,15 +1872,17 @@ use Ramsey\Uuid\Type\Decimal;
 			str_replace(" & "," and ",$name),
 			str_replace("&"," & ",$name)
 		);
-		$allSearchControl = "";
-		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
+		$creditSearchControl = "";
+		if ($creditSearch == false) $creditSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
+		$disabledSearchControl = "AND `disabled` <> '1'";
+		if ($disabledSearch == true) $disabledSearchControl ="";
 		$queries = array(
-			"SELECT * FROM `customers` WHERE$restrictionString businessname LIKE '%%%s%%' $allSearchControl",
+			"SELECT * FROM `customers` WHERE$restrictionString businessname LIKE '%%%s%%' $creditSearchControl $disabledSearchControl",
 		);
 		if (strlen($name)>2)
 		{
-			$queries[]="SELECT * FROM `customers` WHERE$restrictionString MATCH(businessname) AGAINST ('%s') $allSearchControl";
-			$queries[]="SELECT * FROM `customers` WHERE$restrictionString businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString MATCH(businessname) AGAINST ('%s') $creditSearchControl $disabledSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $creditSearchControl $disabledSearchControl";
 		}
 		foreach ($tests as $test)
 		{

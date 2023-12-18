@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CommentLogging;
 use App\Models\Customer;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -118,23 +119,32 @@ class CustomerOverridesController extends Controller
             ]
         );
     }
-    private function fuzzyCustomerSearch($name,$allSearch=false)
+    private function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false)
 	{
+		global $mysqli;
+		$thisUser = User::find(Auth::id());
+		$restrictionString = "";
+		if ($thisUser->hasPermission("restrictedaccess")){
+			$restrictionString = " `default_salesman_id` = $thisUser->id AND";
+		}
+		$name = $mysqli->real_escape_string($name);
 		$tests = array(
 			$name,
 			str_replace(" ","",$name),
 			str_replace(" & "," and ",$name),
 			str_replace("&"," & ",$name)
 		);
-		$allSearchControl = "";
-		if ($allSearch == false) $allSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
+		$creditSearchControl = "";
+		if ($creditSearch == false) $creditSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
+		$disabledSearchControl = "AND `disabled` <> '1'";
+		if ($disabledSearch == true) $disabledSearchControl ="";
 		$queries = array(
-			"businessname LIKE '%%%s%%' $allSearchControl",
+			"SELECT * FROM `customers` WHERE$restrictionString businessname LIKE '%%%s%%' $creditSearchControl $disabledSearchControl",
 		);
 		if (strlen($name)>2)
 		{
-			$queries[]="MATCH(businessname) AGAINST ('%s') $allSearchControl";
-			$queries[]="businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $allSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString MATCH(businessname) AGAINST ('%s') $creditSearchControl $disabledSearchControl";
+			$queries[]="SELECT * FROM `customers` WHERE$restrictionString businessnameDM LIKE CONCAT('%%',dm('%s'),'%%') $creditSearchControl $disabledSearchControl";
 		}
 		foreach ($tests as $test)
 		{
