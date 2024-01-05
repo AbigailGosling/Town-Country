@@ -119,27 +119,30 @@ use Illuminate\Support\Facades\Auth;
                         if ($toDate2 < $toDate) $toDate = $toDate2;
                         $cutResult= CutGroupNationalityDate::lookupFromProductID($productsRow2['productid']);
                         $bgCol = "";
-                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        $now = time();         
+                        if (isset($cutResult['warning']) && $cutResult['warning'] != "")
                         {
-                            $now = time();
-                            $alreadyFlagged = false;
-                            if (isset($cutResult['warning']) && $cutResult['warning'] != "")
+                            $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
+                            if ($pastWarning1 <= $now)
                             {
-                                $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
-                                if ($pastWarning1 <= $now)
-                                {
-                                    $bgCol = 'background-color:#FFBF00"';
-                                }
+                                $bgCol = 'style="background-color:#FFBF00"';
+                                $state = 1;
                             }
-                            if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                        }
+                        if (isset($cutResult['danger']) && $cutResult['danger'] != "")
+                        {
+                            $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
+                            if ($pastWarning2 <= $now)
                             {
-                                $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
-                                if ($pastWarning2 <= $now)
-                                {
-                                    $bgCol = 'style="background-color:red"';
-                                    $alreadyFlagged = true;
-                                }
+                                $bgCol = 'style="background-color:red"';
+                                $state = 2;
                             }
+                        }
+                        $pastWarning3 = $toDate;
+                        if ($pastWarning3 <= $now)
+                        {
+                            $bgCol = 'style="background-color:darkred"';
+                            $state = 2;
                         }
                     }
                     ?>
