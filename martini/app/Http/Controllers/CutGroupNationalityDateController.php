@@ -21,11 +21,11 @@ class CutGroupNationalityDateController extends Controller
     
     private function baseQuery():Builder
     {
-        return CutGroupNationalityDate::with('cutgroup','species')->join('cutgroups','cgnd.cutgroup_id','=','cutgroups.id')->join('species','cutgroups.species_id','=','species.id')->select('cgnd.*','species.id as species_id2','cutgroups.id as cutgroups_id2');
+        return CutGroupNationalityDate::with('cutgroup','species')->join('cutgroups','cutgroup_nationality_dates.cutgroup_id','=','cutgroups.id')->join('species','cutgroups.species_id','=','species.id')->select('cutgroup_nationality_dates.*','species.id as species_id2','cutgroups.id as cutgroups_id2');
     }
-    private function dataSetBuilder(Builder $cgnds = null, Request $request = null):array
+    private function dataSetBuilder(Builder $cutgroup_nationality_datess = null, Request $request = null):array
     {
-        if ($cgnds == null) $cgnds = $this->baseQuery();
+        if ($cutgroup_nationality_datess == null) $cutgroup_nationality_datess = $this->baseQuery();
         if ($request != null) 
         {
             $nationalities = Nationality::generateHTMLList($request->input('nationality_id', null));
@@ -39,7 +39,7 @@ class CutGroupNationalityDateController extends Controller
             $cutgroups = CutGroup::generateHTMLList();
         }  
         $dataSet= [
-            'cgnds' => $cgnds->paginate(25),
+            'cutgroup_nationality_datess' => $cutgroup_nationality_datess->paginate(25),
             'nationalities' =>  $nationalities,
             'species' => $species,
             'cutgroups' => $cutgroups,
@@ -123,7 +123,7 @@ class CutGroupNationalityDateController extends Controller
         $isNew = ($cutdate==null);
         if ($isNew)$cutdate = new CutGroupNationalityDate;
         return view('cutdates.edit',
-            ['cgnd' => $cutdate,
+            ['cutgroup_nationality_dates' => $cutdate,
             'nationalities' => Nationality::generateHTMLList((!$isNew)?$cutdate->nationality_id:null),
             'species' => Species::generateHTMLList((!$isNew)?$cutdate->getSpeciesID():null),
             'cutgroups' => CutGroup::generateHTMLList((!$isNew)?$cutdate->cutgroup_id:null,(!$isNew)?$cutdate->getSpeciesID():null),

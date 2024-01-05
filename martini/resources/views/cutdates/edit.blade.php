@@ -13,7 +13,7 @@
             <form method="POST" action="{{route('cutdates.store')}}">
             {{ method_field('POST') }}
             @else
-            <form method="POST" action="{{route('cutdates.update', $cgnd->id) }}">
+            <form method="POST" action="{{route('cutdates.update', $cutgroup_nationality_dates->id) }}">
             {{ method_field('PUT') }}
             @endif
     @csrf
@@ -56,7 +56,7 @@
                     <x-input-label for="warning" :value="__('Warning (In Days)')"/>
 
                     <x-text-input id="warning" class="block mt-1 w-full" type="text" name="warning"
-                                  :value="old('warning', $cgnd->warning)"
+                                  :value="old('warning', $cutgroup_nationality_dates->warning)"
                                   required autofocus/>
 
                     <x-input-error :messages="$errors->get('warning')" class="mt-2"/>
@@ -66,7 +66,7 @@
                     <x-input-label for="danger" :value="__('Danger (In Days)')"/>
 
                     <x-text-input id="danger" class="block mt-1 w-full" type="text" name="danger"
-                                  :value="old('danger', $cgnd->danger)"
+                                  :value="old('danger', $cutgroup_nationality_dates->danger)"
                                   required autofocus/>
 
                     <x-input-error :messages="$errors->get('danger')" class="mt-2"/>
