@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 	$class = request()->input('class');
 	$nationality_id = request()->input('nationality_id');
     $ubbb = request()->input('ubbb');
+    $timeSensitivityStatus = (int)request()->input('time',0);
+    if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if (request()->input('locked') == "y"){
         $locked = true;
     }
@@ -113,6 +115,7 @@ use Illuminate\Support\Facades\Auth;
                     if($productsRow2['grosspallet'] == 1){
                         if($this_row_weight == 0){ continue; }
                     }
+                    $state = 0;
                     if($ubbb != 2 && $temp_id == 1){
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
@@ -145,6 +148,7 @@ use Illuminate\Support\Facades\Auth;
                             $state = 2;
                         }
                     }
+                    if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
                     ?>
                     <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
                     <td colspan="1">

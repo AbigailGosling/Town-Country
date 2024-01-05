@@ -20,7 +20,7 @@ ini_set('memory_limit', '1G');
     }
 
     function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id,ubbb,locked){
-        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked, function( data ) {
+        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked + "&time=" + $timeSensitivityStatus, function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
