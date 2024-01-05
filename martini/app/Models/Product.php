@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Product
@@ -37,6 +38,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $akg
  * @property int|null $quantity
  *
+ * @property Cut|null $cut
+ * 
  * @package App\Models
  */
 class Product extends Model
@@ -78,4 +81,8 @@ protected $connection = 'tandc_live';
 		'akg',
 		'quantity'
 	];
+	public function cut():BelongsTo
+	{
+		return $this->belongsTo(Cut::class,"cut_id","id");
+	}
 }

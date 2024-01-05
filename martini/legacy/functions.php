@@ -1857,13 +1857,13 @@ use Ramsey\Uuid\Type\Decimal;
 		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
 		return ($final == -0 ? 0 : $final);
 	} 
-	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false)
+	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false,$isSaleScreen=false)
 	{
 		global $mysqli;
 		$thisUser = User::find(Auth::id());
 		$restrictionString = "";
 		if ($thisUser->hasPermission("restrictedaccess")){
-			$restrictionString = " `default_salesman_id` = $thisUser->id AND";
+			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString = "(`default_salesman_id` = $thisUser->id OR `id` IN (728)) AND";
 		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(

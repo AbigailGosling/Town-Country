@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\CutGroupNationalityDate;
 use App\Models\Location;
 use App\Models\Site;
 use App\Models\User;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
     else {
         $locked = false;
     }
-    
+    $showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
     if(!empty($pallet_id)){
         $palletFilter = 'product.pallet_id = '.$mysqli->real_escape_string($pallet_id);
     }else{
@@ -116,8 +117,7 @@ use Illuminate\Support\Facades\Auth;
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;
-                        $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
-                        $cutResult= mysqli_fetch_assoc($cutQuery);
+                        $cutResult= CutGroupNationalityDate::lookupFromProductID($productsRow2['productid']);
                         $bgCol = "";
                         if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
                         {
@@ -149,11 +149,12 @@ use Illuminate\Support\Facades\Auth;
                         <i class="fa fa-lock"></i>
                     <?php } ?>
                         <?php echo $numInPicking; ?>
-                    <a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
-                    <td colspan="1">
+                    <?php if ($showEditIntake) {?><a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
+                    <?php } else { echo intakeIDfromPalletID($pallet_id);}?>
+                        <td colspan="1">
                         <form method="post">
 
-                        <select style="min-width: 95px;width:100%" name="location">
+                        <select style="min-width: 95px;width:100%" name="location "<?php if (!$showEditIntake) { echo "disabled";}?>>
                                 <?php
                                 echo Site::generateOldHTMLList(Location::find($productsRow2['storage_location'])->name);
                                 ?>

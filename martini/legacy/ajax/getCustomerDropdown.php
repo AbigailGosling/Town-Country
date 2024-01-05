@@ -5,8 +5,8 @@
 	$user_id = $_SESSION['USER'];
 
 	$name = request()->input('searchterm');
-
-	$y = fuzzyCustomerSearch($name,true);
+	$isSaleScreen = request()->has('salescreen');
+	$y = fuzzyCustomerSearch($name,true,false,$isSaleScreen);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php
 	if($count > 0){

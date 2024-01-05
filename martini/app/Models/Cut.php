@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Cut
@@ -41,4 +42,8 @@ protected $connection = 'tandc_live';
 		'danger',
 		'disabled'
 	];
+	public function cutgroup(): BelongsTo
+    {
+        return $this->belongsTo(CutGroup::class, 'cutgroup_id', 'id');
+    }
 }
