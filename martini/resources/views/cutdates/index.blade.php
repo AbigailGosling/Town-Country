@@ -43,22 +43,22 @@
                     <th></th>
                 </x-slot:headers>
                 <slot>
-                    @foreach($cgnds as $cgnd)
+                    @foreach($cutgroup_nationality_datess as $cutgroup_nationality_dates)
                         <tr>
-                            <x-data-table-column :show-on-mobile="false">{{$cgnd->cutgroup->species()->first()->name}}</x-data-table-column>
-                            <x-data-table-column>{{$cgnd->cutgroup->name}}</x-data-table-column>
-                            <x-data-table-column>{{$cgnd->nationality->name}}</x-data-table-column>
-                            <x-data-table-column>{{$cgnd->warning}}</x-data-table-column>
-                            <x-data-table-column>{{$cgnd->danger}}</x-data-table-column>
+                            <x-data-table-column :show-on-mobile="false">{{$cutgroup_nationality_dates->cutgroup->species()->first()->name}}</x-data-table-column>
+                            <x-data-table-column>{{$cutgroup_nationality_dates->cutgroup->name}}</x-data-table-column>
+                            <x-data-table-column>{{$cutgroup_nationality_dates->nationality->name}}</x-data-table-column>
+                            <x-data-table-column>{{$cutgroup_nationality_dates->warning}}</x-data-table-column>
+                            <x-data-table-column>{{$cutgroup_nationality_dates->danger}}</x-data-table-column>
                             <td class="border-b dark:border-slate-600">
-                            <x-table-action-button route="cutdates.edit" :id="$cgnd->id"></x-table-action-button>
+                            <x-table-action-button route="cutdates.edit" :id="$cutgroup_nationality_dates->id"></x-table-action-button>
                             </td>
                         </tr>
                     @endforeach
                 </slot>
             </x-data-table>
         <br>
-            {{ $cgnds->links() }}
+            {{ $cutgroup_nationality_datess->links() }}
 </x-app-layout>
 @stack('scripts')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

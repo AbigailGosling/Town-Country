@@ -29,8 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 class CutGroupNationalityDate extends Model
 {
 	protected $connection = 'tandc_live';
-	protected $table = 'cutgroup_nationality_dates as cgnd';
-	public $incrementing = false;
+	protected $table = 'cutgroup_nationality_dates';
+	public $incrementing = true;
 	public $timestamps = false;
 
 	protected $casts = [

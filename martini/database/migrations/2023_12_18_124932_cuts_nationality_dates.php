@@ -42,10 +42,10 @@ return new class extends Migration
             {
                 foreach ($nationalities as $nationality){
                     if ($nationality->name == "") continue;
-                    $cgnd = CutGroupNationalityDate::firstOrCreate(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$nationality->id]);
-                    if ($cut->warning > $cgnd->warning) $cgnd->warning = $cut->warning;
-                    if ($cut->danger > $cgnd->danger) $cgnd->danger = $cut->danger;
-                    $cgnd->save();
+                    $cutgroup_nationality_dates = CutGroupNationalityDate::firstOrCreate(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$nationality->id]);
+                    if ($cut->warning > $cutgroup_nationality_dates->warning) $cutgroup_nationality_dates->warning = $cut->warning;
+                    if ($cut->danger > $cutgroup_nationality_dates->danger) $cutgroup_nationality_dates->danger = $cut->danger;
+                    $cutgroup_nationality_dates->save();
                 }
             }
         }
