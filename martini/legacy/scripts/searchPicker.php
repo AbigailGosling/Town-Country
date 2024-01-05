@@ -7,6 +7,18 @@ use Illuminate\Support\Facades\Log;
 
 $showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 ini_set('memory_limit', '1G');
+$timeStamp = microtime(true);
+$cutgroup_id = request()->input('cutgroup_id');
+$species_id = request()->input('species');
+$temperatureID = request()->input('temperatureID');
+$pallet_id = request()->input('palletID');
+$intake_id = request()->input('intakeID');
+$brand =  request()->input('brandID');
+$nationality =  request()->input('nationalityID');
+$customer_id =  request()->input('customerID');
+$timeSensitivityStatus = (int)request()->input('time',0);
+if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
+
 ?>
 <script type="text/javascript">
     $.ajaxSetup({
@@ -20,7 +32,7 @@ ini_set('memory_limit', '1G');
     }
 
     function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id,ubbb,locked){
-        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked + "&time=" + $timeSensitivityStatus, function( data ) {
+        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked + "&time=<?php echo $timeSensitivityStatus;?>" , function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -52,18 +64,7 @@ ini_set('memory_limit', '1G');
         </tr>
     </thead>
 <?php
-    $timeStamp = microtime(true);
 	require(__DIR__.'/../functions.php');
-	$cutgroup_id = request()->input('cutgroup_id');
-	$species_id = request()->input('species');
-	$temperatureID = request()->input('temperatureID');
-	$pallet_id = request()->input('palletID');
-	$intake_id = request()->input('intakeID');
-    $brand =  request()->input('brandID');
-    $nationality =  request()->input('nationalityID');
-    $customer_id =  request()->input('customerID');
-    $timeSensitivityStatus = (int)request()->input('time',0);
-    if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
