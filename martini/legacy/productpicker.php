@@ -161,8 +161,8 @@ use App\Models\User;
 					<select id="SearchTime" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 						<option value="0" disabled selected>Select Time Sensitivity..</option>
 						<!--<option value="0">Green</option>-->
-						<option value="1">Threshold Days</option>
-						<option value="2">Out of Date</option>
+						<option value="1">Amber Warning</option>
+						<option value="2">Red Warning</option>
 					</select>
 				</td>
 				<td></td>
