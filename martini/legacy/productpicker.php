@@ -101,7 +101,7 @@ use App\Models\User;
 	<form id="searchForm">
 		<table style="border-collapse: collapse;">
 			<tr>
-				<td style="width:25%"><select id="SearchSpecies" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+				<td style="width:20%"><select id="SearchSpecies" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select species..</option>
 					<?php
 						$x = "SELECT * FROM `species`";
@@ -113,7 +113,7 @@ use App\Models\User;
 					?>
 					</select>
 				</td>
-				<td style="width:25%"><select id="SearchCutgroups" name="cutgroup_id" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+				<td style="width:20%"><select id="SearchCutgroups" name="cutgroup_id" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select subcat...</option>
 						<?php
 							$x = "SELECT * FROM `cutgroups`";
@@ -132,7 +132,7 @@ use App\Models\User;
 						?>
 					</select>
 				</td>
-				<td style="width:25%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+				<td style="width:20%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select Brand..</option>
 					<?php
 						$x = "SELECT * FROM `brands` ORDER BY `name`";
@@ -144,7 +144,7 @@ use App\Models\User;
 					?>
 					</select>
 				</td>
-				<td style="width:25%">
+				<td style="width:20%">
 					<select id="SearchNationality" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 						<option value="" disabled selected>Select Nationality..</option>
 						<?php
@@ -155,6 +155,14 @@ use App\Models\User;
 							?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 							}
 						?>
+					</select>
+				</td>
+				<td style="width:20%">
+					<select id="SearchTime" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+						<option value="0" disabled selected>Select Time Sensitivity..</option>
+						<!--<option value="0">Green</option>-->
+						<option value="1">Threshold Days</option>
+						<option value="2">Out of Date</option>
 					</select>
 				</td>
 				<td></td>
@@ -852,6 +860,7 @@ function cancelSale()
 		var cutgroup_id = $('#SearchCutgroups').val();
 		var brand = $('#SearchBrand').val();
 		var nationality = $('#SearchNationality').val();
+		var time = $('#SearchTime').val();
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
@@ -859,7 +868,7 @@ function cancelSale()
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 			
-			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&customerID="+customer_id, function(data, status){
+			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id, function(data, status){
 				$('#loadResults').html(data);
 				
 			});
@@ -868,6 +877,7 @@ function cancelSale()
 			$('#SearchNationality').prop('selectedIndex',0);
 			$('#SearchSpecies').prop('selectedIndex',0);
 			$('#SearchCutgroups').prop('selectedIndex',0);
+			$('#SearchTime').prop('selectedIndex',0);
 			$('#IntakeID').val('');
 			$('#PalletID').val('');
 
@@ -902,7 +912,8 @@ function cancelSale()
 			type: "POST",
 			url: "ajax/getCustomerDropdown.php",
 			data: {
-				searchterm: val
+				searchterm: val,
+				salescreen: "y"
 			},
 			dataType: "html"
 		});

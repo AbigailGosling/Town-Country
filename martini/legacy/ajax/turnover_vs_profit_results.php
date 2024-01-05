@@ -4,7 +4,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
    	require(__DIR__.'/../functions.php');
-
+       ini_set('max_execution_time','256');
+       ini_set('memory_limit', '512M');
        if(request()->input('user_id') != '' || request()->input('customer_id') != '' || request()->input('species_id') != '' || request()->input('intake_id') != '' || request()->input('pallet_id') != '' || request()->input('invoice_id') != ''  || request()->input('brand_id') != '' || request()->input('nationality_id') != ''){
         
         $INVOICE_ID = request()->input('invoice_id');

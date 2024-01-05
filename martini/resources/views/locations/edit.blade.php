@@ -34,7 +34,7 @@
 
                     <select id="site_id" class="block mt-1 w-full" type="text" name="site_id" required>
                         <option selected="true" disabled>Please Select an Option...</option>
-                        {{!! $otherSites !!}}
+                        {!! $otherSites !!}
                     </select>
 
                     <x-input-error :messages="$errors->get('site_id')" class="mt-2"/>

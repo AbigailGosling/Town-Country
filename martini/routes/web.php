@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\CustomerOverridesController;
+use App\Http\Controllers\CutGroupNationalityDateController;
+use App\Http\Controllers\DropdownController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\SiteController;
@@ -58,6 +60,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/sites/{site}/locations/{location}/edit', [LocationController::class, 'edit'])->name('locations.edit');
     Route::put('/sites/{site}/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
 
+    Route::resource('cutdates', 'App\Http\Controllers\CutGroupNationalityDateController');
+    Route::post('/cutdates/search', [CutGroupNationalityDateController::class, 'search'])->name('cutdates.search');
+    Route::get('api/fetch-cutgroups', [DropdownController::class, 'fetchCutGroups']);
+    
     Route::get('/customers/overrides', [CustomerOverridesController::class, 'index'])->name('overrides.index');
     Route::get('/customers/overrides/search', [CustomerOverridesController::class, 'search'])->name('overrides.search');
     Route::get('/customers/overrides/edit/{customer}', [CustomerOverridesController::class, 'edit'])->name('overrides.edit');

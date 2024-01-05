@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\CutGroupNationalityDate;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+
+$showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 ini_set('memory_limit', '1G');
 ?>
 <script type="text/javascript">
@@ -49,7 +52,7 @@ ini_set('memory_limit', '1G');
         </tr>
     </thead>
 <?php
-    $time1 = microtime(true);
+    $timeStamp = microtime(true);
 	require(__DIR__.'/../functions.php');
 	$cutgroup_id = request()->input('cutgroup_id');
 	$species_id = request()->input('species');
@@ -59,6 +62,8 @@ ini_set('memory_limit', '1G');
     $brand =  request()->input('brandID');
     $nationality =  request()->input('nationalityID');
     $customer_id =  request()->input('customerID');
+    $timeSensitivityStatus = (int)request()->input('time',0);
+    if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $initial_pallet_id = $pallet_id;
      
     $ARRAY_CUTS = array();
@@ -269,23 +274,24 @@ ini_set('memory_limit', '1G');
             $internalDate->setTimestamp($latestEndDateTS);
             $latestEndDate = $internalDate->format('d/m/Y');
         }
+        $state = 0;
         if($ubbb != 2 && $earliestStartDate != "" && $latestEndDate != ""){
             $toDate = DateTime::createFromFormat('d/m/Y',$earliestStartDate)->getTimestamp();
             $toDate2 = DateTime::createFromFormat('d/m/Y',$latestEndDate)->getTimestamp();
             if ($toDate2 < $toDate) $toDate = $toDate2;
-            $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$product2_cutids[0]);
-            $cutResult= mysqli_fetch_assoc($cutQuery);
-            if ($temp_id == 1 && ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")))
+            $cutResult= CutGroupNationalityDate::lookupFromProductID($product2_productids[0]);
+            
+            if ($temp_id == 1)
             {
                 $bgCol = '';
-                $now = time();
-                $alreadyFlagged = false;
+                $now = time();         
                 if (isset($cutResult['warning']) && $cutResult['warning'] != "")
                 {
                     $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
                     if ($pastWarning1 <= $now)
                     {
                         $bgCol = 'style="background-color:#FFBF00"';
+                        $state = 1;
                     }
                 }
                 if (isset($cutResult['danger']) && $cutResult['danger'] != "")
@@ -294,11 +300,18 @@ ini_set('memory_limit', '1G');
                     if ($pastWarning2 <= $now)
                     {
                         $bgCol = 'style="background-color:red"';
-                        $alreadyFlagged = true;
+                        $state = 2;
                     }
                 }
-            }
+                $pastWarning3 = $toDate;
+                if ($pastWarning3 <= $now)
+                {
+                    $bgCol = 'style="background-color:darkred"';
+                    $state = 2;
+                }
+            }        
         }
+        if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
         if($product2_quantity != 0) $quantityTotal = $product2_quantity;
         else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
         
@@ -328,13 +341,16 @@ ini_set('memory_limit', '1G');
         ?>
         <tr <?php if(isset($product2_dateranges[0])) echo $bgCol; ?> class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
             <td colspan="1">
-                <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
+            <?php if ($showEditIntake) {?>
+            <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
+            <?php } else {?><div class="intakeLink"><?php }?>
                     <?php if($locked){ ?>
                         <i class="fa fa-lock"></i>
                     <?php } ?>
 
                     <b><?php echo $intake_id; ?></b>
-				</a>
+                    <?php if ($showEditIntake) {?></a>
+                    <?php } else {?></div><?php }?>
 			</td>
             <td colspan="1">
              &nbsp;		 
@@ -343,12 +359,11 @@ ini_set('memory_limit', '1G');
            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>','<?php echo $ubbb;?>','<?php echo $lockedT; ?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
-            <!---
+            <?php
             // ??: No need to call the database on every loop.
             // ??: The temperatures are just a few entries.
             // ??: Better to get all the entries in the beginning
-            -->
-            <?php
+                       
                 if($uniqueTemperatures > 1){
                     ?><td style="background:grey;color:#fff;padding:5px;">Mixed</td><?php
                 }else{
@@ -356,11 +371,9 @@ ini_set('memory_limit', '1G');
                 }
             ?>
             <td class="bold" colspan="1"><?php echo $cut; ?></td>
-            <!--
-            // ??: Same as with temperatures - get all entries in the beginning
-            -->
 			<td colspan="1">
                 <?php
+                 // ??: Same as with temperatures - get all entries in the beginning
                     if($uniqueNationalities > 1){
                         //echo '--';
                         echo 'Various';
@@ -687,9 +700,9 @@ background:#cacaca;
 <?php 
 function perfcheck()
 {
-    global $time1;
-    $time2 = microtime(true);
-    echo '<br>script execution time: ' . ($time2 - $time1);
+    global $timeStamp;
+    $timeStamp2 = microtime(true);
+    echo '<br>script execution time: ' . ($timeStamp2 - $timeStamp);
 }
 // perfcheck();
 

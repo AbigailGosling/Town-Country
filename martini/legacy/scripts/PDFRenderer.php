@@ -23,8 +23,10 @@ class PDFRenderer{
             // creates a new page and navigate to an URL
             if ($debug) Log::debug("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $page = $browser->createPage();
+
             if ($debug) Log::debug("LoginNav",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
             $page->navigate('https:'.$domainOld.'login')->waitForNavigation();   
+
             //login
             if ($debug) Log::debug("EvalLogin",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
             $evaluation = $page->evaluate(
@@ -34,8 +36,10 @@ class PDFRenderer{
                         document.querySelector("#loginform").submit();
                     })()'
                 )->waitForPageReload();
+
             if ($debug) Log::debug("TargetPage",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
             $page->navigate('https:'.$domain.$targetURL)->waitForNavigation();
+
             if ($debug) Log::debug("TargetPageEvalLoopStart",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
             $hasResult = !$awaitRenderComplete;
             $start = time();
@@ -67,12 +71,48 @@ class PDFRenderer{
             // pdf
             if ($debug) Log::debug("EvalLoopFinish",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             if (!$hasResult) return false;
+
             if ($debug) Log::debug("PageToPDF",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $out= $page->pdf(['printBackground' => false]);
+
             if ($debug) Log::debug("WriteFile",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
+            
             if ($debug) Log::debug("Logout",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $page->navigate('https:'.$domain.'logout.php')->waitForNavigation();
+        } catch (\Exception $e) {
+            Log::error($e);
+        } finally {
+            // bye
+            $browser->close();
+        }
+        return true;
+    }
+    public static function generatePDFfromHTML($htmlString,$pathToFile,$fileName,$debug=false){
+
+        require(__DIR__."/../config.php");
+        
+        //---PHP CONFIG---//
+        ini_set('memory_limit', '1024M');
+        set_time_limit(1800); //seconds
+        if ($debug) Log::debug("BrowserFactory",[$pathToFile,$fileName]);
+        $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
+        // starts headless chrome
+        if ($debug) Log::debug("Browser",[$pathToFile,$fileName]);
+        $browser = $browserFactory->createBrowser();
+        try {
+            // creates a new page and navigate to an URL
+            if ($debug) Log::debug("LoginPage",[$pathToFile,$fileName]);
+            $page = $browser->createPage();
+            
+            if ($debug) Log::debug("RenderPage",[$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
+            $page->setHTML($htmlString);
+           
+            if ($debug) Log::debug("PageToPDF",[$pathToFile,$fileName]);
+            $out= $page->pdf(['printBackground' => false]);
+           
+            if ($debug) Log::debug("WriteFile",[$pathToFile,$fileName]);
+            $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
         } catch (\Exception $e) {
             Log::error($e);
         } finally {

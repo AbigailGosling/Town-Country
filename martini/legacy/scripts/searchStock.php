@@ -17,9 +17,11 @@
 <?php
 
 use App\Models\Location;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
-	
+	$showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 	$cutgroup_id = request()->input('cutgroup_id');
 	$species_id = request()->input('species');
 	$temperatureID = request('temperatureID');
@@ -144,9 +146,11 @@ use App\Models\Location;
         <tr class="searchAccordTitle">
 			<td width="40" align="center" onclick="toggleRow('<?php echo $class; ?>');"><?php if($products2Count > 0){ ?><i class="fa fa-chevron-down"></i><?php } ?></td>
 			<td colspan="1">
+            <?php if ($showEditIntake) {?>
 				<a href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">
 					<b><?php echo $intake_id; ?></b>
 				</a>
+            <?php } else {?><b><?php echo $intake_id; ?></b><?php }?>
 			</td>
             <td colspan="1">
              &nbsp;		 
@@ -210,8 +214,10 @@ use App\Models\Location;
 			?>
 			<tr style="background:#d9d9d9;display:none;" class="subrow <?php echo $class; ?>">
 				<td></td>
+                <?php if ($showEditIntake) {?>
 				<td colspan="1"><a href="intake.php?id=<?php echo intakeIDfromPalletID($pallet_id); ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;"><b><?php echo intakeIDfromPalletID($pallet_id); ?></b></a></td>
-				<td colspan="1">
+				<?php } else {?><b><?php echo intakeIDfromPalletID($pallet_id); ?></b><?php }?>
+                <td colspan="1">
 					<?php
 				// 		$palletx = "SELECT * FROM `pallet` WHERE id='$pallet_id'";
 				// 		$pallety = prepareExecuteQuery($palletx);
