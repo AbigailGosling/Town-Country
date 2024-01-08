@@ -25,7 +25,7 @@ function get_customer_soa_results($customer_id,$adv)
         $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
     }
     $now = time();
-    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).") GROUP BY `delivery_note_number`");
     $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
     foreach ($customerReturns as $return){
         $pickSheets[$return['delivery_note_number']]['hasReturns'] = ($return['count'] > 0);
