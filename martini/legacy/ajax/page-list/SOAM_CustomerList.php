@@ -42,7 +42,8 @@
 		if ($showBal == true)
 		{
 			$t = time();
-			$cache_check = check_customer_outstanding_cache($customer['id']);
+			$customer['creditCheck'] = precredit_check($customer['id']);
+			$cache_check = $customer['creditCheck']['details'];
 			$customer['cache'] = $cache_check;
 			$customer['balance'] = (double) $cache_check['outstanding'];
 		}
@@ -56,7 +57,30 @@
 	foreach($workingSet as $customer)
 	{
 		if ($customer['balance'] == 0) continue;
+		$creditCheck = $customer['creditCheck'];
 		$rollingTotal = (double)$rollingTotal + (double)$customer['balance'];
+		$title = "";
+		if ($creditCheck['saleAllowed'] == true)
+		{
+			if ($creditCheck['showWarning'] == true)
+			{
+				$style = 'style="background-color:orange;color:orange"';
+				$title = $creditCheck['message'];
+				$text = "A";
+			}
+			else
+			{
+				$style = 'style="background-color:green;color:green"';
+				$title = "";
+				$text = "G";
+			}
+		}
+		else
+		{
+			$style = 'style="background-color:red;color:red"';
+			$title = $creditCheck['message'];
+			$text = "R";
+		}
 	?>
 	<table width="100%">
 		<tr><td align="center" class="pos">
@@ -70,6 +94,7 @@
 								if ($customer['balNeg'] == true) echo "-";
 								echo "£".number_format($customer['balance'],2);	
 							}?></td>
+							<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?> title="<?php echo $title; ?>"><?php echo $text; ?></td>
 					</tr>
 				</table>
 			</a>

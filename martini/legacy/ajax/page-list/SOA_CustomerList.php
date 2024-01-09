@@ -44,19 +44,22 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 		{
 			if ($creditCheck['showWarning'] == true)
 			{
-				$style = 'style="background-color:orange"';
+				$style = 'style="background-color:orange;color:orange"';
 				$title = $creditCheck['message'];
+				$text = "A";
 			}
 			else
 			{
-				$style = 'style="background-color:green"';
+				$style = 'style="background-color:green;color:green"';
 				$title = "";
+				$text = "G";
 			}
 		}
 		else
 		{
-			$style = 'style="background-color:red"';
+			$style = 'style="background-color:red;color:red"';
 			$title = $creditCheck['message'];
+			$text = "R";
 		}
 	}
 ?>
@@ -68,7 +71,7 @@ while($customer = mysqli_fetch_array($customerQueryResult)){
 				<tr>
 					<td width="100" align="left">ID: <?php echo $customer['id']; ?></td>
 					<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
-					<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?> title="<?php echo $title; ?>"></td>
+					<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?> title="<?php echo $title; ?>"><?php echo $text; ?></td>
 				</tr>
 			</table>
 		</a>
