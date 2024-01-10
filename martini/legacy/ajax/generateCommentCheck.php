@@ -12,15 +12,7 @@ $type_id = request()->input('type_id');
 $user_id = request()->input('user_id');
 $date_start = request()->input('date_start');
 $date_end = request()->input('date_end');
-if (isset($entity_id) && !is_numeric(isset($entity_id))){
-    $customersResult = fuzzyCustomerSearch($entity_id);
-    $cids =[];
-    while ($c = $customersResult->fetch_assoc()){
-        $cids[] = $c['id'];
-    }
-    if (count($cids)>0)$queryArray[] = "`comment_logging`.`entity_id` IN (".implode(",",$cids).")";
-}
-else if (isset($entity_id) && $entity_id != null && $entity_id != "")
+if (isset($entity_id) && $entity_id != null && $entity_id != "")
     $queryArray[] = "`comment_logging`.`entity_id` = '".$entity_id."'";
 if (isset($type_id) && $type_id != null && $type_id != "")
     $queryArray[] = "`comment_logging`.`type` = '".$type_id."'";
@@ -60,8 +52,9 @@ $sql = "SELECT `comment_logging`.`id`,
 
 if (count($queryArray) > 0)
 {
-    $sql .= " WHERE ".implode(" AND ",$queryArray);
+    $sql .= " WHERE ".implode(" AND ",$queryArray)." ORDER BY `comment_logging`.`id`";
 }
+
 $res = prepareExecuteQuery($sql);
 while ($row = mysqli_fetch_assoc($res))
 {

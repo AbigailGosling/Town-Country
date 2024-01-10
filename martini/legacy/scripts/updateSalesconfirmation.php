@@ -31,7 +31,8 @@
         postcode_{$addressid}='$addresspostcode',
         address{$addressid}_number='$deliverynumber'
         WHERE id = $customerid LIMIT 1");
-
+    loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
+    loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
 ?>
 
 <script type="text/javascript">

@@ -1917,12 +1917,14 @@ use Ramsey\Uuid\Type\Decimal;
 		return $price*$percent;	
 	}
 	function loggedDataChange($type,$entity_id,$body){
-		Log::debug(new \Exception(),[$type,$entity_id,$body]);
-		global $mysqli;
-		$userid = $_SESSION['USER'];
-		$body = $mysqli->real_escape_string($body);
-		$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";			
-		$y = prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
+		$check = prepareExecuteQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
+		if (!$check || $check['body'] != $body)
+		{
+			Log::debug(new \Exception(),[$type,$entity_id,$body]);
+			$userid = $_SESSION['USER'];
+			$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";			
+			prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
+		}
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
 ?>

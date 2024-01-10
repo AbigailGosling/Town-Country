@@ -29,9 +29,6 @@ use Illuminate\Support\Facades\Auth;
 	
 	if(request()->input('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request()->input('productid');
-		$price = request()->input('price');
-		$cost = request()->input('cost');
-		
 		$size = sizeof($productids);
 		
 		$intakeid = request()->input('intakeid');
@@ -54,8 +51,12 @@ use Illuminate\Support\Facades\Auth;
 					$x = "UPDATE `product` SET cost=?, weightnote=? WHERE id IN $product_id";
  					$y = prepareExecuteQuery($x,'ss',[$cost,$weightnote]);
 				}
-				
-				 loggedDataChange('pallet',request()->input('pallet_id'),$weightnote);
+				foreach (explode(",",$product_id) as $iProdID)
+				{
+					loggedDataChange('product_note',$iProdID,$weightnote);
+					loggedDataChange('product_cost',$iProdID,$cost);
+					if (User::find(Auth::id())->hasPermission("viewcosts")) loggedDataChange('product_actual_cost',$iProdID,$price);
+				}
 			}
 		}
 
@@ -488,11 +489,17 @@ use Illuminate\Support\Facades\Auth;
 					?>
 					</td>
 					<td>
+						<?php if (User::find(Auth::id())->hasPermission("commentchangetracker.php")) { ?>
+							<?php echo "Product ID: ".implode(",",$productIDs); ?>
+						<?php } ?>
 						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
 					<td>
+						<?php if (User::find(Auth::id())->hasPermission("commentchangetracker.php")) { ?>
+							<?php echo "&nbsp"; ?>
+						<?php } ?>
 						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
 					<?php } ?>
