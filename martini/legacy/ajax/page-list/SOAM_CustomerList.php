@@ -44,6 +44,7 @@
 			$t = time();
 			$customer['creditCheck'] = precredit_check($customer['id']);
 			$cache_check = $customer['creditCheck']['details'];
+			if (!$cache_check) $cache_check = check_customer_outstanding_cache($customer['id']);
 			$customer['cache'] = $cache_check;
 			$customer['balance'] = (double) $cache_check['outstanding'];
 		}
