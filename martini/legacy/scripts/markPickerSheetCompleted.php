@@ -78,9 +78,9 @@
 			foreach($weightIDArray as $weightID){
 						
 				$x2 = "UPDATE `weights` SET status = '1' WHERE id=?";
-				$y2 = prepareExecuteQuery($x2,'i',[$weightID]);
+				//$y2 = prepareExecuteQuery($x2,'i',[$weightID]);
 				
-				$weight = mysqli_fetch_array($y1);
+				//$weight = mysqli_fetch_array($y1);
 			}
 			
 		}

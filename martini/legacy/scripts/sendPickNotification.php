@@ -10,7 +10,8 @@ if ($userC->hasPermission('send_picker_notification')) {
     $message = request()->input("message");
     $locked = request()->has("lock_pick")?1:0;
     prepareExecuteQuery("INSERT INTO `tandc_live`.`pickerNotifications` (`user_id`, `pickersheet_id`, `message`, `locked`,`created_at`) VALUES (?,?,?,?,NOW())",'iisi',[$userC->id,$picksheetid,$message,$locked]);
-    loggedDataChange("picksheet_notification",$picksheetid,$message." LOCKING:". $locked ? "true":"false");
+    $lockstatus =  $locked ? "LOCKED":"";
+    loggedDataChange("picksheet_notification",$picksheetid,$message." ".$lockstatus);
 }
 ?>
 <script>

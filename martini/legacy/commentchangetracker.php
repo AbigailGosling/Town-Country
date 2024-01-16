@@ -61,7 +61,7 @@
     <input class="datepicker" name="date_start" id="date_start" placeholder="START DATE" style="height:34px;width:100px;"></input>
     <b>AND</b>
     <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" style="height:34px;width:100px;"></input>
-    <input type="button" name="search" id="search" value="Search" style="height: 39px;width: 80px;" onclick="fetchResults()"></input>
+    <input type="button" name="search" id="search" value="Search" style="height: 39px;width: 80px;" onclick="fetchResults(1)"></input>
 </div>
 <div class="mainstatement">
         <table id="soaTable" class="table" width="100%" style="font-size:10pt;border-spacing: 0;border-color: grey;">
@@ -87,11 +87,12 @@
                 </tr>
             </tfoot>
         </table>
+        <div style="border: 2px solid black;width:99%;padding-left: 1px;" id="loadRows" class="loadMoreBtn" onclick="fetchResults(lastpage+1)">Load More</div>
         </div>
 </div>
-
 <div class="clearfix"></div>
 <script type="text/javascript">
+    var lastpage;
     $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
@@ -102,19 +103,24 @@ $(document).ready(function(){
     $("#date_end").datepicker({
         dateFormat: 'dd/mm/yy'
     });
+    $("#loadRows").hide();
 });
-function fetchResults(){
-    $("#soaTable > tbody").empty();
+function fetchResults(page){
+    lastpage = page;
+    if (page == 1) $("#soaTable > tbody").empty();
+    $("#loadRows").hide();
     var entity_id = $("#entity_id").val();
     var type_id = $("#type_id").val();
     var user_id = $("#user_id").val();
     var date_start = $("#date_start").val();
     var date_end = $("#date_end").val();
-    $.post("ajax/generateCommentCheck.php", { 'entity_id':entity_id, 'type_id':type_id, 'user_id':user_id, 'date_start':date_start, 'date_end':date_end }, results);
+    $.post("ajax/generateCommentCheck.php", { 'entity_id':entity_id, 'type_id':type_id, 'user_id':user_id, 'date_start':date_start, 'date_end':date_end, 'page':page }, results);
 }
 function results(data, status){
-    $("#soaTable > tbody").empty();
+    if (lastpage == 1) $("#soaTable > tbody").empty();
     $("#soaTable > tbody").append(data);
+    console.log(data);
+    if (data)$("#loadRows").show();
     
 
 }

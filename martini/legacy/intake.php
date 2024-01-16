@@ -51,7 +51,7 @@ use Illuminate\Support\Facades\Auth;
 					$x = "UPDATE `product` SET cost=?, weightnote=? WHERE id IN $product_id";
  					$y = prepareExecuteQuery($x,'ss',[$cost,$weightnote]);
 				}
-				foreach (explode(",",$product_id) as $iProdID)
+				foreach (explode(",",$productids[$i]) as $iProdID)
 				{
 					loggedDataChange('product_note',$iProdID,$weightnote);
 					loggedDataChange('product_cost',$iProdID,$cost);
@@ -489,16 +489,16 @@ use Illuminate\Support\Facades\Auth;
 					?>
 					</td>
 					<td>
-						<?php if (User::find(Auth::id())->hasPermission("commentchangetracker.php")) { ?>
-							<?php echo "Product ID: ".implode(",",$productIDs); ?>
+						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
+							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
 						<?php } ?>
 						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
 					<td>
-						<?php if (User::find(Auth::id())->hasPermission("commentchangetracker.php")) { ?>
-							<?php echo "&nbsp"; ?>
+						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
+							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
 						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
