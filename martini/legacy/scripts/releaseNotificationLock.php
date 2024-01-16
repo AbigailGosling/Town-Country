@@ -10,6 +10,7 @@ if ($userC->hasPermission('send_picker_notification') || $userC->hasPermission('
     $message = request()->input("message");
     $locked = request()->has("lock_pick")?1:0;
     loggedQuery("UPDATE `tandc_live`.`pickerNotifications` SET `updated_at` = NOW(), lock_release = 1 WHERE pickersheet_id = ?",'i',[request()->input('pick_id')]);
+    loggedDataChange("picksheet_notification",$picksheetid,$message." RELEASE LOCK");
 }
 ?>
 <script>

@@ -86,12 +86,14 @@ use App\Models\Product;
 		$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 		$transaction_id = null;
 		$pickersheet_id = $y;
+		
 		if ((int)$pickersheet_id !== $pickersheet_id)
 		{
 			abort(500);
 			die();
 		}
-
+		loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
+		loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
 		
 		foreach ($basket as $item) {
 

@@ -35,6 +35,8 @@ if ((int)$pickersheet_id !== $pickersheet_id)
     abort(500);
     die();
 }
+loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
+loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
 $items = request()->input('items');
 $weights = [];
 foreach ($items as $item){

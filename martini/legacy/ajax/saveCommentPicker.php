@@ -10,5 +10,6 @@
 	echo $x = "UPDATE `product` SET weightnote=? WHERE id=?";
 	
 	$y = prepareExecuteQuery($x,'si',[$comment,$productid]);
+	loggedDataChange('product_note',$productid,$comment);
 	
 ?>
