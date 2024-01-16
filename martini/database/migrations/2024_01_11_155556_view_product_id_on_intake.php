@@ -24,7 +24,7 @@ return new class extends Migration
         $newPerm->save();
         User::find(54)->assignPermission($newPerm);
         User::find(5)->assignPermission($newPerm);
-        DB::select(DB::raw("UPDATE `comment_logging` SET `type` = 'product_note' WHERE `comment_logging` SET `type` = 'product_weightnote'"));
+        DB::select(DB::raw("UPDATE `tandc_live`.`comment_logging` SET `type` = 'product_note' WHERE `type` = 'product_weightnote'"));
     }
 
     /**
