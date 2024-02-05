@@ -123,9 +123,13 @@ class CustomerOverridesController extends Controller
 	{
 		global $mysqli;
 		$thisUser = User::find(Auth::id());
+        $users = prepareExecuteQuery("SELECT GROUP_CONCAT(`absent_id`) as `ids` FROM `active_holiday_cover` WHERE `cover_id` = ?",'i',[$thisUser->id])->fetch_assoc()['ids'];
+		$users = ($users != "")?explode(",",$users):[];
+		$users[] = $thisUser->id;		
+		$users = implode(",",$users);
 		$restrictionString = "";
 		if ($thisUser->hasPermission("restrictedaccess")){
-			$restrictionString = " `default_salesman_id` = $thisUser->id AND";
+			$restrictionString = " `default_salesman_id` IN ($users) AND";
 		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(

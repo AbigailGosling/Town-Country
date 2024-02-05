@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActiveHolidayCoverController;
 use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\CutGroupNationalityDateController;
 use App\Http\Controllers\DropdownController;
@@ -61,6 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/sites/{site}/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
 
     Route::resource('cutdates', 'App\Http\Controllers\CutGroupNationalityDateController');
+
+    Route::get('deleteholiday/{holiday}', [ActiveHolidayCoverController::class, 'destroy'])->name('holidays.delete');
+    Route::resource('holidays', 'App\Http\Controllers\ActiveHolidayCoverController');
+    
     Route::post('/cutdates/search', [CutGroupNationalityDateController::class, 'search'])->name('cutdates.search');
     Route::get('api/fetch-cutgroups', [DropdownController::class, 'fetchCutGroups']);
     

@@ -23,14 +23,14 @@
     $y = prepareExecuteQuery("UPDATE `pickerSheets` SET user_from_id=?, estimated_delivery_date=?, orderReferenceNumber=?, addressid=?,picksheet_note=? WHERE id=? LIMIT 1",
 'isssss',[$user_from_id,$estimated_delivery_date,$orderReferenceNumber,$addressid,$picksheet_note,$picksheetid]);
 
-    $y = prepareExecuteQuery("UPDATE `customers` SET
+    /*$y = prepareExecuteQuery("UPDATE `customers` SET
         address{$addressid}_1='$addressline1',
         address{$addressid}_2='$addressline2',
         address{$addressid}_3='$addressline3',
         address{$addressid}_4='$addressline4',
         postcode_{$addressid}='$addresspostcode',
         address{$addressid}_number='$deliverynumber'
-        WHERE id = $customerid LIMIT 1");
+        WHERE id = $customerid LIMIT 1");*/
     loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
     loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
 ?>
