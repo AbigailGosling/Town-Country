@@ -29,7 +29,7 @@ class Pallet extends Model
 {
 protected $connection = 'tandc_live';
 	protected $table = 'pallet';
-	public $timestamps = false;
+	public $timestamps = true;
 
 	protected $casts = [
 		'intake_id' => 'int',

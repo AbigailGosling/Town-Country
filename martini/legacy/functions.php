@@ -1329,7 +1329,6 @@ use Ramsey\Uuid\Type\Decimal;
 
 		$pallet_ids = array();
 		$product_ids = array();
-		$weight_ids = array();
 
 		$palletsResult = prepareExecuteQuery("SELECT id FROM `pallet` WHERE intake_id=?",'i',[$intake_id]);
 		while($pallet = $palletsResult->fetch_assoc()){ array_push($pallet_ids, $pallet['id']); }
@@ -1340,26 +1339,9 @@ use Ramsey\Uuid\Type\Decimal;
 		while($product = $productsResult->fetch_assoc()){ array_push($product_ids, $product['id']); }
 
 		$temp_product_ids = implode(',', $product_ids);
-
-		$weightsResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id IN ($temp_product_ids)");
-		while($weight = $weightsResult->fetch_assoc()){ array_push($weight_ids, $weight['id']); }
-
-		
-		$pallet_ids = implode(',', $pallet_ids);
-		$product_ids = implode(',', $product_ids);
-		$weight_ids = implode(',', $weight_ids);
-
-		// Delete related pallets
-		$deletePalletResult =  prepareExecuteQuery("DELETE FROM `pallet` WHERE id IN ($pallet_ids)");
-
-		// Delete related products
-		$deleteProductResult =  prepareExecuteQuery("DELETE FROM `product` WHERE id IN ($product_ids)");
-
-		// Delete related weight entries
-		$deleteWeightsResult =  prepareExecuteQuery("DELETE FROM `weights` WHERE id IN ($weight_ids)");
-
-		// Delete the intake 
-		$deleteIntakeResult =  prepareExecuteQuery("DELETE FROM `intake` WHERE id = ?",'i',[$intake_id]);
+		// Delete unsold weight entries
+		prepareExecuteQuery("DELETE FROM `weights` WHERE `status_id` = 0 AND `product_id` IN ($temp_product_ids)");
+		prepareExecuteQuery("UPDATE `intake` SET `deleted` = 1 WHERE `id` IN ($intake_id)");
 	}
 	
 	function getPallet($id){
@@ -1862,8 +1844,12 @@ use Ramsey\Uuid\Type\Decimal;
 		global $mysqli;
 		$thisUser = User::find(Auth::id());
 		$restrictionString = "";
+		$users = prepareExecuteQuery("SELECT GROUP_CONCAT(`absent_id`) as `ids` FROM `active_holiday_cover` WHERE `cover_id` = ?",'i',[$thisUser->id])->fetch_assoc()['ids'];
+		$users = ($users != "")?explode(",",$users):[];
+		$users[] = $thisUser->id;		
+		$users = implode(",",$users);
 		if ($thisUser->hasPermission("restrictedaccess")){
-			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString = "(`default_salesman_id` = $thisUser->id OR `id` IN (728)) AND";
+			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString = "(`default_salesman_id` IN ($users) OR `id` IN (728)) AND";
 		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(
@@ -1872,6 +1858,7 @@ use Ramsey\Uuid\Type\Decimal;
 			str_replace(" & "," and ",$name),
 			str_replace("&"," & ",$name)
 		);
+		
 		$creditSearchControl = "";
 		if ($creditSearch == false) $creditSearchControl ="AND (`credit_terms` > -1 || `credit_enabled` = 1)";
 		$disabledSearchControl = "AND `disabled` <> '1'";
@@ -1917,8 +1904,9 @@ use Ramsey\Uuid\Type\Decimal;
 		return $price*$percent;	
 	}
 	function loggedDataChange($type,$entity_id,$body){
+		if (!$body) $body = "";
 		$check = prepareExecuteQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
-		if (!$check || $check['body'] != $body)
+		if ((!$check && $body != "") || ($check['body'] != $body))
 		{
 			Log::debug(new \Exception(),[$type,$entity_id,$body]);
 			$userid = $_SESSION['USER'];
@@ -1926,5 +1914,30 @@ use Ramsey\Uuid\Type\Decimal;
 			prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
 		}
 	}
-	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];	
+	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
+	function getIntakeLastUpdated($id)	{
+		$lastUpdated = null;
+		$intake =prepareExecuteQuery("SELECT `created_at`,`updated_at` FROM `intake` WHERE `id` = ?",'i',[$id])->fetch_assoc();
+
+		$created_at = ($intake['created_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$intake['created_at'])->getTimestamp():null;
+		$posLastUpdated = ($intake['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$intake['updated_at'])->getTimestamp():null;
+		if ($created_at) $lastUpdated = $created_at;
+		if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+
+		$pallets = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) as `ids`,MAX(`created_at`) as `created_at`,MAX(`updated_at`) as `updated_at` FROM `pallet` WHERE intake_id = ?",'i',[$id])->fetch_assoc();
+		
+		$created_at = ($pallets['created_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$pallets['created_at'])->getTimestamp():null;
+		$posLastUpdated = ($pallets['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$pallets['updated_at'])->getTimestamp():null;
+		if ($created_at && $created_at > $lastUpdated) $lastUpdated = $created_at;
+		if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+
+		$products = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) as `ids`,MAX(`created_at`) as `created_at`,MAX(`updated_at`) as `updated_at` FROM `product` WHERE pallet_id IN ($pallets[ids])")->fetch_assoc();
+		
+		$created_at = ($products['created_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['created_at'])->getTimestamp():null;
+		$posLastUpdated = ($products['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['updated_at'])->getTimestamp():null;
+		if ($created_at && $created_at > $lastUpdated) $lastUpdated = $created_at;
+		if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+
+		return ($lastUpdated)?DateTime::createFromFormat("U",$lastUpdated)->format('Y-m-d H:i:s'):'';
+	}
 ?>

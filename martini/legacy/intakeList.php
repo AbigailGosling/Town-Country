@@ -1,5 +1,10 @@
 <?php
     include('functions.php');
+	$showDeleted = 0;
+	if (request()->input('showDeleted') !== null)
+	{
+		$showDeleted = request()->input('showDeleted');
+	}
 ?>
 <!doctype html>
 <html class="int">
@@ -26,6 +31,8 @@
 		<input type="hidden" id="toSkipCount" value="0">
 		<input type="hidden" id="totalRowsCount" value="0">
 		<a href="intakeList.php" class="resetBtn">Clear</a>
+		<input type="button" value="<?php echo ($showDeleted == 1)?"Hide":"Show"; ?> Deleted" style="width:110px;height:30px;"
+						onclick='window.location.href = window.location.href.split("?")[0] + "?showDeleted=" + <?php echo ($showDeleted == 1)?0:1; ?>'/>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
 			
@@ -87,7 +94,7 @@
             xhttp.open("POST", "ajax/intakePageList.php", true);
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-            xhttp.send("searchterm=" + val);
+            xhttp.send("searchterm=" + val+"&showDeleted="+<?php echo $showDeleted; ?>);
         }
 
 		$(document).ready(function(){
@@ -148,7 +155,7 @@
 			xhttp.open("POST", "ajax/page-list/intakeList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send("toSkip=" + toSkip);
+			xhttp.send("toSkip=" + toSkip+"&showDeleted="+<?php echo $showDeleted; ?>);
 		}
 
 		function loadSearchDate(month, year){

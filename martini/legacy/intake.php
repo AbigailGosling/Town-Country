@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Auth;
 	$intake_id = request()->input('id');	
 	
 	$intake = getIntake($id);
-	
+	$dateCreated = $intake['created_at'];
+	$lastUpdated = getIntakeLastUpdated($id);
 	$userX = "SELECT * FROM `users` WHERE id=?";
 	$userY = prepareExecuteQuery($userX,'i',[$userid]);
 	$user = mysqli_fetch_array($userY);
@@ -226,7 +227,25 @@ use Illuminate\Support\Facades\Auth;
 			</div>
 		</div>
 		<?php } ?>
-		
+		<?php if($dateCreated != '' || $lastUpdated != ''){ ?>
+		<div class="overview_block">
+			<div>
+				<label>Date Created</label>
+				<?php echo ($dateCreated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$dateCreated)->format('d/m/Y H:i:s'):"Unknown"; ?>
+			</div>
+		</div>
+		<div class="overview_block">
+			<div>
+				<label>Last Updated</label>
+				<?php echo ($lastUpdated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$lastUpdated)->format('d/m/Y H:i:s'):"Unknown"; ?>
+			</div>
+		</div>
+		<div class="overview_block">
+			<div>
+				
+			</div>
+		</div>
+		<?php } ?>
 		<div style="clear:both;"></div>
 	</div>
 	<br/><br/>
@@ -350,7 +369,7 @@ use Illuminate\Support\Facades\Auth;
 				<th style="background:#3faddd;">Comments</th>
  				<th style="background:#3faddd;">Total Weight</th>
  				<th style="background:#3faddd;">Cost</th>
-				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;">Actual Cost</th><?php } ?>
+				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
 			</tr>
 			<?php
 				
@@ -496,11 +515,11 @@ use Illuminate\Support\Facades\Auth;
 						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-					<td>
+					<td style="width: 1px;">
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-						<input type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
+						<input style="width: 90px; font-size: 8px" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
 					<?php } ?>
 				</tr>

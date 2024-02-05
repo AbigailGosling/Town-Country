@@ -31,9 +31,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Intake extends Model
 {
-protected $connection = 'tandc_live';
+	protected $connection = 'tandc_live';
 	protected $table = 'intake';
-	public $timestamps = false;
+	public $timestamps = true;
 
 	protected $casts = [
 		'returned' => 'int'

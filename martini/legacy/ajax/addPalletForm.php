@@ -348,142 +348,7 @@ use App\Models\Site;
 	}, 1000);
 	
 	function addPalletDuplicate(){
-		var best_by = $('#best_by').val();
-		var best_by_range_from = $('#best_by_range_from').val();
-		var best_by_range_to = $('#best_by_range_to').val();
-		var quantityWeight = $('#quantityWeight').val();
-		
-		var ubbb = $('#ubbb').val();
-		
-		var brand_id = $('#brand_id').val();
-		if(brand_id == '--'){
-			brand_id = '';
-		}
-		
-		var species_id = $('#species_id').val();
-		if(species_id == '--'){
-			species_id = '';
-		}
-		
-		var cut_id = $('#cut_id').val();
-		if(cut_id == '--'){
-			cut_id = '';
-		}
-		
-		var unit = $('#unit').val();
-		if(unit == '--'){
-			unit = '';
-		}
-		
-		
-		var good = 1;
-		var msg = "";
-		
-		if(best_by == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#best_by').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#best_by').css('border','1px solid grey');
-		}
-		
-		if(ubbb != 2){
-		
-			if(best_by_range_from == ''){
-				msg = "The highlighted fields cannot be blank!";
-				$('#best_by_range_from').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#best_by_range_from').css('border','1px solid grey');
-			}
-			
-			if(best_by_range_to == ''){
-				msg = "The highlighted fields cannot be blank!";
-				$('#best_by_range_to').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#best_by_range_to').css('border','1px solid grey');
-			}
-			var from = best_by_range_from.split("/");
-			from = new Date(from[2],from[1],from[0]);
-			var to = best_by_range_to.split("/");
-			to = new Date(to[2],to[1],to[0]);
-			if (from > to)
-			{
-				$('#best_by_range_from').css('border','2px solid red');
-				$('#best_by_range_to').css('border','2px solid red');
-				msg = "From date cannot be after To date!";
-				good = 0;
-			}
-		}
-		
-		if(brand_id == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#brand_id').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#brand_id').css('border','1px solid grey');
-		}
-		
-		if(species_id == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#species_id').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#species_id').css('border','1px solid grey');
-		}
-		
-		if(cut_id == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#cut_id').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#cut_id').css('border','1px solid grey');
-		}
-		
-		if(unit == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#unit').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#unit').css('border','1px solid grey');
-		}
-		
-		
-		if(quantityWeight == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#quantityWeight').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#quantityWeight').css('border','1px solid grey');
-		}
-		
-		if($('#individualweights').val() == 'C'){
-			$('.multiweight').each(function(){
-				if($(this).val() == ''){
-					good = 0;
-					$(this).css('border','2px solid red');
-					msg = "The highlighted fields cannot be blank!";
-				}else{
-					$(this).css('border','1px solid grey');
-				}
-			});
-		}
-		if($('#storage_location').val() == undefined || $('#storage_location').val() == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('#storage_location').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('#storage_location').css('border','1px solid grey');
-		}
-		if($('[name="temperature_id"]').val() == undefined || $('[name="temperature_id"]').val() == ''){
-			msg = "The highlighted fields cannot be blank!";
-			$('[name="temperature_id"]').css('border','2px solid red');
-			good = 0;
-		}else{
-			$('[name="temperature_id"]').css('border','1px solid grey');
-		}
-		$('#msgNotice2').html(msg);
+		var good = validateForm();
 		
 		if(good == 1){
 			
@@ -559,9 +424,7 @@ use App\Models\Site;
 		
 
 	}
-	
-	function addPallet(){
-		
+	function validateForm() {
 		var best_by = $('#best_by').val();
 		var best_by_range_from = $('#best_by_range_from').val();
 		var best_by_range_to = $('#best_by_range_to').val();
@@ -755,6 +618,11 @@ use App\Models\Site;
 			$('[name="temperature_id"]').css('border','1px solid grey');
 		}
 		$('#msgNotice2').html(msg);
+		return good;
+	}
+	function addPallet(){
+		
+		var good = validateForm();
 		
 		if(good == 1){
 			$.ajax({ // make an AJAX request
