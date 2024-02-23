@@ -115,6 +115,9 @@
 	$colNames[] = '`delivery_days` = ?';
 	$colValue[] = $days;
 
+	$colNames[] = '`sage_no` = ?';
+	$colValue[] = request()->input('sage_no');
+
 	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";
 	$y = loggedQuery($x,str_repeat("s",count($colValue)),$colValue);

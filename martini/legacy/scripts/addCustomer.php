@@ -114,6 +114,9 @@
 	$colNames[] = '`delivery_days`';
 	$colValue[] = $days;
 
+	$colNames[] = '`sage_no`';
+	$colValue[] = request()->input('sage_no');
+
 	$x = "INSERT INTO `customers` (".implode(",",$colNames).") 
 	VALUES
 	(".implode(",",array_fill(0,count($colNames),"?")).");";
