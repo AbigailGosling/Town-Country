@@ -66,6 +66,8 @@
 				}
 			?>
 		</select>
+		<label>Product Temp (°C)</label>
+		<input name="product_temp" id="product_temp" type="text" required>
 		<label>comments</label>
 		<textarea name="comments"></textarea>
 		
@@ -373,7 +375,14 @@ $.ajaxSetup({
 			$('#nationality_id').css('border','1px solid grey');
 		}
 			
-		
+		if($('[name="temperature_id"]').val() == undefined || $('[name="temperature_id"]').val() == ''){
+			msg = "The highlighted fields cannot be blank!";
+			$('[name="temperature_id"]').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('[name="temperature_id"]').css('border','1px solid grey');
+		}
+
 		if(best_by == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#best_by').css('border','2px solid red');
@@ -520,11 +529,6 @@ $.ajaxSetup({
 					// $('.palletnotepopup').fadeIn();
 				}
 			});
-			
-			var xhttp = new XMLHttpRequest();
-			xhttp.open("POST", $(formName).attr('action'), true);
-			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send($(formName).serialize());
 		}
 		
 		// console.log(msg);

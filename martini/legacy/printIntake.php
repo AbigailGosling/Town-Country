@@ -3,7 +3,8 @@
 	
 	$id = request()->input('intake_id');
 	$intake_id = request()->input('intake_id');	
-	
+	$dateCreated = $intake['created_at'];
+	$lastUpdated = getIntakeLastUpdated($id);
 	$types = Array('UB','BB','N/A','PB','EX');
 	
 	$intake = getIntake($id);
@@ -95,11 +96,30 @@
 			</div>
 		</div>
 		<?php } ?>
-		
+		<?php if($dateCreated != '' || $lastUpdated != ''){ ?>
+		<div class="overview_block">
+			<div>
+				<label>Date Created</label>
+				<?php echo ($dateCreated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$dateCreated)->format('d/m/Y H:i:s'):"Unknown"; ?>
+			</div>
+		</div>
+		<div class="overview_block">
+			<div>
+				<label>Last Updated</label>
+				<?php echo ($lastUpdated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$lastUpdated)->format('d/m/Y H:i:s'):"Unknown"; ?>
+			</div>
+		</div>
+		<div class="overview_block">
+			<div>
+				
+			</div>
+		</div>
+		<?php } ?>
 		<div style="clear:both;"></div>
 	</div>
 	<div class="clearfix"></div>
 	<br/><br/>
+	<table style="display:inline-block;">
 	<table border="1" cellpadding="5" style="display:inline-block;">
 		<tr>
 			<td colspan="4" align="center"><b>Overview</b></td>
@@ -164,7 +184,21 @@
 			<script> $('#intakeTotalWeight').text('<?php echo number_format($totalWeight, 3, '.', ''); ?>kg'); </script>
 		</tr>
 	</table>
-
+	<table border="1" height="100%" cellpadding="5" style="display:inline-block;">
+		<tr>
+			<td colspan="2" align="center"><b>Checked By</b></td>
+		</tr>
+		<tr><td style="padding-bottom:4.3rem" colspan="2">&nbsp;</td></tr>
+		<tr>
+			<td >Print</td>
+			<td width="80%"></td>
+		</tr>
+		<tr>
+			<td >Date</td>
+			<td width="80%"></td>
+		</tr>
+	</table>
+	</table>
 	<div id="product_list">
  			<?php
 				$y_pallets = prepareExecuteQuery("SELECT id FROM `pallet` WHERE intake_id=? ORDER BY id ASC",'i',[$intake_id]);

@@ -29,7 +29,7 @@ class Weight extends Model
 {
 protected $connection = 'tandc_live';
 	protected $table = 'weights';
-	public $timestamps = false;
+	public $timestamps = true;
 
 	protected $casts = [
 		'product_id' => 'int',

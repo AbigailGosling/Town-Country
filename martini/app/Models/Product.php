@@ -46,7 +46,7 @@ class Product extends Model
 {
 protected $connection = 'tandc_live';
 	protected $table = 'product';
-	public $timestamps = false;
+	public $timestamps = true;
 
 	protected $casts = [
 		'pallet_id' => 'int',

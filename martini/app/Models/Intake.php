@@ -26,14 +26,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $security_id
  * @property string|null $notes
  * @property Carbon|null $date_paid
+ * @property boolean $approved
+ * @property int $approved_by
+ * @property Carbon|null $approved_date
  *
  * @package App\Models
  */
 class Intake extends Model
 {
-protected $connection = 'tandc_live';
+	protected $connection = 'tandc_live';
 	protected $table = 'intake';
-	public $timestamps = false;
+	public $timestamps = true;
 
 	protected $casts = [
 		'returned' => 'int'
@@ -56,6 +59,9 @@ protected $connection = 'tandc_live';
 		'date_received',
 		'security_id',
 		'notes',
-		'date_paid'
+		'date_paid',
+		'approved',
+		'approved_by',
+		'approved_date',
 	];
 }

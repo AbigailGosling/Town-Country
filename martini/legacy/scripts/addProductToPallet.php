@@ -11,6 +11,7 @@
 	$cut_id = request()->input('cut_id');
 	
 	$best_by = request()->input('best_by');
+	$product_temp = request()->input('product_temp');
 	$range_from = request()->input('best_by_range_from');
 	$range_to = request()->input('best_by_range_to');
 	$range_extension = request()->input('best_by_range_extension');
@@ -26,6 +27,7 @@
 	$pallet_tare = request()->input('pallet_tare');
 	$tare_per_carton = request()->input('tare_per_carton');
 	$number_of_cartons = request()->input('number_of_cartons');
+	$comments = request()->input('comments');
 	
 	
 	$akg = request()->input('akg');
@@ -34,8 +36,8 @@
 	$quantity=request()->input('quantity'); # Fix the loop from starting at 0
 	$quantity++;
 	
-	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-	$y = prepareExecuteQuery($x,'sssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit]);
+	$x = "INSERT INTO `product` (akg,pallet_id,cut_id,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by,product_temp,comments) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	$y = prepareExecuteQuery($x,'ssssssssssssss',[$akg,$pallet_id,$cut_id,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by,$product_temp,$comments]);
 			
 	$product_id = $mysqli->insert_id; 
 	

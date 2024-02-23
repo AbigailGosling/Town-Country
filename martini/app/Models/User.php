@@ -110,16 +110,18 @@ class User extends Authenticatable
     }
     public function canViewCustomer(int $customer_id)
     {
-        if ($this->hasPermission("restrictedaccess") == false) return true;
-        $c = Customer::find($customer_id);
-        return ($c->default_salesman_id == $this->id);
+        return in_array($customer_id,$this->listViewableCustomers());
     }
     public function listViewableCustomers() 
     {
         if ($this->hasPermission("restrictedaccess") == false)
             return Customer::all()->pluck('id')->toArray();
         else
-            return Customer::where('default_salesman_id',$this->id)->pluck('id')->toArray();
+        {
+            $users = ActiveHolidayCover::where("cover_id",$this->id)->pluck('absent_id')->toArray();
+            $users[] = $this->id;
+            return Customer::whereIn('default_salesman_id',$users)->pluck('id')->toArray();
+        }
     }
     public function isAdmin()
     {

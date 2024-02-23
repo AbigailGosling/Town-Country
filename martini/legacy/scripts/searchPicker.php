@@ -59,7 +59,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 	        <th class="searchRContent__date-range">Date Range</th>
 	        <th>Volume</th>
 	        <th>Cost</th>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th>Actual Cost</th><?php } ?>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th> 
         </tr>
     </thead>
@@ -144,6 +144,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $knownCombo = [];
     foreach ($products2 as $productRow)
     {
+        $isDeleted = prepareExecuteQuery("SELECT `deleted` from `intake` WHERE id = ?",'i',[$productRow['intake_id']])->fetch_assoc()['deleted'];
+        if ($isDeleted == 1) continue;
         $alasCombo = $productRow['intake_id'] . "-" . $productRow['cut_id'] . "-" . $productRow['nationality_id'];
         if (!array_key_exists($alasCombo,$knownCombo))
         {
@@ -430,7 +432,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
  				?></td>
 			<td class="bold"><?php if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
             <td></td>
         </tr>
     <?php  ?>

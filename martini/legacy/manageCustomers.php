@@ -173,6 +173,10 @@
 					<td class="label"><label>ID Number</label></td>
 					<td><input type="text" class="input" name="asdf" value="<?php echo $data['id']; ?>" style="background:#fff;" disabled></td>
 				</tr>
+				<tr>
+					<td class="label"><label>Sage Number</label></td>
+					<td><input type="text" class="input" name="sage_no" value="<?php echo $data['sage_no']; ?>" style="background:#fff;"></td>
+				</tr>
 				<tr height="40"><td colspan="2"></td></tr>	
 				<tr>
 					<td class="label"><label>Company Reg No.</label></td>

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 	require(__DIR__.'/../functions.php');
 	
 	$term = request()->input('searchterm');
-	
+	$showDeleted = (request()->has("showDeleted") && request()->input('showDeleted') == 1)?"":"`deleted` = 0 AND";
 	if($term != ''){
 		
 		$SUPPLIER_CUSTOMER_IDS = array(0);
@@ -31,9 +31,9 @@ use Illuminate\Support\Facades\Auth;
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
 			
-			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE  date_received LIKE ? ORDER BY date_received DESC, id DESC",'s',['%'.$termDate.'%']); 
+			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted date_received LIKE ? ORDER BY date_received DESC, id DESC",'s',['%'.$termDate.'%']); 
 		}else{
-			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE id=? OR vehicle_reg LIKE ? OR  id LIKE ? OR  delivery_note_number LIKE ? OR ((supplier_id <> '') && supplier_id IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC"
+			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted id=? OR vehicle_reg LIKE ? OR  id LIKE ? OR  delivery_note_number LIKE ? OR ((supplier_id <> '') && supplier_id IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC"
 		,'ssss',[$term,'$term%','$term%','$term%']);
 		}
 
@@ -93,7 +93,7 @@ use Illuminate\Support\Facades\Auth;
 	}else{ ?>
 		<?php
 		
-		$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned ='0' ORDER BY date_received DESC");
+		$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted returned ='0' ORDER BY date_received DESC");
 		while($intake = mysqli_fetch_array($searchResults)){
 		    $date_received = date('d/m/Y', strtotime($intake['date_received']));
 		?>

@@ -3,8 +3,9 @@
     
     $toSkip = request()->input('toSkip');
     $limit = 80;
+    $showDeleted = (request()->has("showDeleted") && request()->input('showDeleted') == 1)?"":"WHERE `deleted` = 0";
 
-    $queryResult = prepareExecuteQuery("SELECT * FROM `intake` ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);
+    $queryResult = prepareExecuteQuery("SELECT * FROM `intake` $showDeleted ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);
     $count = mysqli_num_rows($queryResult);
 
     $newSkipCount = ($toSkip + $count);
