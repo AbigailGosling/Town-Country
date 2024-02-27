@@ -42,17 +42,23 @@ use Illuminate\Support\Facades\Auth;
 			$userid = $_SESSION['USER'];
  			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%Y') ASC";
 			$y = prepareExecuteQuery($x);
-			$usermodel = User::find(Auth::id());
-			while($row = mysqli_fetch_assoc($y)){
-                $product_ids = array();
-                
-                $picksheetid = $row['id'];
+            $pickIDs = array();
+            while($row = mysqli_fetch_assoc($y)){
+                $pickIDs[] = $row['id'];
+            }
+            // set the pointer back to the beginning
+            mysqli_data_seek($y, 0);
 
-                $result_product = prepareExecuteQuery("SELECT product_id FROM `pickerItems` WHERE pickersheet_id='$picksheetid' GROUP BY product_id");
-                while($product = mysqli_fetch_assoc($result_product)){
-                    $product_ids[]=$product['product_id'];
-                } 
-                             
+            $result_product = prepareExecuteQuery("SELECT `pickersheet_id`,GROUP_CONCAT(DISTINCT `product_id`) as `prod_ids` FROM `pickerItems` WHERE pickersheet_id IN (".implode(",",$pickIDs).") GROUP BY `pickersheet_id`");
+            $allProdsByPick = array();
+            while($row = mysqli_fetch_assoc($result_product)){
+                $allProdsByPick[$row['pickersheet_id']] = $row['prod_ids'];
+            }
+			$usermodel = User::find(Auth::id());
+			while($row = mysqli_fetch_assoc($y)){               
+                $picksheetid = $row['id'];
+                if ($allProdsByPick[$picksheetid] == null) continue;
+                $product_ids = explode(",",$allProdsByPick[$picksheetid]);       
                 if (count($product_ids)>0)
                 {
                     $product_ids = implode(',', $product_ids);
