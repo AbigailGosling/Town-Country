@@ -1,6 +1,6 @@
 <?php
 include_once(__DIR__.'/../functions.php');
-$sql = "SELECT `pickerSheets`.*,`customers`.`businessname` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
+$sql = "SELECT `pickerSheets`.*,`customers`.`businessname`,`customers`.`id` as `customer_id`,`customers`.`sage_no` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
 if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="") 
 {
     $start = request()->input('start');
@@ -34,6 +34,8 @@ foreach ($list as $item)
     $id = $item['id'];
     $customername = $item['businessname'];
     $assembledate = $item['estimated_delivery_date'];
+    $custID = $item['customer_id'];
+    $sageNo = $item['sage_no'];
     $value = number_format((double)invoiceTotal($item['id']), 2, '.', '');
     $href = '';
     $status = '';
@@ -63,7 +65,7 @@ foreach ($list as $item)
             $rowStyle = ' style="background-color: #bebebe;"';
         }
     }
-    $output .= "<tr$rowStyle><td align='center'><a href='$href' target='_blank'>$id</a></td><td align='left'>$status</td><td align='left'>$customername</td><td align='right'>$assembledate</td><td align='right'>£$value</td><td align='center' style='font-size: 18px;'><div onclick='ticked($id)' style='margin: 0 10px 0 10px; height: 32px; width: 32px; border: 1px solid black;'><i id='img-mail-selector-$id' class='fa fa-check img-mail-selector' style='height:100%; margin-top: 5px;$showHide'></i></div></td></tr>";
+    $output .= "<tr$rowStyle><td align='center'><a href='$href' target='_blank'>$id</a></td><td align='left'>$status</td><td align='left'>$customername</td><td align='center'>$custID</td><td align='center'>$sageNo</td><td align='right'>$assembledate</td><td align='right'>£$value</td><td align='center' style='font-size: 18px;'><div onclick='ticked($id)' style='margin: 0 10px 0 10px; height: 32px; width: 32px; border: 1px solid black;'><i id='img-mail-selector-$id' class='fa fa-check img-mail-selector' style='height:100%; margin-top: 5px;$showHide'></i></div></td></tr>";
 }
 $tracker[]=$output;
 echo json_encode($tracker);

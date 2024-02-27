@@ -118,7 +118,7 @@ class User extends Authenticatable
             return Customer::all()->pluck('id')->toArray();
         else
         {
-            $users = ActiveHolidayCover::where("cover_id",$this->id)->pluck('id')->toArray();
+            $users = ActiveHolidayCover::where("cover_id",$this->id)->pluck('absent_id')->toArray();
             $users[] = $this->id;
             return Customer::whereIn('default_salesman_id',$users)->pluck('id')->toArray();
         }

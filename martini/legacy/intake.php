@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Auth;
 			if ($cost == 0) $cost = null;
 			if ($price == 0) $price = null;
 			$weightnote = request()->input('weightnote')[$i];
-			if($product_id != ''){
+			if($product_id != '' && $intake['approved']==1){
 				if (User::find(Auth::id())->hasPermission("viewcosts")) 
 				{
 					$x = "UPDATE `product` SET cost=?, price=?, weightnote=? WHERE id IN $product_id";
@@ -58,6 +58,11 @@ use Illuminate\Support\Facades\Auth;
 					loggedDataChange('product_cost',$iProdID,$cost);
 					if (User::find(Auth::id())->hasPermission("viewcosts")) loggedDataChange('product_actual_cost',$iProdID,$price);
 				}
+			}
+			else {
+				$x = "UPDATE `product` SET weightnote=? WHERE id IN $product_id";
+				$y = prepareExecuteQuery($x,'s',[$weightnote]);
+				loggedDataChange('product_note',$iProdID,$weightnote);
 			}
 		}
 
@@ -347,6 +352,19 @@ use Illuminate\Support\Facades\Auth;
 	<?php } ?>
 	
 	<br/>
+	<table border="1" cellpadding="5" width="100%">
+		<tr>
+			<td colspan="3" align="center"><b>Intake Approval</b></td>
+		</tr>
+		<tr>
+		<?php if ($intake['approved']==1) {?>
+			<td style="width:33%"><b style="color:green">Intake Approved</b></td><td align="center" style="width:33%"><?php echo ($intake['approved_by'] && $intake['approved_by']>-1)?User::find($intake['approved_by'])->name:"Unknown";?></td><td align="right" style="width:33%"><?php echo DateTime::createFromFormat('Y-m-d H:i:s',$intake['approved_date'])->format('d/m/Y H:i:s');?></td>
+		<?php } else {?>
+			<td><b style="color:red">Intake Not Yet Approved</b></td><?php if (User::find(Auth::id())->hasPermission("approve_intake")) {?><td style="width:50%" align="right"><form method="POST" action="scripts/approveIntake.php"><input type="hidden" name="_token" value="<?php echo csrf_token();?>"><input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>"><input type="submit" value="Approve Intake"></form></td><?php }?>
+		<?php } ?>
+		</tr>
+	</table>
+	<br/>
 	<?php
 		$x = "SELECT * FROM `users` WHERE id=?";
 		$y = prepareExecuteQuery($x,'i',[$userid]);
@@ -368,8 +386,10 @@ use Illuminate\Support\Facades\Auth;
 				<th style="background:#3faddd;">Cases</th>
 				<th style="background:#3faddd;">Comments</th>
  				<th style="background:#3faddd;">Total Weight</th>
+				<?php if ($intake['approved']==1) {?>
  				<th style="background:#3faddd;">Cost</th>
 				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
+				<?php } ?>
 			</tr>
 			<?php
 				
@@ -506,12 +526,13 @@ use Illuminate\Support\Facades\Auth;
 							}
 						}
 					?>
+					<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 					</td>
+					<?php if ($intake['approved']==1) {?>
 					<td>
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
 						<?php } ?>
-						<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
@@ -522,14 +543,21 @@ use Illuminate\Support\Facades\Auth;
 						<input style="width: 90px; font-size: 8px" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
 					<?php } ?>
+					<?php } ?>
 				</tr>
 			<?php } ?>
 			<tr>
 				<td colspan="2">Total</td>
 				<td align="center"><?php echo $totalCases; ?></td>
+				<?php if ($intake['approved']==1) {?>
 				<td></td>
+				<?php } else {?>
+				<td align="right"><input type="submit" value="Save & Update"></td>
+				<?php }?>
 				<td align="right"><?php echo number_format($totalWeight, 3, '.', ''); ?>kg</td>
+				<?php if ($intake['approved']==1) {?>
 				<td colspan="3" align="right"><input type="submit" value="Save & Update"></td>
+				<?php }?>
 			</tr>
 		</table>
 		</form>		
@@ -714,7 +742,7 @@ use Illuminate\Support\Facades\Auth;
                     $returnedIntakeID = intakeIDfromPalletID($row['pallet_id']);
 
                     $xo = "SELECT id FROM `pallet` WHERE intake_id=?";
-                    $yo = prepareExecuteQuery($xo,'s',[$returnedIntakeID]);
+                    $yo = prepareExecuteQuery($xo,'s',["$returnedIntakeID"]);
                     $countPallets = mysqli_num_rows($yo);
                     
                     $qPallets = array();
