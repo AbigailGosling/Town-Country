@@ -6,13 +6,13 @@ use App\Http\Controllers\CutGroupNationalityDateController;
 use App\Http\Controllers\DropdownController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,6 +74,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/customers/overrides/edit/{customer}', [CustomerOverridesController::class, 'edit'])->name('overrides.edit');
     Route::post('/customers/overrides/update_credit/{customer}', [CustomerOverridesController::class, 'updateCredit'])->name('overrides.update_credit');
     Route::post('/customers/overrides/update_del/{customer}', [CustomerOverridesController::class, 'updateDel'])->name('overrides.update_del');
+
+    Route::get('/report/{report}/{report_version}', [ReportController::class, 'show']);
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\Report;
 use App\Models\ReportColumn;
+use App\Models\ReportVersion;
+use App\Models\ReportVersionColumn;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -29,14 +32,13 @@ return new class extends Migration
         Schema::connection("tandc_live")->create('report_columns', function (Blueprint $table) {
             $table->id();
             $table->string("label");
-            $table->string("fetch_type");
             $table->string("data_type");
             $table->string("processing_type");
             $table->string("html_header");
             $table->string("html_cell");
             $table->string("html_footer");
-            $table->json("pointers")->nullable();
-            $table->json("metadata")->nullable();
+            $table->text("pointers")->nullable();
+            $table->text("metadata")->nullable();
         });
         Schema::connection("tandc_live")->create('report_version_column', function (Blueprint $table) {
             $table->id();
@@ -47,118 +49,335 @@ return new class extends Migration
         $columns = array(
             array(  
                 "label"             => "NOTE",
-                "fetch_type"        => "",
                 "data_type"         => "string",
                 "processing_type"   => "item_type",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
                 "pointers"          => NULL,
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "User",
-                "fetch_type"        => "db",
                 "data_type"         => "string",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["user_name"],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["users.name"],
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "Date Created",
-                "fetch_type"        => "db",
                 "data_type"         => "date",
                 "processing_type"   => "date_format",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["date_created"],
-                "metadata"          => ['format_from' => "", 'format_to' => ""],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["pickerSheets.date"],
+                "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y H:i:s"],
             ),
             array(  
                 "label"             => "Date Assembled",
-                "fetch_type"        => "db",
                 "data_type"         => "date",
                 "processing_type"   => "date_format",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["date_assembled"],
-                "metadata"          => ['format_from' => "", 'format_to' => ""],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["pickerSheets.date_completed"],
+                "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y H:i:s"],
             ),
             array(  
                 "label"             => "Date Delivered",
-                "fetch_type"        => "db",
                 "data_type"         => "date",
                 "processing_type"   => "date_format",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["date_delivered"],
-                "metadata"          => ['format_from' => "", 'format_to' => ""],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["pickerSheets.estimated_delivery_date"],
+                "metadata"          => ['format_from' => "d/m/Y", 'format_to' => "d/m/Y"],
             ),
             array(  
                 "label"             => "Customer",
-                "fetch_type"        => "db",
                 "data_type"         => "string",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["customer_name"],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["customers.businessname"],
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "Invoice",
-                "fetch_type"        => "db",
                 "data_type"         => "int",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%d</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["invoice_id"],
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "",
+                "pointers"          => ["pickerSheets.id"],
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "Intake ID",
-                "fetch_type"        => "db",
                 "data_type"         => "int",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%d</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["intake_id"],
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "",
+                "pointers"          => ["intake.id"],
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "Transport",
-                "fetch_type"        => "db",
                 "data_type"         => "string",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%s</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["transport_name"],
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => NULL,//["transport.name"],
                 "metadata"          => NULL,
             ),
             array(  
                 "label"             => "Pallet ID",
-                "fetch_type"        => "db",
                 "data_type"         => "int",
                 "processing_type"   => "none",
-                "html_header"       => "<th>%s</th>",
-                "html_cell"         => "<td>%d</td>",
-                "html_footer"       => "<th></th>",
-                "pointers"          => ["pallet_id"],
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "",
+                "pointers"          => ["pallet.id"],
                 "metadata"          => NULL,
             ),
+            array(  
+                "label"             => "Species",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["species.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Group",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["cutgroups.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Cut",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["cuts.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Brand",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["brands.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Supplier",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["supplier.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Nationality",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["nationality.name"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Temp",
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%s",
+                "html_footer"       => "",
+                "pointers"          => ["temperature.temperature"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => "Cases",
+                "data_type"         => "int",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["weights.rows"],
+                "metadata"          => ['filters'=>['product.unit'=>'C'],'footer'=>'array_sum'],
+            ),
+            array(  
+                "label"             => "G/T",
+                "data_type"         => "double",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["product.ubbb"],
+                "metadata"          => ['filters'=>['product.unit'=>'P'],'footer'=>'array_sum'],
+            ),            
+            array(  
+                "label"             => "PPC",
+                "data_type"         => "int",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["product.ubbb"],
+                "metadata"          => ['filters'=>['product.unit'=>'PPC'],'footer'=>'array_sum'],
+            ),        
+            array(  
+                "label"             => "kg",
+                "data_type"         => "double",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["weights.weight_tear"],
+                "metadata"          => ['footer'=>'array_sum'],
+            ),        
+            array(  
+                "label"             => "Cost/Unit",
+                "data_type"         => "currency",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["product.cost"],
+                "metadata"          => NULL,
+            ),                    
+            array(  
+                "label"             => "Cost Value",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => null,
+                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Cost/Unit"]],'footer'=>'array_sum'],
+            ),
+            array(  
+                "label"             => "Sell/Unit",
+                "data_type"         => "currency",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["pickerItems.price"],
+                "metadata"          => NULL,
+            ),                       
+            array(  
+                "label"             => "Sell Value",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => NULL,
+                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Sell/Unit"]],'footer'=>'array_sum'],
+            ),
+            array(  
+                "label"             => "Profit",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => NULL,
+                "metadata"          => ['calculate'=>['operator'=>'-','args'=>["this.Sell Value","this.Cost Value"]],'footer'=>'array_sum'],
+            ), 
+            array(  
+                "label"             => "Actual Cost/Unit",
+                "data_type"         => "currency",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["product.price"],
+                "metadata"          => ['fallback'=>'this.Cost/Unit'],
+            ),                    
+            array(  
+                "label"             => "Actual Cost Value",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => NULL,
+                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Actual Cost/Unit"]],'footer'=>'array_sum'],
+            ),
+            array(  
+                "label"             => "Actual Sell/Unit",
+                "data_type"         => "currency",
+                "processing_type"   => "none",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => ["pickerItems.price"],
+                "metadata"          => NULL,
+            ),                       
+            array(  
+                "label"             => "Actual Sell Value",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => NULL,
+                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Actual Sell/Unit"]],'footer'=>'array_sum'],
+            ),
+            array(  
+                "label"             => "Actual Profit",
+                "data_type"         => "currency",
+                "processing_type"   => "calculate",
+                "html_header"       => "%s",
+                "html_cell"         => "%d",
+                "html_footer"       => "%d",
+                "pointers"          => NULL,
+                "metadata"          => ['calculate'=>['operator'=>'-','args'=>["this.Actual Sell Value","this.Actual Cost Value"]],'footer'=>'array_sum'],
+            ), 
         );
         foreach ($columns as $column){
             $rc  = new ReportColumn($column);
             $rc->save();
+        }
+        $r = new Report();
+        $r->author_id = 54;
+        $r->name = "master";
+        $r->save();
+        $rv = new ReportVersion();
+        $rv->report_id = $r->id;
+        $rv->version = 1;
+        $rv->save();
+        $order = 0;
+        foreach(ReportColumn::all() as $rc) {
+            $rvc = new ReportVersionColumn();
+            $rvc->report_version_id = $rv->id;
+            $rvc->report_column_id = $rc->id;
+            $rvc->order = $order;
+            $rvc->save();
+            $order++;
         }
     }
 
@@ -172,6 +391,6 @@ return new class extends Migration
         Schema::connection("tandc_live")->dropIfExists('reports');
         Schema::connection("tandc_live")->dropIfExists('report_versions');
         Schema::connection("tandc_live")->dropIfExists('report_columns');
-        Schema::connection("tandc_live")->dropIfExists('report_version_columns');
+        Schema::connection("tandc_live")->dropIfExists('report_version_column');
     }
 };

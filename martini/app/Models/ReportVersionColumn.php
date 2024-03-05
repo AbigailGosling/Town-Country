@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class ReportColumn extends Model
+class ReportVersionColumn extends Model
 {
     use HasFactory;
     protected $connection = 'tandc_live';

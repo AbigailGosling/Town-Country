@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ReportHelper;
 use App\Models\Report;
+use App\Models\ReportColumn;
+use App\Models\ReportVersion;
+use App\Models\ReportVersionColumn;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -44,9 +49,16 @@ class ReportController extends Controller
      * @param  \App\Models\Report  $report
      * @return \Illuminate\Http\Response
      */
-    public function show(Report $report)
+    public function show(Report $report,ReportVersion $report_version)
     {
-        //
+        $reportColIDs = ReportVersionColumn::where(["report_version_id"=>$report_version->id])->orderBy("order")->get()->pluck("report_column_id")->toArray();
+        $reportCol = ReportColumn::whereIn('id',$reportColIDs)->get();
+        return view("reports.show",[
+            "report"=>$report,
+            "report_version"=>$report_version,
+            "columns"=>$reportCol,
+            "data"=>ReportHelper::resolveBody($reportCol,ReportHelper::getDataRange(new Carbon(1701388800),new Carbon(1701993600))),
+        ]);
     }
 
     /**

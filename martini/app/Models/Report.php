@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * 
  * @property int $id
  * @property int $author_id
- * @property User $author
  * @property string $name
  *
  * @package App\Models
@@ -27,6 +27,14 @@ class Report extends Model
 		'author_id',
         'name',
 	];
+    public function getAuthor():User
+    {
+        return $this->author()->get()->first();
+    }
+    public function author():BelongsTo
+    {
+        return $this->belongsTo(User::class,"author_id","id");
+    }
     public function getReportVersions():Collection 
     {
         return $this->report_versions()->get();

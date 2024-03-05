@@ -8,6 +8,7 @@ use Jenssegers\Agent\Agent;
 class DataTable extends Component
 {
     public $agent;
+    public bool $showFooter = false;
     /**
      * Create a new component instance.
      *
