@@ -9,10 +9,10 @@
     
             $delid = request()->input('id');
 
-            $customerResult = loggedQuery("SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
+            $customerResult = prepareExecuteQuery("SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
             $customerID = mysqli_fetch_array($customerResult)['customer_id'];
             
-            $customerQueryResult = loggedQuery("SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
+            $customerQueryResult = prepareExecuteQuery("SELECT businessname,customer_email,accounts_email,internal_email FROM `customers` WHERE id = $customerID");
             $customer = mysqli_fetch_assoc($customerQueryResult);
             if ($customer['customer_email']!= null && $customer['customer_email']!= "")
             {
@@ -33,20 +33,20 @@
             $pathToFile = 'PDF';
             PDFRenderer::generatePDFfromWeb('viewSalesRetraction.php?id='.request()->input('id'),$pathToFile,$fileName);
             SLabsEmailer::send_email($customerID,SLabsEmailerType::Retraction,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
-            $picksheetResult = loggedQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
+            $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
     
-            $pickerItemsResult = loggedQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
+            $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
     
-            $palletsOutResult = loggedQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id='$delid'");
+            $palletsOutResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id='$delid'");
     
             while($palletOut = mysqli_fetch_array($palletsOutResult)){
                 $weightIDS = $palletOut['weight_ids'];
     
-                $deleteWeightsResult = loggedQuery("UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
+                $deleteWeightsResult = prepareExecuteQuery("UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
             }
     
             $x = "DELETE FROM `palletsOut` WHERE pickersheet_id='$delid'";
-            $y = loggedQuery($x);
+            $y = prepareExecuteQuery($x);
 
         }
 ?>

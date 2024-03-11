@@ -120,7 +120,7 @@
 
 	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";
-	$y = loggedQuery($x,str_repeat("s",count($colValue)),$colValue);
+	$y = prepareExecuteQuery($x,str_repeat("s",count($colValue)),$colValue);
 ?>
 <script>
 	window.location = '../manageCustomers.php?id=<?php echo $id; ?>';
