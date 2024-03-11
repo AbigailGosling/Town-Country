@@ -4,7 +4,7 @@
 	$invoiceID = request()->input('invoiceID');
 
     # get all returned intakes related to this invoice
-    $returnIntakeResult = loggedQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
+    $returnIntakeResult = prepareExecuteQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
 
     $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
 
@@ -56,7 +56,7 @@
 </tr>
 <?php
 
-    $outpalletResult = loggedQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
+    $outpalletResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
     $outpalletCount = mysqli_num_rows($outpalletResult);
 
     $total_weight_count = 0;
@@ -73,7 +73,7 @@
 
         foreach($weightids as $weightid){
             $x = "SELECT * FROM `weights` WHERE id=?";
-            $y = loggedQuery($x,'i',[$weightid]);
+            $y = prepareExecuteQuery($x,'i',[$weightid]);
             $weight = mysqli_fetch_array($y);
 
             if(!in_array($weight['product_id'], $productIDArray)){
@@ -86,7 +86,7 @@
         foreach($productIDArray as $productID){
 
             $x1 = "SELECT * FROM `product` WHERE id=?";
-            $y1 = loggedQuery($x1,'i',[$productID]);
+            $y1 = prepareExecuteQuery($x1,'i',[$productID]);
             $product = mysqli_fetch_array($y1);
 
 
@@ -98,7 +98,7 @@
 
             $x2 = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
 
-            $y2 = loggedQuery($x2,str_repeat("i",count($weightids)),$weightids);
+            $y2 = prepareExecuteQuery($x2,str_repeat("i",count($weightids)),$weightids);
             $count = mysqli_num_rows($y2);
             
              
@@ -130,7 +130,7 @@
             <?php
                 $productID = $product['id'];
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
+                $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
                 $howMany = mysqli_num_rows($howManyY);
             ?>
             <td align="left"><b class="">
@@ -190,13 +190,13 @@
         while($returnedIntake = mysqli_fetch_array($returnIntakeResult)){ array_push($returnedIntakeIDS, $returnedIntake['id']); }        
 
         # 
-        $palletsResult = loggedQuery("SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN (".implode(',',array_fill(0,count($returnedIntakeIDS),"?")).")",
+        $palletsResult = prepareExecuteQuery("SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN (".implode(',',array_fill(0,count($returnedIntakeIDS),"?")).")",
     str_repeat('i',count($returnedIntakeIDS)),$returnedIntakeIDS);
         $palletData = mysqli_fetch_array($palletsResult);
 
         $pallet_ids = $palletData['pallet_ids'];
 
-        $productsResult = loggedQuery("SELECT * FROM `product` WHERE pallet_id IN ($pallet_ids)");
+        $productsResult = prepareExecuteQuery("SELECT * FROM `product` WHERE pallet_id IN ($pallet_ids)");
         
         $i = 0;
         while($product = mysqli_fetch_array($productsResult)){
@@ -207,7 +207,7 @@
             $productQuantityToDeduct = 0;
 
             # Check for credit notes with this product_id
-            $creditNoteResult = loggedQuery("SELECT * FROM `credit_note_items` WHERE product_id=?",'i',[$productID]);
+            $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=?",'i',[$productID]);
 
             # If this product has a credit note
             if(mysqli_num_rows($creditNoteResult) > 0){
@@ -217,7 +217,7 @@
             }
             
             # get number of weights for this product
-		    $weightCountResult = loggedQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
+		    $weightCountResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
             $count = mysqli_num_rows($weightCountResult);
 
             $loop_count = $count;
@@ -242,7 +242,7 @@
             
             <?php
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                $howManyY = loggedQuery($howManyX,'ii',[$invoiceID,$productID]);
+                $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
                 $pickerItem = mysqli_fetch_array($howManyY);
                 $howMany = mysqli_num_rows($howManyY);
             ?>
