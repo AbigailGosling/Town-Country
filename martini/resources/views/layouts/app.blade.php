@@ -20,7 +20,7 @@
             <!-- Page Heading -->
             @if (isset($header))
                 <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
@@ -28,14 +28,14 @@
 
             <!-- Breadcrumbs -->
             @if(\Diglactic\Breadcrumbs\Breadcrumbs::exists())
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 breadcrumbs">
+            <div class="max-w-full mx-auto sm:px-6 lg:px-8 breadcrumbs">
             {{ Breadcrumbs::render() }}
             </div>
             @endif
 
             <!-- Alerts -->
             @if (Session::has('message'))
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+            <div class="max-w-full mx-auto sm:px-6 lg:px-8 py-4">
                 <x-alert type="success">
                     {{ Session::get('message') }}
                 </x-alert>
@@ -43,7 +43,7 @@
             @endif
 
             @if(Session::has('error'))
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                <div class="max-w-full mx-auto sm:px-6 lg:px-8 py-4">
                     <x-alert type="error">
                         {{ Session::get('error') }}
                     </x-alert>
@@ -52,7 +52,7 @@
 
 
             @if($errors->any())
-                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-4">
+                <div class="max-w-full mx-auto sm:px-6 lg:px-8 py-4">
                     <x-alert type="error">
                         {{ $errors->first() }}
                     </x-alert>
@@ -61,10 +61,8 @@
 
             <!-- Page Content -->
             <main>
-                <div class="pt-6">
-                    <div class="mx-auto sm:px-6 lg:px-8">
-                        {{ $slot }}
-                    </div>
+                <div class="max-w-full mx-auto sm:px-6 lg:px-8">
+                    {{ $slot }}
                 </div>
             </main>
         </div>

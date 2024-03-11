@@ -53,11 +53,13 @@ class ReportController extends Controller
     {
         $reportColIDs = ReportVersionColumn::where(["report_version_id"=>$report_version->id])->orderBy("order")->get()->pluck("report_column_id")->toArray();
         $reportCol = ReportColumn::whereIn('id',$reportColIDs)->get();
+        $dataRanges = ReportHelper::getDataRange(new Carbon(1701388800),new Carbon(1701993600));
         return view("reports.show",[
             "report"=>$report,
             "report_version"=>$report_version,
             "columns"=>$reportCol,
-            "data"=>ReportHelper::resolveBody($reportCol,ReportHelper::getDataRange(new Carbon(1701388800),new Carbon(1701993600))),
+            "debits"=>ReportHelper::resolveBody($reportCol,$dataRanges[0]),
+            "credits"=>ReportHelper::resolveBody($reportCol,$dataRanges[1]),
         ]);
     }
 

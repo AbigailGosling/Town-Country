@@ -85,7 +85,7 @@ return new class extends Migration
                 "html_cell"         => "%s",
                 "html_footer"       => "",
                 "pointers"          => ["pickerSheets.date_completed"],
-                "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y H:i:s"],
+                "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y"],
             ),
             array(  
                 "label"             => "Date Delivered",
@@ -109,7 +109,7 @@ return new class extends Migration
             ),
             array(  
                 "label"             => "Invoice",
-                "data_type"         => "int",
+                "data_type"         => "id",
                 "processing_type"   => "none",
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
@@ -119,7 +119,7 @@ return new class extends Migration
             ),
             array(  
                 "label"             => "Intake ID",
-                "data_type"         => "int",
+                "data_type"         => "id",
                 "processing_type"   => "none",
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
@@ -139,7 +139,7 @@ return new class extends Migration
             ),
             array(  
                 "label"             => "Pallet ID",
-                "data_type"         => "int",
+                "data_type"         => "id",
                 "processing_type"   => "none",
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
@@ -229,12 +229,12 @@ return new class extends Migration
             ),
             array(  
                 "label"             => "G/T",
-                "data_type"         => "double",
+                "data_type"         => "int",
                 "processing_type"   => "none",
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
-                "pointers"          => ["product.ubbb"],
+                "pointers"          => ["weights.rows"],
                 "metadata"          => ['filters'=>['product.unit'=>'P'],'footer'=>'array_sum'],
             ),            
             array(  
@@ -244,7 +244,7 @@ return new class extends Migration
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
-                "pointers"          => ["product.ubbb"],
+                "pointers"          => ["weights.rows"],
                 "metadata"          => ['filters'=>['product.unit'=>'PPC'],'footer'=>'array_sum'],
             ),        
             array(  
@@ -275,7 +275,17 @@ return new class extends Migration
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
                 "pointers"          => null,
-                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Cost/Unit"]],'footer'=>'array_sum'],
+                "metadata"          => [
+                    'calculate'=> [
+                        'operator'=>'+','args'=> [
+                            [
+                                'operator'=>'*','args'=>["this.kg","this.Cost/Unit"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","this.Cost/Unit"]
+                            ]
+                        ]
+                    ],'footer'=>'array_sum'],
             ),
             array(  
                 "label"             => "Sell/Unit",
@@ -295,7 +305,18 @@ return new class extends Migration
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
                 "pointers"          => NULL,
-                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Sell/Unit"]],'footer'=>'array_sum'],
+                "metadata"          => [
+                    'calculate'=>[
+                        'operator'=>'+','args'=> [
+                            [
+                                'operator'=>'*','args'=>["this.kg","this.Sell/Unit"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","this.Sell/Unit"]
+                            ]
+                        ]
+                    ],
+                    'footer'=>'array_sum'],
             ),
             array(  
                 "label"             => "Profit",
@@ -325,7 +346,17 @@ return new class extends Migration
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
                 "pointers"          => NULL,
-                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Actual Cost/Unit"]],'footer'=>'array_sum'],
+                "metadata"          => [
+                    'calculate'=> [
+                        'operator'=>'+','args'=> [
+                            [
+                                'operator'=>'*','args'=>["this.kg","this.Actual Cost/Unit"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","this.Actual Cost/Unit"]
+                            ]
+                        ]
+                    ],'footer'=>'array_sum'],
             ),
             array(  
                 "label"             => "Actual Sell/Unit",
@@ -345,7 +376,17 @@ return new class extends Migration
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
                 "pointers"          => NULL,
-                "metadata"          => ['calculate'=>['operator'=>'*','args'=>["this.kg","this.Actual Sell/Unit"]],'footer'=>'array_sum'],
+                "metadata"          => ['calculate'=>[
+                    'operator'=>'+','args'=> [
+                        [
+                            'operator'=>'*','args'=>["this.kg","this.Actual Sell/Unit"]
+                        ],
+                        [
+                            'operator'=>'*','args'=>["this.PPC","this.Actual Sell/Unit"]
+                        ]
+                    ]
+                ],
+                'footer'=>'array_sum'],
             ),
             array(  
                 "label"             => "Actual Profit",
