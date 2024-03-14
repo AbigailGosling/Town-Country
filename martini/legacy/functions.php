@@ -60,7 +60,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
 		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert,true);
-		$x = ($stopRecursion)?1:0;
+		$x = (!$stopRecursion)?1:0;
 		Log::error("USER:".Auth::id().":".$e->getTrace()[$x]['file']."(".$e->getTrace()[$x]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
@@ -73,7 +73,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$res = null;
 		try
 		{
-			if (preg_match("/update (\"|'|`)customers(\"|'|`)/i",$sql) && !$stopRecursion) loggedQuery($sql,$varTypes,$vars,$returnInsert,$stopRecursion);
+			if (!$stopRecursion && preg_match("/update (\"|'|`)customers(\"|'|`)/i",$sql)) {loggedQuery($sql,$varTypes,$vars,$returnInsert,$stopRecursion);return;}
 			if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
 			$stmt = $knownStatements[$sql."_".$varTypes];
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);

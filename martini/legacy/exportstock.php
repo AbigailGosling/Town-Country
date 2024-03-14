@@ -23,7 +23,7 @@ use App\Models\Location;
     $final_array = array();
     $final_array[] = $headings;
 
-    $productsX = "SELECT *, product.range_from, product.range_to, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.range_from, product.range_to, product.range_extension, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `cutgroups` ON cuts.cutgroup_id = cutgroups.id
@@ -108,7 +108,7 @@ use App\Models\Location;
         }
         $range_from = ($productsRow['range_from'] != '')?$productsRow['range_from']:'N/A';
         $range_to = ($productsRow['range_to'] != '')?$productsRow['range_to']:'N/A';
-        if ($productsRow['range_extension'] != null && $productsRow['range_extension'] != '') $range_to = $productsRow['range_extension'];
+        if ($productsRow['range_extension'] != null && $productsRow['range_extension'] != '')$range_from = $range_to = $productsRow['range_extension'];
         array_push($single_row, $ubtext);
         array_push($single_row, $range_from);
         array_push($single_row, $range_to);
