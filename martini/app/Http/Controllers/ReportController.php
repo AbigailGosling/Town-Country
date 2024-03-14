@@ -58,8 +58,8 @@ class ReportController extends Controller
             "report"=>$report,
             "report_version"=>$report_version,
             "columns"=>$reportCol,
-            "debits"=>ReportHelper::resolveBody($reportCol,$dataRanges[0]),
-            "credits"=>ReportHelper::resolveBody($reportCol,$dataRanges[1]),
+            "debits"=>ReportHelper::resolveBody($reportCol,$dataRanges[0],"debits"),
+            "credits"=>ReportHelper::resolveBody($reportCol,$dataRanges[1],"credits"),
         ]);
     }
 

@@ -224,7 +224,8 @@ return new class extends Migration
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
-                "pointers"          => ["weights.rows"],
+                "pointers"          => ["debits"=>["weights.rows"],
+                                        "credits"=>["credit_note_items.quantity"]],
                 "metadata"          => ['filters'=>['product.unit'=>'C'],'footer'=>'array_sum'],
             ),
             array(  
@@ -234,7 +235,8 @@ return new class extends Migration
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
-                "pointers"          => ["weights.rows"],
+                "pointers"          => ["debits"=>["weights.rows"],
+                                        "credits"=>["credit_note_items.quantity"]],
                 "metadata"          => ['filters'=>['product.unit'=>'P'],'footer'=>'array_sum'],
             ),            
             array(  
@@ -244,7 +246,8 @@ return new class extends Migration
                 "html_header"       => "%s",
                 "html_cell"         => "%d",
                 "html_footer"       => "%d",
-                "pointers"          => ["weights.rows"],
+                "pointers"          => ["debits"=>["weights.rows"],
+                                        "credits"=>["credit_note_items.quantity"]],
                 "metadata"          => ['filters'=>['product.unit'=>'PPC'],'footer'=>'array_sum'],
             ),        
             array(  

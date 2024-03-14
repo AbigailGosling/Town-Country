@@ -29,19 +29,6 @@ use App\Models\Product;
 <?php
 		die();
 	}
-	//$x = "UPDATE `customers` SET override=0 WHERE id='$customer_id'";
-	//$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
-
-	$addressline1 = request()->input('addressline1');
-	$addressline2 = request()->input('addressline2');
-	$addressline3 = request()->input('addressline3');
-	$addressline4 = request()->input('addressline4');
-	$addresspostcode = request()->input('addresspostcode');
-	$deliverynumber = request()->input('deliverynumber');
-		
-	//$addressQuery = "address{$addressid}_1='$addressline1', address{$addressid}_2='$addressline2', address{$addressid}_3='$addressline3', address{$addressid}_4='$addressline4', postcode_{$addressid}='$addresspostcode', address{$addressid}_number='$deliverynumber'";
-
-	//$addressUpdateQuery = prepareExecuteQuery("UPDATE `customers` SET $addressQuery WHERE id = ? LIMIT 1",'i',[$customer_id]);
 		
 	$today = date('Y-m-d');
 	if ($transaction_id != null && $transaction_id != "")

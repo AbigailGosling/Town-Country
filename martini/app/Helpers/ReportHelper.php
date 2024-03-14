@@ -59,8 +59,8 @@ class ReportHelper
         $debits = $resultQB->get();
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("invoice_payments","pickerSheets.id"        ,'=',"invoice_payments.invoice_id")
-            ->join("credit_note_items","invoice_payments.id"        ,'=',"credit_note_items.payment_id")
+            ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
+            ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->select([
                 "pickerSheets.*",
                 "invoice_payments.*" ,
@@ -91,7 +91,7 @@ class ReportHelper
             $weightQB = static::$conn->table("weights")
                 ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
                 ->whereIn("weights.id",explode(",",$result->$col))
-                ->where("weights.product_id",explode(",",$result->$col2))
+                ->where("weights.product_id",$result->$col2)
                 ->groupBy("weights.product_id");
             $item = $weightQB->first();
             if ($item===null) continue;
@@ -109,8 +109,16 @@ class ReportHelper
         {
             $col = "credit_note_items.product_id";
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
-            if ($item===null) continue;
+            if ($item===null) continue;     
             static::row_merge($result,$item,"product.");
+
+            $weightQB = static::$conn->table("weights")
+                ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
+                ->where("weights.product_id",$result->$col)
+                ->groupBy("weights.product_id");
+            $item = $weightQB->first();
+            if ($item===null) continue;
+            static::row_merge($result,$item,"weights.");
 
             if (static::bulkMergeIn($result))$finalCredits->add($result);
         }
@@ -181,7 +189,7 @@ class ReportHelper
         }
         return $result;
     }
-    public static function resolveBody(Collection $reportColumns, Collection $rows):array
+    public static function resolveBody(Collection $reportColumns, Collection $rows, string $mode):array
     {
         $results = [];
         $rows2 = $rows->toArray();
@@ -210,7 +218,16 @@ class ReportHelper
                 }
                 else if ($reportColumn->pointers != null)
                 {
-                    foreach($reportColumn->pointers as $colString)
+                    if (!array_key_exists($mode,$reportColumn->pointers) && array_is_list($reportColumn->pointers))
+                    {
+                        $temp = $reportColumn->pointers;
+                        $reportColumn->pointers=[
+                            "debits"    => $temp,
+                            "credits"   => $temp,
+                            $mode       => $temp,
+                        ];
+                    }
+                    foreach($reportColumn->pointers[$mode] as $colString)
                     {
                         $workingResult[$reportColumn->label] = static::resolveCell($reportColumn,$workingResult[$reportColumn->label],static::getValue($colString,$workingResult,$dbRow));
                     }
@@ -224,6 +241,7 @@ class ReportHelper
                 }
             }
             $results[] = $workingResult; 
+            //if ($mode == "credits") throw new \Exception(json_encode([$dbRow,$workingResult]));
         } 
         return $results;
     }
