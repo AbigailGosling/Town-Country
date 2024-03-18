@@ -175,16 +175,16 @@ class ReportHelper
 
         return true;
     }
-    public static function resolveHeader(ReportColumn $reportColumn):string
+    public static function resolveHeader(ReportColumn $reportColumn,string $mode):string
     {
-        return sprintf($reportColumn->html_header,$reportColumn->label);
+        return sprintf($reportColumn->header,$reportColumn->getLabel($mode));
     }
-    public static function resolveFooter(ReportColumn $reportColumn,array $data):string
+    public static function resolveFooter(ReportColumn $reportColumn,array $data,string $mode):string
     {
         $result = "";
         if ($reportColumn->metadata != null && isset($reportColumn->metadata['footer']))
         {
-            $columnData = array_column($data,$reportColumn->label);
+            $columnData = array_column($data,$reportColumn->getLabel($mode));
             $result = static::finaliseItem($reportColumn,$reportColumn->metadata['footer']($columnData));
         }
         return $result;
@@ -202,15 +202,15 @@ class ReportHelper
             $workingResult = [];
             foreach ($reportColumns as $reportColumn)
             {
-                $workingResult[$reportColumn->label] = "";
+                $workingResult[$reportColumn->getLabel($mode)] = "";
                 if (!static::filterCheck($reportColumn,$workingResult,$dbRow)) 
                 {
-                    $workingResult[$reportColumn->label] = static::resolveCell($reportColumn,"","");
+                    $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,"","");
                     continue;
                 }
                 if ($reportColumn->processing_type == "calculate" && $reportColumn->metadata != NULL && array_key_exists("calculate",$reportColumn->metadata))
                 {
-                    $workingResult[$reportColumn->label] = static::resolveCell($reportColumn,$workingResult[$reportColumn->label],static::calculate(
+                    $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,$workingResult[$reportColumn->getLabel($mode)],static::calculate(
                         $reportColumn->metadata['calculate']['operator'],
                         $reportColumn->metadata['calculate']['args'],
                         $workingResult,
@@ -229,14 +229,14 @@ class ReportHelper
                     }
                     foreach($reportColumn->pointers[$mode] as $colString)
                     {
-                        $workingResult[$reportColumn->label] = static::resolveCell($reportColumn,$workingResult[$reportColumn->label],static::getValue($colString,$workingResult,$dbRow));
+                        $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,$workingResult[$reportColumn->getLabel($mode)],static::getValue($colString,$workingResult,$dbRow));
                     }
                 }
                 if ($reportColumn->metadata != NULL && array_key_exists("fallback",$reportColumn->metadata))
                 {
-                    if ($workingResult[$reportColumn->label] == null || $workingResult[$reportColumn->label] === "" || $workingResult[$reportColumn->label] == "0")
+                    if ($workingResult[$reportColumn->getLabel($mode)] == null || $workingResult[$reportColumn->getLabel($mode)] === "" || $workingResult[$reportColumn->getLabel($mode)] == "0")
                     {
-                        $workingResult[$reportColumn->label] = static::resolveCell($reportColumn,$workingResult[$reportColumn->label],static::getValue($reportColumn->metadata["fallback"],$workingResult,$dbRow));
+                        $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,$workingResult[$reportColumn->getLabel($mode)],static::getValue($reportColumn->metadata["fallback"],$workingResult,$dbRow));
                     }
                 }
             }
@@ -326,9 +326,9 @@ class ReportHelper
         }
         return true;
     }
-    public static function finaliseCell(ReportColumn $reportColumn,array $workingResult):string
+    public static function finaliseCell(ReportColumn $reportColumn,array $workingResult,string $mode):string
     {
-        $workingVal = $workingResult[$reportColumn->label];
+        $workingVal = $workingResult[$reportColumn->getLabel($mode)];
         if ($workingVal === "0" && $reportColumn->data_type != "currency") return "";
         return static::finaliseItem($reportColumn,$workingVal);
     }

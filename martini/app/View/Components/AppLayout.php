@@ -6,6 +6,16 @@ use Illuminate\View\Component;
 
 class AppLayout extends Component
 {
+    public bool $expand = false;
+    /**
+     * Create a new component instance.
+     *
+     * @return void
+     */
+    public function __construct(bool $expand = false)
+    {
+        $this->expand = $expand;
+    }
     /**
      * Get the view / contents that represents the component.
      *
