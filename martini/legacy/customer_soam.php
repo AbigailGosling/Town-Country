@@ -189,9 +189,9 @@ $serverRoot = request()->server("SERVER_NAME");
                     {
                         $remainingCredit = $creditcheck['creditRating'] - $creditcheck['details']['outstanding'];
                 ?>
-                    <tr><td style="text-align:right">Credit Rating</td> <td>:</td><td>£<?php echo $creditcheck['creditRating'];?></td></tr>
+                    <tr><td style="text-align:right">Credit Rating</td> <td>:</td><td>£<?php echo $customer['flaguplimit'];?></td></tr>
                     <tr><td style="text-align:right">Outstanding</td>   <td>:</td><td>£<?php echo $creditcheck['details']['outstanding'];?></td></tr>
-                    <tr><td style="text-align:right">Balance</td>       <td>:</td><td>£<?php echo $remainingCredit;?></td></tr>
+                    <tr><td style="text-align:right">Available</td>       <td>:</td><td>£<?php echo $remainingCredit;?></td></tr>
                 <?php
                     }
                 ?>
