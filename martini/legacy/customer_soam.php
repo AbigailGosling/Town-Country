@@ -187,7 +187,7 @@ $serverRoot = request()->server("SERVER_NAME");
                 <?php
                     if ($creditcheck['creditCheckRender'] == true) 
                     {
-                        $remainingCredit = $creditcheck['creditRating'] - $creditcheck['details']['outstanding'];
+                        $remainingCredit = (($customer['flaguplimit'])?$customer['flaguplimit']:$creditcheck['creditRating']) - $creditcheck['details']['outstanding'];
                 ?>
                     <tr><td style="text-align:right">Credit Rating</td> <td>:</td><td>£<?php echo $customer['flaguplimit'];?></td></tr>
                     <tr><td style="text-align:right">Outstanding</td>   <td>:</td><td>£<?php echo $creditcheck['details']['outstanding'];?></td></tr>
