@@ -158,13 +158,14 @@ include_once('functions.php');
                     <th width="25%" align="left">Customer Name</th>
                     <th width="5%" align="center">Customer ID</th>
                     <th width="5%" align="center">Sage No</th>
-                    <th width="25%" align="right">Date</th>
+                    <th width="25%" align="right">Asm Date</th>
+                    <th width="25%" align="center">Del Date</th>
                     <th width="25%" align="right">Total</th>
                     <th width="5%" align="right"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td></td><td></td><td></td><td>Set your desired Date range than press go.</td><td></td><td></td><td></td><td></td></tr>
+                <tr><td></td><td></td><td></td><td></td><td>Set your desired Date range than press go.</td><td></td><td></td><td></td><td></td></tr>
             </tbody>
             <tfoot class="last">
                 <tr>
@@ -173,6 +174,7 @@ include_once('functions.php');
                     <th width="14%" align="left"></th>
                     <th width="14%" align="center"></th>
                     <th width="14%" align="center"></th>
+                    <th width="14%" align="right"></th>
                     <th width="14%" align="right"></th>
                     <th width="14%" align="right"></th>
                     <th width="10%" align="right"></th>
