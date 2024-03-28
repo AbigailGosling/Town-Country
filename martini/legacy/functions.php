@@ -55,17 +55,16 @@ use Ramsey\Uuid\Type\Decimal;
 		$rollingError = new \Exception;
 		$rollingTimestamp = (int)(microtime(true)*1000);
 	}
-	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false,$stopRecursion = false)
+	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
-		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert,true);
-		$x = (!$stopRecursion)?1:0;
-		Log::error("USER:".Auth::id().":".$e->getTrace()[$x]['file']."(".$e->getTrace()[$x]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
+		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+		Log::error($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
 	global $knownStatements;
-	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false,$stopRecursion = false)
+	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
 	{
 		global $mysqli;
 		global $knownStatements;
@@ -73,7 +72,6 @@ use Ramsey\Uuid\Type\Decimal;
 		$res = null;
 		try
 		{
-			if (!$stopRecursion && preg_match("/update (\"|'|`)customers(\"|'|`)/i",$sql)) {loggedQuery($sql,$varTypes,$vars,$returnInsert,$stopRecursion);return;}
 			if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
 			$stmt = $knownStatements[$sql."_".$varTypes];
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
