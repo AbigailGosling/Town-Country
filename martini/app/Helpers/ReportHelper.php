@@ -22,26 +22,14 @@ class ReportHelper
     private static array $species;
     /** @var Connection $conn */
     private static $conn;
-    private static function array_search_multidim($array, $column, $key)
-    {
-        return $array[array_search($key, array_column($array, $column))];
-    }
-    private static function row_merge(&$to, $from, $prefix="")
-    {
-        if ($from === null) throw new \Exception(json_encode($to));
-        foreach ($from as $key => $value)
-        {
-            $col2 = $prefix.$key;
-            $to->$col2 = $value;
-        }
-    }
-    public static function getDataRange(Carbon $start, Carbon $end):array
+    public static function getProductRange(Carbon $start, Carbon $end):array
     {
         ini_set('memory_limit', '4G');
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
         $pdo = static::$conn->getPdo();
         $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
+        static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
 
         $resultQB = static::$conn->table("pickerSheets")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
@@ -51,13 +39,12 @@ class ReportHelper
                 "pickerSheets.*",
                 "pickerItems.*" ,
                 "palletsOut.*" ,])
-            ->groupBy("pickerItems.product_id")
+            ->groupBy(["pickerSheets.id","pickerItems.product_id"])
             ->whereDate("pickerSheets.date_completed",">=",$start)
-            ->whereDate("pickerSheets.date_completed","<" ,$end)
+            ->whereDate("pickerSheets.date_completed","<=" ,$end)
             ;
         /** @var Collection $debits */
         $debits = $resultQB->get();
-
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
@@ -66,21 +53,12 @@ class ReportHelper
                 "invoice_payments.*" ,
                 "credit_note_items.*" ,])
             ->whereDate("invoice_payments.created_at",">=",$start)
-            ->whereDate("invoice_payments.created_at","<" ,$end)
+            ->whereDate("invoice_payments.created_at","<=" ,$end)
+            ->orderBy("invoice_payments.created_at","desc")
             ;
         /** @var Collection $credits */
         $credits = $resultQB->get();
-        //throw new \Exception(json_encode($credits));
-        static::$customers = static::$conn->table("customers")->select("customers.*")->get()->toArray();
-        static::$users = static::$conn->table("users")->select(["users.id","users.name"])->get()->toArray();
-        static::$suppliers = static::$conn->table("supplier")->select("supplier.*")->get()->toArray();
-        static::$brands = static::$conn->table("brands")->select("brands.*")->get()->toArray();
-        static::$nationalities = static::$conn->table("nationality")->select("nationality.*")->get()->toArray();
-        static::$temperatures = static::$conn->table("temperature")->select("temperature.*")->get()->toArray();
-        static::$cuts = static::$conn->table("cuts")->select("cuts.*")->get()->toArray();
-        static::$cutgroups = static::$conn->table("cutgroups")->select("cutgroups.*")->get()->toArray();
-        static::$species = static::$conn->table("species")->select("species.*")->get()->toArray();
-
+        static::initialiseLookupArrays();
         //Restore DB Settings
         $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
         $finalDebits = new Collection();
@@ -103,15 +81,12 @@ class ReportHelper
             static::row_merge($result,$item,"product.");
 
             if (static::bulkMergeIn($result))$finalDebits->add($result);
+            else throw new \Exception(json_encode($result));
         }
         $finalCredits = new Collection();
         foreach($credits as $result)
         {
             $col = "credit_note_items.product_id";
-            $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
-            if ($item===null) continue;     
-            static::row_merge($result,$item,"product.");
-
             $weightQB = static::$conn->table("weights")
                 ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
                 ->where("weights.product_id",$result->$col)
@@ -120,60 +95,128 @@ class ReportHelper
             if ($item===null) continue;
             static::row_merge($result,$item,"weights.");
 
+            $col = "credit_note_items.product_id";
+            $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
+            if ($item===null) continue;     
+            static::row_merge($result,$item,"product.");
+
+            $col = "product.original_pallet_id";
+            $item = static::$conn->table("product")->select("product.*")->where("product.pallet_id",$result->$col)->first();
+            if ($item===null) continue;     
+            static::row_merge($result,$item,"original_product.");
+
+            $col = "original_product.id";
+            $item = static::$conn->table("pickerItems")->select("pickerItems.*")->where("pickerItems.product_id",$result->$col)->first();
+            if ($item===null) continue;     
+            static::row_merge($result,$item,"pickerItems.");
+
             if (static::bulkMergeIn($result))$finalCredits->add($result);
         }
         //throw new \Exception(json_encode($finalCredits));
         return array($finalDebits,$finalCredits);
     }
-    private static function bulkMergeIn(&$result):bool {
-        $col = "product.pallet_id";
-        $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
-        if ($item===null) return false;
-        static::row_merge($result,$item,"pallet.");
+    public static function getInvoiceRange(Carbon $start, Carbon $end):array
+    {
+        ini_set('memory_limit', '4G');
+        //Alter DB Settings
+        static::$conn = DB::connection("tandc_live");
+        $pdo = static::$conn->getPdo();
+        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
+        static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
 
-        $col = "pallet.intake_id";
-        $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-        if ($item===null) return false;
-        static::row_merge($result,$item,"intake.");
+        $resultQB = static::$conn->table("pickerSheets")
+            ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
+            ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")           
+            ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids")
+            ->groupBy(["pickerSheets.id"])
+            ->whereDate("pickerSheets.date_completed",">=",$start)
+            ->whereDate("pickerSheets.date_completed","<=" ,$end);
+        /** @var Collection $debits */
+        $debits = $resultQB->get();
 
-        $col = "pickerSheets.customer_id";
-        $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
-        static::row_merge($result,$item);
+        $resultQB = static::$conn->table("pickerSheets")
+            ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
+            ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
+            ->select([
+                "pickerSheets.*",
+                "invoice_payments.*" ,
+                "credit_note_items.*" ,])
+            ->whereDate("invoice_payments.created_at",">=",$start)
+            ->whereDate("invoice_payments.created_at","<=" ,$end)
+            ->orderBy("invoice_payments.created_at","desc")
+            ;
+        /** @var Collection $credits */
+        $credits = $resultQB->get();
 
-        $col = "pickerSheets.user_from_id";
-        $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
-        if ($item===null) return false;
-        static::row_merge($result,$item);
-        
-        $col = "intake.supplier_id";
-        $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
-        static::row_merge($result,$item);
-        
-        $col = "product.brand_id";
-        $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
-        static::row_merge($result,$item);
+        static::initialiseLookupArrays();
 
-        $col = "product.nationality_id";
-        $item = static::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
-        static::row_merge($result,$item);
+        //Restore DB Settings
+        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
+        $finalDebits = new Collection();
+        foreach($debits as $result)
+        {
+            
+            $col = ".weight_ids";
+            $col2= ".product_ids";
+            $col3= ".prices";
 
-        $col = "product.cooling_id";
-        $item = static::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
-        static::row_merge($result,$item);
+            $product_ids = explode(",",$result->$col2);
+            $prices = explode(",",$result->$col3);
+            $rollingItem = null;
+            $rollingActCost = $rollingCost = $rollingTotal = 0;
+            $processedProds = [];
+            foreach ($product_ids as $index => $product_id)
+            {
+                if (array_key_exists($product_id,$processedProds))continue;
+                else $processedProds[$product_id] = true;
+                $price = $prices[$index];
+                $weightQB = static::$conn->table("weights")
+                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
+                    ->whereIn("weights.id",explode(",",$result->$col))
+                    ->where("weights.product_id",$product_id)
+                    ->groupBy("weights.product_id");
+                $weight = $weightQB->first();
+                if ($weight == null) continue;
+                $product = static::$conn->table("product")->select("product.*")->where("product.id",$product_id)->first();
 
-        $col = "product.cut_id";
-        $item = static::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
-        static::row_merge($result,$item);
+                if ($rollingItem == null) $rollingItem = $weight;
+                else foreach ($weight as $colName => $val)
+                {
+                    if (!is_numeric($rollingItem->$colName)) continue;
+                    (double)$rollingItem->$colName += (double)$val;
+                }
+              
+                if ($product->unit == "PPC")
+                {
+                    $rowCountPointer = "rows";
+                }
+                else
+                {
+                    $rowCountPointer = "weight_tear";
+                }
+                $rollingTotal += static::floorDec(($weight->$rowCountPointer*$price),2);
+                $rollingCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                if ($product->price && $product->price > 0)$rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->price),2);
+                else $rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+            }
+            if ($rollingItem == null) continue;
+            static::row_merge($result,$rollingItem,"weights.");
+            $subTotal = "pickerSheets.subTotal";
+            $result->$subTotal = $rollingTotal;
 
-        $col = "cuts.cutgroup_id";
-        $item = static::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
-        static::row_merge($result,$item);
+            $subTotal = "pickerSheets.cost";
+            $result->$subTotal = $rollingCost;
 
-        $col = "cuts.species_id";
-        $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
-        static::row_merge($result,$item);
+            $subTotal = "pickerSheets.actCost";
+            $result->$subTotal = $rollingActCost;
 
-        return true;
+            if (static::bulkMergeIn($result,false))$finalDebits->add($result);
+        }
+        $finalCredits = new Collection();
+        foreach($credits as $result)
+        {
+        }
+        return array($finalDebits,$finalCredits);
     }
     public static function resolveHeader(ReportColumn $reportColumn,string $mode):string
     {
@@ -236,14 +279,19 @@ class ReportHelper
                 {
                     if ($workingResult[$reportColumn->getLabel($mode)] == null || $workingResult[$reportColumn->getLabel($mode)] === "" || $workingResult[$reportColumn->getLabel($mode)] == "0")
                     {
-                        $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,$workingResult[$reportColumn->getLabel($mode)],static::getValue($reportColumn->metadata["fallback"],$workingResult,$dbRow));
+                        $workingResult[$reportColumn->getLabel($mode)] = static::resolveFallback($reportColumn,$workingResult,$dbRow,$mode);
                     }
                 }
             }
             $results[] = $workingResult; 
-            //if ($mode == "credits") throw new \Exception(json_encode([$dbRow,$workingResult]));
         } 
         return $results;
+    }
+    public static function finaliseCell(ReportColumn $reportColumn,array $workingResult,string $mode):string
+    {
+        $workingVal = $workingResult[$reportColumn->getLabel($mode)];
+        if ($workingVal === "0" && $reportColumn->data_type != "currency") return "";
+        return static::finaliseItem($reportColumn,$workingVal);
     }
     public static function resolveCell(ReportColumn $reportColumn,$left,$right):string
     {
@@ -255,12 +303,116 @@ class ReportHelper
 
         settype($left,$data_type);
         settype($right,$data_type);
-        
         return $left + $right;
     }
     public static function resolveDateCell(ReportColumn $reportColumn,$left,$right):string
     {
         return $left.DateTime::createFromFormat($reportColumn->metadata['format_from'],$right)->getTimestamp();
+    }
+    private static function array_search_multidim($array, $column, $key)
+    {
+        return $array[array_search($key, array_column($array, $column))];
+    }
+    private static function row_merge(&$to, $from, $prefix="")
+    {
+        if ($from === null) throw new \Exception(json_encode($to));
+        foreach ($from as $key => $value)
+        {
+            $col2 = $prefix.$key;
+            $to->$col2 = $value;
+        }
+    }
+    private static function initialiseLookupArrays() {
+        static::$customers = static::$conn->table("customers")->select("customers.*")->get()->toArray();
+        static::$users = static::$conn->table("users")->select(["users.id","users.name"])->get()->toArray();
+        static::$suppliers = static::$conn->table("supplier")->select("supplier.*")->get()->toArray();
+        static::$brands = static::$conn->table("brands")->select("brands.*")->get()->toArray();
+        static::$nationalities = static::$conn->table("nationality")->select("nationality.*")->get()->toArray();
+        static::$temperatures = static::$conn->table("temperature")->select("temperature.*")->get()->toArray();
+        static::$cuts = static::$conn->table("cuts")->select("cuts.*")->get()->toArray();
+        static::$cutgroups = static::$conn->table("cutgroups")->select("cutgroups.*")->get()->toArray();
+        static::$species = static::$conn->table("species")->select("species.*")->get()->toArray();
+
+    }
+    private static function bulkMergeIn(&$result,$full = true):bool {
+        $col = "pickerSheets.customer_id";
+        $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
+        static::row_merge($result,$item);
+        
+        $col = "pickerSheets.user_from_id";
+        $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
+        if ($item===null) return false;
+        static::row_merge($result,$item);
+
+        if ($full)
+        {
+            $col = "product.pallet_id";
+            $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
+            if ($item===null) return false;
+            static::row_merge($result,$item,"pallet.");
+
+            $col = "pallet.intake_id";
+            $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
+            if ($item===null) return false;
+            static::row_merge($result,$item,"intake.");
+            
+            $col = "intake.supplier_id";
+            $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+            static::row_merge($result,$item);
+            
+            $col = "product.brand_id";
+            $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "product.nationality_id";
+            $item = static::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "product.cooling_id";
+            $item = static::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "product.cut_id";
+            $item = static::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "cuts.cutgroup_id";
+            $item = static::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "cuts.species_id";
+            $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
+            static::row_merge($result,$item);
+        }
+
+        return true;
+    }
+    private static function resolveFallback(ReportColumn $reportColumn,$workingResult,$dbRow,string $mode):string
+    {
+        $result = "";
+        if ($reportColumn->metadata != NULL && array_key_exists("fallback",$reportColumn->metadata))
+        {
+            if ($workingResult[$reportColumn->getLabel($mode)] == null || $workingResult[$reportColumn->getLabel($mode)] === "" || $workingResult[$reportColumn->getLabel($mode)] == "0")
+            {
+                $fallbacks = [];
+                if (is_string($reportColumn->metadata["fallback"]))
+                {
+                    $fallbacks[]=$reportColumn->metadata["fallback"];
+                }
+                else 
+                {
+                    $fallbacks=$reportColumn->metadata["fallback"];
+                }
+                foreach ($fallbacks as $fallback)
+                {
+                    $result = static::resolveCell($reportColumn,$workingResult[$reportColumn->getLabel($mode)],static::getValue($fallback,$workingResult,$dbRow));
+                    if (!($result == null || $result === "" ||$result == "0"))
+                        break;
+                }
+                
+            }
+        }
+        return $result;
     }
     private static function calculate(string $operator,$args,$workingResult,$dbRow)
     {
@@ -268,6 +420,7 @@ class ReportHelper
         foreach ($args as $arg)
         {
             $item = (is_array($arg))?(double)static::calculate($arg['operator'],$arg['args'],$workingResult,$dbRow):(double)static::getValue($arg,$workingResult,$dbRow);
+            
             if ($result === null) $result = (double)$item;
             else 
             {
@@ -296,7 +449,7 @@ class ReportHelper
                 }
             }
         }
-        return $result;
+        return static::floorDec($result,3);
     }
     private static function getValue(string $colString,$workingResult,$dbRow):string|null
     {
@@ -326,12 +479,6 @@ class ReportHelper
         }
         return true;
     }
-    public static function finaliseCell(ReportColumn $reportColumn,array $workingResult,string $mode):string
-    {
-        $workingVal = $workingResult[$reportColumn->getLabel($mode)];
-        if ($workingVal === "0" && $reportColumn->data_type != "currency") return "";
-        return static::finaliseItem($reportColumn,$workingVal);
-    }
     private static function finaliseItem(ReportColumn $reportColumn,string $workingVal)
     {
         switch ($reportColumn->data_type)
@@ -345,15 +492,15 @@ class ReportHelper
                     $negMarker = "-";
                     $workingVal *= -1;
                 }
-                return $negMarker . "£" . number_format((double)$workingVal,2);
+                return $negMarker . "£" . number_format(static::floorDec($workingVal,2),2);
             }
             case "double":
             {
-                return number_format((double)$workingVal,3);
+                return number_format((double)static::floorDec($workingVal,3),3);
             }
             case "int":
             {
-                return number_format((int)$workingVal);
+                return number_format((int)static::floorDec($workingVal,0));
             }
             case "id":
             {
@@ -371,5 +518,13 @@ class ReportHelper
             }
         }
     }
+    private static function floorDec($val, $precision = 2) {
+		if ($precision < 0) { $precision = 0; }
+		$numPointPosition = intval(strpos($val, '.'));
+		if ($numPointPosition === 0) { //$val is an integer
+			return $val;
+		}
+		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
+	}
 }
 ?>

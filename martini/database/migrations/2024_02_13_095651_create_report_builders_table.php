@@ -25,6 +25,7 @@ return new class extends Migration
             $table->id();
             $table->integer("author_id")->index();
             $table->string("name");
+            $table->string("mode");
             $table->timestamps();
         });
         Schema::connection("tandc_live")->create('report_versions', function (Blueprint $table) {
@@ -78,7 +79,8 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%s",
                 "footer"            => "",
-                "pointers"          => ["pickerSheets.date"],
+                "pointers"          => ["debits"=>["pickerSheets.date"],
+                                        "credits"=>["invoice_payments.created_at"]],
                 "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y H:i:s"],
             ),
             array(  
@@ -228,8 +230,7 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["debits"=>["weights.rows"],
-                                        "credits"=>["credit_note_items.quantity"]],
+                "pointers"          => ["weights.rows"],
                 "metadata"          => ['filters'=>['product.unit'=>'C'],'footer'=>'array_sum'],
             ),
             array(  
@@ -239,8 +240,7 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["debits"=>["weights.rows"],
-                                        "credits"=>["credit_note_items.quantity"]],
+                "pointers"          => ["weights.rows"],
                 "metadata"          => ['filters'=>['product.unit'=>'P'],'footer'=>'array_sum'],
             ),            
             array(  
@@ -250,8 +250,7 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["debits"=>["weights.rows"],
-                                        "credits"=>["credit_note_items.quantity"]],
+                "pointers"          => ["weights.rows"],
                 "metadata"          => ['filters'=>['product.unit'=>'PPC'],'footer'=>'array_sum'],
             ),        
             array(  
@@ -272,7 +271,8 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["product.cost"],
+                "pointers"          => ["debits"=>["product.cost"],
+                                        "credits"=>["original_product.cost"]],
                 "metadata"          => NULL,
             ),                    
             array(  
@@ -292,7 +292,14 @@ return new class extends Migration
                             ],
                             [
                                 'operator'=>'*','args'=>["this.PPC","this.Cost/Unit"]
-                            ]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","this.Original Cost/Unit"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.kg","this.Original Cost/Unit"]
+                            ],
+                            "pickerSheets.cost"
                         ]
                     ],'footer'=>'array_sum'],
             ),
@@ -324,7 +331,14 @@ return new class extends Migration
                             ],
                             [
                                 'operator'=>'*','args'=>["this.PPC","this.Sell/Unit"]
-                            ]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.kg","credit_note_items.price"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","credit_note_items.price"]
+                            ],
+                            "pickerSheets.subTotal"
                         ]
                     ],
                     'footer'=>'array_sum'],
@@ -338,7 +352,18 @@ return new class extends Migration
                 "cell"              => "%d",
                 "footer"            => "%d",
                 "pointers"          => NULL,
-                "metadata"          => ['calculate'=>['operator'=>'-','args'=>["this.Sell Value","this.Cost Value"]],'footer'=>'array_sum'],
+                "metadata"          => [
+                    'calculate'=>[
+                        'operator'=>'+','args'=>
+                        [
+                            [
+                                'operator'=>'-','args'=>["this.Sell Value","this.Cost Value"]
+                            ],
+                            [
+                                'operator'=>'-','args'=>["this.Original Cost","this.Credit"]
+                            ],
+                        ]
+                    ],'footer'=>'array_sum'],
             ), 
             array(  
                 "label"             => ["debits"=>"Actual Cost/Unit",
@@ -348,8 +373,9 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["product.price"],
-                "metadata"          => ['fallback'=>'this.Cost/Unit'],
+                "pointers"          => ["debits"=>["product.price"],
+                                        "credits"=>["original_product.price"]],
+                "metadata"          => ['fallback'=>['this.Cost/Unit','this.Original Cost/Unit']],
             ),                    
             array(  
                 "label"             => ["debits"=>"Actual Cost Value",
@@ -368,7 +394,14 @@ return new class extends Migration
                             ],
                             [
                                 'operator'=>'*','args'=>["this.PPC","this.Actual Cost/Unit"]
-                            ]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.PPC","this.Act Original Cost/Unit"]
+                            ],
+                            [
+                                'operator'=>'*','args'=>["this.kg","this.Act Original Cost/Unit"]
+                            ],
+                            "pickerSheets.actCost"
                         ]
                     ],'footer'=>'array_sum'],
             ),
@@ -385,7 +418,7 @@ return new class extends Migration
             ),                       
             array(  
                 "label"             => ["debits"=>"Actual Sell Value",
-                                        "credits"=>"Credit"],
+                                        "credits"=>"Credit "],
                 "data_type"         => "currency",
                 "processing_type"   => "calculate",
                 "header"            => "%s",
@@ -399,7 +432,14 @@ return new class extends Migration
                         ],
                         [
                             'operator'=>'*','args'=>["this.PPC","this.Actual Sell/Unit"]
-                        ]
+                        ],
+                        [
+                            'operator'=>'*','args'=>["this.kg","credit_note_items.price"]
+                        ],
+                        [
+                            'operator'=>'*','args'=>["this.PPC","credit_note_items.price"]
+                        ],
+                        "pickerSheets.subTotal"
                     ]
                 ],
                 'footer'=>'array_sum'],
@@ -413,7 +453,18 @@ return new class extends Migration
                 "cell"              => "%d",
                 "footer"            => "%d",
                 "pointers"          => NULL,
-                "metadata"          => ['calculate'=>['operator'=>'-','args'=>["this.Actual Sell Value","this.Actual Cost Value"]],'footer'=>'array_sum'],
+                "metadata"          => [
+                    'calculate'=>[
+                        'operator'=>'+','args'=>
+                        [
+                            [
+                                'operator'=>'-','args'=>["this.Actual Sell Value","this.Actual Cost Value"]
+                            ],
+                            [
+                                'operator'=>'-','args'=>["this.Act Original Cost","this.Credit "]
+                            ],
+                        ]
+                    ],'footer'=>'array_sum']
             ), 
         );
         foreach ($columns as $column){
@@ -429,7 +480,26 @@ return new class extends Migration
         }
         $r = new Report();
         $r->author_id = 54;
-        $r->name = "master";
+        $r->name = "Product View";
+        $r->mode = "product";
+        $r->save();
+        $rv = new ReportVersion();
+        $rv->report_id = $r->id;
+        $rv->version = 1;
+        $rv->save();
+        $order = 0;
+        foreach(ReportColumn::all() as $rc) {
+            $rvc = new ReportVersionColumn();
+            $rvc->report_version_id = $rv->id;
+            $rvc->report_column_id = $rc->id;
+            $rvc->order = $order;
+            $rvc->save();
+            $order++;
+        }
+        $r = new Report();
+        $r->author_id = 54;
+        $r->name = "Invoice View";
+        $r->mode = "invoice";
         $r->save();
         $rv = new ReportVersion();
         $rv->report_id = $r->id;

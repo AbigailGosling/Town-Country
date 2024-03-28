@@ -51,13 +51,43 @@ class ReportController extends Controller
      */
     public function show(Report $report,ReportVersion $report_version)
     {
+        $start = request()->input("start",null);
+        $end = request()->input("end",null);
+        if ($start != null) {
+            $startCarbon = Carbon::parse($start);
+        }
+        else {
+            $startCarbon = new Carbon();
+        }
+        $startCarbon->startOfDay();
+        if ($end != null) {
+            $endCarbon = Carbon::parse($end);
+        }
+        else {
+            $endCarbon = new Carbon();
+        }
+        $endCarbon->endOfDay();
         $reportColIDs = ReportVersionColumn::where(["report_version_id"=>$report_version->id])->orderBy("order")->get()->pluck("report_column_id")->toArray();
         $reportCol = ReportColumn::whereIn('id',$reportColIDs)->get();
-        $dataRanges = ReportHelper::getDataRange(new Carbon(1701388800),new Carbon(1701993600));
+        switch($report->mode)
+        {
+            case "product":
+            {
+                $dataRanges = ReportHelper::getProductRange($startCarbon,$endCarbon);
+                break;
+            }
+            case "invoice":
+            {
+                $dataRanges = ReportHelper::getInvoiceRange($startCarbon,$endCarbon);
+                break;
+            }
+        }
         return view("reports.show",[
             "report"=>$report,
             "report_version"=>$report_version,
             "columns"=>$reportCol,
+            "start"=>$startCarbon,
+            "end"=>$endCarbon,
             "debits"=>ReportHelper::resolveBody($reportCol,$dataRanges[0],"debits"),
             "credits"=>ReportHelper::resolveBody($reportCol,$dataRanges[1],"credits"),
         ]);

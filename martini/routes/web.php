@@ -75,7 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/customers/overrides/update_credit/{customer}', [CustomerOverridesController::class, 'updateCredit'])->name('overrides.update_credit');
     Route::post('/customers/overrides/update_del/{customer}', [CustomerOverridesController::class, 'updateDel'])->name('overrides.update_del');
 
-    Route::get('/report/{report}/{report_version}', [ReportController::class, 'show']);
+    Route::get('/report/{report}/{report_version}', [ReportController::class, 'show'])->name('report.show');
+    Route::post('/report/{report}/{report_version}', [ReportController::class, 'show'])->name('report.show');
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

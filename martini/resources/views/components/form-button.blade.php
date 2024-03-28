@@ -1,7 +1,12 @@
 <?php if($route):?>
 <a href="{{$route ? route($route, $params) : ''}}">
 <?php endif; ?>
-    <div class="flex grid grid-cols-6 bg-white hover:bg-slate-200 shadow-md cursor-pointer mb-2 h-20 rounded-md" onclick="{{$submit ? '$(this).closest(`form`).submit()' : ''}}">
+<?php
+    $onclick = '';
+    if ($submit) $onclick = '$(this).closest(`form`).submit()';
+    else if ($title == "Export") $onclick = 'ExportData()';
+?>
+    <div class="flex grid grid-cols-6 bg-white hover:bg-slate-200 shadow-md cursor-pointer mb-2 h-20 rounded-md" onclick="{{$onclick}}">
     @if($background === 'green')
     <div class="bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center rounded-l-md">
     @elseif($background === 'orange')
