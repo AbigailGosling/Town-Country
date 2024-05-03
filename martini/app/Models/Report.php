@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * Class Report
@@ -36,12 +36,16 @@ class Report extends Model
     {
         return $this->belongsTo(User::class,"author_id","id");
     }
-    public function getReportVersions():Collection 
+    private Collection $tables;
+    public function getTables():Collection 
     {
-        return $this->report_versions()->get();
+        if (!isset($this->tables)){
+            $this->tables = ReportTable::whereIn('id',ReportTableLink::where("report_id",$this->id)->get()->pluck("table_id")->toArray())->get();
+        }
+        return $this->tables;
     }
-    public function report_versions():HasMany 
+    public function report_tables():HasMany 
     {
-        return self::hasMany(ReportVersion::class,"report_id","id");
+        return self::hasMany(ReportTable::class,"report_id","id");
     }
 }

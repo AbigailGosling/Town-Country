@@ -2,10 +2,12 @@
 
 use App\Models\Report;
 use App\Models\ReportColumn;
-use App\Models\ReportVersion;
-use App\Models\ReportVersionColumn;
+use App\Models\ReportTable;
+use App\Models\ReportTableColumn;
+use App\Models\ReportTableLink;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -18,9 +20,10 @@ return new class extends Migration
     public function up()
     {
         Schema::connection("tandc_live")->dropIfExists('reports');
-        Schema::connection("tandc_live")->dropIfExists('report_versions');
+        Schema::connection("tandc_live")->dropIfExists('report_tables');
+        Schema::connection("tandc_live")->dropIfExists('report_table_links');
         Schema::connection("tandc_live")->dropIfExists('report_columns');
-        Schema::connection("tandc_live")->dropIfExists('report_version_column');
+        Schema::connection("tandc_live")->dropIfExists('report_table_column');
         Schema::connection("tandc_live")->create('reports', function (Blueprint $table) {
             $table->id();
             $table->integer("author_id")->index();
@@ -28,11 +31,18 @@ return new class extends Migration
             $table->string("mode");
             $table->timestamps();
         });
-        Schema::connection("tandc_live")->create('report_versions', function (Blueprint $table) {
+        Schema::connection("tandc_live")->create('report_tables', function (Blueprint $table) {
             $table->id();
-            $table->integer("report_id")->index();
+            $table->string("name");
+            $table->string("mode");
+            $table->boolean("isSup");
             $table->integer("version");
             $table->timestamps();
+        });
+        Schema::connection("tandc_live")->create('report_table_links', function (Blueprint $table) {
+            $table->id();
+            $table->integer("report_id");
+            $table->integer("table_id");
         });
         Schema::connection("tandc_live")->create('report_columns', function (Blueprint $table) {
             $table->id();
@@ -45,10 +55,10 @@ return new class extends Migration
             $table->text("pointers")->nullable();
             $table->text("metadata")->nullable();
         });
-        Schema::connection("tandc_live")->create('report_version_column', function (Blueprint $table) {
+        Schema::connection("tandc_live")->create('report_table_column', function (Blueprint $table) {
             $table->id();
-            $table->integer("report_version_id")->index();
-            $table->integer("report_column_id")->index();
+            $table->integer("table_id")->index();
+            $table->integer("column_id")->index();
             $table->integer("order");
         });
         $columns = array(
@@ -90,7 +100,8 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%s",
                 "footer"            => "",
-                "pointers"          => ["pickerSheets.date_completed"],
+                "pointers"          => ["debits"=>["pickerSheets.date_completed"],
+                                        "credits"=>["this.blank"]],
                 "metadata"          => ['format_from' => "Y-m-d H:i:s", 'format_to' => "d/m/Y"],
             ),
             array(  
@@ -100,7 +111,8 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%s",
                 "footer"            => "",
-                "pointers"          => ["pickerSheets.estimated_delivery_date"],
+                "pointers"          => ["debits"=>["pickerSheets.estimated_delivery_date"],
+                                        "credits"=>["this.blank"]],
                 "metadata"          => ['format_from' => "d/m/Y", 'format_to' => "d/m/Y"],
             ),
             array(  
@@ -114,7 +126,28 @@ return new class extends Migration
                 "metadata"          => NULL,
             ),
             array(  
-                "label"             => ["Invoice"],
+                "label"             => ["ID"],
+                "data_type"         => "int",
+                "processing_type"   => "none",
+                "header"            => "%s",
+                "cell"              => "%s",
+                "footer"            => "",
+                "pointers"          => ["customers.id"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => ["Sage No"],
+                "data_type"         => "string",
+                "processing_type"   => "none",
+                "header"            => "%s",
+                "cell"              => "%s",
+                "footer"            => "",
+                "pointers"          => ["customers.sage_no"],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => ["debits"=>"Invoice",
+                                        "credits"=>"Original Invoice"],
                 "data_type"         => "id",
                 "processing_type"   => "none",
                 "header"            => "%s",
@@ -124,7 +157,20 @@ return new class extends Migration
                 "metadata"          => NULL,
             ),
             array(  
-                "label"             => ["Intake ID"],
+                "label"             => ["debits"=>"Intake ID",
+                                        "credits"=>"Original Intake ID"],
+                "data_type"         => "id",
+                "processing_type"   => "none",
+                "header"            => "%s",
+                "cell"              => "%d",
+                "footer"            => "",
+                "pointers"          => ["debits"=>["intake.id"],
+                                        "credits"=>["original_intake.id"]],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => ["debits"=>"Return Intake ID",
+                                        "credits"=>"Return Intake ID"],
                 "data_type"         => "id",
                 "processing_type"   => "none",
                 "header"            => "%s",
@@ -144,13 +190,27 @@ return new class extends Migration
                 "metadata"          => NULL,
             ),
             array(  
-                "label"             => ["Pallet ID"],
+                "label"             => ["debits"=>"Pallet ID",
+                                        "credits"=>"Original Pallet ID"],
                 "data_type"         => "id",
                 "processing_type"   => "none",
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "",
-                "pointers"          => ["pallet.id"],
+                "pointers"          => ["debits"=>["pallet.id"],
+                                        "credits"=>["original_pallet.id"]],
+                "metadata"          => NULL,
+            ),
+            array(  
+                "label"             => ["debits"=>"Return Pallet ID",
+                                        "credits"=>"Return Pallet ID"],
+                "data_type"         => "id",
+                "processing_type"   => "none",
+                "header"            => "%s",
+                "cell"              => "%d",
+                "footer"            => "",
+                "pointers"          => ["debits"=>["pallet.id"],
+                                        "credits"=>["pallet.id"]],
                 "metadata"          => NULL,
             ),
             array(  
@@ -200,7 +260,8 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%s",
                 "footer"            => "",
-                "pointers"          => ["supplier.name"],
+                "pointers"          => ["debits"=>["supplier.name"],
+                                        "credits"=>["original_supplier.name"]],
                 "metadata"          => NULL,
             ),
             array(  
@@ -271,8 +332,7 @@ return new class extends Migration
                 "header"            => "%s",
                 "cell"              => "%d",
                 "footer"            => "%d",
-                "pointers"          => ["debits"=>["product.cost"],
-                                        "credits"=>["original_product.cost"]],
+                "pointers"          => ["product.cost"],
                 "metadata"          => NULL,
             ),                    
             array(  
@@ -483,37 +543,44 @@ return new class extends Migration
         $r->name = "Product View";
         $r->mode = "product";
         $r->save();
-        $rv = new ReportVersion();
-        $rv->report_id = $r->id;
-        $rv->version = 1;
-        $rv->save();
-        $order = 0;
-        foreach(ReportColumn::all() as $rc) {
-            $rvc = new ReportVersionColumn();
-            $rvc->report_version_id = $rv->id;
-            $rvc->report_column_id = $rc->id;
-            $rvc->order = $order;
-            $rvc->save();
-            $order++;
+
+        $r2 = new Report();
+        $r2->author_id = 54;
+        $r2->name = "Invoice View";
+        $r2->mode = "invoice";
+        $r2->save();
+
+        $tables = array("Sales","Credits","Supplemental Sales","Supplemental Credits");
+        $modes = array("debits","credits","debits","credits");
+        $isSup = array(false,false,true,true);
+        for ($i = 0;$i<count($tables);$i++){
+            $rt = new ReportTable();
+            $rt->version = 1;
+            $rt->name = $tables[$i];
+            $rt->mode = $modes[$i];
+            $rt->isSup = $isSup[$i];
+            $rt->save();
+
+            $rtl = new ReportTableLink();
+            $rtl->report_id = $r->id;
+            $rtl->table_id = $rt->id;
+            $rtl->save();
+            $rtl = new ReportTableLink();
+            $rtl->report_id = $r2->id;
+            $rtl->table_id = $rt->id;
+            $rtl->save();
+
+            $order = 0;
+            foreach(ReportColumn::all() as $rc) {
+                $rvc = new ReportTableColumn();
+                $rvc->table_id = $rt->id;
+                $rvc->column_id = $rc->id;
+                $rvc->order = $order;
+                $rvc->save();
+                $order++;
+            }
         }
-        $r = new Report();
-        $r->author_id = 54;
-        $r->name = "Invoice View";
-        $r->mode = "invoice";
-        $r->save();
-        $rv = new ReportVersion();
-        $rv->report_id = $r->id;
-        $rv->version = 1;
-        $rv->save();
-        $order = 0;
-        foreach(ReportColumn::all() as $rc) {
-            $rvc = new ReportVersionColumn();
-            $rvc->report_version_id = $rv->id;
-            $rvc->report_column_id = $rc->id;
-            $rvc->order = $order;
-            $rvc->save();
-            $order++;
-        }
+        DB::connection('tandc_live')->statement("DELETE FROM `tandc_live`.`report_table_column` WHERE `table_id` in (1,3) AND `column_id` IN (11,14)");
     }
 
     /**

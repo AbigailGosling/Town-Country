@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Helpers\ReportHelper;
 use App\Models\Report;
 use App\Models\ReportColumn;
-use App\Models\ReportVersion;
-use App\Models\ReportVersionColumn;
+use App\Models\ReportTable;
+use App\Models\ReportTableColumn;
+use App\Models\ReportTableLink;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class ReportController extends Controller
 {
@@ -49,10 +51,20 @@ class ReportController extends Controller
      * @param  \App\Models\Report  $report
      * @return \Illuminate\Http\Response
      */
-    public function show(Report $report,ReportVersion $report_version)
+    public function show(Report $report)
     {
-        $start = request()->input("start",null);
-        $end = request()->input("end",null);
+        if (request()->has("selector") && request()->input("selector")!=$report->id) 
+        {
+            Session::put("start",request()->input("start",null));
+            Session::put("end",request()->input("end",null));
+            Session::put("dateType",request()->input("dateType",null));
+            return redirect()->to(route("report.show",["report"=>request()->input("selector")]));
+        }
+        $start = request()->input("start", Session::get("start",null));
+        $end = request()->input("end", Session::get("end",null));
+        $dateType = request()->input("dateType","assembled");
+        Session::forget(["start","end","dateType"]);
+        
         if ($start != null) {
             $startCarbon = Carbon::parse($start);
         }
@@ -66,31 +78,27 @@ class ReportController extends Controller
         else {
             $endCarbon = new Carbon();
         }
-        $endCarbon->endOfDay();
-        $reportColIDs = ReportVersionColumn::where(["report_version_id"=>$report_version->id])->orderBy("order")->get()->pluck("report_column_id")->toArray();
-        $reportCol = ReportColumn::whereIn('id',$reportColIDs)->get();
-        switch($report->mode)
-        {
-            case "product":
-            {
-                $dataRanges = ReportHelper::getProductRange($startCarbon,$endCarbon);
-                break;
-            }
-            case "invoice":
-            {
-                $dataRanges = ReportHelper::getInvoiceRange($startCarbon,$endCarbon);
-                break;
-            }
-        }
-        return view("reports.show",[
+        
+    $endCarbon->endOfDay();
+        $dataRanges = ReportHelper::getCollectionsForReportRange($report,$dateType,$startCarbon,$endCarbon);
+        $args = [
+            "reports"=>Report::all(),
             "report"=>$report,
-            "report_version"=>$report_version,
-            "columns"=>$reportCol,
             "start"=>$startCarbon,
             "end"=>$endCarbon,
-            "debits"=>ReportHelper::resolveBody($reportCol,$dataRanges[0],"debits"),
-            "credits"=>ReportHelper::resolveBody($reportCol,$dataRanges[1],"credits"),
-        ]);
+            "dateType"=>$dateType,
+            "debits"=>ReportHelper::resolveTableBody(($report->getTables())[0],$dataRanges[0]),
+            "credits"=>ReportHelper::resolveTableBody($report->getTables()[1],$dataRanges[1]),
+        ];
+        if (count($dataRanges)>2){
+            $args["supdebits"] = ReportHelper::resolveTableBody($report->getTables()[2],$dataRanges[2]);
+            $args["supcredits"] = ReportHelper::resolveTableBody($report->getTables()[3],$dataRanges[3]);
+        }
+        else {
+            $args["supdebits"] = [];
+            $args["supcredits"] = [];
+        }
+        return view("reports.show", $args);
     }
 
     /**

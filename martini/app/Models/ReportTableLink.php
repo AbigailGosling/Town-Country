@@ -5,23 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 /**
- * Class ReportColumn
+ * Class ReportTableLink
  * 
  * @property int $id
- * @property int $report_version_id
- * @property int $report_column_id
+ * @property int $report_id
+ * @property int $table_id
  *
  * @package App\Models
  */
-class ReportVersionColumn extends Model
+class ReportTableLink extends Model
 {
     use HasFactory;
     protected $connection = 'tandc_live';
-	protected $table = 'report_version_column';
+	protected $table = 'report_table_links';
     public $timestamps = false;
     protected $fillable = [
-		'report_version_id',
-        'report_column_id',
-        'order',
+		'report_id',
+        'table_id',
 	];
 }

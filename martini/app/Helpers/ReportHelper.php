@@ -1,16 +1,21 @@
 <?php
 namespace App\Helpers;
 
+use App\Models\Report;
 use App\Models\ReportColumn;
+use App\Models\ReportTable;
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PDO;
-use stdClass;
 
 class ReportHelper 
 {
+    public const DATE_TYPE_ASSEMBLED = "assembled";
+    public const DATE_TYPE_CREATED = "created";
+    public const DATE_TYPE_DELIVERED = "delivered";
     private static array $customers;
     private static array $users;
     private static array $suppliers;
@@ -20,47 +25,55 @@ class ReportHelper
     private static array $cuts;
     private static array $cutgroups;
     private static array $species;
+
     /** @var Connection $conn */
     private static $conn;
-    public static function getProductRange(Carbon $start, Carbon $end):array
+    /** @var PDO $pdo */
+    private static $pdo;
+
+    public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start,Carbon $end):array
     {
         ini_set('memory_limit', '4G');
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
-        $pdo = static::$conn->getPdo();
-        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
+        static::$pdo = static::$conn->getPdo();        
         static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
+        switch ($report->mode)
+        {
+            case "product":
+                return static::getProductRange($dateType,$start,$end);
+            case "invoice":
+                return static::getInvoiceRange($dateType,$start,$end);
+        }
+    }
+    private static function getProductRange(string $dateType, Carbon $start, Carbon $end):array
+    {    
+        //Alter DB Settings
+        static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
         $resultQB = static::$conn->table("pickerSheets")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
-            ->selectRaw("count(pickerItems.product_id)")
-            ->select([
-                "pickerSheets.*",
-                "pickerItems.*" ,
-                "palletsOut.*" ,])
-            ->groupBy(["pickerSheets.id","pickerItems.product_id"])
-            ->whereDate("pickerSheets.date_completed",">=",$start)
-            ->whereDate("pickerSheets.date_completed","<=" ,$end)
-            ;
+            ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
+        static::applyRange($resultQB,$dateType,$start,$end);
         /** @var Collection $debits */
         $debits = $resultQB->get();
+
+        //throw new \Exception(json_encode([$i1,$i2]));
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
-            ->select([
-                "pickerSheets.*",
-                "invoice_payments.*" ,
-                "credit_note_items.*" ,])
-            ->whereDate("invoice_payments.created_at",">=",$start)
-            ->whereDate("invoice_payments.created_at","<=" ,$end)
-            ->orderBy("invoice_payments.created_at","desc")
-            ;
+            ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->whereBetween("invoice_payments.created_at",[$start,$end])
+            ->orderBy("invoice_payments.created_at");
+
         /** @var Collection $credits */
         $credits = $resultQB->get();
         static::initialiseLookupArrays();
         //Restore DB Settings
-        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
+        static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
+        $finalSupp = new Collection();
         $finalDebits = new Collection();
         foreach($debits as $result)
         {
@@ -80,10 +93,21 @@ class ReportHelper
             if ($item===null) continue;
             static::row_merge($result,$item,"product.");
 
-            if (static::bulkMergeIn($result))$finalDebits->add($result);
-            else throw new \Exception(json_encode($result));
+            if (static::bulkMergeIn($result))
+            {
+                $col = "pickerSheets.isSupplemental";
+                if ($result->$col === true || $result->$col === 1) 
+                {
+                    $col = "pickerSheets.isSupplementalCredit";
+                    if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
+                }
+                else $finalDebits->add($result);
+            }
         }
+
+        //throw new \Exception(json_encode([$i1,$i2]));
         $finalCredits = new Collection();
+        $finalSuppCred = new Collection();
         foreach($credits as $result)
         {
             $col = "credit_note_items.product_id";
@@ -97,65 +121,81 @@ class ReportHelper
 
             $col = "credit_note_items.product_id";
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
-            if ($item===null) continue;     
+            if ($item===null) continue;
             static::row_merge($result,$item,"product.");
 
             $col = "product.original_pallet_id";
             $item = static::$conn->table("product")->select("product.*")->where("product.pallet_id",$result->$col)->first();
-            if ($item===null) continue;     
+            if ($item===null) continue; 
             static::row_merge($result,$item,"original_product.");
 
-            $col = "original_product.id";
-            $item = static::$conn->table("pickerItems")->select("pickerItems.*")->where("pickerItems.product_id",$result->$col)->first();
-            if ($item===null) continue;     
+            $col = "product.original_pallet_id";
+            $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
+            if ($item===null) continue; 
+            static::row_merge($result,$item,"original_pallet.");
+
+            $col = "original_pallet.intake_id";
+            $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
+            if ($item===null) continue; 
+            static::row_merge($result,$item,"original_intake.");
+
+            $col = "original_intake.supplier_id";
+            $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
+            if ($item===null) continue; 
+            static::row_merge($result,$item,"original_supplier.");
+
+            $co  = "original_product.id";
+            $col = "product.id";
+            $col2 = "pickerSheets.id";
+            $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
+            $item = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]])->first();
+            if ($item===null) continue;//throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));    
             static::row_merge($result,$item,"pickerItems.");
 
-            if (static::bulkMergeIn($result))$finalCredits->add($result);
+            if (static::bulkMergeIn($result))
+            {
+                $col = "pickerSheets.isSupplemental";
+                if ($result->$col === true || $result->$col === 1) $finalSuppCred->add($result);
+                else $finalCredits->add($result);
+            }
         }
-        //throw new \Exception(json_encode($finalCredits));
-        return array($finalDebits,$finalCredits);
+        return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred);
     }
-    public static function getInvoiceRange(Carbon $start, Carbon $end):array
+    private static function getInvoiceRange(string $dateType, Carbon $start, Carbon $end):array
     {
-        ini_set('memory_limit', '4G');
         //Alter DB Settings
-        static::$conn = DB::connection("tandc_live");
-        $pdo = static::$conn->getPdo();
-        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
-        static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
+        static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
+            ->join("palletsOut","pickerSheets.id"               ,'=',"palletsOut.pickersheet_id")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")           
-            ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids")
-            ->groupBy(["pickerSheets.id"])
-            ->whereDate("pickerSheets.date_completed",">=",$start)
-            ->whereDate("pickerSheets.date_completed","<=" ,$end);
+            ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->groupBy(["pickerSheets.id"]);
+        static::applyRange($resultQB,$dateType,$start,$end);
+        
         /** @var Collection $debits */
         $debits = $resultQB->get();
 
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
-            ->select([
-                "pickerSheets.*",
-                "invoice_payments.*" ,
-                "credit_note_items.*" ,])
-            ->whereDate("invoice_payments.created_at",">=",$start)
-            ->whereDate("invoice_payments.created_at","<=" ,$end)
-            ->orderBy("invoice_payments.created_at","desc")
-            ;
+            ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")     
+            ->whereBetween("invoice_payments.created_at",[$start,$end])
+            ->groupBy(["pickerSheets.id"])       
+            ->orderBy("invoice_payments.created_at");
+            
         /** @var Collection $credits */
         $credits = $resultQB->get();
 
         static::initialiseLookupArrays();
 
         //Restore DB Settings
-        $pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
+        static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
+
         $finalDebits = new Collection();
+        $finalSupp = new Collection();
         foreach($debits as $result)
-        {
-            
+        {       
             $col = ".weight_ids";
             $col2= ".product_ids";
             $col3= ".prices";
@@ -210,13 +250,100 @@ class ReportHelper
             $subTotal = "pickerSheets.actCost";
             $result->$subTotal = $rollingActCost;
 
-            if (static::bulkMergeIn($result,false))$finalDebits->add($result);
+            if (static::bulkMergeIn($result,false))
+            {
+                $col = "pickerSheets.isSupplemental";
+                if ($result->$col === true || $result->$col === 1) 
+                {
+                    $col = "pickerSheets.isSupplementalCredit";
+                    if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
+                }
+                else $finalDebits->add($result);
+            }
         }
+        $finalSuppCred = new Collection();
         $finalCredits = new Collection();
         foreach($credits as $result)
         {
+            $col2= ".product_ids";
+            $col3= ".prices";
+
+            $product_ids = explode(",",$result->$col2);
+            $prices = explode(",",$result->$col3);
+            $rollingItem = null;
+            $rollingActCost = $rollingCost = $rollingTotal = 0;
+            $processedProds = [];
+            foreach ($product_ids as $index => $product_id)
+            {
+                if (array_key_exists($product_id,$processedProds))continue;
+                else $processedProds[$product_id] = true;
+                $price = $prices[$index];
+                $weightQB = static::$conn->table("weights")
+                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
+                    ->where("weights.product_id",$product_id)
+                    ->groupBy("weights.product_id");
+                $weight = $weightQB->first();
+                if ($weight == null) continue;
+                $product = static::$conn->table("product")->select("product.*")->where("product.id",$product_id)->first();
+
+                $col = "product.original_pallet_id";
+                $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$product->original_pallet_id)->first();
+                if ($item===null) continue; 
+                static::row_merge($result,$item,"original_pallet.");
+
+                $col = "original_pallet.intake_id";
+                $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
+                if ($item===null) continue; 
+                static::row_merge($result,$item,"original_intake.");
+
+                $col = "original_intake.supplier_id";
+                $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
+                if ($item===null) continue; 
+                static::row_merge($result,$item,"original_supplier.");
+
+                if ($rollingItem == null) $rollingItem = $weight;
+                else foreach ($weight as $colName => $val)
+                {
+                    if (!is_numeric($rollingItem->$colName)) continue;
+                    (double)$rollingItem->$colName += (double)$val;
+                }
+              
+                if ($product->unit == "PPC")
+                {
+                    $rowCountPointer = "rows";
+                }
+                else
+                {
+                    $rowCountPointer = "weight_tear";
+                }
+                $rollingTotal += static::floorDec(($weight->$rowCountPointer*$price),2);
+                $rollingCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                if ($product->price && $product->price > 0)$rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->price),2);
+                else $rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+            }
+            if ($rollingItem == null) continue;
+            static::row_merge($result,$rollingItem,"weights.");
+            $subTotal = "pickerSheets.subTotal";
+            $result->$subTotal = $rollingTotal;
+
+            $subTotal = "pickerSheets.cost";
+            $result->$subTotal = $rollingCost;
+
+            $subTotal = "pickerSheets.actCost";
+            $result->$subTotal = $rollingActCost;
+
+            $dateCol = "pickerSheets.date";
+            $dateTo = "invoice_payments.created_at";
+            $result->$dateTo =  $result->$dateCol;
+
+            if (static::bulkMergeIn($result,false))
+            {
+                $col = "pickerSheets.isSupplementalCredit";
+                if ($result->$col === true || $result->$col === 1) $finalSuppCred->add($result);
+                else $finalCredits->add($result);
+            }
         }
-        return array($finalDebits,$finalCredits);
+        return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred);
     }
     public static function resolveHeader(ReportColumn $reportColumn,string $mode):string
     {
@@ -232,20 +359,17 @@ class ReportHelper
         }
         return $result;
     }
-    public static function resolveBody(Collection $reportColumns, Collection $rows, string $mode):array
+    public static function resolveTableBody(ReportTable $reportTable, Collection $rows):array
     {
         $results = [];
+        $mode = $reportTable->mode;
         $rows2 = $rows->toArray();
-        usort($rows2,function($a, $b) {
-            $c = "pickerSheets.id";
-            return ($a->$c > $b->$c);
-        });
         foreach ($rows2 as $dbRow) 
         {   
             $workingResult = [];
-            foreach ($reportColumns as $reportColumn)
+            foreach ($reportTable->getColumns() as $reportColumn)
             {
-                $workingResult[$reportColumn->getLabel($mode)] = "";
+                $workingResult[$reportColumn->getLabel($reportTable->mode)] = "";
                 if (!static::filterCheck($reportColumn,$workingResult,$dbRow)) 
                 {
                     $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,"","");
@@ -307,7 +431,10 @@ class ReportHelper
     }
     public static function resolveDateCell(ReportColumn $reportColumn,$left,$right):string
     {
-        return $left.DateTime::createFromFormat($reportColumn->metadata['format_from'],$right)->getTimestamp();
+        $t = DateTime::createFromFormat($reportColumn->metadata['format_from'],$right);
+        if ($t) $t = $t->getTimestamp();
+        else $t = "";
+        return $left.$t;
     }
     private static function array_search_multidim($array, $column, $key)
     {
@@ -508,14 +635,41 @@ class ReportHelper
             }
             case "date":
             {
-                $v = new DateTime();
-                $v->setTimestamp((int)$workingVal);
-                return $v->format($reportColumn->metadata['format_to']);
+                if ((int)$workingVal != 0 && (int)$workingVal != null){
+                    $v = new DateTime();
+                    $v->setTimestamp((int)$workingVal);
+                    return $v->format($reportColumn->metadata['format_to']);
+                }
+                else return "";
             }
             default:
             {
                 return ($workingVal)?$workingVal:"";
             }
+        }
+    }
+    private static function applyRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
+    {
+        switch ($dateType) 
+        {
+            case self::DATE_TYPE_ASSEMBLED:
+            {
+                $resultQB->whereBetween("pickerSheets.date_completed",[$start,$end])
+                        ->orderBy("pickerSheets.date_completed");
+                break;
+            }
+            case self::DATE_TYPE_CREATED:
+            {
+                $resultQB->whereBetween("pickerSheets.date",[$start,$end])
+                        ->orderBy("pickerSheets.date");
+                break;
+            }
+            case self::DATE_TYPE_DELIVERED:
+            {
+                $resultQB->whereRaw("(STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') BETWEEN '".$start."' AND '".$end."')")
+                        ->orderBy("parsedDate");
+                break;
+            }          
         }
     }
     private static function floorDec($val, $precision = 2) {
