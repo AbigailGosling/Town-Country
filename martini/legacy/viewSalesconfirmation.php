@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	$adv = request()->has("adv");
 
 	if ($adv == false) include_once('includes/frontHeader.php');
@@ -72,7 +76,7 @@
 		</div>
 		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="" <?php if (!User::find(Auth::id())->hasPermission("change_sale_details")) {?>disabled<?php }?>>
 		</div>
 	  
 	</div>
@@ -116,7 +120,9 @@
 
 	<div class="row printhide">
 		<div class="col">
+			<?php if (User::find(Auth::id())->hasPermission("change_sale_details")) {?>
 			<input type="button" onclick="mainForm()" value="Update">
+			<?php }?>
 		</div>
 	</div>
 </div>
@@ -236,10 +242,11 @@
 ?>
 <script type="text/javascript">
 	$('#customer').attr('disabled', 'disabled');
- 
+	<?php if (User::find(Auth::id())->hasPermission("change_sale_details")) {?>
 	$( "#estimated_delivery_date" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 	});
+	<?php } ?>
 	setCustomerDetails(<?php echo $customer_id; ?>,<?php echo $picksheet['addressid']; ?>, 'true');
 	
 	setTimeout(() => {

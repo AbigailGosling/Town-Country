@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 	require_once(__DIR__.'/../functions.php');
 	require_once('customer_soa_results_function.php');
 
@@ -68,7 +71,7 @@
 		<input class="form-control input box" type="text" id="deliverynumber" name="deliverynumber" value="<?php echo $addressNumber; ?>">
 	</div>
 	<div class="delivery_address_container">
-		<label>Delivery Address</label> <a href="#changeAddress" data-lity>[Other]</a><br/>
+		<label>Delivery Address</label> 	<?php if(request()->input('src') != 'salesconfirmation' || User::find(Auth::id())->hasPermission("change_sale_details")){ ?><a href="#changeAddress" data-lity>[Other]</a><?php } ?><br/>
 
  		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline1" name="addressline1" value="<?php echo $addressline1; ?>" disabled>
  		<input class="form-control input box" style="margin-bottom:0px;" type="text" id="addressline2" name="addressline2" value="<?php echo $addressline2; ?>" disabled>
