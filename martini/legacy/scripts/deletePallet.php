@@ -9,7 +9,7 @@
 	$product_id  = request()->input('product_id');
 	
 	
-	# if($product_id != '' && $pallet_id != ''){
+	if($product_id != '' && $product_id != null && $product_id != -1 && $product_id != "-1" && $pallet_id != '' && $pallet_id != null && $pallet_id != -1 && $pallet_id != "-1"){
 		loggedDataChange('pallet_force_delete',$pallet_id,'User Deleted Pallet');
 		
 		$x = "SELECT * FROM `product` WHERE pallet_id = $pallet_id";
@@ -24,7 +24,7 @@
 		
 		deletePallet($pallet_id);
 		
-	# }
+	}
 ?>
 <script>
 	window.location = '../intake.php?id=<?php echo $intake_id; ?>';

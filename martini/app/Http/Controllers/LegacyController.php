@@ -15,6 +15,7 @@ class LegacyController extends Controller
     public function entry_point()
     {
         $s = time();
+        $d = date('Y-m-d H:i:s');
         $targetFile = str_replace("?".request()->server('QUERY_STRING'),'',request()->server('REQUEST_URI'));
         $ext = explode(".",$targetFile);
         $ext = $ext[array_key_last($ext)];
@@ -32,7 +33,7 @@ class LegacyController extends Controller
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        $d.';'.date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
 
@@ -44,7 +45,7 @@ class LegacyController extends Controller
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        $d.';'.date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
                 abort(403);
