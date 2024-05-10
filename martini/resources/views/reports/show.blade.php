@@ -85,7 +85,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 </tbody>
                 <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$debits,"debits")}}</x-data-table-header>
+                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$debits2,"debits")}}</x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>
@@ -110,7 +110,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 </tbody>
                 <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$credits,"credits")}}</x-data-table-header>
+                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$credits2,"credits")}}</x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>
@@ -136,7 +136,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 </tbody>
                 <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supdebits,"debits")}}</x-data-table-header>
+                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supdebits2,"debits")}}</x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>    
@@ -163,7 +163,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 </tbody>
                 <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supcredits,"credits")}}</x-data-table-header>
+                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supcredits2,"credits")}}</x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>    
@@ -177,28 +177,46 @@ if (!isset($dateType)) $dateType = "assembled";
     function ExportData()
     {
         filename='{{str_replace(" ","_",strtolower($report->name))}}_{{time()}}_{{$start->format("Y-m-d")}}_{{$end->format("Y-m-d")}}.xlsx';
-        data={!!json_encode($debits2)!!};
-        var ws = XLSX.utils.json_to_sheet(data);
-        var wb = XLSX.utils.book_new();
+        wb = XLSX.utils.book_new();
+        @if(count($debits2) > 0)
+data=cleanData({!!json_encode($debits2)!!});
+        console.log(data);
+        ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "Debits");
-        data={!!json_encode($credits2)!!};
+        @endif
+        @if(count($credits2) > 0)
+data=cleanData({!!json_encode($credits2)!!});
         ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "Credits");
-        
-        if ({!!count($supdebits2)!!} > 0)
-        {
-            data={!!json_encode($supdebits2)!!};
-            ws = XLSX.utils.json_to_sheet(data);
-            XLSX.utils.book_append_sheet(wb, ws, "Supplemental Debits");
-        }
-        if ({!!count($supcredits2)!!} > 0)
-        {
-            data={!!json_encode($supcredits2)!!};
-            ws = XLSX.utils.json_to_sheet(data);
-            XLSX.utils.book_append_sheet(wb, ws, "Supplemental Credits");
-        }
-        XLSX.writeFile(wb,filename);
+        @endif
+        @if(count($supdebits2) > 0)
+data=cleanData({!!json_encode($supdebits2)!!});
+        ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, "Supplemental Debits");
+        @endif
+        @if(count($supcredits2) > 0)
+data=cleanData({!!json_encode($supcredits2)!!});
+        ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, "Supplemental Credits");
+        @endif
+XLSX.writeFile(wb,filename);
      }
+     function cleanData(data){
+        for (row of data) {
+            for (property in row) {
+                if (isNumeric(row[property]))
+                {
+                    row[property] = parseFloat(row[property]);
+                }
+            }
+        }
+        return data;
+     }
+     function isNumeric(str) {
+        if (typeof str != "string") return false // we only process strings!  
+        return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+                !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+    }
      function readyEvent() {
         $("#export").css("pointer-events","auto");
         $("#export-text").text(" Export ");

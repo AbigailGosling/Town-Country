@@ -104,8 +104,6 @@ class ReportHelper
                 else $finalDebits->add($result);
             }
         }
-
-        //throw new \Exception(json_encode([$i1,$i2]));
         $finalCredits = new Collection();
         $finalSuppCred = new Collection();
         foreach($credits as $result)
@@ -351,12 +349,31 @@ class ReportHelper
     }
     public static function resolveFooter(ReportColumn $reportColumn,array $data,string $mode):string
     {
-        $result = "";
+        $result = null;
+        $percision = 3;
+        $magShift = pow(10,$percision);
         if ($reportColumn->metadata != null && isset($reportColumn->metadata['footer']))
         {
             $columnData = array_column($data,$reportColumn->getLabel($mode));
-            $result = static::finaliseItem($reportColumn,$reportColumn->metadata['footer']($columnData));
+            //
+            for($i=0;$i<count($columnData);$i++)
+            {
+                $rolling =  filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+                $rolling = static::floorDec(floatval($rolling)*$magShift,0);
+                
+                switch($reportColumn->metadata['footer'])
+                {
+                    case "array_sum":
+                    {
+                        $result += $rolling;
+                        break;
+                    }
+                }
+                
+            }
+            $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
         }
+        if ($result == null) $result = "";
         return $result;
     }
     public static function resolveTableBody(ReportTable $reportTable, Collection $rows):array
