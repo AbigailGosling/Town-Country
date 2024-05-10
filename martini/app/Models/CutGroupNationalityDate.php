@@ -70,7 +70,9 @@ class CutGroupNationalityDate extends Model
 	static function lookupFromProduct(Product $product):CutGroupNationalityDate|null
 	{
 		/** @var Cut $cut */
-		$cut = $product->cut()->get()->first();
-		return self::firstWhere(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$product->nationality_id]);
+		$cut = Cut::find($product->cut_id);
+		$r = self::where(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$product->nationality_id]);
+		$re = $r->first();
+		return $re;
 	}
 }

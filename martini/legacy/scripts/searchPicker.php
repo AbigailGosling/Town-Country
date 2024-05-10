@@ -144,11 +144,11 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $knownCombo = [];
     foreach ($products2 as $productRow)
     {
-        $isDeleted = prepareExecuteQuery("SELECT `deleted` from `intake` WHERE id = ?",'i',[$productRow['intake_id']])->fetch_assoc()['deleted'];
-        if ($isDeleted == 1) continue;
         $alasCombo = $productRow['intake_id'] . "-" . $productRow['cut_id'] . "-" . $productRow['nationality_id'];
         if (!array_key_exists($alasCombo,$knownCombo))
         {
+            $isDeleted = prepareExecuteQuery("SELECT `deleted` from `intake` WHERE id = ?",'i',[$productRow['intake_id']])->fetch_assoc()['deleted'];
+            if ($isDeleted == 1) continue;
             $knownCombo[$alasCombo] = $alasCombo;
             $products[] = $productRow;
         }
