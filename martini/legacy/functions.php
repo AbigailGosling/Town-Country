@@ -76,14 +76,15 @@ use Ramsey\Uuid\Type\Decimal;
 			$stmt = $knownStatements[$sql."_".$varTypes];
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
 			$s = time();
+			$d = date('Y-m-d H:i:s');
 			$stmt->execute();
 
 			if (time()-$s>1)
 			{
 				File::append(
 					storage_path('/logs/slow-query.log'),
-					($vars && count($vars)>0)?	date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . ' [' . implode(', ', $vars) . ']' . PHP_EOL:
-												date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . PHP_EOL
+					($vars && count($vars)>0)?	$d . ';'. date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . ' [' . implode(', ', $vars) . ']' . PHP_EOL:
+												$d . ';'. date('Y-m-d H:i:s') . ';'.(time()-$s).';'.$_SESSION['USER']. ";" . $sql . PHP_EOL
 				);
 				$e = new \Exception();
 				for ($i=0;$i<5;$i++)
@@ -1524,29 +1525,8 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 
 	function totalOutstandingForCustomer($customer_id){
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id ASC",'i',[$customer_id]);
-		
-		$totalOutstanding = 0.00;
-
-		while($picksheet = $customerPicksheets->fetch_assoc()){
-			
-				
-				$total_credit = totalValueCreditedOnInvoiceID($picksheet['id']);
-				
-				$this_price = (double) invoiceTotal($picksheet['id']);
-				
-				$epsilon = 0.00001;
-				if(($this_price - $picksheet['paid']) <= $epsilon){
-					$currentOutstanding = (double) $this_price - $picksheet['paid'] - $total_credit;
-				}else{
-					$currentOutstanding = (double) $this_price - $picksheet['paid'] - $total_credit;
-				}
-				
-				$totalOutstanding += $currentOutstanding;
-			
-		}
-		
-		return number_format((double)$totalOutstanding, 2, '.', '');
+		require_once("ajax/customer_soa_results_function.php");
+		return number_format((double)check_customer_outstanding_cache($customer_id)['outstanding'], 2, '.', '');
 	}
 
 	function invoiceTotal($pickersheet_id){
