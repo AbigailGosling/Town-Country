@@ -8,8 +8,8 @@
 	echo "<br/>";
 	$product_id  = request()->input('product_id');
 	
-	
-	if($product_id != '' && $product_id != null && $product_id != -1 && $product_id != "-1" && $pallet_id != '' && $pallet_id != null && $pallet_id != -1 && $pallet_id != "-1"){
+	$t = prepareExecuteQuery("SELECT COUNT(*) as `rows` FROM pallet WHERE id = ? AND intake_id = ?",'ii',[$pallet_id,$intake_id])->fetch_assoc();
+	if($t['rows'] == 1 && $intake_id != '' && $intake_id != null && $intake_id != -1 && $intake_id != "-1" && $pallet_id != '' && $pallet_id != null && $pallet_id != -1 && $pallet_id != "-1"){
 		loggedDataChange('pallet_force_delete',$pallet_id,'User Deleted Pallet');
 		
 		$x = "SELECT * FROM `product` WHERE pallet_id = $pallet_id";
