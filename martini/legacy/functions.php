@@ -1370,7 +1370,7 @@ use Ramsey\Uuid\Type\Decimal;
 		global $mysqli;
 		
 		$xKez = "SELECT id FROM `pallet` WHERE intake_id=?";
-		$yKez = prepareExecuteQuery($xKez,'i',[$intake_id]);
+		$yKez = loggedQuery($xKez,'i',[$intake_id]);
 		
 		$counter = $yKez->num_rows;
 		
@@ -1395,7 +1395,7 @@ use Ramsey\Uuid\Type\Decimal;
 			$x2Kez = "SELECT * FROM `pallet` WHERE id IN (".implode(",",array_fill(0,count($ids),"?")).")";
 			$y2Kez = prepareExecuteQuery($x2Kez,str_repeat("i",count($ids)),$ids);
 		}else{
-			$y2Kez = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id = -1");
+			$y2Kez = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id <> id");
 		}
 		return $y2Kez;
 	}
