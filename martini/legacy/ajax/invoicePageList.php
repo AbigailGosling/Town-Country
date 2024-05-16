@@ -34,7 +34,6 @@ use Illuminate\Support\Facades\Auth;
 
         $intakeQueryPiece = " || id IN ($intake_picksheet_ids)";
     }
-
     // END - intake id + pallet id search
 
     $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id= ? OR completed='1' && id LIKE ? $customerids $intakeQueryPiece ORDER BY `id` DESC";

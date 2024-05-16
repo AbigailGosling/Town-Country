@@ -212,9 +212,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $enddates = array();
         foreach ($products2 as $product2) 
         {
-            array_push($product2_palletids, $product2['pallet_id']);
-            array_push($product2_cutids, $product2['cut_id']);
-            array_push($product2_productids, $product2['productid']);
+            $product2_palletids[]= $product2['pallet_id'];
+            $product2_cutids[]= $product2['cut_id'];
+            $product2_productids[]= $product2['productid'];
             $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
             if($product2['akg'] != ''){
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
@@ -227,8 +227,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     }
             }
             if($numOfWeights > 0){
-                array_push($product2_brands, $product2['brand_id']);
-                array_push($product2_nationalities, $product2['nationality_id']);
+                $product2_brands[]= $product2['brand_id'];
+                $product2_nationalities[]= $product2['nationality_id'];
                 array_push($product2_temperatures, $product2['cooling_id']);
                 if ($product2['range_extension'] == null || $product2['range_extension'] == ''){
                     array_push($product2_dateranges, $product2['range_from'] .'-'. $product2['range_to']);

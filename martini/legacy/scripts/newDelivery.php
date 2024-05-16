@@ -14,7 +14,6 @@
 	
 	$date_received = str_replace('/', '-', $date_received);
 	$date_received = date('Y-m-d H:i:s', strtotime($date_received));
-	
 	$id = addIntakeDupe($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature,$product_temperature, $delivery_note_number, $staff_id, $security_id, $purchase_id);
 ?>
 <script>
