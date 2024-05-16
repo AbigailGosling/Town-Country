@@ -8,13 +8,17 @@ use Jenssegers\Agent\Agent;
 class DataTable extends Component
 {
     public $agent;
+    public string $headerColour;
+    public string $footerColour;
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($headerColour = "gray-200",$footerColour = "gray-200")
     {
+        $this->headerColour = $headerColour;
+        $this->footerColour = $footerColour;
         $this->agent = new Agent();
     }
 

@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $admin_approved
  * @property string|null $transaction_id
  * @property bool $isSupplemental
+ * @property bool $isSupplementalCredit
  *
  * @package App\Models
  */
@@ -53,7 +54,8 @@ protected $connection = 'tandc_live';
 		'deleted' => 'int',
 		'deleted_by_user_id' => 'int',
 		'admin_approved' => 'bool',
-		'isSupplemental' => 'bool'
+		'isSupplemental' => 'bool',
+		'isSupplementalCredit' => 'bool',
 	];
 
 	protected $dates = [

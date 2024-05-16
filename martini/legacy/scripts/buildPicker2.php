@@ -26,7 +26,7 @@ if ($transaction_id != null && $transaction_id != "")
         die();
     }
 }
-$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental) VALUES (?,?,?,?,?,?,?,?,?,1)";
+$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").")";
 $y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 
 $pickersheet_id = $y;
@@ -48,7 +48,7 @@ foreach ($items as $item){
     $cutid = prepareExecuteQuery("INSERT INTO `tandc_live`.`cuts` ( `species_id`, `name`, `cutgroup_id`) VALUES (13, ?, -1)",'s',[$name],true);
     //Product Row
     $product_id = prepareExecuteQuery("INSERT INTO `tandc_live`.`product` (`pallet_id`, `cut_id`, `brand_id`, `nationality_id`, `cooling_id`, `status`, `range_from`, `range_to`, `ubbb`, `unit`, `comments`, `best_by`, `pricetype`, `cost`, `price`, `box_id`, `weightnote`, `product_temp`, `original_intake_id`, `original_pallet_id`, `note_units`, `note_weight`, `akg`, `quantity`) 
-                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '".$cost."','".$cost."', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 1)",'',[],true);                                            
+                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 1)",'',[],true);                                            
     //Weight Row
     $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, 1, 1, 1, 1, 1, 1, '0', '0')",'',[],true);
 
