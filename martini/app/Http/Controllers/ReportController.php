@@ -81,23 +81,22 @@ class ReportController extends Controller
         
     $endCarbon->endOfDay();
         $dataRanges = ReportHelper::getCollectionsForReportRange($report,$dateType,$startCarbon,$endCarbon);
+        $dataRanges2= [];
+        foreach ($dataRanges as $key=>$range)
+        {
+            $dataRanges2[]=ReportHelper::resolveTableBody($report->getTables()[$key],$range);
+        }
+        while (count($dataRanges2)<4){
+            $dataRanges2[] = [];
+        }
         $args = [
             "reports"=>Report::all(),
             "report"=>$report,
             "start"=>$startCarbon,
             "end"=>$endCarbon,
             "dateType"=>$dateType,
-            "debits"=>ReportHelper::resolveTableBody(($report->getTables())[0],$dataRanges[0]),
-            "credits"=>ReportHelper::resolveTableBody($report->getTables()[1],$dataRanges[1]),
+            "dataRanges"=>$dataRanges2,
         ];
-        if (count($dataRanges)>2){
-            $args["supdebits"] = ReportHelper::resolveTableBody($report->getTables()[2],$dataRanges[2]);
-            $args["supcredits"] = ReportHelper::resolveTableBody($report->getTables()[3],$dataRanges[3]);
-        }
-        else {
-            $args["supdebits"] = [];
-            $args["supcredits"] = [];
-        }
         return view("reports.show", $args);
     }
 

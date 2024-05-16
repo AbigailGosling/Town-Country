@@ -40,7 +40,9 @@ class Report extends Model
     public function getTables():Collection 
     {
         if (!isset($this->tables)){
-            $this->tables = ReportTable::whereIn('id',ReportTableLink::where("report_id",$this->id)->get()->pluck("table_id")->toArray())->get();
+            $this->tables = new Collection;
+            $ids = ReportTableLink::where("report_id",$this->id)->orderBy('order')->get()->pluck("table_id")->toArray();
+            foreach($ids as $id) $this->tables[] = ReportTable::find($id);
         }
         return $this->tables;
     }

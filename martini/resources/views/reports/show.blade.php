@@ -1,8 +1,5 @@
 <?php
-$debits2 = [];
-$credits2= [];
-$supdebits2 = [];
-$supcredits2 = [];
+$processed = [];
 if (!isset($dateType)) $dateType = "assembled";
 ?>
 <x-app-layout>
@@ -64,142 +61,80 @@ if (!isset($dateType)) $dateType = "assembled";
     </div>
     <div>
         <div style="width:100%" class="bg-gray-200 shadow-sm sm:rounded-lg ml-6 mr-6">
+            @foreach($report->getTables() as $index=>$table)
             <table class="table-fixed w-fit text-sm mt-4">
-                <?php $columns =$report->getTables()[0]->getColumns(); ?>
+                <?php 
+                    $columns =$table->getColumns(); 
+                    $processed[$table->name] = [];
+                    $data = $dataRanges[$index];
+                    $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
+                    if(count($data)==0 && $index!=0)continue;
+                    ?>
+                @if ($index%2==0)
                 <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,"debits")}}</x-data-table-header>
-                    @endforeach
+                @else
+                <thead class="bg-orange-200" style="position: sticky; top: 0;"><tr>
+                @endif
+                @foreach($columns as $column)
+                <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,$table->mode)}}</x-data-table-header>
+                @endforeach
                 </tr></thead>
                 <tbody class="bg-white">
-                    @foreach($debits as $row)
+                    @foreach($data as $row)
                     <?php $d = new stdClass(); ?>
                     <tr>
                         @foreach($columns as $column)
-                        <?php $t = App\Helpers\ReportHelper::finaliseCell($column,$row,"debits");$col = $column->getLabel("debits");$d->$col = $t ?>
-                        <td align="center">{{$t}}</td>
+                        <?php 
+                        $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
+                        $col = $column->getLabel($table->mode);
+                        $d->$col = preg_replace("/[£,]/", '', $t);
+                        $columnNameSimplified = preg_replace("/\W|_/", '', strtolower($column->getLabel($table->mode)));
+                        $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
+                        ?>
+                        @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
+                        <td align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" orgvalue="{{$d->$col}}">{{$t}}</input></td>
+                        @else
+                        <td align="center" id="{{$fieldName}}" name="{{$fieldName}}" orgvalue="{{$d->$col}}">{{$t}}</td>
+                        @endif
                         @endforeach
                     </tr>
-                    <?php $debits2[] = $d; ?>
+                    <?php $processed[$table->name][] = $d;?>
                     @endforeach
                 </tbody>
+                @if ($index%2==0)
                 <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
+                @else
+                <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
+                @endif
+                
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$debits2,"debits")}}</x-data-table-header>
+                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>
-            <table class="table-fixed w-fit text-sm mt-4">
-                <?php $columns =$report->getTables()[1]->getColumns(); ?>
-                <thead class="bg-orange-200" style="position: sticky; top: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,"credits")}}</x-data-table-header>
-                    @endforeach
-                </tr></thead>
-                <tbody class="bg-white">
-                    @foreach($credits as $row)
-                    <?php $c = new stdClass(); ?>
-                    <tr>
-                        @foreach($columns as $column)
-                        <?php $t = App\Helpers\ReportHelper::finaliseCell($column,$row,"credits");$col = $column->getLabel("credits");$c->$col = $t ?>
-                        <td align="center">{{$t}}</td>
-                        @endforeach
-                    </tr>
-                    <?php $credits2[] = $c; ?>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$credits2,"credits")}}</x-data-table-header>
-                    @endforeach
-                </tr></tfoot>
-            </table>
-            @if (count($supdebits)>0)
-            <table class="table-fixed w-fit text-sm mt-4">
-                <?php $columns =$report->getTables()[2]->getColumns(); ?>
-                <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,"debits")}}</x-data-table-header>
-                    @endforeach
-                </tr></thead>
-                <tbody class="bg-white">
-                    @foreach($supdebits as $row)
-                    <?php $d = new stdClass(); ?>
-                    <tr>
-                        @foreach($columns as $column)
-                        <?php $t = App\Helpers\ReportHelper::finaliseCell($column,$row,"debits");$col = $column->getLabel("debits");$d->$col = $t ?>
-                        <td align="center">{{$t}}</td>
-                        @endforeach
-                    </tr>
-                    <?php $supdebits2[] = $d; ?>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supdebits2,"debits")}}</x-data-table-header>
-                    @endforeach
-                </tr></tfoot>
-            </table>    
-            @endif
-            @if (count($supcredits)>0)
-            <table class="table-fixed w-fit text-sm mt-4">
-                <?php $columns =$report->getTables()[3]->getColumns(); ?>
-                <thead class="bg-orange-200" style="position: sticky; top: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,"credits")}}</x-data-table-header>
-                    @endforeach
-                </tr></thead>
-                <tbody class="bg-white">
-                    @foreach($supcredits as $row)
-                    <?php $c = new stdClass(); ?>
-                    <tr>
-                        @foreach($columns as $column)
-                        <?php $t = App\Helpers\ReportHelper::finaliseCell($column,$row,"credits");$col = $column->getLabel("credits");$c->$col = $t ?>
-                        <td align="center">{{$t}}</td>
-                        @endforeach
-                    </tr>
-                    <?php $supcredits2[] = $c; ?>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$supcredits2,"credits")}}</x-data-table-header>
-                    @endforeach
-                </tr></tfoot>
-            </table>    
-            @endif
+            @endforeach
         </div>
     </div>
 </x-app-layout>
 @stack('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.1/xlsx.full.min.js"></script>
 <script>
-    function ExportData()
-    {
-        filename='{{str_replace(" ","_",strtolower($report->name))}}_{{time()}}_{{$start->format("Y-m-d")}}_{{$end->format("Y-m-d")}}.xlsx';
-        wb = XLSX.utils.book_new();
-        @if(count($debits2) > 0)
-data=cleanData({!!json_encode($debits2)!!});
-        console.log(data);
-        ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Debits");
-        @endif
-        @if(count($credits2) > 0)
-data=cleanData({!!json_encode($credits2)!!});
-        ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Credits");
-        @endif
-        @if(count($supdebits2) > 0)
-data=cleanData({!!json_encode($supdebits2)!!});
-        ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Supplemental Debits");
-        @endif
-        @if(count($supcredits2) > 0)
-data=cleanData({!!json_encode($supcredits2)!!});
-        ws = XLSX.utils.json_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, "Supplemental Credits");
-        @endif
-XLSX.writeFile(wb,filename);
+     function readyEvent() {
+        $("#export").css("pointer-events","auto");
+        $("#export-text").text(" Export ");
+     }
+     setTimeout(readyEvent, 1);
+     function changed(e){
+        var d = $(e).attr('id');
+        d = d.split("_");
+        var tablename = d[0];
+        var rowid = d[2];
+        var output = parseFloat($('#'+tablename+"_actualprofit_"+rowid).attr("orgvalue")) || 0;
+        output -= parseFloat($('#'+tablename+"_lesstransport_"+rowid).val()) || 0;
+        output -= parseFloat($('#'+tablename+"_lessoverriders_"+rowid).val()) || 0;
+        output -= parseFloat($('#'+tablename+"_lesscredits_"+rowid).val()) || 0;
+        output -= parseFloat($('#'+tablename+"_lessother_"+rowid).val()) || 0;
+        $('#'+tablename+"_netprofit_"+rowid).html("£"+output);
      }
      function cleanData(data){
         for (row of data) {
@@ -217,10 +152,18 @@ XLSX.writeFile(wb,filename);
         return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
                 !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
     }
-     function readyEvent() {
-        $("#export").css("pointer-events","auto");
-        $("#export-text").text(" Export ");
+     function ExportData()
+    {
+        filename='{{str_replace(" ","_",strtolower($report->name))}}_{{time()}}_{{$start->format("Y-m-d")}}_{{$end->format("Y-m-d")}}.xlsx';
+        wb = XLSX.utils.book_new();
+        @foreach($report->getTables() as $index=>$table)
+        @if (count($processed[$table->name])>0)
+data=cleanData({!!json_encode($processed[$table->name])!!});
+        ws = XLSX.utils.json_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, "{!!$table->name!!}");
+        @endif
+        @endforeach
+
+XLSX.writeFile(wb,filename);
      }
-     setTimeout(readyEvent, 1);
-     
 </script>

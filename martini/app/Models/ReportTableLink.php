@@ -22,5 +22,6 @@ class ReportTableLink extends Model
     protected $fillable = [
 		'report_id',
         'table_id',
+        'order',
 	];
 }

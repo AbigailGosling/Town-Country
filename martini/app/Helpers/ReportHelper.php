@@ -66,7 +66,8 @@ class ReportHelper
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->whereBetween("invoice_payments.created_at",[$start,$end])
-            ->orderBy("invoice_payments.created_at");
+            ->orderBy("invoice_payments.created_at")
+            ->groupBy(["pickerSheets.id","credit_note_items.product_id"]);
 
         /** @var Collection $credits */
         $credits = $resultQB->get();
@@ -116,14 +117,17 @@ class ReportHelper
             $item = $weightQB->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"weights.");
-
+            
             $col = "credit_note_items.product_id";
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"product.");
 
-            $col = "product.original_pallet_id";
-            $item = static::$conn->table("product")->select("product.*")->where("product.pallet_id",$result->$col)->first();
+            $col1 = "product.original_pallet_id";
+            $col2 = "product.cut_id";
+            $col3 = "product.brand_id";
+            $col4 = "product.nationality_id";
+            $item = static::$conn->table("product")->select("product.*")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]])->first();
             if ($item===null) continue; 
             static::row_merge($result,$item,"original_product.");
 
@@ -146,8 +150,8 @@ class ReportHelper
             $col = "product.id";
             $col2 = "pickerSheets.id";
             $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
-            $item = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]])->first();
-            if ($item===null) continue;//throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));    
+            $item =$qb->first();
+            if ($item===null) throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));    
             static::row_merge($result,$item,"pickerItems.");
 
             if (static::bulkMergeIn($result))
@@ -373,7 +377,7 @@ class ReportHelper
             }
             $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
         }
-        if ($result == null) $result = "";
+        if ($result == null || $reportColumn->footer == "") $result = "";
         return $result;
     }
     public static function resolveTableBody(ReportTable $reportTable, Collection $rows):array
@@ -384,6 +388,8 @@ class ReportHelper
         foreach ($rows2 as $dbRow) 
         {   
             $workingResult = [];
+            $col = "pickerSheets.id";
+            $workingResult['internal_id'] = $dbRow->$col;
             foreach ($reportTable->getColumns() as $reportColumn)
             {
                 $workingResult[$reportColumn->getLabel($reportTable->mode)] = "";
@@ -430,8 +436,9 @@ class ReportHelper
     }
     public static function finaliseCell(ReportColumn $reportColumn,array $workingResult,string $mode):string
     {
+        if (!isset($workingResult[$reportColumn->getLabel($mode)])) throw new \Exception(json_encode([$reportColumn->getLabel($mode),$reportColumn,$workingResult,$mode]));
         $workingVal = $workingResult[$reportColumn->getLabel($mode)];
-        if ($workingVal === "0" && $reportColumn->data_type != "currency") return "";
+        if (($workingVal === "0" && $reportColumn->data_type != "currency") || $reportColumn->cell == "") return "";
         return static::finaliseItem($reportColumn,$workingVal);
     }
     public static function resolveCell(ReportColumn $reportColumn,$left,$right):string
