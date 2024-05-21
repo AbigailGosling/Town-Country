@@ -124,7 +124,7 @@ use Illuminate\Support\Facades\Auth;
 
 	<div class="row printhide">
 		<div class="col">
-			<?php if ($usermodel->hasPermission("change_sale_details")||$usermodel->hasPermission("view_all_sale_confirmations")) {?>
+			<?php if ($usermodel->hasPermission("change_sale_details")||$usermodel->hasPermission("change_sale_reference")) {?>
 			<input type="button" onclick="mainForm()" value="Update">
 			<?php }?>
 		</div>
