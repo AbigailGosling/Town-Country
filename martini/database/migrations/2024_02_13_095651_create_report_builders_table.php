@@ -691,8 +691,8 @@ return new class extends Migration
         
         $newPerm = new Permission();
         $oldPerm = new PagePermission();
-        $oldPerm->name = '<span class="small">New</span> Reports';
-        $newPerm->label = $newPerm->description = "New Reports";
+        $oldPerm->name = '<span class="small">Main</span> Data Table';
+        $newPerm->label = $newPerm->description = "Main Data Table";
         $oldPerm->column = $newPerm->group = 3;
         $oldPerm->file = $newPerm->file = "../report/1";
         $newPerm->name = "new_reports";

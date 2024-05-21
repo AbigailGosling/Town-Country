@@ -14,7 +14,10 @@ use InternalScripts\SLabsEmailerStatus;
         $customerIDs = [];
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?"
     ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
-        while($customer = mysqli_fetch_array($customerResult)){ if (!$usermodel->canViewCustomer($customer['id'])) continue;array_push($customerIDs, $customer['id']); }
+        while($customer = mysqli_fetch_array($customerResult)){ 
+            if (!$usermodel->canViewCustomer($customer['id']) && !$usermodel->hasPermission("view_all_sale_confirmations")) continue;
+            array_push($customerIDs, $customer['id']); 
+        }
 
         $x = "SELECT * FROM `pickerSheets` WHERE id = ? || id LIKE ?";
 
@@ -25,7 +28,10 @@ use InternalScripts\SLabsEmailerStatus;
         $x .= " ORDER BY date DESC";
         $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
     }else{
-        $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+        if (!$usermodel->hasPermission("view_all_sale_confirmations"))
+            $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+        else
+            $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
     }
     $count = mysqli_num_rows($queryResult);
 
