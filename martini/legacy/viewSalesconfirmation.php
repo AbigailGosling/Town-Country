@@ -4,7 +4,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	$adv = request()->has("adv");
-
+	$usermodel = User::find(Auth::id());
 	if ($adv == false) include_once('includes/frontHeader.php');
 	else require_once('functions.php');
 
@@ -62,7 +62,11 @@ use Illuminate\Support\Facades\Auth;
 
 
 
+<?php if ($usermodel->hasPermission("change_sale_details")) { ?>
 <form id="pickerForm" method="POST" action="scripts/updateSalesconfirmation.php" autocomplete="off">
+<?php }else{ ?>
+<form id="pickerForm" method="POST" action="scripts/updateSaleOrderRef.php" autocomplete="off">
+<?php } ?>
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="picksheetid" id="picksheetid" value="<?php echo $picksheet_id; ?>">
 <input type="hidden" name="customerid" id="customerid" value="<?php echo $customer_id; ?>">
@@ -120,7 +124,7 @@ use Illuminate\Support\Facades\Auth;
 
 	<div class="row printhide">
 		<div class="col">
-			<?php if (User::find(Auth::id())->hasPermission("change_sale_details")) {?>
+			<?php if ($usermodel->hasPermission("change_sale_details")||$usermodel->hasPermission("view_all_sale_confirmations")) {?>
 			<input type="button" onclick="mainForm()" value="Update">
 			<?php }?>
 		</div>
