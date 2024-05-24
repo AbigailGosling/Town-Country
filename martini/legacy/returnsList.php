@@ -54,9 +54,12 @@ use Illuminate\Support\Facades\Auth;
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 			<?php
 			$usermodel = User::find(Auth::id());
-				$queryResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned=1 AND supplier_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date_received DESC");
+				$queryResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned=1 AND supplier_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY id DESC");
 				while($returnedIntake = mysqli_fetch_array($queryResults)){
 					$date_received = date('d/m/Y', strtotime($returnedIntake['date_received']));
+					$qr = prepareExecuteQuery("SELECT count(*) as `rows`,`created_at` FROM `invoice_payments` WHERE `payment_method` = 'CREDIT_NOTE' AND `invoice_id` = ".$returnedIntake['delivery_note_number']);
+					$qr = $qr->fetch_assoc();
+					$payments = $qr['rows'];
 				?>
 				<tr><td align="center" class="pos">
 					<a href="intake.php?id=<?php echo $returnedIntake['id']; ?>" class="intake">
@@ -66,12 +69,13 @@ use Illuminate\Support\Facades\Auth;
 									$customer = getCustomer($returnedIntake['supplier_id']);
 								?>
 								<td width="100" align="left">ID: I-<?php echo $returnedIntake['id']; ?></td>
-								<td align="center" style="font-size: 18px;"><?php echo $customer['businessname']; ?></td>
-								<td width="100" align="right"><?php echo $date_received; ?></td>
+								<td width="100" align="left">Invoice: <?php echo $returnedIntake['delivery_note_number']; ?></td>
+								<td align="center" style="width:55%;font-size: 18px;"><?php echo $customer['businessname']; ?></td>
+								<td width="100" align="right"><?php echo $qr['created_at']; ?></td>
 							</tr>
 						</table>
 					</a>
-					<a href="javascript:;" onclick="deleteRow('<?php echo $returnedIntake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
+					<!--<a href="javascript:;" onclick="deleteRow('<?php echo $returnedIntake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>-->
 				</td></tr>
 				<?php
 				}
