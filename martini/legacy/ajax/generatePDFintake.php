@@ -3,7 +3,7 @@
 
 	ini_set('memory_limit', '1024M');
 	
-	require_once '../../vendor/autoload.php';
+	require_once '../vendor/autoload.php';
     $intake_id = request()->input('id');
 
 /*	

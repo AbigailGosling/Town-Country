@@ -1,7 +1,7 @@
 <?php
 namespace InternalScripts;
 
-require_once(__DIR__.'/../../vendor/autoload.php');
+require_once(__DIR__.'/../vendor/autoload.php');
 require_once(__DIR__.'/../../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Page;
