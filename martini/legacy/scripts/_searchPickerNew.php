@@ -96,6 +96,7 @@ use Illuminate\Support\Facades\Auth;
                     $temp_id = $productsRow2['cooling_id'];
                     $smallestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_from'];
                     $largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
+                    $largestDate2 = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?"EXTENSION":$productsRow2['range_to'];
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
                     $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
@@ -221,10 +222,10 @@ use Illuminate\Support\Facades\Auth;
                         }
                         
                         
-                        if(isset($smallestDate)) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $smallestDate . '-' . $largestDate.'</td>';
+                        if(isset($smallestDate)) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $smallestDate . '-' . $largestDate2.'</td>';
                         else echo '<td>--</td>';
                     }else{
-                        echo '<td>'.$ubtext . ' ' . $smallestDate . ' - ' . $largestDate.'</td>';
+                        echo '<td>'.$ubtext . ' ' . $smallestDate . ' - ' . $largestDate2.'</td>';
                     }
                     ?>
                     

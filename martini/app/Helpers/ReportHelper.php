@@ -54,12 +54,11 @@ class ReportHelper
         $resultQB = static::$conn->table("pickerSheets")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
-            ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
         static::applyRange($resultQB,$dateType,$start,$end);
         /** @var Collection $debits */
         $debits = $resultQB->get();
-
         //throw new \Exception(json_encode([$i1,$i2]));
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
@@ -78,7 +77,7 @@ class ReportHelper
         $finalDebits = new Collection();
         foreach($debits as $result)
         {
-            $col = "palletsOut.weight_ids";
+            $col = ".weight_ids";
             $col2= "pickerItems.product_id";
             $weightQB = static::$conn->table("weights")
                 ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
