@@ -254,6 +254,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $bgCol = '';
         $earliestStartDate = '';
         $latestEndDate = '';
+
         if($uniqueDateranges == 1){
             $earliestStartDate = explode("-",$product2_dateranges[0])[0];
             $latestEndDate = explode("-",$product2_dateranges[0])[1];
@@ -276,6 +277,14 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $internalDate = new DateTime();
             $internalDate->setTimestamp($latestEndDateTS);
             $latestEndDate = $internalDate->format('d/m/Y');
+        }
+        if ($product2['range_extension'] == null || $product2['range_extension'] == '')
+        {
+            $latestEndDate2 = $latestEndDate;
+        }
+        else
+        {
+            $latestEndDate2 = "EXTENSION";
         }
         $state = 0;
         if($ubbb != 2 && $earliestStartDate != "" && $latestEndDate != ""){
@@ -407,7 +416,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             <?php
                 if($ubbb != 2){
                         
-                    if($earliestStartDate != "" && $latestEndDate != "") echo '<td>'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate.'</td>';
+                    if($earliestStartDate != "" && $latestEndDate != "") echo '<td>'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate2.'</td>';
                     else echo '<td>--</td>';
                 }else{
                     echo '<td>'.$ubtext.'</td>';
