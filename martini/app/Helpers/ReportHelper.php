@@ -81,7 +81,7 @@ class ReportHelper
             $col2= "pickerItems.product_id";
             $weightQB = static::$conn->table("weights")
                 ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
-                ->whereIn("weights.id",explode(",",$result->$col))
+                ->whereRaw("`weights`.`id` IN (".$result->$col.")")
                 ->where("weights.product_id",$result->$col2)
                 ->groupBy("weights.product_id");
             $item = $weightQB->first();
@@ -213,7 +213,7 @@ class ReportHelper
                 $price = $prices[$index];
                 $weightQB = static::$conn->table("weights")
                     ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
-                    ->whereIn("weights.id",explode(",",$result->$col))
+                    ->whereRaw("`weights`.`id` IN (".$result->$col.")")
                     ->where("weights.product_id",$product_id)
                     ->groupBy("weights.product_id");
                 $weight = $weightQB->first();
