@@ -6,7 +6,7 @@
 	if (!request()->has('adv'))
 	{
 		$filename2 = 'Credit_Note_'.request()->input('id').'.pdf';
-		PDFRenderer::generatePDFfromWeb('ajax/generatePDFcreditnote.php?id='.request()->input('id').'&payment_id='.request()->input('payment_id').'&adv=1','PDF',$filename2,false);
+		PDFRenderer::generatePDFfromWeb('ajax/generatePDFcreditnote.php?id='.request()->input('id').'&payment_id='.request()->input('payment_id').'&adv=1','PDF',$filename2);
 		 	
 		/*$file =__DIR__."/../PDF/".$filename2;
 		if (file_exists($file)) {
@@ -68,7 +68,7 @@
 	
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
-	$header .= '<link href="../css/style.css" rel="stylesheet" type="text/css">';
+	$header .= '<link href="css/style.css" rel="stylesheet" type="text/css">';
 	$css ="
 		body{
 			font-family: 'Roboto', sans-serif;
