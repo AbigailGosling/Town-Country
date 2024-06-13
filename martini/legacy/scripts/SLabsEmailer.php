@@ -1,13 +1,14 @@
 <?php
 namespace InternalScripts;
 require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../functions.php')));
-require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../vendor/autoload.php')));
+require_once(join(DIRECTORY_SEPARATOR,array(__DIR__,'../../vendor/autoload.php')));
 require_once(__DIR__.'/../../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
     //SOCKETLABS IMPORTS//
 use Socketlabs\SocketLabsClient;
 use Socketlabs\Message\BasicMessage;
 use Socketlabs\Message\EmailAddress;
 use Socketlabs\Message\BulkRecipient;
+use \Socketlabs\Message\Attachment;
 use Illuminate\Support\Facades\Log;
 
 class SLabsEmailer {
@@ -17,7 +18,7 @@ class SLabsEmailer {
     //SOCKETLABS CONFIG//
     const SocketID = 42191;
     const InjectionAPIKey = "Kr86CiGz24Bes9F7Wyk5";
-    const NotifcationAPIKey="Zq39SfPb75Ddi4CWa2n";
+    const NotifcationAPIKey="Yx98Gam2PFi6q7EXf";
     static function generate_uuid() {
         return sprintf( 
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
@@ -46,15 +47,15 @@ class SLabsEmailer {
             //Set up the socketlabs client
             $message = new BasicMessage();
             $message->subject = $subject;
-            $message->htmlBody = $htmlBody;
+            $message->plainTextBody = $message->htmlBody = $htmlBody;
+            $message->charset = "utf-8";
             $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-            
         
             $fullExplainedPath = "NULL";
             if ($pathToFile != '' && $fileName !='')
             {
                 $fullExplainedPath = "'".join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName))."'";
-                $attachment = \Socketlabs\Message\Attachment::createFromPath(
+                $attachment = Attachment::createFromPath(
                     join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)), 
                     $fileName,
                     "APPLICATION/PDF"

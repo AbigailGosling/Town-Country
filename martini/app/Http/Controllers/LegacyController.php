@@ -55,7 +55,7 @@ class LegacyController extends Controller
         {
             try
             {
-                $file = File::get(__DIR__.'/../../..'. $targetFile);
+                $file = File::get(__DIR__.'\..\..\..'. $targetFile);
                 $response = Response::make($file,200);
                 $response->header('Content-Type', $this->getMimeType($ext));
                 if (time()-$s>4)
