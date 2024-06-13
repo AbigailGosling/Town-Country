@@ -1,7 +1,7 @@
 <?php
 namespace InternalScripts;
 
-require_once(__DIR__.'/../vendor/autoload.php');
+require_once(__DIR__.'/../../vendor/autoload.php');
 require_once(__DIR__.'/../../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Page;
@@ -15,7 +15,7 @@ class PDFRenderer{
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
         if ($debug) Log::debug("BrowserFactory",[$targetURL,$pathToFile,$fileName]);
-        $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
+        $browserFactory = new BrowserFactory();
         // starts headless chrome
         if ($debug) Log::debug("Browser",[$targetURL,$pathToFile,$fileName]);
         $browser = $browserFactory->createBrowser();
@@ -128,7 +128,7 @@ class PDFRenderer{
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
         
-        $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
+        $browserFactory = new BrowserFactory();
         // starts headless chrome
         $browser = $browserFactory->createBrowser();
         try {

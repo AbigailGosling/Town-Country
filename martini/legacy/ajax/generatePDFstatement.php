@@ -7,7 +7,7 @@ if (request()->input("ids") !== null)
 	{
 		prepareExecuteQuery("INSERT INTO mail_queue (customer_id) VALUES (?)",'i',[$customerID]);
 	}
-	shell_exec("php /var/www/html/martini/artisan run:statements_queue > /dev/null 2>&1 &");
+	shell_exec("php C:\\inetpub\\wwwroot\\martini\\artisan run:statements_queue > NUL 2>&1 &");
 }
 
 
