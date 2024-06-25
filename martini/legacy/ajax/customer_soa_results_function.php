@@ -25,8 +25,12 @@ function get_customer_soa_results($customer_id,$adv)
         $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
     }
     $now = time();
-    $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
-    $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
+    if (count($knownPickIDs)>0)
+    {
+        $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+        $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
+    }
+    else $customerReturns = [];
     foreach ($customerReturns as $return){
         $pickSheets[$return['delivery_note_number']]['hasReturns'] = ($return['count'] > 0);
     }
@@ -77,7 +81,7 @@ function get_customer_soa_results($customer_id,$adv)
         }
 	    $picksheet['outstanding'] = round((double) $picksheet['price'] - $picksheet['paid'] - $picksheet['credit'],2,PHP_ROUND_HALF_DOWN);
         if ($adv == true && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
-        
+
         $picksheet['creditNotes'] = getInvoiceCreditNotes($picksheet['id']);
         $picksheet['hasCreditNote'] = (count($picksheet['creditNotes'])>0);
 
@@ -93,28 +97,28 @@ function date_compare($element1, $element2) {
     $datetime1 = $element1['datetime'];
     $datetime2 = $element2['datetime'];
     return $datetime2 - $datetime1;
-} 
+}
 function check_customer_outstanding_cache($customer_id,$forceReload = false)
 {
     $cacheRow = prepareExecuteQuery("SELECT SQL_NO_CACHE *,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow = mysqli_fetch_assoc($cacheRow);
-    if ($cacheRow == null || $forceReload == true) 
+    if ($cacheRow == null || $forceReload == true)
     {
         $cacheRow = array('customer_id' => $customer_id,'newRow' => true);
         $oldest = -1;
         $lastpayment = -1;
         $cacheRow['outdated'] = true;
     }
-    else 
+    else
     {
         $cacheRow['newRow'] = false;
         $oldest = $cacheRow['oldest_unpaid_id'];
         $lastpayment = $cacheRow['invoice_payment_id'];
-        
+
         $cacheRow['outdated'] = false;
     }
-    
-    
+
+
     $invoiceList = array();
     $check = prepareExecuteQuery("SELECT id FROM pickerSheets WHERE customer_id = ? ORDER BY `pickerSheets`.`id` DESC",'i',[$customer_id]);
     $row = mysqli_fetch_assoc($check);
@@ -133,7 +137,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     $check = $highest;
     $invoiceList = implode(",",$invoiceList);
     $invoicesha2 = hash("sha256",$invoiceList);
-    if (array_key_exists('pickersheet_id',$cacheRow) == false || array_key_exists('pickersheet_sha2',$cacheRow) == false || $check != $cacheRow['pickersheet_id'] || $invoicesha2 != $cacheRow['pickersheet_sha2']) 
+    if (array_key_exists('pickersheet_id',$cacheRow) == false || array_key_exists('pickersheet_sha2',$cacheRow) == false || $check != $cacheRow['pickersheet_id'] || $invoicesha2 != $cacheRow['pickersheet_sha2'])
     {
         $cacheRow['pickersheet_id'] = $check;
         $cacheRow['pickersheet_sha2'] = $invoicesha2;
@@ -143,7 +147,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     $checka = mysqli_fetch_assoc($check);
     $paymentsha2 = hash("sha256",$checka['ids']);
     $check = $checka['max_id'];
-    if (array_key_exists('invoice_payment_id',$cacheRow) == false || array_key_exists('payment_sha2',$cacheRow) == false || $check != $cacheRow['invoice_payment_id'] || $paymentsha2 != $cacheRow['payment_sha2']) 
+    if (array_key_exists('invoice_payment_id',$cacheRow) == false || array_key_exists('payment_sha2',$cacheRow) == false || $check != $cacheRow['invoice_payment_id'] || $paymentsha2 != $cacheRow['payment_sha2'])
     {
         $cacheRow['invoice_payment_id'] = $check;
         $cacheRow['payment_sha2'] = $paymentsha2;
@@ -154,11 +158,11 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
 
     $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
     while($row = mysqli_fetch_assoc($checkQ))
-    {  
+    {
         $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));
         if ($row['outstanding'] > 0)
         {
-            $cacheRow['pending'] = $row;           
+            $cacheRow['pending'] = $row;
             break;
         }
         $lastRow = $row;
@@ -169,19 +173,19 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
         $row = $cacheRow['pending'];
         $myDateTime = DateTime::createFromFormat('d/m/Y', $row['estimated_delivery_date']);
         $newDateString = strtotime($myDateTime->format('Y-m-d'));
-        if ($row['outstanding'] > 0) 
+        if ($row['outstanding'] > 0)
         {
             if (!$cacheRow['oldest_unpaid_date'] || $newDateString < $cacheRow['oldest_unpaid_date'])$cacheRow['oldest_unpaid_date'] = $newDateString;
         }
         else $cacheRow['oldest_unpaid_date'] = strtotime("now");
-        
-        if (array_key_exists('oldest_unpaid_id',$cacheRow) == false || $row['id'] != $cacheRow['oldest_unpaid_id']) 
-        {      
+
+        if (array_key_exists('oldest_unpaid_id',$cacheRow) == false || $row['id'] != $cacheRow['oldest_unpaid_id'])
+        {
             $cacheRow['oldest_unpaid_id'] = $row['id'];
             $cacheRow['outdated'] = true;
         }
     }
-    else 
+    else
     {
         $cacheRow['oldest_unpaid_date'] = strtotime("now");
         if ($lastRow != null && $cacheRow['oldest_unpaid_id'] != $lastRow['id'])
@@ -193,7 +197,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     if ($cacheRow['outdated'] == true || $forceReload)
     {
         $cacheRow['outstanding_old'] = $cacheRow['outstanding'];
-        $outstanding = 0;      
+        $outstanding = 0;
         $cacheRow['picksheets'] = $qq = get_customer_soa_results($customer_id,false);
         foreach ($qq as $pick)
         {
@@ -207,6 +211,18 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
 function update_customer_outstanding_cache($customer_id,$cacheRow)
 {
     global $mysqli;
+    if ($cacheRow['pickersheet_id'] === null || $cacheRow['pickersheet_id'] === '')
+    {
+        $cacheRow['pickersheet_id'] = 0;
+    }
+    if ($cacheRow['invoice_payment_id'] === null || $cacheRow['invoice_payment_id'] === '')
+    {
+        $cacheRow['invoice_payment_id'] = 0;
+    }
+    if ($cacheRow['oldest_unpaid_id'] === null || $cacheRow['oldest_unpaid_id'] === '' )
+    {
+        $cacheRow['oldest_unpaid_id'] = 0;
+    }
     $cacheRow2 = prepareExecuteQuery("SELECT SQL_NO_CACHE customer_id,NOW() FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     $cacheRow2 = mysqli_fetch_assoc($cacheRow2);
     if ($cacheRow2 == null)
@@ -281,15 +297,15 @@ function precredit_check($customer_id)
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
-        } 
-        else if ($outstanding > $custR['credit_rating']) 
+        }
+        else if ($outstanding > $custR['credit_rating'])
         {
             $returningObj['saleAllowed'] = false;
             $returningObj['message'] = "Customer is over credit limit, contact administration";
             $returningObj['messageLong'] = "Customer is over credit limit, contact administration";
             $returningObj['overcredit'] = true;
         }
-        else if ($oldest != "" && $oldest < $beyondDate) 
+        else if ($oldest != "" && $oldest < $beyondDate)
         {
             $returningObj['showHigherWarning'] = true;
             $returningObj['showWarning'] = true;
@@ -303,8 +319,8 @@ function precredit_check($customer_id)
             $returningObj['message'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
             $returningObj['messageLong'] = "Customer has invoice due soon (Delivery note may not be printable if over rating when picked)";
         }
-        
-        else if ($outstanding > $custR['flaguplimit']) 
+
+        else if ($outstanding > $custR['flaguplimit'])
         {
             $returningObj['showWarning'] = true;
             $returningObj['message'] = "Close to Credit Limit (Delivery note may not be printable if over rating when picked)";

@@ -157,7 +157,7 @@ use App\Models\Location;
     array_push($final_row, "£" . number_format((double)floorDec($TOTAL_COST), 2, '.', ','));
     $final_array[] = $final_row;
 
-    require('vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');
+    require('../../vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');
     use Shuchkin\SimpleXLSXGen;
 
     $xlsx = Shuchkin\SimpleXLSXGen::fromArray( $final_array );

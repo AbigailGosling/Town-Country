@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Log;
 /**
  *
  */
@@ -102,7 +102,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make(Str::random(40)),
         ]);
-        
+
         if (isset($request->perms) && is_array($request->perms) && count($request->perms) > 0) {
             foreach (Permission::all() as $perm) {
                 if (array_key_exists($perm->name, $request->perms)) {
@@ -200,17 +200,22 @@ class UserController extends Controller
         $user->name = $input['name'];
         $user->email = $input['email'];
         $user->disabled = array_key_exists("disabled", $input);
+
         if (isset($input['perms']) && is_array($input['perms']) && count($input['perms']) > 0) {
-            foreach (Permission::all() as $perm) {
-                if (array_key_exists($perm->name, $input['perms'])) {
-                    $user->assignPermission($perm);
-                } else {
-                    $user->unassignPermission($perm);
-                }
+            $selectedPerms = $input['perms'];
+        }
+        else {
+            $selectedPerms = [];
+        }
+        foreach (Permission::all() as $perm) {
+            if (array_key_exists($perm->name, $selectedPerms)) {
+                $user->assignPermission($perm);
+            } else {
+                $user->unassignPermission($perm);
             }
         }
-        $user->touch();
         $user->save();
+        $user->touch();
 
         return redirect(route('users.index'))->with(['message' => "Successfully updated $user->name's account"]);
     }

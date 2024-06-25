@@ -18,23 +18,23 @@ class SLabsEmailer {
     //SOCKETLABS CONFIG//
     const SocketID = 42191;
     const InjectionAPIKey = "Kr86CiGz24Bes9F7Wyk5";
-    const NotifcationAPIKey="Yx98Gam2PFi6q7EXf";
+    const NotifcationAPIKey="Zq39SfPb75Ddi4CWa2n";
     static function generate_uuid() {
-        return sprintf( 
+        return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand( 0, 0xffff ), 
+            mt_rand( 0, 0xffff ),
             mt_rand( 0, 0xffff ),
             mt_rand( 0, 0xffff ),
             mt_rand( 0, 0x0C2f ) | 0x4000,
             mt_rand( 0, 0x3fff ) | 0x8000,
-            mt_rand( 0, 0x2Aff ), 
-            mt_rand( 0, 0xffD3 ), 
+            mt_rand( 0, 0x2Aff ),
+            mt_rand( 0, 0xffD3 ),
             mt_rand( 0, 0xff4B )
         );
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
         global $mysqli;
-        
+
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
@@ -42,21 +42,21 @@ class SLabsEmailer {
 
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
         foreach($toEmails as $email)
-        {	
-            
+        {
+
             //Set up the socketlabs client
             $message = new BasicMessage();
             $message->subject = $subject;
             $message->plainTextBody = $message->htmlBody = $htmlBody;
             $message->charset = "utf-8";
             $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
-        
+
             $fullExplainedPath = "NULL";
             if ($pathToFile != '' && $fileName !='')
             {
-                $fullExplainedPath = "'".join(DIRECTORY_SEPARATOR,array($pathToFile,$fileName))."'";
+                $fullExplainedPath = "$pathToFile/$fileName";
                 $attachment = Attachment::createFromPath(
-                    join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)), 
+                    join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),
                     $fileName,
                     "APPLICATION/PDF"
                 );
@@ -67,19 +67,19 @@ class SLabsEmailer {
             $message->messageId = $mid;
             $trimmed = trim($email);
 
-            $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', $fullExplainedPath, NOW())";
-            prepareExecuteQuery($sql);
+            $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', ?, NOW())";
+            prepareExecuteQuery($sql,'s',[$fullExplainedPath]);
 
             try
             {
                 $message->addToAddress(new BulkRecipient($trimmed));
                 $response = $client->send($message);
             }
-            catch (\Exception $e) 
+            catch (\Exception $e)
             {
                 Log::error($e);
             }
-            
+
         }
 
         return "done";
@@ -88,16 +88,8 @@ class SLabsEmailer {
         global $mysqli;
         $addressee = $data['Address'];
         $message_id = $data['MessageId'];
-       
         $t = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE `addressee`='$addressee' AND `message_id`='$message_id'");
-        if (mysqli_num_rows($t) == 0 && $_SERVER['SERVER_NAME'] != "13.40.103.56")
-        {
-            /*ob_start();
-            header('Location: https://tcdev.tang.solutions//scripts/SLabsNotifier.php');
-            ob_end_flush();
-            die();
-            exit();*/
-        }
+
         http_response_code(200);
         $secondary_code = (isset($data['FailureCode']))?$data['FailureCode']:0;
         $status_code = SLabsEmailerStatus::Unknown;
@@ -112,7 +104,7 @@ class SLabsEmailer {
                     break;
                 case 2:
                     $status_code = SLabsEmailerStatus::Suppressed;
-                    break;   
+                    break;
             }
         }
         else
@@ -123,13 +115,13 @@ class SLabsEmailer {
                     break;
                 case "Complaint":
                     $status_code = SLabsEmailerStatus::Complaint;
-                    break;   
+                    break;
                 case "Delivered":
                     $status_code = SLabsEmailerStatus::Received;
                     break;
                 case "Tracking":
                     $status_code = SLabsEmailerStatus::Open;
-                    break;  
+                    break;
             }
         }
 
@@ -158,7 +150,7 @@ abstract class SLabsEmailerStatus
     static function getTrafficStatus($status){
         $trafficColour = "black";
         switch ($status){
-            case SLabsEmailerStatus::Sending:          
+            case SLabsEmailerStatus::Sending:
             case SLabsEmailerStatus::TempFail:
             case SLabsEmailerStatus::PermFail:
             case SLabsEmailerStatus::Suppressed:
@@ -179,7 +171,7 @@ abstract class SLabsEmailerStatus
         global $mysqli;
         $returningValue = null;
         switch ($status){
-            case SLabsEmailerStatus::Sending:          
+            case SLabsEmailerStatus::Sending:
             case SLabsEmailerStatus::Sent:
                 $returningValue = "Sending";
                 break;

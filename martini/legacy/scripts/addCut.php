@@ -6,8 +6,6 @@
 	$warning = request()->input('warning');
 	$danger = request()->input('danger');
 	$enabled = (int)request()->input('disabled',0); 
-	if ($warning == null)$warning = "NULL";
-	if ($danger == null)$danger = "NULL";
 	$x = "INSERT into `cuts` (species_id,cutgroup_id,name,warning,danger,`disabled`) VALUES (?,?,?,?,?,?)";
 	$y = prepareExecuteQuery($x,'sssssi',[$species_id,$cutgroup_id,$name,$warning,$danger,$enabled]);
 ?>

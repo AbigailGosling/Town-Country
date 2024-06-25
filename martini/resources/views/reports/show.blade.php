@@ -1,4 +1,5 @@
 <?php
+global $processed;
 $processed = [];
 if (!isset($dateType)) $dateType = "assembled";
 ?>
@@ -63,8 +64,8 @@ if (!isset($dateType)) $dateType = "assembled";
         <div style="width:100%" class="bg-gray-200 shadow-sm sm:rounded-lg ml-6 mr-6">
             @foreach($report->getTables() as $index=>$table)
             <table class="table-fixed w-fit text-sm mt-4">
-                <?php 
-                    $columns =$table->getColumns(); 
+                <?php
+                    $columns =$table->getColumns();
                     $processed[$table->name] = [];
                     $data = $dataRanges[$index];
                     $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
@@ -84,7 +85,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <?php $d = new stdClass(); ?>
                     <tr>
                         @foreach($columns as $column)
-                        <?php 
+                        <?php
                         $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
                         $col = $column->getLabel($table->mode);
                         $d->$col = preg_replace("/[£,]/", '', $t);
@@ -106,7 +107,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 @else
                 <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
                 @endif
-                
+
                     @foreach($columns as $column)
                     <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
                     @endforeach
@@ -148,7 +149,7 @@ if (!isset($dateType)) $dateType = "assembled";
         return data;
      }
      function isNumeric(str) {
-        if (typeof str != "string") return false // we only process strings!  
+        if (typeof str != "string") return false // we only process strings!
         return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
                 !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
     }

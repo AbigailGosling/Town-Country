@@ -24,7 +24,7 @@
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -36,12 +36,12 @@
 
 	});
 
-	   
+
         function blockSpecialChar(e) {
             var k = e.keyCode;
             return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8  ||  k == 67 ||  k == 32 || k == 190 || (k >= 48 && k <= 57));
         }
- 
+
     </script>
 
 </head>
@@ -64,17 +64,17 @@
 
 			if(request()->input('id') != ''){
 
-				
+
 
 				$id = request()->input('id');
 
-				
+
 
 				$x2 = "SELECT * FROM supplier WHERE id = ?";
 
 				$yy2 = prepareExecuteQuery($x2,'i',[$id]);
 
-				
+
 
 				$data = mysqli_fetch_array($yy2);
 
@@ -135,14 +135,14 @@
 				</td>
 
 			</tr>
-			
+
 			<tr>
 
 				<td>
 
 					<label>Town & Country Contact</label>
 					<select name="user_id" style="height:29px;">
-						<option disabled selected>Select a salesman</option>
+						<option value="0" disabled selected>Select a salesman</option>
 						<?php
 							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users");
 							while($user = mysqli_fetch_array($usersResult)){
@@ -171,13 +171,13 @@
 
 				</td>
 			</tr>
-			
+
 			<tr>
 			<td style="width:20px" colspan="3">
 			<br/>
 				</td>
 			</tr>
-			
+
 			<tr>
 
 				<td colspan="3">
@@ -235,8 +235,8 @@
 						</tr>
 					</table>
 				</a>
-  
-				 
+
+
 			</td></tr>
 
 			</table>
@@ -262,7 +262,7 @@ function mainFormSucess(){
 }
 	$(document).ready(function(){
 
-		
+
 
 		$('#instantSearch').keydown(function(){
 
@@ -272,7 +272,7 @@ function mainFormSucess(){
 
 			console.log(val);
 
-			
+
 
 				var xhttp = new XMLHttpRequest();
 
@@ -294,11 +294,11 @@ function mainFormSucess(){
 				xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 				xhttp.send("searchterm=" + val);
 
-			
+
 
 		});
 
-		
+
 
 		$('.speciesName').click(function(){
 
@@ -310,9 +310,9 @@ function mainFormSucess(){
 
 	});
 
-	
 
-	
+
+
 
 	function deleteRow(id){
 
@@ -326,7 +326,7 @@ function mainFormSucess(){
 
 	}
 
-	
+
 
 </script>
 
