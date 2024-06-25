@@ -10,25 +10,25 @@ class PDFRenderer{
     public static function generatePDFfromWeb($targetURL,$pathToFile,$fileName,$awaitRenderComplete = true,$debug=false){
 
         require(__DIR__."/../config.php");
-        
+
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
-        if ($debug) Log::debug("BrowserFactory",[$targetURL,$pathToFile,$fileName]);
+        if ($debug) Log::error("BrowserFactory",[$targetURL,$pathToFile,$fileName]);
         $browserFactory = new BrowserFactory();
         // starts headless chrome
-        if ($debug) Log::debug("Browser",[$targetURL,$pathToFile,$fileName]);
+        if ($debug) Log::error("Browser",[$targetURL,$pathToFile,$fileName]);
         $browser = $browserFactory->createBrowser();
         try {
             // creates a new page and navigate to an URL
-            if ($debug) Log::debug("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+            if ($debug) Log::error("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $page = $browser->createPage();
 
-            if ($debug) Log::debug("LoginNav",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
-            $page->navigate('https:'.$domainOld.'login')->waitForNavigation();   
+            if ($debug) Log::error("LoginNav",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl()]);
+            $page->navigate('https:'.$domainOld.'login')->waitForNavigation();
 
             //login
-            if ($debug) Log::debug("EvalLogin",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
+            if ($debug) Log::error("EvalLogin",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl()]);
             $evaluation = $page->evaluate(
                 '(() => {
                         document.querySelector("#email").value = "php-pdf-generator@tang.solutions";
@@ -37,48 +37,48 @@ class PDFRenderer{
                     })()'
                 )->waitForPageReload();
 
-            if ($debug) Log::debug("TargetPage",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
-            $page->navigate('https:'.$domain.$targetURL)->waitForNavigation();
+            if ($debug) Log::error("TargetPage",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl()]);
+            $page->navigate('https:'.$domain.$targetURL)->waitForNavigation(Page::DOM_CONTENT_LOADED, 300000);
 
-            if ($debug) Log::debug("TargetPageEvalLoopStart",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
+            if ($debug) Log::error("TargetPageEvalLoopStart",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl()]);
             $hasResult = !$awaitRenderComplete;
             $start = time();
             while (!$hasResult)
             {
-                if ($debug) Log::debug("EvalLoopTick",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
+                if ($debug) Log::error("EvalLoopTick",['https:'.$domain,$targetURL,$pathToFile,$fileName,$page->getCurrentUrl()]);
                 try
                 {
                     $evaluation = $page->evaluate(
                         '(() => {
                                 return renderComplete();
                             })()'
-                        )->getReturnValue(300);
+                        )->getReturnValue(1000*60*5);
                 }
                 catch (\Exception $e) {
-                    if ($debug) Log::debug("EvalLoopException",['https:'.$domain,$targetURL,$pathToFile,$fileName,time() - $start,$page->getCurrentUrl(),$page->getHTML(),$e]);
+                    if ($debug) Log::error("EvalLoopException",['https:'.$domain,$targetURL,$pathToFile,$fileName,time() - $start,$page->getCurrentUrl(),$e]);
                 }
                 if ($evaluation)
                 {
                     $hasResult = true;
                     break;
                 }
-                if (time() - $start > 60)
+                if (time() - $start > 300)
                 {
                     break;
                 }
                 sleep(1);
             }
             // pdf
-            if ($debug) Log::debug("EvalLoopFinish",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+            if ($debug) Log::error("EvalLoopFinish",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             if (!$hasResult) return false;
 
-            if ($debug) Log::debug("PageToPDF",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+            if ($debug) Log::error("PageToPDF",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $out= $page->pdf(['printBackground' => false]);
 
-            if ($debug) Log::debug("WriteFile",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+            if ($debug) Log::error("WriteFile",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
-            
-            if ($debug) Log::debug("Logout",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+
+            if ($debug) Log::error("Logout",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $page->navigate('https:'.$domain.'logout.php')->waitForNavigation();
         } catch (\Exception $e) {
             Log::error($e);
@@ -91,27 +91,27 @@ class PDFRenderer{
     public static function generatePDFfromHTML($htmlString,$pathToFile,$fileName,$debug=false){
 
         require(__DIR__."/../config.php");
-        
+
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
-        if ($debug) Log::debug("BrowserFactory",[$pathToFile,$fileName]);
+        if ($debug) Log::error("BrowserFactory",[$pathToFile,$fileName]);
         $browserFactory = new BrowserFactory('/usr/bin/google-chrome');
         // starts headless chrome
-        if ($debug) Log::debug("Browser",[$pathToFile,$fileName]);
+        if ($debug) Log::error("Browser",[$pathToFile,$fileName]);
         $browser = $browserFactory->createBrowser();
         try {
             // creates a new page and navigate to an URL
-            if ($debug) Log::debug("LoginPage",[$pathToFile,$fileName]);
+            if ($debug) Log::error("LoginPage",[$pathToFile,$fileName]);
             $page = $browser->createPage();
-            
-            if ($debug) Log::debug("RenderPage",[$pathToFile,$fileName,$page->getCurrentUrl(),$page->getHTML()]);
+
+            if ($debug) Log::error("RenderPage",[$pathToFile,$fileName,$page->getCurrentUrl()]);
             $page->setHTML($htmlString);
-           
-            if ($debug) Log::debug("PageToPDF",[$pathToFile,$fileName]);
+
+            if ($debug) Log::error("PageToPDF",[$pathToFile,$fileName]);
             $out= $page->pdf(['printBackground' => false]);
-           
-            if ($debug) Log::debug("WriteFile",[$pathToFile,$fileName]);
+
+            if ($debug) Log::error("WriteFile",[$pathToFile,$fileName]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
         } catch (\Exception $e) {
             Log::error($e);
@@ -123,18 +123,18 @@ class PDFRenderer{
     }
     public static function getHTML($targetURL){
         require_once(__DIR__.'/../config.php');
-        
+
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
-        
+
         $browserFactory = new BrowserFactory();
         // starts headless chrome
         $browser = $browserFactory->createBrowser();
         try {
             // creates a new page and navigate to an URL
             $page = $browser->createPage();
-            $page->navigate('https:'.$domain)->waitForNavigation();   
+            $page->navigate('https:'.$domain)->waitForNavigation();
             //login
             $evaluation = $page->evaluate(
                 '(() => {

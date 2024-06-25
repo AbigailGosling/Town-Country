@@ -9,14 +9,14 @@ use InternalScripts\SLabsEmailer;
 use InternalScripts\PDFRenderer;
 //This function renders a PDF document from a string using mPDF
 function renderPDF($customerID){
-	global $mysqli; 
+	global $mysqli;
 
 	$statementDate = time();
 	$fileName = 'Statement_'.$customerID.'_'.$statementDate.'.pdf';
 	$pathToFile = 'PDF';
 
 	PDFRenderer::generatePDFfromWeb('customer_soam.php?id='.$customerID,$pathToFile,$fileName);
-	
+
 	$customerQueryResult = prepareExecuteQuery("SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = ?",'i',[$customerID]);
 	$customer = mysqli_fetch_assoc($customerQueryResult);
 	$customer_emails = array();
@@ -39,7 +39,7 @@ function renderPDF($customerID){
 	$htmlBody = "<html>Please find attached a statement of account from Town and Country Meats Group for ".$customer['businessname'].".</html>";
 
 	return SLabsEmailer::send_email($customerID,"STATEMENT",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
-	
+
 }
 $customerQueryResult = prepareExecuteQuery("SELECT customer_id FROM `mail_queue` LIMIT 1");
 if (mysqli_num_rows($customerQueryResult) > 0)
@@ -48,6 +48,7 @@ if (mysqli_num_rows($customerQueryResult) > 0)
 	$customerID = $customer['customer_id'];
 	renderPDF($customerID);
 	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE customer_id = ?",'i',[$customerID]);
-	shell_exec("php C:\\inetpub\\wwwroot\\martini\\artisan run:statements_queue > NUL 2>&1 &");
+    pclose(popen('start /B cmd /C "php D:\\wwwroot\\martini\\artisan run:statements_queue >NUL 2>NUL"', 'r'));
+	//shell_exec("php D:\\wwwroot\\martini\\artisan run:statements_queue > NUL 2>&1 &");
 }
 ?>

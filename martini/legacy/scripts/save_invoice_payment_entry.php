@@ -78,7 +78,7 @@
 
     }
 
-    header('Location: single_invoice_payments.php?customer_id=' .$customerID . '&invoice_id=' . $invoiceID);
+    header('Location: ../single_invoice_payments.php?customer_id=' .$customerID . '&invoice_id=' . $invoiceID);
     
 ?>
 

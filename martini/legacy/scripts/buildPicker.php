@@ -5,11 +5,11 @@ use App\Models\Pallet;
 use App\Models\Product;
 
 	require(__DIR__.'/../functions.php');
-	
+
 	$picker_id = request()->input('picker_id');
 	$customer_id = request()->input('customer_id');
 	$estimated_delivery_date = request()->input('estimated_delivery_date');
-	
+
 	$orderReferenceNumber = request('orderReferenceNumber');
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
@@ -18,7 +18,7 @@ use App\Models\Product;
 	$user_from_id = request()->input('sales_person');
 	$addressid = request()->input('addressid');
 	$transaction_id = request()->input('transaction_id');
-	
+
 	if ($user_from_id == "" || $customer_id == 0 || $customer_id == "")
 	{
 ?>
@@ -29,7 +29,7 @@ use App\Models\Product;
 <?php
 		die();
 	}
-		
+
 	$today = date('Y-m-d');
 	if ($transaction_id != null && $transaction_id != "")
 	{
@@ -73,7 +73,7 @@ use App\Models\Product;
 		$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 		$transaction_id = null;
 		$pickersheet_id = $y;
-		
+
 		if ((int)$pickersheet_id !== $pickersheet_id)
 		{
 			abort(500);
@@ -81,21 +81,21 @@ use App\Models\Product;
 		}
 		loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
 		loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
-		
+
 		foreach ($basket as $item) {
 
 			$details = explode('-', $item);
 			$product_id = $details[0];
 			$quantity = $details[1];
 			$cut_id = $details[2];
-			
-			
+
+
 			$target_weight = (int) request('target_weight_' . $product_id);
-			
+
 			if(empty($target_weight)){ $target_weight = 0; }
-			
+
 			if(!is_int($target_weight)){ $target_weight = 0; }
-			
+
 			$price = request('price_' . $product_id);
 			$price_type = $priceTypeSorted[$product_id];
 			for($i=0;$i<$quantity;$i++){
@@ -103,12 +103,13 @@ use App\Models\Product;
 				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
 			}
 		}
-		shell_exec("php C:\\inetpub\\wwwroot\\martini\\artisan  run:send_sale_confirmation $pickersheet_id > NUL 2>&1 &");
+        pclose(popen('start /B cmd /C "php D:\\wwwroot\\martini\\artisan  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
+		//shell_exec("php D:\\wwwroot\\martini\\artisan  run:send_sale_confirmation $pickersheet_id > NUL");
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
-	
-	
+
+
 ?>
 <script>
 	alert("Done!");

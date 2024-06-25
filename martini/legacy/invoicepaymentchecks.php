@@ -8,7 +8,7 @@ include_once('functions.php');
     .printemailbuttons{
         display: none !important;
     }
-    
+
    .noprint {
     display: none;
    }
@@ -42,7 +42,7 @@ include_once('functions.php');
 }
     .printme{
         top: 0px;
-        
+
     }
 
     .loadingContainer {
@@ -88,7 +88,7 @@ include_once('functions.php');
 
     .table {
         margin-top: 10px;
-        
+
     }
 
     .table td {
@@ -135,16 +135,16 @@ include_once('functions.php');
     <a href="menu.php" id="menu">MENU</a>
     <a href="logout" id="logout">LOGOUT</a>
 </div>
- 
-<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>	  
+
+<div class="row custom-warning-box" id="warning" style="width: 100%; display: none"></div>
 <div class="mainstatement">
         <div style="width: 300px;float: right;">
             <table>
-                <tr><td style="text-align: right;">Start Date:</td><td><input class="form-control" type="text" class="inputbox" id="startdate" name="startdate" placeholder=""/></td></tr>
+                <tr><td style="text-align: right;">Start Date:</td><td><input class="form-control" type="text" class="inputbox" id="startdate" name="startdate" placeholder="" autocomplete="off"/></td></tr>
                 <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="text" class="inputbox" id="startinvoice" name="startinvoice" placeholder=""/></td></tr>
-                <tr><td style="text-align: right;">End Date:</td><td><input class="form-control" type="text" class="inputbox" id="enddate" name="enddate" placeholder=""/></td></tr>
+                <tr><td style="text-align: right;">End Date:</td><td><input class="form-control" type="text" class="inputbox" id="enddate" name="enddate" placeholder="" autocomplete="off"/></td></tr>
                 <tr><td style="text-align: right;">or Invoice:</td><td><input class="form-control" type="text" class="inputbox" id="endinvoice" name="endinvoice" placeholder=""/></td></tr>
-                <tr><td style="text-align: right;"></td><td style="float: right;" width="55"><input type ="button" style="width: 55px;"  onclick= "fetchResults()" value = "Go"></td></tr> 
+                <tr><td style="text-align: right;"></td><td style="float: right;" width="55"><input type ="button" style="width: 55px;"  onclick= "fetchResults()" value = "Go"></td></tr>
             </table>
         </div>
         <div>
@@ -198,7 +198,7 @@ var selectedID;
 $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
-$(document).ready(function(){ 
+$(document).ready(function(){
     $("#startdate").datepicker({
         dateFormat: 'yy-mm-dd'
     });
@@ -210,7 +210,7 @@ $(document).ready(function(){
 function fetchResults(){
     $('#soaTable').DataTable().destroy();
     $("#soaTable > tbody").empty();
-    
+
     startInv = $("#startinvoice").val();
     start = $("#startdate").val();
     end = $("#enddate").val();
@@ -253,7 +253,7 @@ function results(data, status){
     printArray = JSON.parse(data);
     $("#soaTable > tbody").empty();
     $("#soaTable").append(printArray.pop());
-    
+
     $( "#print" ).prop( "disabled", false );
 }
 function ticked(e)
@@ -276,7 +276,7 @@ function print()
 {
     $( "#print" ).prop( "disabled", true );
     $( "#print" ).prop( "value", "Downloading..." );
-    $.get("ajax/generateInvoicePaymentPrintout.php", { 'data':printArray.toString() }, download);
+    $.post("ajax/generateInvoicePaymentPrintout.php", { 'data':printArray.toString() }, download);
 }
 function debug(data, status)
 {

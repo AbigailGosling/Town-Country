@@ -1,5 +1,8 @@
 <?php
 include_once('includes/frontHeader.php');
+include_once('../functions.php');
+$data = prepareExecuteQuery("SELECT `dump` FROM tmp_data_dump WHERE `id` = ?",'i',[request()->input('id')])->fetch_assoc()['dump'];
+
 $serverRoot = request()->server("SERVER_NAME");
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
@@ -8,7 +11,7 @@ $serverRoot = request()->server("SERVER_NAME");
     .printemailbuttons{
         display: none !important;
     }
-    
+
    .noprint {
     display: none;
    }
@@ -42,7 +45,7 @@ $serverRoot = request()->server("SERVER_NAME");
 }
     .printme{
         top: 0px;
-        
+
     }
 
     .loadingContainer {
@@ -88,7 +91,7 @@ $serverRoot = request()->server("SERVER_NAME");
 
     .table {
         margin-top: 10px;
-        
+
     }
 
     .table td {
@@ -137,9 +140,9 @@ $serverRoot = request()->server("SERVER_NAME");
 </div>
 
 
-<div id="printDiv" class="container" style=""> 
-    
- 
+<div id="printDiv" class="container" style="">
+
+
     <div class="topheading">
 
     <div class="topInvoice">
@@ -147,12 +150,12 @@ $serverRoot = request()->server("SERVER_NAME");
 
         <div style="" id="invoiceZone" class="myInvoice">
         </div>
-    
+
     </div>
 </div>
 
 <div class="clearfix"></div>
-<script type="text/javascript">           
+<script type="text/javascript">
 var renderCompleted = false;
 $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
@@ -160,12 +163,12 @@ $.ajaxSetup({
 function isNumber(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
-var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); ?>;
+var dataParsed = <?php echo json_encode(explode(",",$data)); ?>;
     $(document).ready(function() {
         table = $('#soaTable').DataTable({
             "pageLength": -1,
             "order": [[ 0, "ASC" ]],
-            
+
         });
         getInvoices();
         //$("#printer").hide();
@@ -193,7 +196,7 @@ var dataParsed = <?php echo json_encode(explode(",",request()->input('data'))); 
                 or: 1
             },
             getInvoicesResp);
-        }             
+        }
     }
     var items = [];
     function getInvoicesResp(data, status) {

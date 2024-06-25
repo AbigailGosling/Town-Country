@@ -9,6 +9,7 @@ use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use PDO;
 
 class ReportHelper 
@@ -56,7 +57,7 @@ class ReportHelper
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
             ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
-        static::applyRange($resultQB,$dateType,$start,$end);
+        static::applyDateRange($resultQB,$dateType,$start,$end);
         /** @var Collection $debits */
         $debits = $resultQB->get();
         //throw new \Exception(json_encode([$i1,$i2]));
@@ -78,12 +79,16 @@ class ReportHelper
         foreach($debits as $result)
         {
             $col = ".weight_ids";
+            $weightids = array();
+            foreach (explode(",",$result->$col) as $id){
+                if ($id !== null && trim($id) !== '') $weightids[] = $id;
+            }
             $col2= "pickerItems.product_id";
             $weightQB = static::$conn->table("weights")
-                ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
-                ->whereRaw("`weights`.`id` IN (".$result->$col.")")
+                ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")             
                 ->where("weights.product_id",$result->$col2)
                 ->groupBy("weights.product_id");
+            static::applyWeightRange($weightQB,$weightids,$result->$col2);
             $item = $weightQB->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"weights.");
@@ -172,7 +177,7 @@ class ReportHelper
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")           
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id"]);
-        static::applyRange($resultQB,$dateType,$start,$end);
+        static::applyDateRange($resultQB,$dateType,$start,$end);
         
         /** @var Collection $debits */
         $debits = $resultQB->get();
@@ -211,11 +216,17 @@ class ReportHelper
                 if (array_key_exists($product_id,$processedProds))continue;
                 else $processedProds[$product_id] = true;
                 $price = $prices[$index];
+                $col = ".weight_ids";
+                $weightids = array();
+                foreach (explode(",",$result->$col) as $id){
+                    if ($id !== null && trim($id) !== '') $weightids[] = $id;
+                }
+                $col2= "pickerItems.product_id";
                 $weightQB = static::$conn->table("weights")
-                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
-                    ->whereRaw("`weights`.`id` IN (".$result->$col.")")
-                    ->where("weights.product_id",$product_id)
+                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")             
+                    ->where("weights.product_id",$result->$col2)
                     ->groupBy("weights.product_id");
+                static::applyWeightRange($weightQB,$weightids,$result->$col2);
                 $weight = $weightQB->first();
                 if ($weight == null) continue;
                 $product = static::$conn->table("product")->select("product.*")->where("product.id",$product_id)->first();
@@ -671,7 +682,28 @@ class ReportHelper
             }
         }
     }
-    private static function applyRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
+    private static function applyWeightRange(Builder &$weightQB, array $weightids, int $productid)
+    {
+        if (count($weightids)>2000) 
+        {
+            //PDO has limits on the number of vars we can submit in a prepare and a string length limit so we need to shrink the set
+            $pw = static::$conn->table("weights")->selectRaw("GROUP_CONCAT(id) as ids")->where("product_id",$productid)->first()->ids;
+            $pw = explode(",",$pw);
+            $weightids = static::custom_intersect($pw,$weightids);
+        }
+        $weightQB->whereIn("weights.id",$weightids);
+    }
+    private static function custom_intersect($arrayOne, $arrayTwo)
+    {
+        //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
+        $index = array_flip($arrayOne);
+        $second = array_flip($arrayTwo);
+
+        $x = array_intersect_key($index, $second);
+
+        return array_flip($x);
+    }
+    private static function applyDateRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
     {
         switch ($dateType) 
         {
