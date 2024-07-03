@@ -47,17 +47,17 @@ foreach ($items as $item){
     //Cut Row
     $cutid = prepareExecuteQuery("INSERT INTO `tandc_live`.`cuts` ( `species_id`, `name`, `cutgroup_id`) VALUES (13, ?, -1)",'s',[$name],true);
     //Product Row
-    $product_id = prepareExecuteQuery("INSERT INTO `tandc_live`.`product` (`pallet_id`, `cut_id`, `brand_id`, `nationality_id`, `cooling_id`, `status`, `range_from`, `range_to`, `ubbb`, `unit`, `comments`, `best_by`, `pricetype`, `cost`, `price`, `box_id`, `weightnote`, `product_temp`, `original_intake_id`, `original_pallet_id`, `note_units`, `note_weight`, `akg`, `quantity`) 
-                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 1)",'',[],true);                                            
+    $product_id = prepareExecuteQuery("INSERT INTO `tandc_live`.`product` (`pallet_id`, `cut_id`, `brand_id`, `nationality_id`, `cooling_id`, `status`, `range_from`, `range_to`, `ubbb`, `unit`, `comments`, `best_by`, `pricetype`, `cost`, `price`, `box_id`, `weightnote`, `product_temp`, `original_intake_id`, `original_pallet_id`, `note_units`, `note_weight`, `akg`, `quantity`)
+                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 1)",'',[],true);
     //Weight Row
     $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, 1, 1, 1, 1, 1, 1, '0', '0')",'',[],true);
 
     $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-    if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'','']);
-    else $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'','']);
+    if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'',0]);
+    else $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'',0]);
 }
 if (count($weights) == 0) die("N/A");
-$weightString = implode(',', $weights);		
+$weightString = implode(',', $weights);
 $x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName,picker_ids) VALUES (?,?,'#',?)";
 $y = prepareExecuteQuery($x,'iss',[$pickersheet_id,$weightString,$userid]);
 
