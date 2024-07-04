@@ -103,8 +103,7 @@ use App\Models\Product;
 				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
 			}
 		}
-        pclose(popen('start /B cmd /C "php D:\\wwwroot\\martini\\artisan  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
-		//shell_exec("php D:\\wwwroot\\martini\\artisan  run:send_sale_confirmation $pickersheet_id > NUL");
+        pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
