@@ -1,25 +1,25 @@
 <?php
 include_once(__DIR__.'/../functions.php');
 $sql = "SELECT `pickerSheets`.*,`customers`.`businessname`,`customers`.`id` as `customer_id`,`customers`.`sage_no` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
-if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="") 
+if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="")
 {
     $start = request()->input('start');
     $end =  request()->input('end');
     $sql .= "(STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN ? AND ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (request()->input('startInv') !== null && request()->input('startInv') !="" && request()->input('end') !== null && request()->input('end')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv') !="" && request()->input('end') !== null && request()->input('end')!="")
 {
     $start = request()->input('startInv');
     $end =  request()->input('end');
     $sql .= "(`pickerSheets`.`id` >= ? AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')` <= ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv')!==null && request()->input('endInv')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv')!==null && request()->input('endInv')!="")
 {
     $start = request()->input('startInv');
     $end =  request()->input('endInv');
     $sql .= "(`pickerSheets`.`id` >= ? AND `pickerSheets`.`id` <= ?) ORDER BY `pickerSheets`.id ASC";
 }
-else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv')!==null && request()->input('endInv')!="") 
+else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv')!==null && request()->input('endInv')!="")
 {
     $start = request()->input('start');
     $end =  request()->input('endInv');
@@ -33,7 +33,7 @@ foreach ($list as $item)
 {
     $id = $item['id'];
     $customername = $item['businessname'];
-    $completedDate = DateTime::createFromFormat("Y-m-d H:i:s",$item['date_completed'])->format("d/m/Y");
+
     $delDate = $item['estimated_delivery_date'];
     $custID = $item['customer_id'];
     $sageNo = $item['sage_no'];
@@ -45,6 +45,7 @@ foreach ($list as $item)
     if ($item['admin_approved'] == 1) $showHide = '';
     if ($item['completed'] == 1)
     {
+        $completedDate = DateTime::createFromFormat("Y-m-d H:i:s",$item['date_completed'])->format("d/m/Y");
         $href = 'invoice.php?id='.$id.'&or=1';
         $status = "Completed";
         $tracker[]= $id;
@@ -52,6 +53,7 @@ foreach ($list as $item)
     }
     else
     {
+        $completedDate = "";
         $href = 'viewSalesconfirmation.php?id='.$id.'&or=1';
         $tracker[]= $id;
         $tracker[]= 's';

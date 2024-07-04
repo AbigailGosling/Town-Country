@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PDO;
 
-class ReportHelper 
+class ReportHelper
 {
     public const DATE_TYPE_ASSEMBLED = "assembled";
     public const DATE_TYPE_CREATED = "created";
@@ -37,7 +37,7 @@ class ReportHelper
         ini_set('memory_limit', '4G');
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
-        static::$pdo = static::$conn->getPdo();        
+        static::$pdo = static::$conn->getPdo();
         static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
         switch ($report->mode)
         {
@@ -48,7 +48,7 @@ class ReportHelper
         }
     }
     private static function getProductRange(string $dateType, Carbon $start, Carbon $end):array
-    {    
+    {
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
@@ -85,7 +85,7 @@ class ReportHelper
             }
             $col2= "pickerItems.product_id";
             $weightQB = static::$conn->table("weights")
-                ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")             
+                ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
                 ->where("weights.product_id",$result->$col2)
                 ->groupBy("weights.product_id");
             static::applyWeightRange($weightQB,$weightids,$result->$col2);
@@ -101,7 +101,7 @@ class ReportHelper
             if (static::bulkMergeIn($result))
             {
                 $col = "pickerSheets.isSupplemental";
-                if ($result->$col === true || $result->$col === 1) 
+                if ($result->$col === true || $result->$col === 1)
                 {
                     $col = "pickerSheets.isSupplementalCredit";
                     if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
@@ -121,7 +121,7 @@ class ReportHelper
             $item = $weightQB->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"weights.");
-            
+
             $col = "credit_note_items.product_id";
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
             if ($item===null) continue;
@@ -132,22 +132,22 @@ class ReportHelper
             $col3 = "product.brand_id";
             $col4 = "product.nationality_id";
             $item = static::$conn->table("product")->select("product.*")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]])->first();
-            if ($item===null) continue; 
+            if ($item===null) continue;
             static::row_merge($result,$item,"original_product.");
 
             $col = "product.original_pallet_id";
             $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
-            if ($item===null) continue; 
+            if ($item===null) continue;
             static::row_merge($result,$item,"original_pallet.");
 
             $col = "original_pallet.intake_id";
             $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-            if ($item===null) continue; 
+            if ($item===null) continue;
             static::row_merge($result,$item,"original_intake.");
 
             $col = "original_intake.supplier_id";
             $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
-            if ($item===null) continue; 
+            if ($item===null) continue;
             static::row_merge($result,$item,"original_supplier.");
 
             $co  = "original_product.id";
@@ -155,7 +155,7 @@ class ReportHelper
             $col2 = "pickerSheets.id";
             $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
             $item =$qb->first();
-            if ($item===null) throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));    
+            if ($item===null) throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));
             static::row_merge($result,$item,"pickerItems.");
 
             if (static::bulkMergeIn($result))
@@ -174,22 +174,22 @@ class ReportHelper
 
         $resultQB = static::$conn->table("pickerSheets")
             ->join("palletsOut","pickerSheets.id"               ,'=',"palletsOut.pickersheet_id")
-            ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")           
+            ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id"]);
         static::applyDateRange($resultQB,$dateType,$start,$end);
-        
+
         /** @var Collection $debits */
         $debits = $resultQB->get();
 
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
-            ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")     
+            ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->whereBetween("invoice_payments.created_at",[$start,$end])
-            ->groupBy(["pickerSheets.id"])       
+            ->groupBy(["pickerSheets.id"])
             ->orderBy("invoice_payments.created_at");
-            
+
         /** @var Collection $credits */
         $credits = $resultQB->get();
 
@@ -201,7 +201,7 @@ class ReportHelper
         $finalDebits = new Collection();
         $finalSupp = new Collection();
         foreach($debits as $result)
-        {       
+        {
             $col = ".weight_ids";
             $col2= ".product_ids";
             $col3= ".prices";
@@ -223,10 +223,10 @@ class ReportHelper
                 }
                 $col2= "pickerItems.product_id";
                 $weightQB = static::$conn->table("weights")
-                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")             
-                    ->where("weights.product_id",$result->$col2)
+                    ->selectRaw("weights.id, count(weights.product_id) as `rows`, sum(weight_gross) as `weight_gross`, sum(weight_tear) as `weight_tear`, sum(number_of_cartons) as `number_of_cartons`")
+                    ->where("weights.product_id",$product_id)
                     ->groupBy("weights.product_id");
-                static::applyWeightRange($weightQB,$weightids,$result->$col2);
+                static::applyWeightRange($weightQB,$weightids,$product_id);
                 $weight = $weightQB->first();
                 if ($weight == null) continue;
                 $product = static::$conn->table("product")->select("product.*")->where("product.id",$product_id)->first();
@@ -237,7 +237,7 @@ class ReportHelper
                     if (!is_numeric($rollingItem->$colName)) continue;
                     (double)$rollingItem->$colName += (double)$val;
                 }
-              
+
                 if ($product->unit == "PPC")
                 {
                     $rowCountPointer = "rows";
@@ -265,7 +265,7 @@ class ReportHelper
             if (static::bulkMergeIn($result,false))
             {
                 $col = "pickerSheets.isSupplemental";
-                if ($result->$col === true || $result->$col === 1) 
+                if ($result->$col === true || $result->$col === 1)
                 {
                     $col = "pickerSheets.isSupplementalCredit";
                     if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
@@ -300,17 +300,17 @@ class ReportHelper
 
                 $col = "product.original_pallet_id";
                 $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$product->original_pallet_id)->first();
-                if ($item===null) continue; 
+                if ($item===null) continue;
                 static::row_merge($result,$item,"original_pallet.");
 
                 $col = "original_pallet.intake_id";
                 $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-                if ($item===null) continue; 
+                if ($item===null) continue;
                 static::row_merge($result,$item,"original_intake.");
 
                 $col = "original_intake.supplier_id";
                 $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
-                if ($item===null) continue; 
+                if ($item===null) continue;
                 static::row_merge($result,$item,"original_supplier.");
 
                 if ($rollingItem == null) $rollingItem = $weight;
@@ -319,7 +319,7 @@ class ReportHelper
                     if (!is_numeric($rollingItem->$colName)) continue;
                     (double)$rollingItem->$colName += (double)$val;
                 }
-              
+
                 if ($product->unit == "PPC")
                 {
                     $rowCountPointer = "rows";
@@ -374,7 +374,7 @@ class ReportHelper
             {
                 $rolling =  filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
                 $rolling = static::floorDec(floatval($rolling)*$magShift,0);
-                
+
                 switch($reportColumn->metadata['footer'])
                 {
                     case "array_sum":
@@ -383,7 +383,7 @@ class ReportHelper
                         break;
                     }
                 }
-                
+
             }
             $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
         }
@@ -395,15 +395,15 @@ class ReportHelper
         $results = [];
         $mode = $reportTable->mode;
         $rows2 = $rows->toArray();
-        foreach ($rows2 as $dbRow) 
-        {   
+        foreach ($rows2 as $dbRow)
+        {
             $workingResult = [];
             $col = "pickerSheets.id";
             $workingResult['internal_id'] = $dbRow->$col;
             foreach ($reportTable->getColumns() as $reportColumn)
             {
                 $workingResult[$reportColumn->getLabel($reportTable->mode)] = "";
-                if (!static::filterCheck($reportColumn,$workingResult,$dbRow)) 
+                if (!static::filterCheck($reportColumn,$workingResult,$dbRow))
                 {
                     $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,"","");
                     continue;
@@ -440,8 +440,8 @@ class ReportHelper
                     }
                 }
             }
-            $results[] = $workingResult; 
-        } 
+            $results[] = $workingResult;
+        }
         return $results;
     }
     public static function finaliseCell(ReportColumn $reportColumn,array $workingResult,string $mode):string
@@ -499,7 +499,7 @@ class ReportHelper
         $col = "pickerSheets.customer_id";
         $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
         static::row_merge($result,$item);
-        
+
         $col = "pickerSheets.user_from_id";
         $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
         if ($item===null) return false;
@@ -516,11 +516,11 @@ class ReportHelper
             $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
             if ($item===null) return false;
             static::row_merge($result,$item,"intake.");
-            
+
             $col = "intake.supplier_id";
             $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
             static::row_merge($result,$item);
-            
+
             $col = "product.brand_id";
             $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
             static::row_merge($result,$item);
@@ -560,7 +560,7 @@ class ReportHelper
                 {
                     $fallbacks[]=$reportColumn->metadata["fallback"];
                 }
-                else 
+                else
                 {
                     $fallbacks=$reportColumn->metadata["fallback"];
                 }
@@ -570,7 +570,7 @@ class ReportHelper
                     if (!($result == null || $result === "" ||$result == "0"))
                         break;
                 }
-                
+
             }
         }
         return $result;
@@ -581,9 +581,9 @@ class ReportHelper
         foreach ($args as $arg)
         {
             $item = (is_array($arg))?(double)static::calculate($arg['operator'],$arg['args'],$workingResult,$dbRow):(double)static::getValue($arg,$workingResult,$dbRow);
-            
+
             if ($result === null) $result = (double)$item;
-            else 
+            else
             {
                 switch ($operator)
                 {
@@ -628,11 +628,11 @@ class ReportHelper
     }
     private static function filterCheck(ReportColumn $reportColumn,$workingResult,$dbRow):bool
     {
-        if ($reportColumn->metadata != null && array_key_exists("filters",$reportColumn->metadata)) 
+        if ($reportColumn->metadata != null && array_key_exists("filters",$reportColumn->metadata))
         {
             foreach ($reportColumn->metadata['filters'] as $colString => $filterValue)
-            {             
-                if (static::getValue($colString,$workingResult,$dbRow) != $filterValue) 
+            {
+                if (static::getValue($colString,$workingResult,$dbRow) != $filterValue)
                 {
                     return false;
                 }
@@ -648,7 +648,7 @@ class ReportHelper
             {
                 $negMarker = "";
                 settype($workingVal,"double");
-                if ($workingVal < 0) 
+                if ($workingVal < 0)
                 {
                     $negMarker = "-";
                     $workingVal *= -1;
@@ -684,7 +684,7 @@ class ReportHelper
     }
     private static function applyWeightRange(Builder &$weightQB, array $weightids, int $productid)
     {
-        if (count($weightids)>2000) 
+        if (count($weightids)>2000)
         {
             //PDO has limits on the number of vars we can submit in a prepare and a string length limit so we need to shrink the set
             $pw = static::$conn->table("weights")->selectRaw("GROUP_CONCAT(id) as ids")->where("product_id",$productid)->first()->ids;
@@ -705,7 +705,7 @@ class ReportHelper
     }
     private static function applyDateRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
     {
-        switch ($dateType) 
+        switch ($dateType)
         {
             case self::DATE_TYPE_ASSEMBLED:
             {
@@ -724,7 +724,7 @@ class ReportHelper
                 $resultQB->whereRaw("(STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') BETWEEN '".$start."' AND '".$end."')")
                         ->orderBy("parsedDate");
                 break;
-            }          
+            }
         }
     }
     private static function floorDec($val, $precision = 2) {
