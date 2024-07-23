@@ -1,503 +1,325 @@
 <?php
 
+use App\Helpers\ReportHelper;
+use App\Models\Report;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-
+	
+	$percision = 3;
+	$magShift = pow(10,$percision);
+	
    	require(__DIR__.'/../functions.php');
-       ini_set('max_execution_time','256');
-       ini_set('memory_limit', '512M');
-       if(request()->input('user_id') != '' || request()->input('customer_id') != '' || request()->input('species_id') != '' || request()->input('intake_id') != '' || request()->input('pallet_id') != '' || request()->input('invoice_id') != ''  || request()->input('brand_id') != '' || request()->input('nationality_id') != ''){
+    ini_set('max_execution_time','256');
+    ini_set('memory_limit', '512M');
+    $filters = array();
+
+    $INVOICE_ID = request()->input('invoice_id');
+    if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0') $filters['pickerSheets.id'] = $INVOICE_ID;
+
+    $INTAKE_ID = request()->input('intake_id');
+    if ($INTAKE_ID != null && $INTAKE_ID != '' && $INTAKE_ID != '...' && $INTAKE_ID != '0') $filters['intake.id'] = $INTAKE_ID;
+
+    $PALLET_ID = request()->input('pallet_id');
+    if ($PALLET_ID != null && $PALLET_ID != '' && $PALLET_ID != '...' && $PALLET_ID != '0') $filters['pallet.id'] = $PALLET_ID;
+
+    $USER_ID = request()->input('user_id');
+    if ($USER_ID != null && $USER_ID != '' && $USER_ID != '...' && $USER_ID != '0') $filters['customers.salesman'] = $PALLET_ID;
+
+    $CUSTOMER_ID = request()->input('customer_id');
+    if ($CUSTOMER_ID != null && $CUSTOMER_ID != '' && $CUSTOMER_ID != '...' && $CUSTOMER_ID != '0') $filters['customers.id'] = $CUSTOMER_ID;
+
+    $SPECIES_ID = request()->input('species_id');
+    if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0') $filters['species.id'] = $SPECIES_ID;
+
+    $CUTGROUP_ID = request()->input('cutgroup_id');
+    if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0') $filters['cut_group.id'] = $CUTGROUP_ID;
+
+    $COOLING_ID = request()->input('cooling_id');
+    if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0') $filters['tempurature.id'] = $COOLING_ID;
+
+    $BRAND_ID = request()->input('brand_id');
+    if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0') $filters['brand.id'] = $BRAND_ID;
+
+    $NATIONALITY_ID = request()->input('nationality_id');
+    if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0') $filters['nationality.id'] = $NATIONALITY_ID;
+
+    $SUPPLIER_ID = request()->input('supplier_id');
+    if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0') $filters['supplier.id'] = $NATIONALITY_ID;
+
+    if(request()->input('date_start') != ''){
+        $date_start = request()->input('date_start');
+        $date_start = str_replace('/', '-', $date_start);
+        $date_start = Carbon::createFromTimestamp(strtotime($date_start));
         
-        $INVOICE_ID = request()->input('invoice_id');
-        $INTAKE_ID = request()->input('intake_id');
-        $PALLET_ID = request()->input('pallet_id');
-        $USER_ID = request()->input('user_id');
-        $CUSTOMER_ID = request()->input('customer_id');
-        $SPECIES_ID = request()->input('species_id');
-        $CUTGROUP_ID = request()->input('cutgroup_id');
-        $COOLING_ID = request()->input('cooling_id');
-        $BRAND_ID = request()->input('brand_id');
-        $NATIONALITY_ID = request()->input('nationality_id');
-        $SUPPLIER_ID = request()->input('supplier_id');
-        $QUERY_VARS = array();
-        if(request()->input('date_start') != ''){
-            $date_start = request()->input('date_start');
-            $date_start = str_replace('/', '-', $date_start);
-            $date_start = date('Y-m-d', strtotime($date_start));
-            
-            if(request()->input('date_end') == ''){
-                $date_end = date('d/m/Y');
-            }else{
-                $date_end = request()->input('date_end');
-            }
-
-            $date_end = str_replace('/', '-', $date_end);
-            $date_end = date('Y-m-d', strtotime($date_end));
-
-         
-            $dateQueryPiece = " && pickerSheets.date_completed >= ? && pickerSheets.date_completed <= ?";
-            $QUERY_VARS[] = $date_start;
-            $QUERY_VARS[] = $date_end;
-        }
-
-        if($CUSTOMER_ID != "" && $CUSTOMER_ID != 0){
-            $customerQueryPiece = " && pickerSheets.customer_id = ?";
-            $QUERY_VARS[] = $CUSTOMER_ID;
+        if(request()->input('date_end') == ''){
+            $date_end = date('d/m/Y');
         }else{
-            $customerQueryPiece = "";
+            $date_end = request()->input('date_end');
         }
 
-        if($USER_ID != "" && $USER_ID != 0){
-            $userQueryPiece = " && pickerSheets.user_from_id = ?";
-            $QUERY_VARS[] = $USER_ID;
-        }else{
-            $userQueryPiece = "";
-        }
-
-        if($COOLING_ID != "" && $COOLING_ID != 0){
-            $coolingQueryPiece = " && product.cooling_id = ?";
-            $QUERY_VARS[] = $COOLING_ID;
-        }else{
-            $coolingQueryPiece = "";
-        }
-        
-        if($BRAND_ID != "" && $BRAND_ID != 0){
-            $brandQueryPiece = " && product.brand_id = ?";
-            $QUERY_VARS[] = $BRAND_ID;
-        }else{
-            $brandQueryPiece = "";
-        }
-
-        if($NATIONALITY_ID != "" && $NATIONALITY_ID != 0){
-            $nationQueryPiece = " && product.nationality_id = ?";
-            $QUERY_VARS[] = $NATIONALITY_ID;
-        }else{
-            $nationQueryPiece = "";
-        }
-
-        if($SUPPLIER_ID != "" && $SUPPLIER_ID != 0){
-            $supplierQueryPiece = " && intake.supplier_id = ?";            
-            $QUERY_VARS[] = $SUPPLIER_ID;
-        }else{
-            $supplierQueryPiece = "";
-        }
-
-        if($INTAKE_ID != "" && $INTAKE_ID != ''){
-            $picksheet_ids = array();
-
-            $intakePicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
-                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
-                        JOIN `product` ON product.id = pickerItems.product_id
-                        JOIN `pallet` ON pallet.id = product.pallet_id
-                        JOIN `intake` ON intake.id = pallet.intake_id WHERE intake.id = ? GROUP BY pickerSheets.id";
-
-            $intakeQueryResult = prepareExecuteQuery($intakePicksheetSearchQuery,'i',[$INTAKE_ID]);
-            
-            while($intakePicksheet = mysqli_fetch_array($intakeQueryResult)){
-                array_push($picksheet_ids, $intakePicksheet['id']);
-            }
-
-            if(sizeof($picksheet_ids) > 0){
-                $picksheet_ids = implode(',', $picksheet_ids);
-
-                $intakeQueryPiece = " && pallet.intake_id=? && pickerSheets.id IN ($picksheet_ids)";
-                $QUERY_VARS[] = $INTAKE_ID;
-            }
-        }
-
-        if($INVOICE_ID != "" && $INVOICE_ID != 0){
-            $internal_invoice_ids = explode(",",$INVOICE_ID);
-            foreach($internal_invoice_ids as $invoice_id_temp)
-            {
-                $QUERY_VARS[] = $invoice_id_temp;
-            }
-            $invoiceQueryPiece = " && pickerSheets.id IN (".implode(",",array_fill(0,count($internal_invoice_ids),"?")).")";
-        }
-
-        if($PALLET_ID != "" && $PALLET_ID != 0){
-            $picksheet_ids = array();
-
-            $palletPicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
-                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
-                        JOIN `product` ON product.id = pickerItems.product_id
-                        JOIN `pallet` ON pallet.id = product.pallet_id WHERE pallet.id = ? GROUP BY pickerSheets.id";
-
-            $palletQueryResult = prepareExecuteQuery($palletPicksheetSearchQuery,'i',[$PALLET_ID]);
-            
-            while($palletPicksheet = mysqli_fetch_array($palletQueryResult)){
-                array_push($picksheet_ids, $palletPicksheet['id']);
-            }
-
-            if(sizeof($picksheet_ids) > 0){
-                $picksheet_ids = implode(',', $picksheet_ids);
-
-                $palletQueryPiece = " && pallet.id=? && pickerSheets.id IN ($picksheet_ids)";
-                $QUERY_VARS[] = $PALLET_ID;
-            }
-        }
-
-        if($SPECIES_ID != "" && $SPECIES_ID != 0){
-            
-            if($CUTGROUP_ID != 0 && $CUTGROUP_ID != "..."){
-                $ARRAY_CUTS = cutsFromCutGroup($SPECIES_ID, $CUTGROUP_ID);
-                $cut_ids = implode(',', $ARRAY_CUTS);
-            }else{
-                $cut_ids = array();
-                $cuts = getCutsFor($SPECIES_ID);
-                while($cut = mysqli_fetch_array($cuts)){ array_push($cut_ids, $cut['id']); }
-
-                $cut_ids = implode(',', $cut_ids);
-            }
-
-            $searchResults = prepareExecuteQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost, `product`.`price` as `actual_cost`, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
-                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
-                        JOIN `product` ON product.id = pickerItems.product_id
-                        JOIN `pallet` ON product.pallet_id = pallet.id
-                        JOIN `intake` ON pallet.intake_id = intake.id
-                        WHERE pickerSheets.completed = 1 && product.cut_id in ($cut_ids) $dateQueryPiece $customerQueryPiece $userQueryPiece $coolingQueryPiece $brandQueryPiece $nationQueryPiece $supplierQueryPiece $intakeQueryPiece $invoiceQueryPiece $palletQueryPiece GROUP BY pick_id, pickerItems.product_id"
-                        ,str_repeat('s',count($QUERY_VARS)),$QUERY_VARS);
-
-
-        }else{
-
-            $searchResults = prepareExecuteQuery("SELECT pallet.intake_id as intake_id, product.cost as product_cost,`product`.`price` as `actual_cost`, pickerItems.price as picker_price, pickerSheets.id as pick_id, pickerSheets.*, product.*, product.id as product_id, intake.supplier_id FROM `pickerSheets`
-                        JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
-                        JOIN `product` ON product.id = pickerItems.product_id
-                        JOIN `pallet` ON product.pallet_id = pallet.id
-                        JOIN `intake` ON pallet.intake_id = intake.id
-                        WHERE pickerSheets.completed=1 $dateQueryPiece $customerQueryPiece $userQueryPiece $coolingQueryPiece $brandQueryPiece $nationQueryPiece $supplierQueryPiece $intakeQueryPiece $invoiceQueryPiece $palletQueryPiece GROUP BY pickerSheets.id, pickerItems.product_id"
-                        ,str_repeat('s',count($QUERY_VARS)),$QUERY_VARS);
-                        
-        }
-
+        $date_end = str_replace('/', '-', $date_end);
+        $date_end = Carbon::createFromTimestamp(strtotime($date_end));
     }
-?>
-
-<tr>
-    <th align="left">SALESMAN</th>
-    <th align="left">DATE</th>
-    <th align="left">INVOICE ID</th>
-    <th align="left">Customer</th>
-
-    <th align="left">Intake ID</th>
-    <th align="left">Plt ID</th>
-    <th align="left">Species</th>
-    <th align="left">Nationality</th>
-    <th align="left">Temp.</th>
-    <th align="left">Category</th>
-    <th align="left">Product</th>
-    <th align="left">Brand</th>
-    <th align="left">Supplier</th>
-    <th align="left">Qty</th>
-    <th align="left">Unit</th>
-    <th align="left">kg</th>
-
-    <th align="left">Cost</th>
-    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th align="left">Actual Cost</th><?php } ?>
-    <th align="left">Sell</th>
-    <th align="left">Profit</th>
-    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th align="left">Actual Profit</th><?php } ?>
-</tr>
-
-<?php
-
-    $invoice_price_store = array();
-    $quantity_store = array();
-    $weight_total_store = array();
-
-    while($invoice = mysqli_fetch_array($searchResults)){
-        $row_intake_id = $invoice['intake_id'];
-    
-        if($INTAKE_ID != ''){
-            if($INTAKE_ID != $row_intake_id){
-                continue;
-            }
-        }
-
-        if($PALLET_ID != ''){
-            if($PALLET_ID != $invoice['pallet_id']){
-                continue;
-            }
-        }
-        if(array_key_exists($invoice['pick_id'],$invoice_price_store))
-        {
-            $invoice_price = $invoice_price_store[$invoice['pick_id']];
-        }
-        else
-        {
-            $invoice_price = invoiceTotal($invoice['pick_id']);
-            $invoice_price_store[$invoice['pick_id']] = $invoice_price;
-        }
-
-        if(array_key_exists($invoice['pick_id'] ."_". $invoice['product_id'],$quantity_store))
-        {
-            $quantity = $quantity_store[$invoice['pick_id'] ."_". $invoice['product_id']];
-        }
-        else
-        {
-            $quantity = weightCountOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
-            $quantity_store[$invoice['pick_id'] ."_". $invoice['product_id']] = $quantity;
-        }
-
-        if(array_key_exists($invoice['pick_id'] ."_". $invoice['product_id'],$weight_total_store))
-        {
-            $weight_total = $weight_total_store[$invoice['pick_id'] ."_". $invoice['product_id']];
-        }
-        else
-        {
-            $weight_total = weightValueOfProductOnPicksheet($invoice['pick_id'], $invoice['product_id']);
-            $weight_total_store[$invoice['pick_id'] ."_". $invoice['product_id']] = $weight_total;
-        }
-        if($invoice['unit'] == 'PPC'){
-            (double)$total_product_cost         = (double)$invoice['product_cost'] * (double)$quantity;
-            (double)$total_product_sell         = (double)$invoice['picker_price'] * (double)$quantity;   
-
-            if ($invoice['actual_cost' ] != null && $invoice['actual_cost' ] != "" && $invoice['actual_cost' ] != 0.00 && $invoice['actual_cost' ] != "0.00")
-                (double)$total_actual_product_cost  = (double)$invoice['actual_cost' ] * (double)$quantity;
-            else
-                (double)$total_actual_product_cost  = (double)$invoice['product_cost'] * (double)$quantity;
-        }else{
-            (double)$total_product_cost         = (double)$invoice['product_cost'] * (double)$weight_total;
-            (double)$total_product_sell         = (double)$invoice['picker_price'] * (double)$weight_total;
-
-            if ($invoice['actual_cost' ] != null && $invoice['actual_cost' ] != "" && $invoice['actual_cost' ] != 0.00 && $invoice['actual_cost' ] != "0.00")
-                (double)$total_actual_product_cost  = (double)$invoice['actual_cost' ] * (double)$weight_total;
-            else
-                (double)$total_actual_product_cost  = (double)$invoice['product_cost'] * (double)$weight_total;
-        }
-        $date_completed = $invoice['date_completed'];
-        $date_completed = str_replace('/', '-', $date_completed);
-        $cell_date_completed = date('d/m/Y', strtotime($date_completed));
-
-        $cell_username = getUsername($invoice['user_from_id']);
-        $cell_customer_name = customerName($invoice['customer_id']);
-        $cell_nationality = getNationality($invoice['nationality_id']);
-        $cell_temp = getTemp($invoice['cooling_id']);
-        $cell_cutgroup = getCutGroupNameFromCut($invoice['cut_id']);
-        $cell_species = getSpeciesFromCutID($invoice['cut_id']);
-        $cell_product = $cell_species .' ' . getCut($invoice['cut_id']);
-        $cell_brand = getBrand($invoice['brand_id']);
-        $cell_supplier = getSupplier($invoice['supplier_id'])['name'];
-
-        ?>
-        <tr class="result">
-            <td><?php echo $cell_username ?></td>
-            <td><?php echo $cell_date_completed; ?></td>
-            <td><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
-            <td><?php echo $cell_customer_name; ?> </td>
-            <td><?php echo $row_intake_id; ?></td>
-            <td><?php echo $invoice['pallet_id']; ?></td>
-            <td><?php echo $cell_species; ?> </td>
-            <td><?php echo $cell_nationality ?></td>
-            <td><?php echo $cell_temp; ?></td>
-            <td><?php echo $cell_cutgroup; ?></td>
-            <td><?php echo $cell_product; ?></td>
-            <td><?php echo $cell_brand; ?></td>
-            <td><?php echo $cell_supplier; ?></td>
-            <td>
-                <input type="hidden" class="quantityValue" value="<?php echo $quantity; ?>">
-                <?php echo $quantity; ?>
-            </td>
-            <td><?php 
-                if($invoice['unit'] == 'C'){
-                    echo 'Cases';
-                }else if($invoice['unit'] == 'P'){
-                    echo 'GT';
-                }else{
-                    echo $invoice['unit'];
-                }
-            ?></td>
-            <td>
-                <input type="hidden" class="weightValue" value="<?php echo $weight_total; ?>">
-                <?php echo $weight_total; ?> kg
-            </td>
-
-            <td>
-                <?php
-                    $cost_formatted = number_format($total_product_cost, 2);
-                    $cost = str_replace(",","",$cost_formatted);
-                ?>
-                <input type="hidden" class="costValue" value="<?php echo $cost; ?>">
-                £<?php echo $cost_formatted; ?>
-            </td>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-            <td>
-                <?php
-                    $cost_formatted = number_format($total_actual_product_cost, 2);
-                    $cost = str_replace(",","",$cost_formatted);
-                ?>
-                <input type="hidden" class="actualCostValue" value="<?php echo $cost; ?>">
-                £<?php echo $cost_formatted; ?>
-            </td>
-            <?php } ?>
-            <td>
-                <?php
-                    $sell_formatted = number_format($total_product_sell, 2);
-                    $sell = str_replace(",","",$sell_formatted);
-                ?>
-                <input type="hidden" class="sellValue" value="<?php echo $sell; ?>">
-                £<?php echo $sell_formatted; ?>
-            </td>
-            <td>
-                <input type="hidden" class="profitValue" value="<?php echo $total_product_sell - $total_product_cost; ?>">
-                £<?php echo number_format($total_product_sell - $total_product_cost, 2); ?>
-            </td>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-                <td>
-                <input type="hidden" class="actualProfitValue" value="<?php echo $total_product_sell - $total_actual_product_cost; ?>">
-                £<?php echo number_format($total_product_sell - $total_actual_product_cost, 2); ?>
-            </td>
-            <?php } ?>
-        </tr>
-
+    $CASES = "Cases";
+    $GT = "G/T";
+    $PPC = "PPC";
+    if (User::find(Auth::id())->hasPermission("viewcosts")) 
+    {
+        $garyCols = array
+        (
+            'SALESMAN' => "User",
+            'DATE' => "Date Assembled",
+            'INVOICE ID' => "Invoice",
+            'Customer' => "Customer",   
+            'Intake ID' => "Intake ID",
+            'Plt ID' => "Pallet ID",
+            'Species' => "Species",
+            'Nationality' => "Nationality",
+            'Temp.' => "Temp",
+            'Category' => "Group",
+            'Product' => "Cut",
+            'Brand' => "Brand",
+            'Supplier' => "Supplier",
+            'Qty' => "qty",
+            'Unit' => "unit",
+            'kg' => "kg",
+            'Cost' => "Cost Value",
+            'Actual Cost' => "Actual Cost Value",
+            'Sell' => "Sell Value",
+            'Profit' => "Profit",
+            'Actual Profit' => "Actual Profit",
+        );
+    }
+    else
+    {
+        $garyCols = array
+        (
+            'SALESMAN' => "User",
+            'DATE' => "Date Assembled",
+            'INVOICE ID' => "Invoice",
+            'Customer' => "Customer",   
+            'Intake ID' => "Intake ID",
+            'Plt ID' => "Pallet ID",
+            'Species' => "Species",
+            'Nationality' => "Nationality",
+            'Temp.' => "Temp",
+            'Category' => "Group",
+            'Product' => "Cut",
+            'Brand' => "Brand",
+            'Supplier' => "Supplier",
+            'Qty' => "qty",
+            'Unit' => "unit",
+            'kg' => "kg",
+            'Cost' => "Cost Value",
+            'Sell' => "Sell Value",
+            'Profit' => "Profit",
+        );
+    }
+    if (count(array_keys($filters))==0)$filters = null;
+    $report = Report::find(1);
+    $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start->startOfDay(),$date_end->endOfDay(),$filters);
+    $dataRanges2= [];
+	$processed = [];
+	$tableSums = [];
+    foreach ($dataRanges as $key=>$range)
+    {
+        $dataRanges2[]=ReportHelper::resolveTableBody($report->getTables()[$key],$range);
+    }
+    while (count($dataRanges2)<4){
+        $dataRanges2[] = [];
+    }
+    foreach ($report->getTables() as $index=>$table){
+		$processed[$table->name] = [];
+        $reportColumns =$table->getColumns();
+?> <table style="width:100%;" id="resultsTable<?php echo $index; ?>">
+        <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
+        <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
+        <tr>
         <?php
-            $actualCost = 0;
-            $credit_value = 0;
-            $credit_qty = 0;
-            $weightReturned = 0;
-            $cost_value = 0;
-            $invoice_id = $invoice['pick_id'];
-            
-            $payment_ids = [];
-            $credit_payments = prepareExecuteQuery("SELECT * FROM `invoice_payments` WHERE invoice_id=? && payment_method='CREDIT_NOTE'",'i',[$invoice_id]);
-            while($credit_payment = mysqli_fetch_array($credit_payments)){ array_push($payment_ids, $credit_payment['id']); }
-            if (count($payment_ids) > 0)
+        foreach($garyCols as $garyCol=>$discard)
+        {
+        ?>
+            <th align="left"><?php echo $garyCol; ?></th>
+        <?php
+        }
+        ?>
+        </tr></thead>
+        <?php
+        foreach($dataRanges2[$index] as $row)
+        {
+			$d = new stdClass();
+            echo '<tr class="result">';
+            foreach($garyCols as $garyCol)
             {
-                $payment_ids = implode(',', $payment_ids);
-
-                
-                $credit_items = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id IN ($payment_ids)");
-                while($credit_item = mysqli_fetch_array($credit_items)){
-                    $returned_product_id = $credit_item['product_id'];
-                    
-
-                    $real_cut_id = $invoice['cut_id'];
-
-                    $returned_product_result =  prepareExecuteQuery("SELECT * FROM `product` WHERE id=? && cut_id = ?",'ii',[$returned_product_id,$real_cut_id]);
-
-                    $returned_product_count = mysqli_num_rows($returned_product_result);
-                    if($returned_product_count > 0){
-                        $creditNoteCheck = prepareExecuteQuery("SELECT `credit_note_items`.*,`product`.cost,`product`.`price` as `actual_cost`,`product`.pallet_id FROM `credit_note_items` INNER JOIN `product` ON `product`.id = `credit_note_items`.product_id WHERE `credit_note_items`.product_id='$returned_product_id' AND `product`.original_pallet_id = ?",'i',[$invoice['pallet_id']]);
-                        
-                        while($creditItem = mysqli_fetch_array($creditNoteCheck)){
-                            $creditItempallet_id = $creditItem['pallet_id'];
-                            $weight = weightFromProductIDArray([$returned_product_id]);
-                            $weightReturned += $weight;
-                            $credit_value += number_format((double)$creditItem['price'] * $weight, 2, '.', '');
-                            $cost_value += number_format((double)$creditItem['cost'] * $weight, 2, '.', '');
-                            if ($creditItem['actual_cost'] != null && $creditItem['actual_cost'] != 0)$actualCost += number_format((double)$creditItem['actual_cost'] * $weight, 2, '.', '');
-                            else $actualCost += number_format((double)$creditItem['cost'] * $weight, 2, '.', '');
-                            $credit_qty += $creditItem['quantity'];
+                if ($index % 2 == 0) echo "<td>";
+                else echo "<td style='color:red;'>";
+                if ($garyCol == "qty")
+                {
+                    $qty = "";
+                    $unitlable = "";
+                    if ($row[$CASES] != "0")
+                    {
+                        $qty = $row[$CASES];
+                        $unitlable = "Cases";
+                    }
+                    else if ($row[$PPC] != "0")
+                    {
+                        $qty = $row[$PPC];
+                        $unitlable = "PPC";
+                    }
+                    else
+                    {
+                        $qty = $row[$GT];
+                        $unitlable = "G/T";
+                    }
+                    echo $qty;
+                }
+                else if ($garyCol == "unit")
+                {    
+                    echo $unitlable;            
+                }
+                else foreach($reportColumns as $reportCol)
+                {
+                    if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
+                    {
+                        $t = ReportHelper::finaliseCell($reportCol,$row,$table->mode);
+						$col = $reportCol->getLabel($table->mode);
+						$d->$col = preg_replace("/[£,]/", '', $t);
+                        if ($garyCol == "Invoice")
+                        {
+                            $t = '<a href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
                         }
+						$kgS=($garyCol=="kg")?"kg":"";
+                        echo $t.$kgS;
+                        break;
                     }
                 }
-                
+                echo "</td>";
             }
-            // cost = original product total
-            // sell = creditnote total
-            // profit = credit - cost
-
-            // $product_id = $invoice['product_id'];
-            // $creditNoteCheck = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id='$product_id'");
-            
-            // while($creditItem = mysqli_fetch_array($creditNoteCheck)){
-            //     $credit_value += ((double) $creditItem['price'] * $creditItem['quantity']);
-            //     $credit_qty += $creditItem['quantity'];
-            // }
-
-            if($credit_qty > 0){
+            echo "</tr>".PHP_EOL;
+			$processed[$table->name][] = $d;
+        }
         ?>
-        <tr class="result" style="height:28px;">
-            <td style="color:red;"><?php echo $cell_username ?></td>
-            <td style="color:red;"><?php echo $cell_date_completed; ?></td>
-            <td style="color:red;"><a href="invoice.php?id=<?php echo $invoice['pick_id']; ?>" target="_blank"><?php echo $invoice['pick_id']; ?></a></td>
-            <td style="color:red;"><?php echo $cell_customer_name; ?> </td>
-            <td style="color:red;"><?php echo $row_intake_id; ?></td>
-            <td style="color:red;"><?php echo $creditItempallet_id; ?></td>
-            <td style="color:red;"><?php echo $cell_species ?></td>
-            <td style="color:red;"><?php echo $cell_nationality ?></td>
-            <td style="color:red;"><?php echo $cell_temp; ?></td>
-            <td style="color:red;"><?php echo $cell_cutgroup; ?></td>
-            <td style="color:red;"><?php echo $cell_product; ?></td>
-            <td style="color:red;"><?php echo $cell_brand; ?></td>
-            <td style="color:red;"><?php echo $cell_supplier; ?></td>
-            <td style="color:red;" colspan="1"><?php echo $credit_qty; ?></td>
-            <td style="color:red;">
-                <?php 
-                    if($invoice['unit'] == 'C'){
-                        echo 'Cases';
-                    }else if($invoice['unit'] == 'P'){
-                        echo 'GT';
-                    }else{
-                        echo $invoice['unit'];
-                    }
-                ?>
-            </td>
-            <td style="color:red;"><?php echo number_format($weightReturned,3); ?> kg</td>
-            <td style="color:red;">
-            <?php
-                    $sell_formatted = number_format($credit_value, 2);
-                    $sell = str_replace(",","",$sell_formatted);
-                ?>
-                <input type="hidden" class="costValue" value="<?php echo $sell; ?>">
-                £<?php echo $sell_formatted; ?></td>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-            <td style="color:red;">
-            <input type="hidden" class="actualCostValue" value="<?php echo $actualCost; ?>">
-                £<?php echo number_format($actualCost, 2); ?>
-            </td>
-            <?php }?>
-            <td style="color:red;">
-                
-                <input type="hidden" class="sellValue" value="<?php echo abs($cost_value)/-1; ?>">
-                £<?php echo number_format(abs($cost_value)/-1, 2); ?>
-            </td>
-            </td>
-            <td style="color:red;">
-            <?php
-                $profit = $cost_value - $credit_value;
-            ?>
-                <input type="hidden" class="profitValue" value="<?php echo $profit; ?>">
-                £<?php echo number_format($profit, 2); ?>
-            </td>
-            <?php
-            if (User::find(Auth::id())->hasPermission("viewcosts")) { 
-                $actualprofit = $actualCost - $credit_value;
-            ?>
-            <td style="color:red;">
-            <input type="hidden" class="actualProfitValue" value="<?php echo $actualprofit; ?>">
-                £<?php echo number_format($actualprofit, 2); ?>
-            </td>
-            <?php } ?>
-        </tr>
-        <?php
-            }
-    }
+<tfoot style="position: sticky; bottom: 0;"><tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
+<?php
+	$summary = new stdClass();
+	foreach($garyCols as $garyColLab=>$garyCol)
+	{
+		$re = "";
+		if ($garyCol == "qty")
+		{
+			echo '<td><div class="" style="font-size:13px;">'.'';//$qty
+		}
+		else if ($garyCol == "unit")
+		{    
+			echo '<td><div class="" style="font-size:13px;">';           
+		}
+		else foreach($reportColumns as $reportCol)
+		{
+			if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
+			{
+				$col = $reportCol->getLabel($table->mode);
+				$re = ReportHelper::resolveFooter($reportCol,$processed[$table->name],$table->mode);
+				$kgS=($garyCol=="kg")?"kg":"";
+				echo '<td><div class="" style="font-size:13px;">'.$re.$kgS;
+				break;
+			}
+		}
+		$summary->$garyCol = preg_replace("/[£,]/", '', $re);
+		if ($garyCol == "Profit" || $garyCol == "Actual Profit")
+		{
+			$costpointer = (strpos($garyCol,"Actual")===false)?"Cost Value":"Actual Cost Value";
+			$profitpointer = (strpos($garyCol,"Actual")===false)?"Profit":"Actual Profit";
+			$rollingCost = filter_var($summary->$costpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+			$rollingCost = floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+			if ($rollingCost == 0)
+			{
+				echo "<br/>0.000%";
+			}
+			else
+			{
+				$rollingProfit = filter_var($summary->$profitpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+				$rollingProfit = floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+				$profitRatio = $rollingProfit/$rollingCost;
+				$percentage = floorDec($profitRatio*100,3);
+				echo "<br/>".$percentage."%";
+			}
+		}
+		echo '</div></td>';
+	}
+	$tableSums[] = $summary;
 ?>
-  <tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td>&nbsp;&nbsp;</td>
-    <td><div class="totalQuantityValue" style="font-size:13px;"></div></td>
-    <td>&nbsp;&nbsp;</td>
-    <td><div class="totalWeightValue" style="font-size:13px;"></div></td>
-    <td><div class="totalCostValue" style="font-size:13px;"></div></td>
-    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-    <td><div class="totalActualCostValue" style="font-size:13px;"></div></td>
-    <?php } ?>
-    <td><div class="totalSellValue" style="font-size:13px;"></div></td>
-    <td><div class="totalProfitValue" style="font-size:13px;"></div><div class="totalProfitPercent" style="font-size:13px;"></div></td>
-    <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-    <td><div class="totalActualProfitValue" style="font-size:13px;"></div><div class="totalActualProfitPercent" style="font-size:13px;"></div></td>
-    <?php } ?>
-</tr>
+</tr></tfoot>
+</table>
+<br/>
+<?php } ?>
+<script>
+	console.log('<?php echo json_encode($tableSums); ?>');
+</script>
+<table style="width:100%;" id="resultsTable<?php echo count($dataRanges2); ?>">
+<thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>">Summary</th></tr>
+<tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
+<tr>
+<?php
+foreach($garyCols as $garyCol=>$discard)
+{
+?>
+	<th align="left"><?php echo $garyCol; ?></th>
+<?php
+}
+?>
+</tr></thead>
+<tfoot style="position: sticky; bottom: 0;"><tr class="totals" style="background:#d6d6d6;padding:10px;font-weight:bold;">
+<?php
+	$summary = new stdClass();
+	foreach($garyCols as $garyColLab=>$garyCol)
+	{  
+		echo '<td><div class="" style="font-size:13px;">';   
+		$t = "";
+		if ($tableSums[0]->$garyCol != "") 
+		{
+			$columnData = array_column($tableSums,$garyCol);
+			$result = 0;
+			for($i=0;$i<count($columnData);$i++)
+			{
+				$rolling = filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+				$rolling = floorDec(floatval($rolling)*$magShift,0);
+				$result += $rolling;
+			}		
+			foreach($reportColumns as $reportCol)
+			{
+				if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
+				{
+					$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
+					$col = $reportCol->getLabel($table->mode);
+					$kgS=($garyCol=="kg")?"kg":"";
+					echo $t.$kgS;
+					break;
+				}
+			}
+		}
+		$summary->$garyCol = preg_replace("/[£,]/", '', $t);
+		if ($garyCol == "Profit" || $garyCol == "Actual Profit")
+		{
+			$costpointer = (strpos($garyCol,"Actual")===false)?"Cost Value":"Actual Cost Value";
+			$profitpointer = (strpos($garyCol,"Actual")===false)?"Profit":"Actual Profit";
+			$rollingCost = filter_var($summary->$costpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+			$rollingCost = floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+			if ($rollingCost == 0)
+			{
+				echo "<br/>0.000%";
+			}
+			else
+			{
+				$rollingProfit = filter_var($summary->$profitpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+				$rollingProfit = floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+				$profitRatio = $rollingProfit/$rollingCost;
+				$percentage = floorDec($profitRatio*100,3);
+				echo "<br/>".$percentage."%";
+			}
+		}
+		echo '</div></td>';
+	}
+?></tr></tfoot>
+</table>

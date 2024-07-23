@@ -196,10 +196,8 @@ use Illuminate\Support\Facades\Auth;
     </form>
  	
 	<div id="loadResults" class="resultsContainer">
-        <div id="loadingContainer" style="display:none;"><center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
-        <table style="width:100%;" id="resultsTable">
-
-        </table>
+        <div id="loadingContainer"><center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
+		<div id="loadResults2"/>
     </div>
     <div class="loadMoreBtn" onclick="loadData(false)" style="display:none;">Load More</div>
 </div>
@@ -212,6 +210,7 @@ use Illuminate\Support\Facades\Auth;
 <div class="clearfix"></div>
  
 <script type="text/javascript">
+		$('#loadingContainer').hide();
     $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
@@ -238,8 +237,8 @@ use Illuminate\Support\Facades\Auth;
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
 
-        $('#loadingContainer').fadeIn();
-
+		$('#loadingContainer').show();
+		$('#loadResults2').html("");  
         req = $.post("ajax/turnover_vs_profit_results.php",
         {
             invoice_id: invoice_id,
@@ -257,69 +256,10 @@ use Illuminate\Support\Facades\Auth;
             supplier_id: supplier_id
         },
         function(data, status){
+			req = null;
             $("#search").prop('value', 'Search');
             $('#loadingContainer').hide();
-            $('#resultsTable').html(data);
-            
-            setTimeout(function() {
-              
-                var totalQuantity = 0;
-                $('.quantityValue').each(function(){
-                    var val = parseInt($(this).val());
-                    totalQuantity = parseInt(totalQuantity) + val;
-                });
-
-
-                var totalWeightValue = 0;
-                $('.weightValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalWeightValue = (parseFloat(totalWeightValue) + val).toFixed(2);
-                });
-
-                var totalCostValue = 0.00;
-                $('.costValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalCostValue = (parseFloat(totalCostValue) + val).toFixed(2);
-                 });
-
-                var totalSellValue = 0.00;
-                $('.sellValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalSellValue = (parseFloat(totalSellValue) + val).toFixed(2);
-                });
-
-                totalProfitValue = 0.00;
-                $('.profitValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalProfitValue = (parseFloat(totalProfitValue) + val).toFixed(2);
-                });
-                var totProfitPerc= (totalProfitValue / totalCostValue);
-                $('.totalWeightValue').text(formatNumber(totalWeightValue) + ' kg');
-                $('.totalQuantityValue').text(totalQuantity);
-                $('.totalProfitValue').text('£' + formatNumber(totalProfitValue));
-                $('.totalProfitPercent').text(formatNumber((totProfitPerc*100).toFixed(2)) + "%");
-                $('.totalSellValue').text('£' + formatNumber(totalSellValue));
-                $('.totalCostValue').text('£' + formatNumber(totalCostValue));
-                
-                <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
-
-                var totalActualCostValue = 0.00;
-                $('.actualCostValue').each(function(){
-                    var val = parseFloat($(this).val());
-                    totalActualCostValue = (parseFloat(totalActualCostValue) + val).toFixed(2);
-                 });
-                var totalActualProfitValue = 0.00;
-                $('.actualProfitValue').each(function(){
-                    var val = parseFloat($(this).val().replace("£",""));
-                    totalActualProfitValue = (parseFloat(totalActualProfitValue) + val).toFixed(2);
-                 });
-                var totActProfitPerc= (totalActualProfitValue / totalActualCostValue);
-                $('.totalActualCostValue').text('£' + formatNumber(totalActualCostValue));
-                $('.totalActualProfitValue').text('£' + formatNumber(totalActualProfitValue));
-                $('.totalActualProfitPercent').text(formatNumber((totActProfitPerc*100).toFixed(2)) + "%");
-                <?php } ?>
-            }, 1000);
-        
+            $('#loadResults2').html(data);        
 
         });
         $("#search").prop('value', 'Abort');

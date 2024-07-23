@@ -32,20 +32,36 @@ class ReportHelper
     /** @var PDO $pdo */
     private static $pdo;
 
-    public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start,Carbon $end):array
+    public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start,Carbon $end,array $filters = null):array
     {
         ini_set('memory_limit', '4G');
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
         static::$pdo = static::$conn->getPdo();
         static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
+        $result = [];
         switch ($report->mode)
         {
             case "product":
-                return static::getProductRange($dateType,$start,$end);
+                $result = static::getProductRange($dateType,$start,$end);
+                break;
             case "invoice":
-                return static::getInvoiceRange($dateType,$start,$end);
+                $result = static::getInvoiceRange($dateType,$start,$end);
+                break;
         }
+		Log::debug(json_encode([$filters,$result[0][0]]));
+        $result2 = array();
+        foreach ($result as $collection) 
+        {
+            $rolling = $collection;
+            foreach ($filters as $field=>$values)
+            {
+                $rolling = $rolling->whereIn('cutgroups.species_id',["1"]);
+            }
+            $collection2=$rolling;
+            $result2[]=$collection2;
+        }
+        return $result2;
     }
     private static function getProductRange(string $dateType, Carbon $start, Carbon $end):array
     {
@@ -640,7 +656,7 @@ class ReportHelper
         }
         return true;
     }
-    private static function finaliseItem(ReportColumn $reportColumn,string $workingVal)
+    public static function finaliseItem(ReportColumn $reportColumn,string $workingVal)
     {
         switch ($reportColumn->data_type)
         {
