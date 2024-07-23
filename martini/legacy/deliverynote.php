@@ -222,7 +222,7 @@ $s = (int)(microtime(true));
 		<tr class="productsHeading">
 			<th align="left">Intake ID</th>
 			<th align="left">Plt ID</th>
- 			<th align="left" colspan="5"></th>
+ 			<th align="left" colspan="6"></th>
 			<th align="center">Qty</th>
 			<th align="left">Unit</th>
             <th align="right">Weight</th>
@@ -281,7 +281,7 @@ $s = (int)(microtime(true));
                         ${"globalProductCount" . $product['id']} += $count;
                          
                         $k = 0;
-
+						
                         while($weight = $y2->fetch_assoc()){
                             
                             if($weight['weight_tear'] == $weight['weight_gross']){
@@ -292,7 +292,8 @@ $s = (int)(microtime(true));
 
                             $k = $k + $w;
                         }
-
+						$smallestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?"EXTENSION":$product['range_from'];
+						$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
 						$total_qty_count += $count;
                         ?>
                         <tr class="productsRow">
@@ -304,6 +305,7 @@ $s = (int)(microtime(true));
 					<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?></b></td>
 					<td align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
 					<td align="center"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
+					<td align="right"><b class="brand"><?php echo $smallestDate.' - '.$largestDate; ?></b></td>
                     <?php
                         $productID = $product['id'];
                         $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";

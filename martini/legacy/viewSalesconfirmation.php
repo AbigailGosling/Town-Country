@@ -136,12 +136,9 @@ use Illuminate\Support\Facades\Auth;
 	<table width="100%" class="basketTable">
 		<tr align="left" style="background:#e6931894;height:30px;color:#FFF;">
 			<th>Intake ID</th>
-			<th>Plt ID</th>		
-			<?php  if ($product['range_extension']!= null && $product['range_extension']!= '') { ?>
-			<th colspan="2">Product</th>
-			<?php  } else { ?>
-			<th>Product</th>
-			<?php  } ?>
+			<th>Plt ID</th>	
+			<th width="45%">Product</th>
+			<th align="right">Dated</th>
 			<th>Nationality</th>
 			<th>Brand</th>
  			<th>Quantity</th>
@@ -175,11 +172,14 @@ use Illuminate\Support\Facades\Auth;
 						$palletx = "SELECT * FROM `pallet` WHERE id =?";
 						$pallety = prepareExecuteQuery($palletx,'i',[$thispalletid]);
 						$pallet = mysqli_fetch_array($pallety);
+						$smallestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?"EXTENSION":$product['range_from'];
+						$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
 						
 					?>
 					<td align="left"><span class="intakeid"><?php echo $pallet['intake_id']; ?></span></td>
 					<td align="left"><span class="palletid"><?php echo $product['pallet_id'];?></span></td>
-					<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?> <?php echo getCut($product['cut_id']);  if ($product['range_extension']!= null && $product['range_extension']!= '') echo '</b></td><td><b class="species">Date Extended by T&C'; ?></b></td>
+					<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); echo getCut($product['cut_id']);  ?></b></td>
+					<td align="right"><b class="species"><?php echo $smallestDate.'-'.$largestDate; ?></b></td>
 					<td align="left"><span class="chilled"><?php echo getNationality($product['nationality_id']); ?></span></td>
 					<td align="left"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
 					<?php
