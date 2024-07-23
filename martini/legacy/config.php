@@ -13,4 +13,7 @@
     $mail_port = 587;
     
     $mail_from_address = 'noreply-accountinfo@townandcountrymeats.co.uk';
+
+    $artisanLocation = 'D:\\wwwroot\\martini\\artisan';
+    //$artisanLocation = 'C:\\inetpub\\wwwroot\\martini\\artisan';
 ?>

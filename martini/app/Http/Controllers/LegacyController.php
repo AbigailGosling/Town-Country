@@ -14,38 +14,38 @@ class LegacyController extends Controller
 {
     public function entry_point()
     {
-        $s = time();
-        $d = date('Y-m-d H:i:s');
-        $targetFile = str_replace("?".request()->server('QUERY_STRING'),'',request()->server('REQUEST_URI'));
-        $ext = explode(".",$targetFile);
-        $ext = $ext[array_key_last($ext)];
-        if ($ext == "php")
+        $legacyControllerStartTime = time();
+        $legacyControllerStartDate = date('Y-m-d H:i:s');
+        $legacyControllerTargetFile = str_replace("?".request()->server('QUERY_STRING'),'',request()->server('REQUEST_URI'));
+        $legacyControllerFileExt = explode(".",$legacyControllerTargetFile);
+        $legacyControllerFileExt = $legacyControllerFileExt[array_key_last($legacyControllerFileExt)];
+        if ($legacyControllerFileExt == "php")
         {
-            $pagePerm = PagePermission::where("file",basename($targetFile))->first();
-            if ($pagePerm == null || User::find(Auth::id())->hasPermission(basename($targetFile)))
+            $legacyControllerPagePerm = PagePermission::where("file",basename($legacyControllerTargetFile))->first();
+            if ($legacyControllerPagePerm == null || User::find(Auth::id())->hasPermission(basename($legacyControllerTargetFile)))
             {
                 DB::disconnect("tandc_live");
                 ob_start();
                 require app_path('Http') . '/legacy.php';
-                $output = ob_get_clean();
+                $legacyControllerOutput = ob_get_clean();
 
-                if (time()-$s>4)
+                if (time()-$legacyControllerStartTime>4)
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        $d.';'.date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        $legacyControllerStartDate.';'.date('Y-m-d H:i:s').';'.(time()-$legacyControllerStartTime).';'.Auth::id().';'.$legacyControllerTargetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
 
-                return Response::make($output,200);
+                return Response::make($legacyControllerOutput,200);
             }
             else
             {   
-                if (time()-$s>4)
+                if (time()-$legacyControllerStartTime>4)
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        $d.';'.date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        $legacyControllerStartDate.';'.date('Y-m-d H:i:s').';'.(time()-$legacyControllerStartTime).';'.Auth::id().';'.$legacyControllerTargetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
                 abort(403);
@@ -55,34 +55,34 @@ class LegacyController extends Controller
         {
             try
             {
-                $file = File::get(__DIR__.'\..\..\..'. $targetFile);
-                $response = Response::make($file,200);
-                $response->header('Content-Type', $this->getMimeType($ext));
-                if (time()-$s>4)
+                $legacyControllerFile = File::get(__DIR__.'\..\..\..'. $legacyControllerTargetFile);
+                $legacyControllerResponse = Response::make($legacyControllerFile,200);
+                $legacyControllerResponse->header('Content-Type', $this->getMimeType($legacyControllerFileExt));
+                if (time()-$legacyControllerStartTime>4)
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        date('Y-m-d H:i:s').';'.(time()-$legacyControllerStartTime).';'.Auth::id().';'.$legacyControllerTargetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
-                return $response;
+                return $legacyControllerResponse;
             }
-            catch (Exception $e)
+            catch (Exception $legacyControllerE)
             {
-                if (time()-$s>4)
+                if (time()-$legacyControllerStartTime>4)
                 {
                     File::append(
                         storage_path('/logs/slow-page.log'),
-                        date('Y-m-d H:i:s').';'.(time()-$s).';'.Auth::id().';'.$targetFile.json_encode(request()->all()).PHP_EOL
+                        date('Y-m-d H:i:s').';'.(time()-$legacyControllerStartTime).';'.Auth::id().';'.$legacyControllerTargetFile.json_encode(request()->all()).PHP_EOL
                     );
                 }
-                Log::error($e,[$targetFile]);
+                Log::error($legacyControllerE,[$legacyControllerTargetFile]);
                 abort(404);
             }
         }
     }
-    private function getMimeType(string $ext) {
-        switch(strtolower($ext))
+    private function getMimeType(string $legacyControllerFileExt) {
+        switch(strtolower($legacyControllerFileExt))
         {
             case "css": 
                 return "text/css";
@@ -106,9 +106,9 @@ class LegacyController extends Controller
             case "woff2":
                 return "font/woff2";
             default: 
-                $t = MimeType::get($ext);
-                if ($t != null && $t != "") return $t;
-                else throw new Exception("No Mime Type defined for extension: ".$ext);
+                $legacyControllerT = MimeType::get($legacyControllerFileExt);
+                if ($legacyControllerT != null && $legacyControllerT != "") return $legacyControllerT;
+                else throw new Exception("No Mime Type defined for extension: ".$legacyControllerFileExt);
         }
     }
 }

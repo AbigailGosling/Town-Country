@@ -87,8 +87,7 @@
 		$x2 = "UPDATE `pickerItems` SET `status` = '1' WHERE pickersheet_id=?";
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
 	}
-    pclose(popen('start /B cmd /C "php D:\\wwwroot\\martini\\artisan run:credit_precheck '.$customer_id.' >NUL 2>NUL"', 'r'));
-	//shell_exec("php D:\\wwwroot\\martini\\artisan run:credit_precheck $customer_id > NUL 2>&1 &");
+    pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:credit_precheck '.$customer_id.' >NUL 2>NUL"', 'r'));
 ?>
 <script>
 	alert("Picking Sheet Submitted!");

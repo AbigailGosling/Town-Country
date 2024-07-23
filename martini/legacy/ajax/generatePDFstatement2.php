@@ -48,7 +48,6 @@ if (mysqli_num_rows($customerQueryResult) > 0)
 	$customerID = $customer['customer_id'];
 	renderPDF($customerID);
 	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE customer_id = ?",'i',[$customerID]);
-    pclose(popen('start /B cmd /C "php D:\\wwwroot\\martini\\artisan run:statements_queue >NUL 2>NUL"', 'r'));
-	//shell_exec("php D:\\wwwroot\\martini\\artisan run:statements_queue > NUL 2>&1 &");
+    pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:statements_queue >NUL 2>NUL"', 'r'));
 }
 ?>
