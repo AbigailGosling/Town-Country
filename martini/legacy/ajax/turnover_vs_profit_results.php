@@ -5,66 +5,8 @@ use App\Models\Report;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-	
-	$percision = 3;
-	$magShift = pow(10,$percision);
-	
-   	require(__DIR__.'/../functions.php');
-    ini_set('max_execution_time','256');
-    ini_set('memory_limit', '512M');
-    $filters = array();
-
-    $INVOICE_ID = request()->input('invoice_id');
-    if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0') $filters['pickerSheets.id'] = $INVOICE_ID;
-
-    $INTAKE_ID = request()->input('intake_id');
-    if ($INTAKE_ID != null && $INTAKE_ID != '' && $INTAKE_ID != '...' && $INTAKE_ID != '0') $filters['intake.id'] = $INTAKE_ID;
-
-    $PALLET_ID = request()->input('pallet_id');
-    if ($PALLET_ID != null && $PALLET_ID != '' && $PALLET_ID != '...' && $PALLET_ID != '0') $filters['pallet.id'] = $PALLET_ID;
-
-    $USER_ID = request()->input('user_id');
-    if ($USER_ID != null && $USER_ID != '' && $USER_ID != '...' && $USER_ID != '0') $filters['customers.salesman'] = $PALLET_ID;
-
-    $CUSTOMER_ID = request()->input('customer_id');
-    if ($CUSTOMER_ID != null && $CUSTOMER_ID != '' && $CUSTOMER_ID != '...' && $CUSTOMER_ID != '0') $filters['customers.id'] = $CUSTOMER_ID;
-
-    $SPECIES_ID = request()->input('species_id');
-    if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0') $filters['species.id'] = $SPECIES_ID;
-
-    $CUTGROUP_ID = request()->input('cutgroup_id');
-    if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0') $filters['cut_group.id'] = $CUTGROUP_ID;
-
-    $COOLING_ID = request()->input('cooling_id');
-    if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0') $filters['tempurature.id'] = $COOLING_ID;
-
-    $BRAND_ID = request()->input('brand_id');
-    if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0') $filters['brand.id'] = $BRAND_ID;
-
-    $NATIONALITY_ID = request()->input('nationality_id');
-    if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0') $filters['nationality.id'] = $NATIONALITY_ID;
-
-    $SUPPLIER_ID = request()->input('supplier_id');
-    if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0') $filters['supplier.id'] = $NATIONALITY_ID;
-
-    if(request()->input('date_start') != ''){
-        $date_start = request()->input('date_start');
-        $date_start = str_replace('/', '-', $date_start);
-        $date_start = Carbon::createFromTimestamp(strtotime($date_start));
-        
-        if(request()->input('date_end') == ''){
-            $date_end = date('d/m/Y');
-        }else{
-            $date_end = request()->input('date_end');
-        }
-
-        $date_end = str_replace('/', '-', $date_end);
-        $date_end = Carbon::createFromTimestamp(strtotime($date_end));
-    }
-    $CASES = "Cases";
-    $GT = "G/T";
-    $PPC = "PPC";
-    if (User::find(Auth::id())->hasPermission("viewcosts")) 
+	ini_set('max_execution_time', '0');
+	if (User::find(Auth::id())->hasPermission("viewcosts")) 
     {
         $garyCols = array
         (
@@ -116,9 +58,208 @@ use Illuminate\Support\Facades\Auth;
             'Profit' => "Profit",
         );
     }
+	
+	$percision = 3;
+	$magShift = pow(10,$percision);
+	
+   	require(__DIR__.'/../functions.php');
+    ini_set('max_execution_time',0);
+    ini_set('memory_limit', '1G');
+    $filters = array();
+	$calenderPeriod = false;
+	if(request()->input('date_start') != ''){
+        $date_start = request()->input('date_start');
+        $date_start = str_replace('/', '-', $date_start);
+        $date_start = Carbon::createFromTimestamp(strtotime($date_start))->startOfDay();
+        
+        if(request()->input('date_end') == ''){
+            $date_end = date('d/m/Y');
+			$calenderPeriod = true;
+        }else{
+            $date_end = request()->input('date_end');
+        }
+
+        $date_end = str_replace('/', '-', $date_end);
+        $date_end = Carbon::createFromTimestamp(strtotime($date_end))->endOfDay();
+    }
+	
+	$INTERESTED_PRODUCTIDS = [];
+	$INTERESTED_PICKS = [];
+	
+	
+    $INVOICE_ID = request()->input('invoice_id');
+    if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0') 
+	{
+		$filters['pickerSheets.id'] = $INVOICE_ID;
+		$INTERESTED_PICKS[] = $INVOICE_ID;
+	}
+
+    $INTAKE_ID = request()->input('intake_id');
+    if ($INTAKE_ID != null && $INTAKE_ID != '' && $INTAKE_ID != '...' && $INTAKE_ID != '0')
+	{
+		$filters['intake.id'] = $INTAKE_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM pallet WHERE intake_id = ?",'i',[$INTAKE_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = implode(",",array_column($q->fetch_all(MYSQLI_ASSOC),'id'));
+			$q = prepareExecuteQuery("SELECT `id` FROM product WHERE pallet_id IN (".$ids.")");
+			if ($q->num_rows>0)
+			{
+				$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+				if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+				else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+			}
+		}
+	}
+
+    $PALLET_ID = request()->input('pallet_id');
+    if ($PALLET_ID != null && $PALLET_ID != '' && $PALLET_ID != '...' && $PALLET_ID != '0')
+	{
+		$filters['pallet.id'] = $PALLET_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM product WHERE pallet_id = ?",'i',[$PALLET_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+			if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+			else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+		}
+	}
+
+    $USER_ID = request()->input('user_id');
+    if ($USER_ID != null && $USER_ID != '' && $USER_ID != '...' && $USER_ID != '0') $filters['pickerSheets.user_from_id'] = $USER_ID;
+
+    $CUSTOMER_ID = request()->input('customer_id');
+    if ($CUSTOMER_ID != null && $CUSTOMER_ID != '' && $CUSTOMER_ID != '...' && $CUSTOMER_ID != '0') $filters['customers.id'] = $CUSTOMER_ID;
+
+    $SPECIES_ID = request()->input('species_id');
+    if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0') 
+	{
+		$filters['species.id'] = $SPECIES_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM `cuts` WHERE species_id = ?",'i',[$SPECIES_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = implode(",",array_column($q->fetch_all(MYSQLI_ASSOC),'id'));
+			$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE cut_id IN (".$ids.")");
+			if ($q->num_rows>0)
+			{
+				$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+				if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+				else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+			}
+		}
+	}
+
+    $CUTGROUP_ID = request()->input('cutgroup_id');
+    if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0') 
+	{
+		$filters['cuts.cutgroup_id'] = $CUTGROUP_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM `cuts` WHERE `cutgroup_id` = ?",'i',[$CUTGROUP_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = implode(",",array_column($q->fetch_all(MYSQLI_ASSOC),'id'));
+			$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `cut_id` IN (".$ids.")");
+			if ($q->num_rows>0)
+			{
+				$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+				if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+				else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+			}
+		}
+	}
+
+    $COOLING_ID = request()->input('cooling_id');
+    if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0') 
+	{
+		$filters['product.cooling_id'] = $COOLING_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `cooling_id` = ?",'i',[$COOLING_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+			if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+			else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+		}
+	}
+
+    $BRAND_ID = request()->input('brand_id');
+    if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0') 
+	{
+		$filters['brands.id'] = $BRAND_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `brand_id` = ?",'i',[$BRAND_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+			if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+			else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+		}
+	}
+
+    $NATIONALITY_ID = request()->input('nationality_id');
+    if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0') 
+	{
+		$filters['nationality.id'] = $NATIONALITY_ID;
+		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `nationality_id` = ?",'i',[$NATIONALITY_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+			if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+			else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+		}
+	}
+
+    $SUPPLIER_ID = request()->input('supplier_id');
+    if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0') 
+	{
+		$filters['supplier.id'] = $SUPPLIER_ID;
+		
+		$q = prepareExecuteQuery("SELECT `id` FROM intake WHERE supplier_id = ?",'i',[$SUPPLIER_ID]);
+		if ($q->num_rows>0)
+		{
+			$ids = implode(",",array_column($q->fetch_all(MYSQLI_ASSOC),'id'));
+			$q = prepareExecuteQuery("SELECT `id` FROM pallet WHERE intake_id IN (".$ids.")");
+			if ($q->num_rows>0)
+			{
+				$ids = implode(",",array_column($q->fetch_all(MYSQLI_ASSOC),'id'));
+				$q = prepareExecuteQuery("SELECT `id` FROM product WHERE pallet_id IN (".$ids.")");
+				if ($q->num_rows>0)
+				{
+					$ids = array_column($q->fetch_all(MYSQLI_ASSOC),'id');
+					if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+					else $INTERESTED_PRODUCTIDS = ReportHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+				}
+			}
+		}
+	}
+
+	if (count($INTERESTED_PRODUCTIDS)>0)
+	{
+		$INTERESTED_PRODUCTIDS = ReportHelper::custom_unique($INTERESTED_PRODUCTIDS);
+		$q = prepareExecuteQuery("SELECT DISTINCT `pickersheet_id` FROM pickeritems  USE INDEX (product_pickersheet) WHERE product_id IN (".implode(",",$INTERESTED_PRODUCTIDS).") ORDER BY pickersheet_id");
+		$picks = array();
+		while ($r = $q->fetch_assoc())
+		{
+			$picks[] = $r['pickersheet_id'];
+		}
+		if (count($picks)> 0)
+		{
+			$INTERESTED_PICKS = array_merge($INTERESTED_PICKS,$picks);
+		}
+
+	}
+	if (count($INTERESTED_PICKS)>0)
+	{
+		$INTERESTED_PICKS = ReportHelper::custom_unique($INTERESTED_PICKS);
+		sort($INTERESTED_PICKS,SORT_NUMERIC);
+	}
+    $CASES = "Cases";
+    $GT = "G/T";
+    $PPC = "PPC";
+
     if (count(array_keys($filters))==0)$filters = null;
+	
     $report = Report::find(1);
-    $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start->startOfDay(),$date_end->endOfDay(),$filters);
+
+    $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
+
     $dataRanges2= [];
 	$processed = [];
 	$tableSums = [];
@@ -129,6 +270,7 @@ use Illuminate\Support\Facades\Auth;
     while (count($dataRanges2)<4){
         $dataRanges2[] = [];
     }
+
     foreach ($report->getTables() as $index=>$table){
 		$processed[$table->name] = [];
         $reportColumns =$table->getColumns();
@@ -146,7 +288,8 @@ use Illuminate\Support\Facades\Auth;
         ?>
         </tr></thead>
         <?php
-        foreach($dataRanges2[$index] as $row)
+		$rollingQty = 0;
+        foreach($dataRanges2[$index] as $i2=>$row)
         {
 			$d = new stdClass();
             echo '<tr class="result">';
@@ -161,11 +304,13 @@ use Illuminate\Support\Facades\Auth;
                     if ($row[$CASES] != "0")
                     {
                         $qty = $row[$CASES];
+						$rollingQty += $qty;
                         $unitlable = "Cases";
                     }
                     else if ($row[$PPC] != "0")
                     {
                         $qty = $row[$PPC];
+						$rollingQty += $qty;
                         $unitlable = "PPC";
                     }
                     else
@@ -209,7 +354,7 @@ use Illuminate\Support\Facades\Auth;
 		$re = "";
 		if ($garyCol == "qty")
 		{
-			echo '<td><div class="" style="font-size:13px;">'.'';//$qty
+			echo '<td><div class="" style="font-size:13px;">'.$rollingQty;//$qty
 		}
 		else if ($garyCol == "unit")
 		{    
@@ -253,10 +398,7 @@ use Illuminate\Support\Facades\Auth;
 </tr></tfoot>
 </table>
 <br/>
-<?php } ?>
-<script>
-	console.log('<?php echo json_encode($tableSums); ?>');
-</script>
+<?php }?>
 <table style="width:100%;" id="resultsTable<?php echo count($dataRanges2); ?>">
 <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>">Summary</th></tr>
 <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>

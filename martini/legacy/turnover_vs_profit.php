@@ -238,30 +238,38 @@ use Illuminate\Support\Facades\Auth;
         var date_end = $('#date_end').val();
 
 		$('#loadingContainer').show();
-		$('#loadResults2').html("");  
-        req = $.post("ajax/turnover_vs_profit_results.php",
+		$('#loadResults2').html("");
+        req = $.ajax(
         {
-            invoice_id: invoice_id,
-            species_id: species_id,
-            cutgroup_id: cutgroup_id,
-            cooling_id: cooling_id,
-            intake_id: intake_id,
-            pallet_id: pallet_id,
-            user_id: user_id,
-            customer_id: customer_id,
-            date_start: date_start,
-            date_end: date_end,
-            brand_id: brand_id,
-            nationality_id: nationality_id,
-            supplier_id: supplier_id
-        },
-        function(data, status){
-			req = null;
-            $("#search").prop('value', 'Search');
-            $('#loadingContainer').hide();
-            $('#loadResults2').html(data);        
-
-        });
+			url: "ajax/turnover_vs_profit_results.php",
+			method: "POST",
+            data: {
+				invoice_id: invoice_id,
+				species_id: species_id,
+				cutgroup_id: cutgroup_id,
+				cooling_id: cooling_id,
+				intake_id: intake_id,
+				pallet_id: pallet_id,
+				user_id: user_id,
+				customer_id: customer_id,
+				date_start: date_start,
+				date_end: date_end,
+				brand_id: brand_id,
+				nationality_id: nationality_id,
+				supplier_id: supplier_id
+			},
+			success: function(data, status){
+				req = null;
+				$("#search").prop('value', 'Search');
+				$('#loadingContainer').hide();
+				$('#loadResults2').html(data);     
+			},
+			error: function(data, status){
+				req = null;
+				$("#search").prop('value', 'ERROR!!!');
+				$('#loadingContainer').hide();
+			}	 
+		});
         $("#search").prop('value', 'Abort');
     }
 
