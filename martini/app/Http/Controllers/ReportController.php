@@ -11,6 +11,7 @@ use App\Models\ReportTableLink;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -79,12 +80,13 @@ class ReportController extends Controller
             $endCarbon = new Carbon();
         }
         
-    $endCarbon->endOfDay();
+        $endCarbon->endOfDay();
         $dataRanges = ReportHelper::getCollectionsForReportRange($report,$dateType,$startCarbon,$endCarbon);
         $dataRanges2= [];
         foreach ($dataRanges as $key=>$range)
         {
-            $dataRanges2[]=ReportHelper::resolveTableBody($report->getTables()[$key],$range);
+            $range2=ReportHelper::resolveTableBody($report->getTables()[$key],$range);
+             $dataRanges2[] = $range2;
         }
         while (count($dataRanges2)<4){
             $dataRanges2[] = [];
