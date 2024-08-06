@@ -32,42 +32,87 @@ class ReportHelper
     /** @var PDO $pdo */
     private static $pdo;
 
-    public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start,Carbon $end):array
+    public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start = NULL,Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL, array $filters = NULL):array
     {
         ini_set('memory_limit', '4G');
+		if ($start == null) 
+		{
+			$start = Carbon::createFromTimestamp(0);
+		}
+		if ($end == null) $end = Carbon::now();
+		$start = $start->startOfDay();
+		$end = $end->endOfDay();
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
         static::$pdo = static::$conn->getPdo();
         static::$conn->statement("SET SESSION group_concat_max_len = 1000000;");
+        $result = [];
         switch ($report->mode)
         {
             case "product":
-                return static::getProductRange($dateType,$start,$end);
+                $result = static::getProductRange($dateType,$start,$end,$pickIDs,$customerID,$userID);
+                break;
             case "invoice":
-                return static::getInvoiceRange($dateType,$start,$end);
+                $result = static::getInvoiceRange($dateType,$start,$end,$pickIDs,$customerID,$userID);
+                break;
         }
+		if ($filters === null || count($filters)==0) return $result;
+		 $result2 = array();
+        foreach ($result as $collection)
+        {
+            $rolling = $collection;
+            foreach ($filters as $field=>$values)
+            {
+                $rolling = new Collection();
+                foreach ($collection as $item)
+                {
+					$original = 'original_'.$field;
+                    if (property_exists($item,$field) || property_exists($item,$original))
+                    {
+						
+                        foreach (explode(",",$values) as $value)
+                        {
+                            if ($item->$field == $value || $item->$original == $value)
+                            {
+                                $rolling->add($item);
+                                break;
+                            }
+                        }
+                    }
+                }
+                $collection = $rolling;
+            }
+            $result2[]=$collection;
+        }
+        return $result2;
     }
-    private static function getProductRange(string $dateType, Carbon $start, Carbon $end):array
+    private static function getProductRange(string $dateType, Carbon $start = NULL, Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL):array
     {
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
-
         $resultQB = static::$conn->table("pickerSheets")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
             ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
-        static::applyDateRange($resultQB,$dateType,$start,$end);
+        if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
+		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
+		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
+
         /** @var Collection $debits */
         $debits = $resultQB->get();
-        //throw new \Exception(json_encode([$i1,$i2]));
+
         $resultQB = static::$conn->table("pickerSheets")
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
-            ->whereBetween("invoice_payments.created_at",[$start,$end])
             ->orderBy("invoice_payments.created_at")
             ->groupBy(["pickerSheets.id","credit_note_items.product_id"]);
+		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
+		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
+		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $credits */
         $credits = $resultQB->get();
@@ -76,12 +121,14 @@ class ReportHelper
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
         $finalSupp = new Collection();
         $finalDebits = new Collection();
+
         foreach($debits as $result)
         {
             $col = ".weight_ids";
             $weightids = array();
             foreach (explode(",",$result->$col) as $id){
-                if ($id !== null && trim($id) !== '') $weightids[] = $id;
+				$id = (int)trim($id);
+                if ($id !== null && !in_array($id,$weightids)) $weightids[] = $id;
             }
             $col2= "pickerItems.product_id";
             $weightQB = static::$conn->table("weights")
@@ -109,7 +156,7 @@ class ReportHelper
                 else $finalDebits->add($result);
             }
         }
-        $finalCredits = new Collection();
+		$finalCredits = new Collection();
         $finalSuppCred = new Collection();
         foreach($credits as $result)
         {
@@ -155,7 +202,7 @@ class ReportHelper
             $col2 = "pickerSheets.id";
             $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
             $item =$qb->first();
-            if ($item===null) throw new \Exception(json_encode([$qb->toSql(),$qb->getBindings()]));
+            if ($item===null) continue;
             static::row_merge($result,$item,"pickerItems.");
 
             if (static::bulkMergeIn($result))
@@ -165,9 +212,9 @@ class ReportHelper
                 else $finalCredits->add($result);
             }
         }
-        return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred);
+		return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred);
     }
-    private static function getInvoiceRange(string $dateType, Carbon $start, Carbon $end):array
+    private static function getInvoiceRange(string $dateType, Carbon $start = NULL, Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL):array
     {
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
@@ -177,7 +224,10 @@ class ReportHelper
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id"]);
-        static::applyDateRange($resultQB,$dateType,$start,$end);
+        if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
+		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
+		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $debits */
         $debits = $resultQB->get();
@@ -186,9 +236,12 @@ class ReportHelper
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
-            ->whereBetween("invoice_payments.created_at",[$start,$end])
             ->groupBy(["pickerSheets.id"])
             ->orderBy("invoice_payments.created_at");
+		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
+		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
+		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $credits */
         $credits = $resultQB->get();
@@ -640,7 +693,7 @@ class ReportHelper
         }
         return true;
     }
-    private static function finaliseItem(ReportColumn $reportColumn,string $workingVal)
+    public static function finaliseItem(ReportColumn $reportColumn,string $workingVal)
     {
         switch ($reportColumn->data_type)
         {
@@ -693,16 +746,25 @@ class ReportHelper
         }
         $weightQB->whereIn("weights.id",$weightids);
     }
-    private static function custom_intersect($arrayOne, $arrayTwo)
+    public static function custom_intersect(array $arrayOne, array $arrayTwo):array
     {
         //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
-        $index = array_flip($arrayOne);
+        $first = array_flip($arrayOne);
         $second = array_flip($arrayTwo);
 
-        $x = array_intersect_key($index, $second);
+        $x = array_intersect_key($first, $second);
 
         return array_flip($x);
     }
+	public static function custom_unique(array $array):array
+    {
+		$x = array();
+		foreach ($array as $item)
+		{
+			if ($item !== null && $item !== "")$x[$item] = true;
+		}
+		return array_keys($x);
+	}
     private static function applyDateRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
     {
         switch ($dateType)

@@ -41,8 +41,8 @@ protected $connection = 'tandc_live';
     }
 	public static function generateHTMLList(int $selected = null,int $species_id = null):string{
         $output = "";
-		$dataSet = ($species_id == null) ? self::all() : self::where("species_id",$species_id)->get();
-        foreach($dataSet as $site){
+		$dataSet = ($species_id == null) ? self::orderBy("name") : self::where("species_id",$species_id)->orderBy("name");
+        foreach($dataSet->get() as $site){
 			if ($site->name == "")continue;
             $selectFlag = ($selected != null && $selected == $site->id) ? " selected" : "";
 			$output = $output . "<option value='".$site->id."'".$selectFlag.">" . $site->name . "</option>\n";
