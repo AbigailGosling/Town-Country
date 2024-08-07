@@ -10,46 +10,46 @@ use Illuminate\Support\Facades\Auth;
     {
         $garyCols = array
         (
-            'SALESMAN' => "User",
+            'Salesman' => "User",
             'DATE' => "Date Assembled",
-            'INVOICE ID' => "Invoice",
-            'Customer' => "Customer",   
-            'Intake ID' => "Intake ID",
+            'Inv ID' => "Invoice",
+            'Cust.' => "Customer",   
+            'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
-            'Species' => "Species",
-            'Nationality' => "Nationality",
+            //'Species' => "Species",
+            'Nation.' => "Nationality",
             'Temp.' => "Temp",
-            'Category' => "Group",
-            'Product' => "Cut",
+            //'Cat.' => "Group",
+            'Prod.' => "Cut",
             'Brand' => "Brand",
-            'Supplier' => "Supplier",
+            'Supp.' => "Supplier",
             'Qty' => "qty",
             'Unit' => "unit",
             'kg' => "kg",
             'Cost' => "Cost Value",
-            'Actual Cost' => "Actual Cost Value",
+            'Act Cost' => "Actual Cost Value",
             'Sell' => "Sell Value",
             'Profit' => "Profit",
-            'Actual Profit' => "Actual Profit",
+            'Act Profit' => "Actual Profit",
         );
     }
     else
     {
         $garyCols = array
         (
-            'SALESMAN' => "User",
+            'Salesman' => "User",
             'DATE' => "Date Assembled",
-            'INVOICE ID' => "Invoice",
-            'Customer' => "Customer",   
-            'Intake ID' => "Intake ID",
+            'Inv ID' => "Invoice",
+            'Cust.' => "Customer",   
+            'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
-            'Species' => "Species",
-            'Nationality' => "Nationality",
+            //'Species' => "Species",
+            'Nation.' => "Nationality",
             'Temp.' => "Temp",
-            'Category' => "Group",
-            'Product' => "Cut",
+            //'Cat.' => "Group",
+            'Prod.' => "Cut",
             'Brand' => "Brand",
-            'Supplier' => "Supplier",
+            'Supp.' => "Supplier",
             'Qty' => "qty",
             'Unit' => "unit",
             'kg' => "kg",
@@ -270,19 +270,22 @@ use Illuminate\Support\Facades\Auth;
     while (count($dataRanges2)<4){
         $dataRanges2[] = [];
     }
-
+	$generalFormat = "word-wrap: break-all; overflow:hidden;";
+	$divFormat =  "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
+	$cellFormat = "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
     foreach ($report->getTables() as $index=>$table){
 		$processed[$table->name] = [];
         $reportColumns =$table->getColumns();
-?> <table style="width:100%;" id="resultsTable<?php echo $index; ?>">
-        <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
+        ?>
+		<table style="table-layout:fixed;" id="resultsTable">
+		<thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
         <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
         <tr>
         <?php
         foreach($garyCols as $garyCol=>$discard)
         {
         ?>
-            <th align="left"><?php echo $garyCol; ?></th>
+            <th style="<?php echo $cellFormat; ?> font-size:15px;" align="left"><?php echo $garyCol; ?></th>
         <?php
         }
         ?>
@@ -295,8 +298,8 @@ use Illuminate\Support\Facades\Auth;
             echo '<tr class="result">';
             foreach($garyCols as $garyCol)
             {
-                if ($index % 2 == 0) echo "<td>";
-                else echo "<td style='color:red;'>";
+                if ($index % 2 == 0) echo "<td style='".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
+                else echo "<td style='color:red;".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
                 if ($garyCol == "qty")
                 {
                     $qty = "";
@@ -333,14 +336,14 @@ use Illuminate\Support\Facades\Auth;
 						$d->$col = preg_replace("/[£,]/", '', $t);
                         if ($garyCol == "Invoice")
                         {
-                            $t = '<a href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
+                            $t = '<a style="'.$divFormat.' font-size:15px;" href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
                         }
-						$kgS=($garyCol=="kg")?"kg":"";
+						$kgS=($garyCol=="kg")?" kg":"";
                         echo $t.$kgS;
                         break;
                     }
                 }
-                echo "</td>";
+                echo "</div></td>";
             }
             echo "</tr>".PHP_EOL;
 			$processed[$table->name][] = $d;
@@ -354,11 +357,11 @@ use Illuminate\Support\Facades\Auth;
 		$re = "";
 		if ($garyCol == "qty")
 		{
-			echo '<td><div class="" style="font-size:13px;">'.$rollingQty;//$qty
+			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$rollingQty;//$qty
 		}
 		else if ($garyCol == "unit")
 		{    
-			echo '<td><div class="" style="font-size:13px;">';           
+			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">';           
 		}
 		else foreach($reportColumns as $reportCol)
 		{
@@ -366,8 +369,8 @@ use Illuminate\Support\Facades\Auth;
 			{
 				$col = $reportCol->getLabel($table->mode);
 				$re = ReportHelper::resolveFooter($reportCol,$processed[$table->name],$table->mode);
-				$kgS=($garyCol=="kg")?"kg":"";
-				echo '<td><div class="" style="font-size:13px;">'.$re.$kgS;
+				$kgS=($garyCol=="kg")?" kg":"";
+				echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$re.$kgS;
 				break;
 			}
 		}
@@ -398,8 +401,8 @@ use Illuminate\Support\Facades\Auth;
 </tr></tfoot>
 </table>
 <br/>
-<?php }?>
-<table style="width:100%;" id="resultsTable<?php echo count($dataRanges2); ?>">
+<?php } ?>
+<table style="table-layout:fixed;" id="resultsTable<?php echo count($dataRanges2); ?>">
 <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>">Summary</th></tr>
 <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
 <tr>
@@ -407,7 +410,7 @@ use Illuminate\Support\Facades\Auth;
 foreach($garyCols as $garyCol=>$discard)
 {
 ?>
-	<th align="left"><?php echo $garyCol; ?></th>
+	<th style="<?php echo $cellFormat; ?>" align="left"><?php echo $garyCol; ?></th>
 <?php
 }
 ?>
@@ -417,7 +420,7 @@ foreach($garyCols as $garyCol=>$discard)
 	$summary = new stdClass();
 	foreach($garyCols as $garyColLab=>$garyCol)
 	{  
-		echo '<td><div class="" style="font-size:13px;">';   
+		echo '<td style="'.$cellFormat.'"><div class="" style="'.$divFormat.'">';   
 		$t = "";
 		if ($tableSums[0]->$garyCol != "") 
 		{
@@ -435,7 +438,7 @@ foreach($garyCols as $garyCol=>$discard)
 				{
 					$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
 					$col = $reportCol->getLabel($table->mode);
-					$kgS=($garyCol=="kg")?"kg":"";
+					$kgS=($garyCol=="kg")?" kg":"";
 					echo $t.$kgS;
 					break;
 				}
