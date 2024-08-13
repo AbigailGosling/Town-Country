@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PDO;
+use stdClass;
 
 class ReportHelper
 {
@@ -35,7 +36,7 @@ class ReportHelper
     public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start = NULL,Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL, array $filters = NULL):array
     {
         ini_set('memory_limit', '4G');
-		if ($start == null) 
+		if ($start == null)
 		{
 			$start = Carbon::createFromTimestamp(0);
 		}
@@ -69,7 +70,7 @@ class ReportHelper
 					$original = 'original_'.$field;
                     if (property_exists($item,$field) || property_exists($item,$original))
                     {
-						
+
                         foreach (explode(",",$values) as $value)
                         {
                             if ($item->$field == $value || $item->$original == $value)
@@ -571,7 +572,24 @@ class ReportHelper
             static::row_merge($result,$item,"intake.");
 
             $col = "intake.supplier_id";
-            $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+            $col2 = "intake.returned";
+            if ($result->$col2!=1)
+            {
+                $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+            }
+            else
+            {
+                $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
+                $item2 = new stdClass();
+                $k1 = "customers.id";
+                $k2 = "supplier.id";
+                $item2->$k2 = $item->$k1;
+
+                $k1 = "customers.businessname";
+                $k2 = "supplier.name";
+                $item2->$k2 = $item->$k1;
+                $item = $item2;
+            }
             static::row_merge($result,$item);
 
             $col = "product.brand_id";
