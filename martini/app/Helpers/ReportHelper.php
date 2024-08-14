@@ -38,7 +38,7 @@ class ReportHelper
         ini_set('memory_limit', '4G');
 		if ($start == null)
 		{
-			$start = Carbon::createFromTimestamp(0);
+			$start = Carbon::now()->subDays(1);
 		}
 		if ($end == null) $end = Carbon::now();
 		$start = $start->startOfDay();
@@ -91,7 +91,7 @@ class ReportHelper
     {
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
-        $resultQB = static::$conn->table("pickerSheets")
+        $resultQB = static::$conn->table("pickerSheets")->lock('WITH(NOLOCK)')
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
             ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
@@ -104,7 +104,7 @@ class ReportHelper
         /** @var Collection $debits */
         $debits = $resultQB->get();
 
-        $resultQB = static::$conn->table("pickerSheets")
+        $resultQB = static::$conn->table("pickerSheets")->lock('WITH(NOLOCK)')
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
@@ -220,7 +220,7 @@ class ReportHelper
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
-        $resultQB = static::$conn->table("pickerSheets")
+        $resultQB = static::$conn->table("pickerSheets")->lock('WITH(NOLOCK)')
             ->join("palletsOut","pickerSheets.id"               ,'=',"palletsOut.pickersheet_id")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
@@ -233,7 +233,7 @@ class ReportHelper
         /** @var Collection $debits */
         $debits = $resultQB->get();
 
-        $resultQB = static::$conn->table("pickerSheets")
+        $resultQB = static::$conn->table("pickerSheets")->lock('WITH(NOLOCK)')
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")

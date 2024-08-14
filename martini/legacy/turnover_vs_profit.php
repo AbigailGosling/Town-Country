@@ -177,15 +177,10 @@ use Illuminate\Support\Facades\Auth;
 		?>
 	</select>
     <?php
-        if($date_start != ''){
-            $uk_date_start = str_replace('/', '-', $date_start);
-            $uk_date_start = date('d/m/Y', strtotime($uk_date_start));
-        }
-
-        if($date_end != ''){
-            $uk_date_end = str_replace('/', '-', $date_end);
-            $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
-        }
+		$date = new DateTime();
+		$uk_date_end = $date->format('d/m/Y');
+		$date->modify("-1 day");
+		$uk_date_start = $date->format('d/m/Y');
     ?>
     <br/><br/>
     <b>BETWEEN</b>
