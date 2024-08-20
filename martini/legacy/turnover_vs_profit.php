@@ -178,9 +178,10 @@ use Illuminate\Support\Facades\Auth;
 	</select>
     <?php
 		$date = new DateTime();
-		$uk_date_end = $date->format('d/m/Y');
+		//$uk_date_end = $date->format('d/m/Y');
 		$date->modify("-1 day");
-		$uk_date_start = $date->format('d/m/Y');
+		//$uk_date_start = $date->format('d/m/Y');
+		$uk_date_start = $uk_date_end = "";
     ?>
     <br/><br/>
     <b>BETWEEN</b>

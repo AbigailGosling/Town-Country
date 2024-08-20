@@ -258,7 +258,8 @@ use Illuminate\Support\Facades\Auth;
 
     $report = Report::find(1);
 
-    $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
+	if ($date_start=== null && $date_end=== null && ($INTERESTED_PICKS === null||count($INTERESTED_PICKS)==0)) $dataRanges= [];
+    else $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
 
     $dataRanges2= [];
 	$processed = [];
