@@ -38,7 +38,7 @@ class ReportHelper
         ini_set('memory_limit', '4G');
 		if ($start == null)
 		{
-			$start = Carbon::now()->subDays(1);
+			$start = Carbon::createFromTimestamp(0);
 		}
 		if ($end == null) $end = Carbon::now();
 		$start = $start->startOfDay();
