@@ -3,7 +3,11 @@ global $processed;
 $processed = [];
 if (!isset($dateType)) $dateType = "assembled";
 ?>
-<x-app-layout>
+<head>
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.dataTables.css" />  
+</head>
+<x-app-layout :expandH="false">
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         {{ $report->name}}
@@ -60,72 +64,93 @@ if (!isset($dateType)) $dateType = "assembled";
     </x-form>
     </form>
     </div>
-    <div>
-        @foreach($report->getTables() as $index=>$table)
-        <div style="width:100%" class="bg-gray-200 shadow-sm sm:rounded-lg ml-6 mr-6">
-            <table class="table-fixed w-fit text-sm mt-4">
-                <?php
-                    $columns =$table->getColumns();
-                    $processed[$table->name] = [];
-                    $data = $dataRanges[$index];
-                    $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
-                    if(count($data)==0 && $index!=0)continue;
-                    ?>
-                @if ($index%2==0)
-                <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
-                @else
-                <thead class="bg-orange-200" style="position: sticky; top: 0;"><tr>
-                @endif
-                @foreach($columns as $column)
-                <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,$table->mode)}}</x-data-table-header>
-                @endforeach
-                </tr></thead>
-                <tbody class="bg-white">
-                    @foreach($data as $row)
-                    <?php $d = new stdClass(); ?>
-                    <tr>
-                        @foreach($columns as $column)
-                        <?php
-                        $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
-                        $col = $column->getLabel($table->mode);
-                        $d->$col = preg_replace("/[£,]/", '', $t);
-                        $columnNameSimplified = preg_replace("/\W|_/", '', strtolower($column->getLabel($table->mode)));
-                        $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
-                        ?>
-                        @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
-                        <td style="width:100px" align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</input></td>
-                        @else
-                        <td style="width:100px" align="center" id="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</td>
-                        @endif
-                        @endforeach
-                    </tr>
-                    <?php $processed[$table->name][] = $d;?>
-                    @endforeach
-                </tbody>
-                @if ($index%2==0)
-                <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
-                @else
-                <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
-                @endif
-
-                    @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
-                    @endforeach
-                </tr></tfoot>
-            </table>
-        </div>
-        @endforeach
-    </div>
-
+    
 </x-app-layout>
+@foreach($report->getTables() as $index=>$table)
+<div class="bg-gray-200 shadow-sm sm:rounded-lg mb-2">
+    <table id="myTable{{$index}}" class="table-fixed text-sm">
+        <?php
+            $columns =$table->getColumns();
+            $processed[$table->name] = [];
+            $data = $dataRanges[$index];
+            $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
+            ?>
+        @if ($index%2==0)
+        <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
+        @else
+        <thead class="bg-orange-200" style="position: sticky; top: 0;"><tr>
+        @endif
+        @foreach($columns as $column)
+        <x-data-table-header>{{App\Helpers\ReportHelper::resolveHeader($column,$table->mode)}}</x-data-table-header>
+        @endforeach
+        </tr></thead>
+        <tbody class="bg-white">
+            @foreach($data as $row)
+            <?php $d = new stdClass(); ?>
+            <tr>
+                @foreach($columns as $column)
+                <?php
+                $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
+                $col = $column->getLabel($table->mode);
+                $d->$col = preg_replace("/[£,]/", '', $t);
+                $columnNameSimplified = preg_replace("/\W|_/", '', strtolower($column->getLabel($table->mode)));
+                $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
+                ?>
+                @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
+                <!--<td style="width:100px" align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</input></td>-->
+                @else
+                <!--<td style="width:100px" align="center" id="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</td>-->
+                @endif
+                @endforeach
+            </tr>
+            <?php $processed[$table->name][] = $d;?>
+            @endforeach
+        </tbody>
+        @if ($index%2==0)
+        <tfoot class="bg-sky-100" style="position: sticky; bottom: 0;"><tr>
+        @else
+        <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
+        @endif
+
+            @foreach($columns as $column)
+            <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
+            @endforeach
+        </tr></tfoot>
+    </table>
+</div>
+@endforeach
 @stack('scripts')
+<script src="https://cdn.datatables.net/2.1.3/js/dataTables.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.1/xlsx.full.min.js"></script>
 <script>
+    $(document).ready( function () {
+        @foreach($report->getTables() as $index=>$table)
+        <?php $columns = $table->getColumns();?>
+        new DataTable('#myTable{{$index}}', {
+            "lengthMenu": [[1000,-1], [1000,"All"]],
+            data: [ 
+                
+                @foreach($processed[$table->name] as $row)
+                {
+                    @foreach($row as $key=>$value)
+                        "{{$key}}":"{{$value}}",
+                    @endforeach
+                },    
+                @endforeach
+            ],
+            columns: [
+                @foreach($columns as $colIndex=>$column)
+                    { data: '{{$column->getLabel($table->mode)}}'},
+                @endforeach
+            ]
+        });
+        @endforeach
+        setTimeout(readyEvent, 1);
+    });
      function readyEvent() {
         $("#export").css("pointer-events","auto");
         $("#export-text").text(" Export ");
-     }
-     setTimeout(readyEvent, 1);
+     } 
      function changed(e){
         var d = $(e).attr('id');
         d = d.split("_");
