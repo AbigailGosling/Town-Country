@@ -6,50 +6,50 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 	ini_set('max_execution_time', '0');
-	if (User::find(Auth::id())->hasPermission("viewcosts")) 
+	if (User::find(Auth::id())->hasPermission("viewcosts"))
     {
         $garyCols = array
         (
-            'SALESMAN' => "User",
+            'Salesman' => "User",
             'DATE' => "Date Assembled",
-            'INVOICE ID' => "Invoice",
-            'Customer' => "Customer",   
-            'Intake ID' => "Intake ID",
+            'Inv ID' => "Invoice",
+            'Cust.' => "Customer",
+            'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
-            'Species' => "Species",
-            'Nationality' => "Nationality",
+            //'Species' => "Species",
+            'Nation.' => "Nationality",
             'Temp.' => "Temp",
-            'Category' => "Group",
-            'Product' => "Cut",
+            //'Cat.' => "Group",
+            'Prod.' => "Cut",
             'Brand' => "Brand",
-            'Supplier' => "Supplier",
+            'Supp.' => "Supplier",
             'Qty' => "qty",
             'Unit' => "unit",
             'kg' => "kg",
             'Cost' => "Cost Value",
-            'Actual Cost' => "Actual Cost Value",
+            'Act Cost' => "Actual Cost Value",
             'Sell' => "Sell Value",
             'Profit' => "Profit",
-            'Actual Profit' => "Actual Profit",
+            'Act Profit' => "Actual Profit",
         );
     }
     else
     {
         $garyCols = array
         (
-            'SALESMAN' => "User",
+            'Salesman' => "User",
             'DATE' => "Date Assembled",
-            'INVOICE ID' => "Invoice",
-            'Customer' => "Customer",   
-            'Intake ID' => "Intake ID",
+            'Inv ID' => "Invoice",
+            'Cust.' => "Customer",
+            'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
-            'Species' => "Species",
-            'Nationality' => "Nationality",
+            //'Species' => "Species",
+            'Nation.' => "Nationality",
             'Temp.' => "Temp",
-            'Category' => "Group",
-            'Product' => "Cut",
+            //'Cat.' => "Group",
+            'Prod.' => "Cut",
             'Brand' => "Brand",
-            'Supplier' => "Supplier",
+            'Supp.' => "Supplier",
             'Qty' => "qty",
             'Unit' => "unit",
             'kg' => "kg",
@@ -58,10 +58,10 @@ use Illuminate\Support\Facades\Auth;
             'Profit' => "Profit",
         );
     }
-	
+
 	$percision = 3;
 	$magShift = pow(10,$percision);
-	
+
    	require(__DIR__.'/../functions.php');
     ini_set('max_execution_time',0);
     ini_set('memory_limit', '1G');
@@ -71,7 +71,7 @@ use Illuminate\Support\Facades\Auth;
         $date_start = request()->input('date_start');
         $date_start = str_replace('/', '-', $date_start);
         $date_start = Carbon::createFromTimestamp(strtotime($date_start))->startOfDay();
-        
+
         if(request()->input('date_end') == ''){
             $date_end = date('d/m/Y');
 			$calenderPeriod = true;
@@ -82,13 +82,13 @@ use Illuminate\Support\Facades\Auth;
         $date_end = str_replace('/', '-', $date_end);
         $date_end = Carbon::createFromTimestamp(strtotime($date_end))->endOfDay();
     }
-	
+
 	$INTERESTED_PRODUCTIDS = [];
 	$INTERESTED_PICKS = [];
-	
-	
+
+
     $INVOICE_ID = request()->input('invoice_id');
-    if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0') 
+    if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0')
 	{
 		$filters['pickerSheets.id'] = $INVOICE_ID;
 		$INTERESTED_PICKS[] = $INVOICE_ID;
@@ -132,7 +132,7 @@ use Illuminate\Support\Facades\Auth;
     if ($CUSTOMER_ID != null && $CUSTOMER_ID != '' && $CUSTOMER_ID != '...' && $CUSTOMER_ID != '0') $filters['customers.id'] = $CUSTOMER_ID;
 
     $SPECIES_ID = request()->input('species_id');
-    if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0') 
+    if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0')
 	{
 		$filters['species.id'] = $SPECIES_ID;
 		$q = prepareExecuteQuery("SELECT `id` FROM `cuts` WHERE species_id = ?",'i',[$SPECIES_ID]);
@@ -150,7 +150,7 @@ use Illuminate\Support\Facades\Auth;
 	}
 
     $CUTGROUP_ID = request()->input('cutgroup_id');
-    if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0') 
+    if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0')
 	{
 		$filters['cuts.cutgroup_id'] = $CUTGROUP_ID;
 		$q = prepareExecuteQuery("SELECT `id` FROM `cuts` WHERE `cutgroup_id` = ?",'i',[$CUTGROUP_ID]);
@@ -168,7 +168,7 @@ use Illuminate\Support\Facades\Auth;
 	}
 
     $COOLING_ID = request()->input('cooling_id');
-    if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0') 
+    if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0')
 	{
 		$filters['product.cooling_id'] = $COOLING_ID;
 		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `cooling_id` = ?",'i',[$COOLING_ID]);
@@ -181,7 +181,7 @@ use Illuminate\Support\Facades\Auth;
 	}
 
     $BRAND_ID = request()->input('brand_id');
-    if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0') 
+    if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0')
 	{
 		$filters['brands.id'] = $BRAND_ID;
 		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `brand_id` = ?",'i',[$BRAND_ID]);
@@ -194,7 +194,7 @@ use Illuminate\Support\Facades\Auth;
 	}
 
     $NATIONALITY_ID = request()->input('nationality_id');
-    if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0') 
+    if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0')
 	{
 		$filters['nationality.id'] = $NATIONALITY_ID;
 		$q = prepareExecuteQuery("SELECT `id` FROM `product` WHERE `nationality_id` = ?",'i',[$NATIONALITY_ID]);
@@ -207,10 +207,10 @@ use Illuminate\Support\Facades\Auth;
 	}
 
     $SUPPLIER_ID = request()->input('supplier_id');
-    if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0') 
+    if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0')
 	{
 		$filters['supplier.id'] = $SUPPLIER_ID;
-		
+
 		$q = prepareExecuteQuery("SELECT `id` FROM intake WHERE supplier_id = ?",'i',[$SUPPLIER_ID]);
 		if ($q->num_rows>0)
 		{
@@ -255,10 +255,11 @@ use Illuminate\Support\Facades\Auth;
     $PPC = "PPC";
 
     if (count(array_keys($filters))==0)$filters = null;
-	
+
     $report = Report::find(1);
 
-    $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
+	if ($date_start=== null && $date_end=== null && ($INTERESTED_PICKS === null||count($INTERESTED_PICKS)==0)) $dataRanges= [];
+    else $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
 
     $dataRanges2= [];
 	$processed = [];
@@ -270,19 +271,22 @@ use Illuminate\Support\Facades\Auth;
     while (count($dataRanges2)<4){
         $dataRanges2[] = [];
     }
-
+	$generalFormat = "word-wrap: break-all; overflow:hidden;";
+	$divFormat =  "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
+	$cellFormat = "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
     foreach ($report->getTables() as $index=>$table){
 		$processed[$table->name] = [];
         $reportColumns =$table->getColumns();
-?> <table style="width:100%;" id="resultsTable<?php echo $index; ?>">
-        <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
+        ?>
+		<table style="table-layout:fixed;" id="resultsTable">
+		<thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
         <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
         <tr>
         <?php
         foreach($garyCols as $garyCol=>$discard)
         {
         ?>
-            <th align="left"><?php echo $garyCol; ?></th>
+            <th style="<?php echo $cellFormat; ?> font-size:15px;" align="left"><?php echo $garyCol; ?></th>
         <?php
         }
         ?>
@@ -295,8 +299,8 @@ use Illuminate\Support\Facades\Auth;
             echo '<tr class="result">';
             foreach($garyCols as $garyCol)
             {
-                if ($index % 2 == 0) echo "<td>";
-                else echo "<td style='color:red;'>";
+                if ($index % 2 == 0) echo "<td style='".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
+                else echo "<td style='color:red;".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
                 if ($garyCol == "qty")
                 {
                     $qty = "";
@@ -321,8 +325,8 @@ use Illuminate\Support\Facades\Auth;
                     echo $qty;
                 }
                 else if ($garyCol == "unit")
-                {    
-                    echo $unitlable;            
+                {
+                    echo $unitlable;
                 }
                 else foreach($reportColumns as $reportCol)
                 {
@@ -333,14 +337,15 @@ use Illuminate\Support\Facades\Auth;
 						$d->$col = preg_replace("/[£,]/", '', $t);
                         if ($garyCol == "Invoice")
                         {
-                            $t = '<a href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
+                            $t = '<a style="'.$divFormat.' font-size:15px;" href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
                         }
-						$kgS=($garyCol=="kg")?"kg":"";
+						$kgS=($garyCol=="kg")?" kg":"";
                         echo $t.$kgS;
                         break;
                     }
                 }
-                echo "</td>";
+                echo "</div></td>";
+                if ($index % 2 == 1 && (strpos($garyCol,"Profit") == false && floatval($d->$col) > 0)) $d->$col = -$d->$col;
             }
             echo "</tr>".PHP_EOL;
 			$processed[$table->name][] = $d;
@@ -354,11 +359,11 @@ use Illuminate\Support\Facades\Auth;
 		$re = "";
 		if ($garyCol == "qty")
 		{
-			echo '<td><div class="" style="font-size:13px;">'.$rollingQty;//$qty
+			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$rollingQty;//$qty
 		}
 		else if ($garyCol == "unit")
-		{    
-			echo '<td><div class="" style="font-size:13px;">';           
+		{
+			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">';
 		}
 		else foreach($reportColumns as $reportCol)
 		{
@@ -366,8 +371,8 @@ use Illuminate\Support\Facades\Auth;
 			{
 				$col = $reportCol->getLabel($table->mode);
 				$re = ReportHelper::resolveFooter($reportCol,$processed[$table->name],$table->mode);
-				$kgS=($garyCol=="kg")?"kg":"";
-				echo '<td><div class="" style="font-size:13px;">'.$re.$kgS;
+				$kgS=($garyCol=="kg")?" kg":"";
+				echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$re.$kgS;
 				break;
 			}
 		}
@@ -390,6 +395,7 @@ use Illuminate\Support\Facades\Auth;
 				$percentage = floorDec($profitRatio*100,3);
 				echo "<br/>".$percentage."%";
 			}
+
 		}
 		echo '</div></td>';
 	}
@@ -398,8 +404,8 @@ use Illuminate\Support\Facades\Auth;
 </tr></tfoot>
 </table>
 <br/>
-<?php }?>
-<table style="width:100%;" id="resultsTable<?php echo count($dataRanges2); ?>">
+<?php } ?>
+<table style="table-layout:fixed;" id="resultsTable<?php echo count($dataRanges2); ?>">
 <thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>">Summary</th></tr>
 <tr><td style="border-color: black; border-size: 2px;" colspan="<?php echo count($garyCols); ?>">======================================================</td></tr>
 <tr>
@@ -407,7 +413,7 @@ use Illuminate\Support\Facades\Auth;
 foreach($garyCols as $garyCol=>$discard)
 {
 ?>
-	<th align="left"><?php echo $garyCol; ?></th>
+	<th style="<?php echo $cellFormat; ?>" align="left"><?php echo $garyCol; ?></th>
 <?php
 }
 ?>
@@ -416,10 +422,10 @@ foreach($garyCols as $garyCol=>$discard)
 <?php
 	$summary = new stdClass();
 	foreach($garyCols as $garyColLab=>$garyCol)
-	{  
-		echo '<td><div class="" style="font-size:13px;">';   
+	{
+		echo '<td style="'.$cellFormat.'"><div class="" style="'.$divFormat.'">';
 		$t = "";
-		if ($tableSums[0]->$garyCol != "") 
+		if ($tableSums[0]->$garyCol != "")
 		{
 			$columnData = array_column($tableSums,$garyCol);
 			$result = 0;
@@ -428,14 +434,14 @@ foreach($garyCols as $garyCol=>$discard)
 				$rolling = filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
 				$rolling = floorDec(floatval($rolling)*$magShift,0);
 				$result += $rolling;
-			}		
+			}
 			foreach($reportColumns as $reportCol)
 			{
 				if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
 				{
 					$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
 					$col = $reportCol->getLabel($table->mode);
-					$kgS=($garyCol=="kg")?"kg":"";
+					$kgS=($garyCol=="kg")?" kg":"";
 					echo $t.$kgS;
 					break;
 				}

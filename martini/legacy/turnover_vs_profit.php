@@ -177,15 +177,11 @@ use Illuminate\Support\Facades\Auth;
 		?>
 	</select>
     <?php
-        if($date_start != ''){
-            $uk_date_start = str_replace('/', '-', $date_start);
-            $uk_date_start = date('d/m/Y', strtotime($uk_date_start));
-        }
-
-        if($date_end != ''){
-            $uk_date_end = str_replace('/', '-', $date_end);
-            $uk_date_end = date('d/m/Y', strtotime($uk_date_end));
-        }
+		$date = new DateTime();
+		//$uk_date_end = $date->format('d/m/Y');
+		$date->modify("-1 day");
+		//$uk_date_start = $date->format('d/m/Y');
+		$uk_date_start = $uk_date_end = "";
     ?>
     <br/><br/>
     <b>BETWEEN</b>
@@ -195,9 +191,9 @@ use Illuminate\Support\Facades\Auth;
     <input type="button" name="search" id="search" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
     </form>
  	
-	<div id="loadResults" class="resultsContainer">
+	<div style="width:100%" id="loadResults" class="resultsContainer">
         <div id="loadingContainer"><center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
-		<div id="loadResults2"/>
+		<div style="max-width:100%" id="loadResults2"/>
     </div>
     <div class="loadMoreBtn" onclick="loadData(false)" style="display:none;">Load More</div>
 </div>
@@ -236,7 +232,10 @@ use Illuminate\Support\Facades\Auth;
         var supplier_id = $('#supplier_id').val();
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
-
+		var width = $('#loadResults').width();
+		$("#loadResults2").css({
+			"maxWidth": width
+		  });
 		$('#loadingContainer').show();
 		$('#loadResults2').html("");
         req = $.ajax(
@@ -256,7 +255,8 @@ use Illuminate\Support\Facades\Auth;
 				date_end: date_end,
 				brand_id: brand_id,
 				nationality_id: nationality_id,
-				supplier_id: supplier_id
+				supplier_id: supplier_id,
+				width: width
 			},
 			success: function(data, status){
 				req = null;

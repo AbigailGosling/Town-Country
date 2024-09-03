@@ -61,8 +61,8 @@ if (!isset($dateType)) $dateType = "assembled";
     </form>
     </div>
     <div>
+        @foreach($report->getTables() as $index=>$table)
         <div style="width:100%" class="bg-gray-200 shadow-sm sm:rounded-lg ml-6 mr-6">
-            @foreach($report->getTables() as $index=>$table)
             <table class="table-fixed w-fit text-sm mt-4">
                 <?php
                     $columns =$table->getColumns();
@@ -93,9 +93,9 @@ if (!isset($dateType)) $dateType = "assembled";
                         $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
                         ?>
                         @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
-                        <td align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" orgvalue="{{$d->$col}}">{{$t}}</input></td>
+                        <td style="width:100px" align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</input></td>
                         @else
-                        <td align="center" id="{{$fieldName}}" name="{{$fieldName}}" orgvalue="{{$d->$col}}">{{$t}}</td>
+                        <td style="width:100px" align="center" id="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</td>
                         @endif
                         @endforeach
                     </tr>
@@ -113,9 +113,10 @@ if (!isset($dateType)) $dateType = "assembled";
                     @endforeach
                 </tr></tfoot>
             </table>
-            @endforeach
         </div>
+        @endforeach
     </div>
+
 </x-app-layout>
 @stack('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.1/xlsx.full.min.js"></script>
@@ -130,7 +131,7 @@ if (!isset($dateType)) $dateType = "assembled";
         d = d.split("_");
         var tablename = d[0];
         var rowid = d[2];
-        var output = parseFloat($('#'+tablename+"_actualprofit_"+rowid).attr("orgvalue")) || 0;
+        var output = parseFloat($('#'+tablename+"_actualprofit_"+rowid).attr("og")) || 0;
         output -= parseFloat($('#'+tablename+"_lesstransport_"+rowid).val()) || 0;
         output -= parseFloat($('#'+tablename+"_lessoverriders_"+rowid).val()) || 0;
         output -= parseFloat($('#'+tablename+"_lesscredits_"+rowid).val()) || 0;
@@ -159,7 +160,7 @@ if (!isset($dateType)) $dateType = "assembled";
         wb = XLSX.utils.book_new();
         @foreach($report->getTables() as $index=>$table)
         @if (count($processed[$table->name])>0)
-data=cleanData({!!json_encode($processed[$table->name])!!});
+        data=cleanData({!!json_encode($processed[$table->name])!!});
         ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "{!!$table->name!!}");
         @endif

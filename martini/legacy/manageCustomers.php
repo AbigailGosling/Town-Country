@@ -334,7 +334,7 @@
 				<tr>
 					<td class="label"><label>Delivery Date Checks</label></td>
 					<td>
-						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id;?>)" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
 				<tr>
@@ -644,6 +644,13 @@ function mainForm2(){
 		}
 		$.post("ajax/toggleDeliveryOverride.php",{
 			id: id,
+			mo: $('#del_monday').is(":checked")?1:0,
+			tu: $('#del_tuesday').is(":checked")?1:0,
+			we: $('#del_wednesday').is(":checked")?1:0,
+			th: $('#del_thrusday').is(":checked")?1:0,
+			fr: $('#del_friday').is(":checked")?1:0,
+			sa: $('#del_saturday').is(":checked")?1:0,
+			su: $('#del_sunday').is(":checked")?1:0,
 		});
 	}
 </script>
