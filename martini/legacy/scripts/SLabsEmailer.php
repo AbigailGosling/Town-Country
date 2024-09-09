@@ -73,7 +73,9 @@ class SLabsEmailer {
             {
                 $message->addToAddress(new BulkRecipient($trimmed));
                 $response = $client->send($message);
-                Log::error(json_encode($response));
+                if ($response->result != "Success") {
+                    Log::error(new \Exception(json_encode(['response'=>$response,'customerID'=>$customerID,'type'=>$type,'toEmails'=>$toEmails,'subject'=>$subject,'htmlBody'=>$htmlBody,'pathToFile'=>$pathToFile,'fileName'=>$fileName,'document_id'=>$document_id,'message_id'=>$mid])));
+                }
             }
             catch (\Exception $e)
             {
