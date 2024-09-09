@@ -22,7 +22,7 @@ if (isset($type_id) && $type_id != null && $type_id != "")
 if (isset($user_id) && $user_id != null && $user_id != "")
     $queryArray[] = "`comment_logging`.`user_id` = '".$user_id."'";
 if (isset($date_start) && $date_start != null && $date_start != "" && isset($date_end) && $date_end != null && $date_end != "")
-{   
+{
     $date_start = DateTime::createFromFormat("d/m/Y" , $date_start);
     $date_start = $date_start->format('Y-m-d');
     $date_end = DateTime::createFromFormat("d/m/Y" , $date_end);
@@ -45,12 +45,12 @@ else
     }
 }
 $sql = "SELECT `comment_logging`.`id`,
-        `comment_logging`.`entity_id`, 
-        `comment_logging`.`type`, 
-        `comment_logging`.`user_id`, 
+        `comment_logging`.`entity_id`,
+        `comment_logging`.`type`,
+        `comment_logging`.`user_id`,
         `comment_logging`.`body`,
         `comment_logging`.`datetime`,
-        `users`.`name` 
+        `users`.`name`
         FROM `comment_logging` INNER JOIN `users` ON `users`.`id` = `comment_logging`.`user_id`";
 
 if (count($queryArray) > 0)
@@ -63,24 +63,25 @@ while ($row = mysqli_fetch_assoc($res))
 {
     $date = DateTime::createFromFormat("Y-m-d H:i:s" , $row['datetime']);
     $row['body'] = stripslashes($row['body']);
-    if ($row['type'] == "credit_override" || $row['type'] == "delivery_override" ) 
+    if ($row['type'] == "credit_override" || $row['type'] == "delivery_override" )
     {
         $customer = Customer::find($row['entity_id']);
         echo "<tr><td>$row[type]</td><td>$customer->businessname</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
     }
-    else if (strpos($row['type'],"product")===0) 
+    else if (strpos($row['type'],"product")===0)
     {
         $product = Product::find($row['entity_id']);
         if ($product)
         {
             $pallet = Pallet::find($product->pallet_id);
-            echo "<tr><td>$row[type]</td><td>$row[entity_id] ($pallet->intake_id)</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+            $intake_id = ($pallet)?$pallet->intake_id:"";
+            echo "<tr><td>$row[type]</td><td>$row[entity_id] ($intake_id)</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
         }
         else
         {
             echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
         }
-        
+
     }
     else {
         echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";

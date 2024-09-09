@@ -18,7 +18,7 @@ class PDFRenderer{
         $browserFactory = new BrowserFactory();
         // starts headless chrome
         if ($debug) Log::error("Browser",[$targetURL,$pathToFile,$fileName]);
-        $browser = $browserFactory->createBrowser();
+        $browser = $browserFactory->createBrowser(['noSandbox' => true,'debugLogger'     => Log::getLogger(),'connectionDelay' => 0.8,  'headless' => false,]);
         try {
             // creates a new page and navigate to an URL
             if ($debug) Log::error("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
@@ -75,7 +75,7 @@ class PDFRenderer{
             if ($debug) Log::error("PageToPDF",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
             $out= $page->pdf(['printBackground' => false]);
 
-            if ($debug) Log::error("WriteFile",['https:'.$domain,$targetURL,$pathToFile,$fileName]);
+            if ($debug) Log::error("WriteFile",['https:'.$domain,$targetURL,$pathToFile,$fileName,join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName))]);
             $out->saveToFile(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),500000);
 
             if ($debug) Log::error("Logout",['https:'.$domain,$targetURL,$pathToFile,$fileName]);

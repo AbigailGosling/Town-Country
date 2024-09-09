@@ -10,4 +10,5 @@ else
 {
     abort(404);
 }
+mysqli_close($mysqli);
 ?>
