@@ -1,6 +1,7 @@
 <?php
 include_once('includes/frontHeader.php');
 include_once('../functions.php');
+set_time_limit(5000);
 $data = prepareExecuteQuery("SELECT `dump` FROM tmp_data_dump WHERE `id` = ?",'i',[request()->input('id')])->fetch_assoc()['dump'];
 
 $serverRoot = request()->server("SERVER_NAME");
