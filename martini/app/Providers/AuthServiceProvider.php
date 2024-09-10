@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         'App\User' => 'App\Policies\UserPolicy',
         'App\CutGroupNationalityDate' => 'App\Policies\CutGroupNationalityDatePolicy',
+        'App\HealthMark' => 'App\Policies\HealthMarkPolicy',
     ];
 
     /**

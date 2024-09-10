@@ -6,43 +6,43 @@ use Illuminate\Support\Facades\Auth;
 	include('includes/frontHeader.php');
     ini_set('memory_limit','15M'); //this might kill the process - keep in mind
 	$id = request()->input('id');
-	$intake_id = request()->input('id');	
-	
+	$intake_id = request()->input('id');
+
 	$intake = getIntake($id);
 	$dateCreated = $intake['created_at'];
 	$lastUpdated = getIntakeLastUpdated($id);
 	$userX = "SELECT * FROM `users` WHERE id=?";
 	$userY = prepareExecuteQuery($userX,'i',[$userid]);
 	$user = mysqli_fetch_array($userY);
-	
+
 	$supplier = getSupplier($intake['supplier_id']);
-	
+
 	if(request()->input('hide') == 'true'){
 		$pallet_id = request()->input('pallet_id');
-		
+
 		$x1 = "UPDATE `product` SET `status`='1' WHERE pallet_id=?";
 		$y1 = prepareExecuteQuery($x1,'i',[$pallet_id]);
-		
+
 		$od = request()->input('id');
-		
+
 		header('location: intake.php?id='.$od);
 	}
-	
+
 	if(request()->input('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request()->input('productid');
 		$size = sizeof($productids);
-		
+
 		$intakeid = request()->input('intakeid');
-		
+
 		for($i=0;$i<$size;$i++){
-			$product_id = "(" . $productids[$i] . ")"; 
+			$product_id = "(" . $productids[$i] . ")";
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
 			$price = number_format((double)request()->input('price')[$i],3,".",",");
 			if ($cost == 0) $cost = null;
 			if ($price == 0) $price = null;
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != '' && $intake['approved']==1){
-				if (User::find(Auth::id())->hasPermission("viewcosts")) 
+				if (User::find(Auth::id())->hasPermission("viewcosts"))
 				{
 					$x = "UPDATE `product` SET cost=?, price=?, weightnote=? WHERE id IN $product_id";
  					$y = prepareExecuteQuery($x,'sss',[$cost,$price,$weightnote]);
@@ -67,7 +67,7 @@ use Illuminate\Support\Facades\Auth;
 		}
 
  	}
-	
+
 ?>
 
 <div id="top">
@@ -76,20 +76,20 @@ use Illuminate\Support\Facades\Auth;
 </div>
 
 <script type="text/javascript">
-	
+
 	function printPallet(intake_id, pallet_id){
 		var x = "printContent.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
-		
+
         window.open(x, '_blank');
 	}
-	
+
 </script>
 <style type="text/css">
 	.pricetype{
 		width: 80px;
 		height: 30px;
 	}
-	
+
 	.pricebox{
 		outline: none;
 		width: 60px;
@@ -97,14 +97,14 @@ use Illuminate\Support\Facades\Auth;
 		padding-left: 10px;
 		padding-right: 10px;
 	}
-	  
+
 	.printICON span{
 		font-size:18px;
 		text-transform:uppercase;
 		font-weight:700;
 		padding-left:10px;
 	}
-	
+
 	.printICON{
 		font-size:24px !important;
 	}
@@ -119,23 +119,23 @@ use Illuminate\Support\Facades\Auth;
 <main class="int">
 
 	<a href="javascript:;" onclick="window.history.back();" class="backbtn">< Back</a>
-		
+
 	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
 		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 		<select name="state">
             <option value="0">Mark as unsold</option>
 			<option value="1">Mark as sold</option>
 		</select>
-		
+
 		<input type="submit" value="SAVE">
 	</form>
-	
+
 	<div class="overview">
 		<div class="overview_block">
 			<label>Intake ID</label>
 			<?php echo $intake['id']; ?>
 		</div>
-		
+
 		<?php if($intake['returned'] == 1){ ?>
 		<div class="overview_block">
 			<label>Customer</label>
@@ -149,11 +149,11 @@ use Illuminate\Support\Facades\Auth;
                         ?><option value="<?php echo $customer['id']; ?>" <?php if($customer['id'] == $intake['supplier_id']){ echo 'selected'; } ?>><?php echo $customer['businessname']; ?></option>
                         <?php }
                     ?>
-                </select>   
+                </select>
             </form>
 
 		</div>
-		
+
 		<?php }else{ ?>
 		<div class="overview_block">
             <label>Supplier</label>
@@ -167,31 +167,31 @@ use Illuminate\Support\Facades\Auth;
                         ?><option value="<?php echo $supplier['id']; ?>" <?php if($supplier['id'] == $intake['supplier_id']){ echo 'selected'; } ?>><?php echo $supplier['name']; ?></option>
                         <?php }
                     ?>
-                </select>   
+                </select>
             </form>
-		</div>		
+		</div>
 		<?php } ?>
 
 		<div class="overview_block">
 			<label>Vehicle Registration</label>
 			<span style="text-transform:uppercase;"><?php echo $intake['vehicle_reg']; ?></span>
 		</div>
-		
+
 		<div class="overview_block">
 			<label>Date Recieved</label>
-			<?php 
+			<?php
 				$date_received2 = str_replace('/', '-', $intake['date_received']);
 				$date_received2 = date('d/m/Y', strtotime($date_received2));
-				
+
 				echo $date_received2;
 			?>
 		</div>
-		
+
 		<div class="overview_block">
 			<label>Vehicle Temp</label>
 			<?php echo $intake['vehicle_temperature']; ?>&deg;C
 		</div>
-		
+
 		<div class="overview_block">
 			<label>Delivery Note Number</label>
 			<?php if($intake['returned'] == 1){ ?>
@@ -205,7 +205,7 @@ use Illuminate\Support\Facades\Auth;
 				echo $intake['delivery_note_number'];
 			} ?>
 		</div>
-		
+
 		<div class="overview_block">
 			<label>Staff Name</label>
 			<?php
@@ -216,7 +216,7 @@ use Illuminate\Support\Facades\Auth;
 				}
 			?>
 		</div>
-		
+
 		<br/><br/><br/>
 		<div class="overview_block">
 			<div>
@@ -245,37 +245,78 @@ use Illuminate\Support\Facades\Auth;
 				<?php echo ($lastUpdated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$lastUpdated)->format('d/m/Y H:i:s'):"Unknown"; ?>
 			</div>
 		</div>
-		<div class="overview_block">
+        <?php } ?>
+        <div class="overview_block">
+
+		</div>
+        <div class="overview_block">
 			<div>
-				
+                <label>T&C Number</label>
+                <form method="POST" action="scripts/changeIntakeInternalNum.php" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <input type="text" name="internal_num" value="<?php echo $intake['internal_num']; ?>" style="width:140px;">
+                    <input type="submit" value="Save">
+                </form>
 			</div>
 		</div>
-		<?php } ?>
+        <div class="overview_block">
+			<div>
+                <label>Health Mark</label>
+                <form id="changeIntakeHealthForm" method="post" action="scripts/changeIntakeHealth.php">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <select id="changeIntakeHealth" style="height:30px;outline:none;border:0px;width: 100%;" name="health_id">
+                    <option value="-1" disabled<?php if(-1 == $intake['health_id']||null == $intake['health_id']||"" == $intake['health_id']){ echo 'selected'; } ?>></option>
+                        <?php
+                            $y = prepareExecuteQuery("SELECT * FROM `health_mark` ORDER BY `name` ASC");
+
+                            while($healthmark = mysqli_fetch_array($y)){
+                            ?><option value="<?php echo $healthmark['id']; ?>" <?php if($healthmark['id'] == $intake['health_id']){ echo 'selected'; } ?> <?php if($healthmark['disabled'] == 1){ echo 'disabled'; } ?>><?php echo $healthmark['name']; ?></option>
+                            <?php }
+                        ?>
+                    </select>
+                </form>
+			</div>
+		</div>
+        <div class="overview_block">
+			<div>
+                <label>Customs Import Entry</label>
+                <form method="POST" action="scripts/changeIntakeImportNum.php" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <input type="text" name="import_num" value="<?php echo $intake['import_num']; ?>" style="width:140px;">
+                    <input type="submit" value="Save">
+                </form>
+			</div>
+		</div>
+        <div class="overview_block">
+
+		</div>
 		<div style="clear:both;"></div>
 	</div>
 	<br/><br/>
-	
+
 	<div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Intake Notes</h2>
 		<form method="POST" action="scripts/saveIntakeNotes.php" enctype="multipart/form-data">
 			<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
-			
+
 			<label>Notes</label><br/>
 			<textarea class="intakeNotes" name="notes"><?php echo $intake['notes']; ?></textarea>
-			
+
 			<br/><br/>
 			<input type="submit" value="Save">
 
 		</form>
 	</div>
-    
+
     <?php
         $x = "SELECT `id` FROM `intakeDocs` WHERE `intakeid`=?";
 		$y = prepareExecuteQuery($x,'i',[$intake_id]);
         $count = mysqli_num_rows($y);
-        
+
     ?>
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Add Document</h2>
@@ -285,20 +326,20 @@ use Illuminate\Support\Facades\Auth;
 			<label>Document Name</label><br/>
 			<input type="text" name="name" required>
 			<br/><br/>
-			
+
 			<label>Image</label><br/>
 			<input type="file" name="dfile" style="border: 1px solid #cacaca;" required><br/>
-			
+
 			<br/><br/>
 			<input type="submit" value="Attach to intake">
-			 
+
 		</form>
     </div>
     <?php
         $x = "SELECT * FROM `intakeDocs` WHERE intakeid=?";
 		$y = prepareExecuteQuery($x,'s',[$intake_id]);
 		$count = mysqli_num_rows($y);
-		
+
 		if($count > 0){
 			?><div style="padding: 15px;border: 1px solid grey;width:100%;margin-top:40px;">
 			<h2 style="font-size:20px;">Intake Documents</h2><?php
@@ -309,7 +350,7 @@ use Illuminate\Support\Facades\Auth;
 			</a> &nbsp;&nbsp;&nbsp; <a href="./docs/<?php echo $row['dfile']; ?>" target="_blank"><?php echo $row['name']; ?></a><br/><br/>
 			<?php
 			}
-			
+
 			echo '</div>';
 		}
 	?>
@@ -319,28 +360,28 @@ use Illuminate\Support\Facades\Auth;
 		if($intake['purchase_id'] != ''){
 	?>
 	<div style="padding:10px;padding-left: 10px;border: 1px solid grey;position:relative;">
-	
+
 		<a href="<?php echo $domain; ?>createPurchase.php?id=<?php echo $intake['purchase_id']; ?>" class="viewpurchase">View Purchase</a>
 		<h2 style="font-size: 20px;">Purchase Notes</h2>
 		<?php
 			$purchase_id = $intake['purchase_id'];
-			
+
 			$x = "SELECT * FROM purchase_form WHERE id=?";
 			$y = prepareExecuteQuery($x,'i',[$purchase_id]);
-			
+
 			$row = mysqli_fetch_array($y);
 		?>
 		<b>Comments</b>
 		<p style="margin-top: 4px;"><?php echo $row['purchase_comments']; ?></p>
 		<ul style="padding-left:20px;">
 		<?php
-			
+
 			$species = explode('|', $row['species']);
 			$cuts = explode('|', $row['cut']);
 			$units = explode('|', $row['units']);
-			
+
 			$size = sizeof($species);
-			
+
 			for($i=0;$i<$size;$i++){
 			?>
 			<li><?php echo ucfirst(strtolower($species[$i] . ': ' . $cuts[$i])); ?></li>
@@ -350,7 +391,7 @@ use Illuminate\Support\Facades\Auth;
 		</ul>
 	</div>
 	<?php } ?>
-	
+
 	<br/>
 	<table border="1" cellpadding="5" width="100%">
 		<tr>
@@ -369,8 +410,8 @@ use Illuminate\Support\Facades\Auth;
 		$x = "SELECT * FROM `users` WHERE id=?";
 		$y = prepareExecuteQuery($x,'i',[$userid]);
 		$user = mysqli_fetch_array($y);
-		
-		
+
+
 		if($user['view_intake_prices'] == 1){
 	?>
 	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $intake_id; ?>">
@@ -392,51 +433,51 @@ use Illuminate\Support\Facades\Auth;
 				<?php } ?>
 			</tr>
 			<?php
-				
+
 				$x = "SELECT id FROM `pallet` WHERE intake_id=?";
 				$y = prepareExecuteQuery($x,'i',[$intake_id]);
 				$countPallets = mysqli_num_rows($y);
-				
+
 				$qPallets = '';
-                 
+
 				while($row = mysqli_fetch_array($y)){
 					$rowid = $row['id'];
-					
+
 					$qPallets .= " pallet_id = '$rowid' OR";
  				}
-				
+
 				$qPallets = substr($qPallets, 0, -2);
- 				
+
 				if($countPallets >= 1){
 					$x = "SELECT * FROM product WHERE " . $qPallets . " GROUP BY cut_id";
 				}else{
 					$x = "SELECT * FROM product WHERE id = 0";
 				}
-				
+
 				$y = prepareExecuteQuery($x);
 				$count = mysqli_num_rows($y);
-				
+
 				$totalCases = 0;
 				$totalWeight = 0;
 				$totalWeight = 0;
 				$c = 0;
-				
+
 				while($row = mysqli_fetch_array($y)){
 					$c++;
 					$product_id = $row['id'];
-					
+
 					$rowcutid = $row['cut_id'];
-					
+
 					if($countPallets >= 1){
 						$x2 = "SELECT id FROM product WHERE (" . $qPallets . ") AND cut_id='$rowcutid'";
 					}else{
-						// ??: What does this do? 
-						$x2 = "SELECT id FROM product WHERE id = 0"; 
+						// ??: What does this do?
+						$x2 = "SELECT id FROM product WHERE id = 0";
 					}
-				
+
 					$y2 = prepareExecuteQuery($x2);
-					
-					 
+
+
 					$weightthing = 0;
 
 					// used as a reference for updating the costs
@@ -449,19 +490,19 @@ use Illuminate\Support\Facades\Auth;
 						$totalWeight += weightFromProductID($rowid);
 						$qAppend2 .= " product_id = '$rowid' OR";
 					}
-					 
+
 					$qAppend2 = substr($qAppend2, 0, -2);
 					$count2 = mysqli_num_rows($y2);
-					
+
 				?>
 				<tr>
 					<td><?php echo getSpeciesFromCutID($row['cut_id']); ?></td>
 					<td><?php echo getCut($row['cut_id']);?></td>
-					<td align="center"><?php 
+					<td align="center"><?php
 							$cut_id = $row['cut_id'];
 							$xk = "SELECT id FROM `weights` WHERE weight_gross > 0 AND (" . $qAppend2 . ")";
 							$yk = prepareExecuteQuery($xk);
-              
+
                             if($row['akg'] != ''){
                                 $countQuery = prepareExecuteQuery("SELECT * FROM product WHERE " . $qPallets);
                                 $theCount = mysqli_num_rows($countQuery);
@@ -485,15 +526,15 @@ use Illuminate\Support\Facades\Auth;
                                 $totalCases = $totalCases + $count;
                             }
 							$qAppend2 = '';
-							
-							 
- 			
+
+
+
 						?>
 					</td>
 					<td>
                     	<textarea name="weightnote[]" class="overviewcomment" style="border:1px solid #f2f2f2;"><?php echo $row['weightnote']; ?></textarea>
 						<?php
-							
+
 						?>
 					</td>
  					<td align="right">
@@ -505,14 +546,14 @@ use Illuminate\Support\Facades\Auth;
 							$palletid = $row['pallet_id'];
 							$yP = prepareExecuteQuery("SELECT id,grosspallet FROM `pallet` WHERE id=?",'i',[$palletid]);
 							$pRow = mysqli_fetch_array($yP);
-							
+
 							if($pRow['grosspallet'] == 1){
 								echo '[GT] ';
 							}
-							
+
 							if($row['akg'] != ''){
 								$t_count = 0;
-								
+
 								$countQuery = prepareExecuteQuery("SELECT * FROM product WHERE " . $qPallets);
 
 								while($countRow = mysqli_fetch_array($countQuery)){
@@ -521,7 +562,7 @@ use Illuminate\Support\Facades\Auth;
 
 								echo $t_count . ' kg';
 							}else{
-								echo number_format($weightthing, 3, '.', '') . ' kg'; 
+								echo number_format($weightthing, 3, '.', '') . ' kg';
 								$weightthing = 0;
 							}
 						}
@@ -560,7 +601,7 @@ use Illuminate\Support\Facades\Auth;
 				<?php }?>
 			</tr>
 		</table>
-		</form>		
+		</form>
 	<?php }else{ ?>
 		<table border="1" cellpadding="5" width="100%">
 			<tr>
@@ -574,53 +615,53 @@ use Illuminate\Support\Facades\Auth;
 				<th>Total Weight</th>
 			</tr>
 			<?php
-				
+
 				$x = "SELECT id FROM `pallet` WHERE intake_id=?";
 				$y = prepareExecuteQuery($x,'i',[$intake_id]);
 				$countPallets = mysqli_num_rows($y);
-				
+
 				$qPallets = '';
-				
+
 				while($row = mysqli_fetch_array($y)){
 					$rowid = $row['id'];
-					
+
 					$qPallets .= " pallet_id = '$rowid' OR";
 				}
-				
+
 				$qPallets = substr($qPallets, 0, -2);
-				
-				
+
+
 				if($countPallets >= 1){
 					$x = "SELECT * FROM product WHERE " . $qPallets . " GROUP BY cut_id";
 				}else{
 					// $x = "SELECT * FROM product WHERE id = 0";
 				}
-				
-		 
+
+
 				$y = prepareExecuteQuery($x);
 				$count = mysqli_num_rows($y);
-				
+
 				$totalCases = 0;
 				$totalWeight = 0;
 				$totalWeight = 0;
 				$c = 0;
-				
+
 				while($row = mysqli_fetch_array($y)){
 					$c++;
 					$product_id = $row['id'];
-					
+
 					$rowcutid = $row['cut_id'];
-					
+
 					if($countPallets >= 1){
 						$x2 = "SELECT id FROM product WHERE (" . $qPallets . ") AND cut_id='$rowcutid'";
 					}else{ $x2 = "SELECT id FROM product WHERE id = 0"; }
-				
+
 					$y2 = prepareExecuteQuery($x2);
-					
-					 
+
+
 					$weightthing = 0;
 					while($row2 = mysqli_fetch_array($y2)){
-						
+
                         $rowid = $row2['id'];
                         if(weightFromProductID($rowid) != 1){
 						$weightthing += weightFromProductID($rowid);
@@ -628,29 +669,29 @@ use Illuminate\Support\Facades\Auth;
 						$qAppend2 .= " product_id = '$rowid' OR";
                         }
                     }
-					 
+
 					$qAppend2 = substr($qAppend2, 0, -2);
 					$count2 = mysqli_num_rows($y2);
-					
+
 				?>
 				<tr>
 					<td><?php echo getSpeciesFromCutID($row['cut_id']); ?></td>
 					<td><?php echo getCut($row['cut_id']);?></td>
-					<td><?php 
-							
+					<td><?php
+
 							$cut_id = $row['cut_id'];
-							
+
 							$xk = "SELECT * FROM `weights` WHERE " . $qAppend2;
 							$yk = prepareExecuteQuery($xk);
 							// $ykRow = mysqli_fetch_array($yk);
-							
+
 							$qAppend2 = '';
 							echo $count = mysqli_num_rows($yk);
-							
-							 
+
+
 							$totalCases = $totalCases + $count;
-			
-							  
+
+
 						?>
 					</td>
 					<td style="width:100px;">
@@ -663,7 +704,7 @@ use Illuminate\Support\Facades\Auth;
 						if($row['unit'] == 'PPC'){
 							echo 'PPC';
 						}else{
-							
+
 							$productid = $row['id'];
 							$xX = "select * from `weights` WHERE product_id =?";
 							$yY = prepareExecuteQuery($xX,'i',[$productid]);
@@ -674,15 +715,15 @@ use Illuminate\Support\Facades\Auth;
 							$num_cartons = number_format($weightt['number_of_cartons'], 2, '.', '');
 							$pallet_tare = number_format($weightt['pallet_tare'], 2, '.', '');
 							$tare_per_carton = number_format($weightt['tare_per_carton'], 2, '.', '');
-							
+
 							$carton_tare = $num_cartons * $tare_per_carton;
-							
+
 							$total_tare = $carton_tare + $pallet_tare;
-							
+
 							$tare = $original_gross - $total_tare;
 
 							if($weightt['grosstare'] == 1){
-								echo number_format($tare, 3, '.', ''); 
+								echo number_format($tare, 3, '.', '');
 								$totalWeight+= $tare;
 								$tare = 0;
 							}else{
@@ -700,15 +741,15 @@ use Illuminate\Support\Facades\Auth;
 				<td></td>
 				<td align="right"><?php echo number_format($totalWeight, 3, '.', ''); ?>kg</td>
 			</tr>
-		</table> 
+		</table>
 	<?php } ?>
-	
-	<?php 
+
+	<?php
 		$xk = "SELECT * FROM product WHERE original_intake_id=?";
 		$yk = prepareExecuteQuery($xk,'s',[$intake_id]);
-	
+
 		$counting = mysqli_num_rows($yk);
- 
+
 	if($counting){ ?>
 		<br/>
  		<table border="1" cellpadding="5" width="100%">
@@ -725,18 +766,18 @@ use Illuminate\Support\Facades\Auth;
                 <th>New Intake ID</th>
 			</tr>
 			<?php
-                
-                
-				$x = "SELECT * FROM product WHERE original_intake_id=?";		 
+
+
+				$x = "SELECT * FROM product WHERE original_intake_id=?";
 
 				$y = prepareExecuteQuery($x,'s',[$intake_id]);
 				$count = $counting;
-				
+
 				$totalCases = 0;
 				$totalWeight = 0;
 				$totalWeight = 0;
 				$c = 0;
-				
+
 				while($row = mysqli_fetch_array($y)){
 
                     $returnedIntakeID = intakeIDfromPalletID($row['pallet_id']);
@@ -744,27 +785,27 @@ use Illuminate\Support\Facades\Auth;
                     $xo = "SELECT id FROM `pallet` WHERE intake_id=?";
                     $yo = prepareExecuteQuery($xo,'s',["$returnedIntakeID"]);
                     $countPallets = mysqli_num_rows($yo);
-                    
+
                     $qPallets = array();
-                    
+
                     while($roow = mysqli_fetch_array($yo)){
                         $rowid = $roow['id'];
                         $qPallets[] = $rowid;
                     }
-                    
+
 
 					$c++;
 					$product_id = $row['id'];
-					
+
 					$rowcutid = $row['cut_id'];
-					
+
 					if($countPallets >= 1){
 						$x2 = "SELECT id FROM product WHERE pallet_id IN (" . implode(",",$qPallets) . ") AND cut_id='$rowcutid'";
 					}else{ $x2 = "SELECT id FROM product WHERE id = 0"; }
-				
+
 					$y2 = prepareExecuteQuery($x2);
-					
-					 
+
+
 					$weightthing = 0;
 					$rowid = $row['id'];
 					if(weightFromProductID($rowid) != 1){
@@ -772,29 +813,29 @@ use Illuminate\Support\Facades\Auth;
 					$totalWeight += weightFromProductID($rowid);
 					$qAppend2 .= " product_id = '$rowid' OR";
 					}
-					 
+
 					$qAppend2 = substr($qAppend2, 0, -2);
 					$count2 = mysqli_num_rows($y2);
-					
+
 				?>
 				<tr>
 					<td><?php echo getSpeciesFromCutID($row['cut_id']); ?></td>
 					<td><?php echo getCut($row['cut_id']);?></td>
-					<td><?php 
-							
+					<td><?php
+
 							$cut_id = $row['cut_id'];
-							
+
 							$xk = "SELECT * FROM `weights` WHERE " . $qAppend2;
 							$yk = prepareExecuteQuery($xk);
 							// $ykRow = mysqli_fetch_array($yk);
-							
+
 							$qAppend2 = '';
 							echo $count = mysqli_num_rows($yk);
-							
-							 
+
+
 							$totalCases = $totalCases + $count;
-			
-							  
+
+
 						?>
 					</td>
 					<td style="width:100px;">
@@ -815,15 +856,15 @@ use Illuminate\Support\Facades\Auth;
                         $num_cartons = number_format($weightt['number_of_cartons'], 2, '.', '');
                         $pallet_tare = number_format($weightt['pallet_tare'], 2, '.', '');
                         $tare_per_carton = number_format($weightt['tare_per_carton'], 2, '.', '');
-                        
+
                         $carton_tare = $num_cartons * $tare_per_carton;
-                        
+
                         $total_tare = $carton_tare + $pallet_tare;
-                        
+
                         $tare = $original_gross - $total_tare;
 
                         if($weightt['grosstare'] == 1){
-                            echo number_format($tare, 3, '.', ''); 
+                            echo number_format($tare, 3, '.', '');
                             $totalWeight+= $tare;
                             $tare = 0;
                         }else{
@@ -833,10 +874,10 @@ use Illuminate\Support\Facades\Auth;
                         ?>kg
                     </td>
                     <td><?php
-					
+
 						$returnedIntakeID = intakeIDfromPalletID($row['pallet_id']);
 						$returnedIntake = getIntake($returnedIntakeID);
-						
+
 						$customer = getCustomer($returnedIntake['supplier_id']);
 						echo $customer['businessname'];
 						?>
@@ -844,10 +885,10 @@ use Illuminate\Support\Facades\Auth;
 					<td><a href="intake.php?id=<?php echo $returnedIntakeID; ?>"><?php echo $returnedIntakeID; ?></a></td>
 				</tr>
 			<?php } ?>
-					  
+
 		</table>
  	<?php } ?>
-	
+
 	<br/>
 	<div id="printShow">
 		<table style="height:100px;width:100%;">
@@ -865,7 +906,7 @@ use Illuminate\Support\Facades\Auth;
 
 	<center id="hidePalletBtnContainer"><br/><br/><br/><Br/><Br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
 	<div id="ajaxContent">
-	 
+
 	</div>
 </main>
 <div id="btm"></div>
@@ -893,15 +934,22 @@ use Illuminate\Support\Facades\Auth;
 			data: $('#changeIntakeSupplierForm').serialize(), // serializes the form's elements
 		});
     });
-    
+    $('#changeIntakeHealth').change(function(){
+		$.ajax({ // make an AJAX request
+			type: "POST",
+			headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
+			url: "scripts/changeIntakeHealth.php", // it's the URL of your component B
+			data: $('#changeIntakeHealthForm').serialize(), // serializes the form's elements
+		});
+    });
 	$('.loadPalletBtn').click(function(){
 		$('#ajaxContent').html('<center><img src="https://i.gifer.com/7plQ.gif"></center>');
-		$.get( "ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {	
+		$.get( "ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {
 			$('#ajaxContent').html(data);
 			$('#hidePalletBtnContainer').fadeOut();
 		});
 	});
-	
+
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
 		$('#printShow').hide();
@@ -917,35 +965,35 @@ use Illuminate\Support\Facades\Auth;
 			}
 });
 	});
-	
+
 	function editWeight(intake_id, pallet_id, product_id, weight_id){
 		console.log('intake_id ' + intake_id);
 		console.log('pallet_id ' + pallet_id);
 		console.log('product_id ' + product_id);
 		console.log('weight_id ' + weight_id);
-		
+
 		$(window).scrollTop(0);
 
-		
-		$.get( "ajax/getEditProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id + "&product_id=" + product_id + "&weight_id=" + weight_id, function( data ) {	
+
+		$.get( "ajax/getEditProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id + "&product_id=" + product_id + "&weight_id=" + weight_id, function( data ) {
 			$('#editBox').html(data);
 			$('#editBox').fadeIn();
 		});
-		
-		
+
+
 	}
-	
+
 	$('#updateIntakeButton').click(function(){
-		
+
 		var supplier_id = $('#supplier_id').val();
 		var vehicle_reg = $('#vehicle_reg').val();
 		var date_received = $('#date_received').val();
 		var vehicle_temperature = $('#vehicle_temp').val();
 		var delivery_note_number = $('#delivery_note_number').val();
-		
+
 		var good = 1;
 		var msg = "";
-		
+
 		if(vehicle_reg == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#vehicle_reg').css('border','2px solid red');
@@ -953,7 +1001,7 @@ use Illuminate\Support\Facades\Auth;
 		}else{
 			$('#vehicle_reg').css('border','1px solid grey');
 		}
-		
+
 		if(date_received == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#date_received').css('border','2px solid red');
@@ -961,7 +1009,7 @@ use Illuminate\Support\Facades\Auth;
 		}else{
 			$('#date_received').css('border','1px solid grey');
 		}
-		
+
 		if(vehicle_temperature == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#vehicle_temp').css('border','2px solid red');
@@ -969,7 +1017,7 @@ use Illuminate\Support\Facades\Auth;
 		}else{
 			$('#vehicle_temperature').css('border','1px solid grey');
 		}
-		
+
 		if(delivery_note_number == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#delivery_note_number').css('border','2px solid red');
@@ -977,9 +1025,9 @@ use Illuminate\Support\Facades\Auth;
 		}else{
 			$('#delivery_note_number').css('border','1px solid grey');
 		}
-		
+
 		$('#msgNotice').html(msg);
-		
+
 		if(good == 1){
 			var formName = '#updateIntakeInfo';
 			var xhttp = new XMLHttpRequest();
@@ -988,25 +1036,25 @@ use Illuminate\Support\Facades\Auth;
 			xhttp.send($(formName).serialize());
 		}
 	});
-	
+
 	function deleteProduct(product_id, cut_id){
 		console.log(product_id);
 		console.log(cut_id);
 	}
-	
+
 	function palletDetail(id){
-		
+
 		$('.palletDetail-' + id).toggle();
 	}
-	
-	
+
+
 	function printIntake(intake_id){
 		$.ajax({
 			headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 			type: "POST",
 			url: 'printIntake.php?intake_id=' + intake_id,
 			type: 'get',
-			success: function( response ) { 
+			success: function( response ) {
 
 				var contents = response;
 				var idname = name;
@@ -1022,7 +1070,7 @@ use Illuminate\Support\Facades\Auth;
 				frameDoc.document.open();
 				frameDoc.document.write('<html><head><meta http-equiv="Content-Type" content="text/html; charset=euc-kr"><title></title>');
 
-	 
+
 
 
 				frameDoc.document.write('</head><body>');
@@ -1034,18 +1082,18 @@ use Illuminate\Support\Facades\Auth;
 				window.frames["frame1"].print();
 				document.body.removeChild(frame1);
 				}, 500);
-				return false; 
+				return false;
 			}
 		});
 	}
-	
+
 	function printContent(el){
 		var restorepage = $('body').html();
 		var printcontent = $('#' + el).clone();
 		$('body').empty().html(printcontent);
 		window.print();
 		// $('body').html(restorepage);
-		
+
 		setTimeout(
 			function() {
 				window.location.reload(1);
@@ -1053,48 +1101,48 @@ use Illuminate\Support\Facades\Auth;
 	}
 
 	function palletDetail(id){
-		
+
 		$('.palletDetail-' + id).toggle();
 	}
-	
+
 	function openAddPallet(intake_id){
-		
+
 		$.get( "ajax/addPalletForm.php?intake_id=" + intake_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
 		});
-		
+
 		// $('#add_to_pallet_id').val(pallet_id);
 		// $('.add_to_pallet_id').html('0000' + pallet_id);
 		$('#box').fadeIn();
 	}
-	
-	
+
+
 	function openAddtoPallet(intake_id, pallet_id){
-		
+
 		$(window).scrollTop(0);
-		
+
 		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);
 		});
-		
+
 		// $('#add_to_pallet_id').val(pallet_id);
 		// $('.add_to_pallet_id').html('0000' + pallet_id);
 		$('#box').fadeIn();
 	}
-	
+
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
 			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 			// console.log(intake_id + '  ' + pallet_id);
 		}
 	}
-	
+
 	// printContent(1);
-	
+
 	function addProductToProduct(intake_id, pallet_id, product_id){
 		$.get( "ajax/addProductToProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id  + "&product_id=" + product_id, function( data ) {
 			$('#box').html(data);
@@ -1102,14 +1150,14 @@ use Illuminate\Support\Facades\Auth;
 
 		$('#box').fadeIn();
 	}
-	
+
 	function printContent(id){
 	   $.ajax({
-		
+
 				type: "POST",
 				url: 'printContent.php?id=' + id,
 				type: 'get',
-				success: function( response ) { 
+				success: function( response ) {
 
 					  var contents = response;
 					 var idname = name;
@@ -1124,13 +1172,13 @@ use Illuminate\Support\Facades\Auth;
 
 				frameDoc.document.open();
 				frameDoc.document.write('<html><head><title></title>');
-			   
+
 			 frameDoc.document.write('<style>table {  border-collapse: collapse;  border-spacing: 0; width:100%; margin-top:20px;} .table td, .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th{ padding:8px 18px;  } .table-bordered, .table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {     border: 1px solid #e2e2e2;} </style>');
-		 
+
 		  // your title
 		   frameDoc.document.title = "Print Content with ajax in php";
-	   
-	   
+
+
 		  frameDoc.document.write('</head><body>');
 				frameDoc.document.write(contents);
 				frameDoc.document.write('</body></html>');
@@ -1140,18 +1188,18 @@ use Illuminate\Support\Facades\Auth;
 					window.frames["frame1"].print();
 					document.body.removeChild(frame1);
 				}, 500);
-				return false; 
+				return false;
 
-		
-		
-		
+
+
+
 				}
 			});
-	  
+
 	}
-	
-	
-	
+
+
+
 </script>
 
 <div class="popup">
@@ -1163,33 +1211,33 @@ use Illuminate\Support\Facades\Auth;
 </html>
 <script>
 	$(document).ready(function(){
-		
+
 		$('.comment').each(function(){
 			$(this).on('keypress',function(e) {
 				if(e.which == 13) {
 					var comment = $(this).val();
 					// comment = comment + " &#10;";
-	
+
 					// console.log('the comment: ' + comment);
-					
-					
-					
+
+
+
 					var productid = $(this).attr('productid');
-					
-					
+
+
 					console.log('the productid: ' + productid);
-					
+
 					$.get("<?php echo $domain; ?>ajax/saveComment.php?comment="+comment+'&productid='+productid, function(data, status){
 						console.log(data);
 					});
 				}
 			});
 		});
-		
+
 		$('#closePalletPopup').click(function(){
 			$('.palletnotepopup').fadeOut();
 		});
-		
+
 		<?php if(request()->input('pallet_id')){ ?>
 			$('.palletnotepopup').fadeIn();
 		<?php } ?>
@@ -1205,7 +1253,7 @@ use Illuminate\Support\Facades\Auth;
 			$(document).ready(function(){
 				$('#closePalletPopup').click(function(){
 					$('.palletnotepopup').fadeOut();
-				
+
 				});
 			});
 		</script>
