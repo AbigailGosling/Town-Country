@@ -1910,13 +1910,14 @@ use Ramsey\Uuid\Type\Decimal;
 			$posLastUpdated = ($pallets['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$pallets['updated_at'])->getTimestamp():null;
 			if ($created_at && $created_at > $lastUpdated) $lastUpdated = $created_at;
 			if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+            if ($pallets['ids'] != ""){
+                $products = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) as `ids`,MAX(`created_at`) as `created_at`,MAX(`updated_at`) as `updated_at` FROM `product` WHERE pallet_id IN (".$pallets['ids'].")")->fetch_assoc();
 
-			$products = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) as `ids`,MAX(`created_at`) as `created_at`,MAX(`updated_at`) as `updated_at` FROM `product` WHERE pallet_id IN (".$pallets['ids'].")")->fetch_assoc();
-
-			$created_at = ($products['created_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['created_at'])->getTimestamp():null;
-			$posLastUpdated = ($products['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['updated_at'])->getTimestamp():null;
-			if ($created_at && $created_at > $lastUpdated) $lastUpdated = $created_at;
-			if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+                $created_at = ($products['created_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['created_at'])->getTimestamp():null;
+                $posLastUpdated = ($products['updated_at'])?DateTime::createFromFormat('Y-m-d H:i:s',$products['updated_at'])->getTimestamp():null;
+                if ($created_at && $created_at > $lastUpdated) $lastUpdated = $created_at;
+                if ($posLastUpdated && $posLastUpdated > $lastUpdated) $lastUpdated = $posLastUpdated;
+            }
 		}
 		return ($lastUpdated)?DateTime::createFromFormat("U",$lastUpdated)->format('Y-m-d H:i:s'):'';
 	}

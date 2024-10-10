@@ -79,8 +79,8 @@ use App\Models\Product;
 			abort(500);
 			die();
 		}
-		loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
-		loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
+		loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
+		loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
 
 		foreach ($basket as $item) {
 

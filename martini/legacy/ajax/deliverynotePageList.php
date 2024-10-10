@@ -4,28 +4,30 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
-	
+
 	$term = request()->input('searchterm');
     $usermodel = User::find(Auth::id());
-    $x = "SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
+    $x = "SELECT GROUP_CONCAT(`id`) as `ids` FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
-    
+
     $customerids = '';
-    
+
     while($row = mysqli_fetch_array($y)){
-        $rowid = $row['id'];
-        $customerids .= " OR completed='1' && customer_id='$rowid'";
+        $rowid = $row['ids'];
+        if ($rowid!= null && $rowid!="")$customerids .= " OR `customer_id` IN ($rowid)";
     }
-    
-    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id = ? OR completed='1' && id LIKE ? $customerids  ORDER BY `id` DESC";
-    
+
+    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && (id = ? OR id LIKE ?";
+    if ($customerids!="") $x.= $customerids;
+    $x.= ") ORDER BY `id` DESC";
+
 	$y = prepareExecuteQuery($x,'ss',[$term,'%'.$term.'%']);
     $count = mysqli_num_rows($y);
-	
+
 	if($count == 0){
 		?><h2 style="color:#fff;font-size:12px;">No delivery notes found</h2><?php
 	}else{
-        
+
         $page_limit = 50;
         $num_of_pages = 1;
         $entry_count = 0;
@@ -37,18 +39,18 @@ use Illuminate\Support\Facades\Auth;
             }
 
             $customer_id = $row['customer_id'];
-			if (!$usermodel->canViewCustomer($customer_id)) continue;		
+			if (!$usermodel->canViewCustomer($customer_id)) continue;
             $date = $row['estimated_delivery_date'];
-            
+
             $date=date_create($date);
             if ($date == false)$date=DateTime::createFromFormat('d/m/Y',"".$row['estimated_delivery_date']);
             if ($date == false) continue;
             $date = date_format($date,"d/m/Y");
-            
+
             $x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";
             $y2 = prepareExecuteQuery($x2);
             $row2 = mysqli_fetch_array($y2);
-                
+
             ?>
             <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
             <a href="deliverynote.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
