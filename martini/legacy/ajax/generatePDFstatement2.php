@@ -46,8 +46,9 @@ if (mysqli_num_rows($customerQueryResult) > 0)
 {
 	$customer = mysqli_fetch_assoc($customerQueryResult);
 	$customerID = $customer['customer_id'];
-	renderPDF($customerID);
-	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE customer_id = ?",'i',[$customerID]);
+	$result = renderPDF($customerID);
+	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE `customer_id` = ?",'i',[$customerID]);
+    if ($result == "error") prepareExecuteQuery("INSERT INTO `mail_queue` (`customer_id`) VALUES (?)",'i',[$customerID]);//move error to back of the queue
     pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:statements_queue >NUL 2>NUL"', 'r'));
 }
 ?>

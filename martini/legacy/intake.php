@@ -634,7 +634,7 @@ use Illuminate\Support\Facades\Auth;
 				if($countPallets >= 1){
 					$x = "SELECT * FROM product WHERE " . $qPallets . " GROUP BY cut_id";
 				}else{
-					// $x = "SELECT * FROM product WHERE id = 0";
+					$x = "SELECT * FROM product WHERE id = -999";
 				}
 
 

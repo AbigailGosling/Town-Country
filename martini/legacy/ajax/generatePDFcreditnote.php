@@ -68,7 +68,7 @@
 
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
-	$header .= '<link href="../css/style.css" rel="stylesheet" type="text/css">';
+	$header .= '<link href="legacy/css/style.css" rel="stylesheet" type="text/css">';
 	$css ="
 		body{
 			font-family: 'Roboto', sans-serif;
