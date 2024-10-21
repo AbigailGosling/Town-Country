@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Log;
 
 function get_customer_soa_results($customer_id,$adv)
 {
+    $now = time();
+
     $overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',prepareExecuteQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
     $customer = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
     $customer = $customer->fetch_assoc();
@@ -18,15 +20,15 @@ function get_customer_soa_results($customer_id,$adv)
         $knownPickIDs[] = $picksheet['id'];
     }
 
-    $invoiceLastPaidQ = prepareExecuteQuery("SELECT `invoice_id`,MAX(`created_at`) AS `created_at` FROM `invoice_payments` WHERE `invoice_id` IN (".implode(",",$knownPickIDs).") GROUP BY `invoice_id`");
-    $invoiceLastPaidQ = $invoiceLastPaidQ->fetch_all(MYSQLI_ASSOC);
     $invoicesLastPaid = array();
-    foreach($invoiceLastPaidQ as $invoiceLastPaid){
-        $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
-    }
-    $now = time();
     if (count($knownPickIDs)>0)
     {
+        $invoiceLastPaidQ = prepareExecuteQuery("SELECT `invoice_id`,MAX(`created_at`) AS `created_at` FROM `invoice_payments` WHERE `invoice_id` IN (".implode(",",$knownPickIDs).") GROUP BY `invoice_id`");
+        $invoiceLastPaidQ = $invoiceLastPaidQ->fetch_all(MYSQLI_ASSOC);
+
+        foreach($invoiceLastPaidQ as $invoiceLastPaid){
+            $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
+        }
         $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
         $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
     }

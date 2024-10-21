@@ -62,7 +62,7 @@ use Illuminate\Support\Facades\Auth;
 			else {
 				$x = "UPDATE `product` SET weightnote=? WHERE id IN $product_id";
 				$y = prepareExecuteQuery($x,'s',[$weightnote]);
-				loggedDataChange('product_note',$iProdID,$weightnote);
+				loggedDataChange('product_note',$product_id,$weightnote);
 			}
 		}
 
