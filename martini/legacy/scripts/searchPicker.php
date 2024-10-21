@@ -25,7 +25,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
     function autoToggleRow(classs,thisclass, productid){
-        
+
         var ele = $('.' + thisclass);
 
         toggleRow(classs,ele, productid);
@@ -60,13 +60,13 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 	        <th>Volume</th>
 	        <th>Cost</th>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
-	        <th class="searchRContent__plus"></th> 
+	        <th class="searchRContent__plus"></th>
         </tr>
     </thead>
 <?php
 	require(__DIR__.'/../functions.php');
     $initial_pallet_id = $pallet_id;
-     
+
     $ARRAY_CUTS = array();
 
     // ??: Gets the same cuts twice here #1
@@ -76,13 +76,13 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     if($species_id != '' && $cutgroup_id != ''){ # if these two are posted then they've used the species and cutgroup dropdown
         // ??: and here #2
-        // $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup 
+        // $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id); # get array of all the cut_id's from the cutgroup
         $ids = implode(',', $ARRAY_CUTS);
 
         if(count($ARRAY_CUTS) > 0){ # seems to still get here if i dont do this if??
             array_push($whereArray, 'product.cut_id IN ('.$ids.')');
         }
-        
+
     }else if(($species_id != 'null' && !empty($species_id)) && empty($cutgroup_id)){
         array_push($whereArray, "cuts.species_id = ".$species_id);
     }
@@ -106,7 +106,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     }
 
     if($intake_id != ''){ # if this is posted then theyve entered a intake id
-        $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup 
+        $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup
         $ids = implode(',', $ARRAY_PALLET_IDS);
 
         // if(!empty($ARRAY_PALLET_IDS)){
@@ -117,7 +117,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         //     }
         // }
 
-        array_push($whereArray, 'pallet.id IN ('.$ids.')');
+        if ($ids != "")array_push($whereArray, 'pallet.id IN ('.$ids.')');
     }
     if ($brand != '' && $brand != null && $brand != 'null'){
         array_push($whereArray, "product.brand_id = ". $brand ."");
@@ -126,7 +126,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         array_push($whereArray, "product.nationality_id = ". $nationality ."");
     }
     array_push($whereArray, "weights.status_id != 1");
-    
+
     $whereString = implode(' && ',$whereArray);
 
     $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
@@ -136,9 +136,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     WHERE $whereString";
 
     $productsY = prepareExecuteQuery($productsX);
-     
+
     $totalW = 0;
-    
+
     $products2 = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     $products = [];
     $knownCombo = [];
@@ -156,7 +156,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     usort($products, function ($item1,$item2){
         return $item2['cut_id'] <=> $item1['cut_id'];
     });
-    $products2 = null; 
+    $products2 = null;
     $productsCount = count($products);
     $overallQuantity =0;
     $overallWeight =0;
@@ -184,19 +184,19 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $ubtext = 'N/A';
         }
 
-        
+
         $productsX2 = "SELECT * , product.id productid
-        FROM `product` 
-        INNER JOIN `pallet` 
-        ON product.pallet_id=pallet.id 
-        WHERE pallet.intake_id = ? 
+        FROM `product`
+        INNER JOIN `pallet`
+        ON product.pallet_id=pallet.id
+        WHERE pallet.intake_id = ?
         && product.cut_id = ?
 		&& product.nationality_id = ?
         ORDER BY product.cut_id DESC";
         $productsY2 = prepareExecuteQuery($productsX2,'iss',[$intake_id,$cut_id,$nationality_id]);
         $products2Count = mysqli_num_rows($productsY2);
-        
-        
+
+
         ###
         $products2 =  mysqli_fetch_all($productsY2, MYSQLI_ASSOC);
 
@@ -210,7 +210,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $product2_quantity = 0;
         $startdates = array();
         $enddates = array();
-        foreach ($products2 as $product2) 
+        foreach ($products2 as $product2)
         {
             $product2_palletids[]= $product2['pallet_id'];
             $product2_cutids[]= $product2['cut_id'];
@@ -222,7 +222,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                 $this_row_weight = weightSoldFromProductID($product2['productid']);
             }
             if($product2['grosspallet'] == 1){
-                if($this_row_weight != 0){ 
+                if($this_row_weight != 0){
                     $product2_quantity = $product2_quantity + $numOfWeights;
                     }
             }
@@ -242,11 +242,11 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                         $enddates[]=$product2['range_extension'];
                     }
                 }
-                
+
             }
 
         }
-        
+
         $uniqueBrands = count(array_unique($product2_brands));
         $uniqueNationalities = count(array_unique($product2_nationalities));
         $uniqueTemperatures = count(array_unique($product2_temperatures));
@@ -292,11 +292,11 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $toDate2 = DateTime::createFromFormat('d/m/Y',$latestEndDate)->getTimestamp();
             if ($toDate2 < $toDate) $toDate = $toDate2;
             $cutResult= CutGroupNationalityDate::lookupFromProductID($product2_productids[0]);
-            
+
             if ($temp_id == 1)
             {
                 $bgCol = '';
-                $now = time();         
+                $now = time();
                 if (isset($cutResult['warning']) && $cutResult['warning'] != "")
                 {
                     $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
@@ -321,21 +321,21 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     $bgCol = 'style="background-color:darkred"';
                     $state = 2;
                 }
-            }        
+            }
         }
         if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
         if($product2_quantity != 0) $quantityTotal = $product2_quantity;
         else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
-        
+
         if($quantityTotal < 1){continue;}
         ###
-        
-        $totalW += weightSoldFromProductID($productsRow['productid']);           
+
+        $totalW += weightSoldFromProductID($productsRow['productid']);
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
 
         $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
-        
+
         if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){
             $locked = true;
             $lockedT = "y";
@@ -365,7 +365,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     <?php } else {?></div><?php }?>
 			</td>
             <td colspan="1">
-             &nbsp;		 
+             &nbsp;
             </td>
             <td colspan="1"  onclick=""></td>
            <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>','<?php echo $ubbb;?>','<?php echo $lockedT; ?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
@@ -375,7 +375,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             // ??: No need to call the database on every loop.
             // ??: The temperatures are just a few entries.
             // ??: Better to get all the entries in the beginning
-                       
+
                 if($uniqueTemperatures > 1){
                     ?><td style="background:grey;color:#fff;padding:5px;">Mixed</td><?php
                 }else{
@@ -412,18 +412,18 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     }
                 ?>
             </td>
-			
+
             <?php
                 if($ubbb != 2){
-                        
+
                     if($earliestStartDate != "" && $latestEndDate != "") echo '<td>'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate2.'</td>';
                     else echo '<td>--</td>';
                 }else{
                     echo '<td>'.$ubtext.'</td>';
                 }
             ?>
-            <td class="bold"><?php 
-                
+            <td class="bold"><?php
+
                 if($productsRow['grosspallet'] == 1){
                     echo '[GT] ';
                 }
@@ -446,7 +446,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         </tr>
     <?php  ?>
 
-    <?php 
+    <?php
     }
     ?>
     <tr class="searchAccordTitle">
@@ -456,7 +456,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         </div>
     </td>
     <td colspan="1">
-     &nbsp;		 
+     &nbsp;
     </td>
     <td colspan="1"  onclick=""></td>
    <td width="40" align="center"></td>
@@ -479,7 +479,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
 <script type="text/javascript">
 
- 
+
 function getCookie(name) {
 var value = "; " + document.cookie;
 var parts = value.split("; " + name + "=");
@@ -499,7 +499,7 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, eve
         var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
         var howManyLeft = parseInt(num);
         console.log('Selected: ' + quantitySelected + ' left: ' + howManyLeft);
-        
+
         var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
         if(getCookie(COOKIE_NAME)){
             Swal.fire({
@@ -510,7 +510,7 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, eve
                 showConfirmButton: false,
                 dangerMode: true,
                 showCloseButton: true
-            });            
+            });
         }else{
             if(howManyLeft >= quantitySelected){
                 addToSheet(product_id, pallet_id, cut_id, theClass, event);
@@ -528,7 +528,7 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, eve
         }
     });
 }
- 
+
 
 function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
@@ -547,18 +547,18 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
         if(getCookie(COOKIE_NAME)){
             // console.log('we got cookie');
-            
+
             var howMany = getCookie(COOKIE_NAME);
-            
+
             var x = Number(howMany)+Number(q);
             document.cookie = COOKIE_NAME + "=" + x;
             // console.log(howMany);
-            
+
         }else{
             // console.log('setting cookie!');
             document.cookie = COOKIE_NAME + "=" + q;
         }
-            
+
         var howManyBefore = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
 
         if(howManyBefore > q){
@@ -588,14 +588,14 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
     }
 
 }
- 
+
 function toggleWeight(weightdiv){
 if($(weightdiv).hasClass('activeWeight')){
     var weight = $(weightdiv).attr('weight');
     var product_id = $(weightdiv).attr('product_id');
     calculateWeight(-weight);
     removeFromList(product_id);
-    
+
 }else{
     var weight = $(weightdiv).attr('weight');
     var product_id = $(weightdiv).attr('product_id');
@@ -627,17 +627,17 @@ $(document).ready(function(){
         console.log($(this)[0].scrollHeight)
         $(this).height(47)
     })
- 
+
 $.each(document.cookie.split(/; */), function()  {
   var splitCookie = this.split('=');
 
-    
+
     if(splitCookie[0].includes('quantity-')){
         console.log(splitCookie[0]);
         var q = splitCookie[1];
-        
+
         var howManyBefore = $('#' + splitCookie[0]).children('option').length;
-        
+
         if(howManyBefore > q){
             for(i=0; i < q; i++){
                 $('#' + splitCookie[0] + " option:last").remove();
@@ -648,12 +648,12 @@ $.each(document.cookie.split(/; */), function()  {
                 $('#' + splitCookie[0]).parent().parent().css('opacity','0.3');
                 $('#' + splitCookie[0]).parent().parent().css('pointer-events','none');
             }
-        }	
+        }
     }
 });
 
- 
- 
+
+
 
 $('.overviewcomment').each(function(){
     $(this).on('keypress', function(e){
@@ -661,17 +661,17 @@ $('.overviewcomment').each(function(){
             var currentComment = $(this).val();
             //currentComment += "#";
             $(this).val(currentComment);
-            
+
             console.log('CurrentComment: ' + currentComment);
              // var pallet = $(this).parent().find('.pallet').val();
-            
+
             var productid = $(this).attr('productid');
             // var productid = 10;
-            
+
             // $.get("ajax/saveCommentPicker.php?comment="+currentComment+'&productid=1'+productid, function(data, status){
                 // console.log(data);
             // });
-            
+
             $.ajax({
                 method: "POST",
                 url: "ajax/saveCommentPicker.php",
@@ -682,14 +682,14 @@ $('.overviewcomment').each(function(){
             }).done(function( result ) {
                 console.log(result);
             });
-            
+
 
         }
     });
 });
 
 $('.quantitybox').change(function(){
-                 
+
      $('.subrow').removeClass('activeRedRow');
     $(this).parent().parent().addClass('activeRedRow');
  });
@@ -701,7 +701,7 @@ padding:10px;
 border:2px solid #cacaca;
 display:inline-block;
 cursor:pointer;
-margin-bottom:5px; 
+margin-bottom:5px;
 }
 .activeWeight { background:#3faddd !important; color:#fff !important}
 .weightbox:hover{
@@ -709,7 +709,7 @@ background:#cacaca;
 }
 </style>
 
-<?php 
+<?php
 function perfcheck()
 {
     global $timeStamp;

@@ -42,6 +42,8 @@ class SLabsEmailer {
         $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
         foreach($toEmails as $email)
         {
+            $trimmed = trim($email);
+            if ($trimmed == "")continue;
 
             //Set up the socketlabs client
             $message = new BasicMessage();
@@ -54,17 +56,22 @@ class SLabsEmailer {
             if ($pathToFile != '' && $fileName !='')
             {
                 $fullExplainedPath = "$pathToFile/$fileName";
-                $attachment = Attachment::createFromPath(
-                    join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),
-                    $fileName,
-                    "APPLICATION/PDF"
-                );
-                $message->attachments[] = $attachment;
+                try {
+                    $attachment = Attachment::createFromPath(
+                        join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),
+                        $fileName,
+                        "APPLICATION/PDF"
+                    );
+                    $message->attachments[] = $attachment;
+                }
+                catch (\Exception $exc){
+                    Log::error($exc,[$customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile,$fileName,$document_id]);
+                    return "error";
+                }
             }
             //Generate a Unique Identifier for this Email
             $mid = self::generate_uuid();
             $message->messageId = $mid;
-            $trimmed = trim($email);
 
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', ?, NOW())";
             prepareExecuteQuery($sql,'s',[$fullExplainedPath]);
@@ -79,7 +86,8 @@ class SLabsEmailer {
             }
             catch (\Exception $e)
             {
-                Log::error($e);
+                Log::error($e,[$customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile,$fileName,$document_id]);
+                return "error";
             }
 
         }

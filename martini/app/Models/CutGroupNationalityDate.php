@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 /**
  * Class CutGroupNationalityDate
- * 
+ *
  * @property int $id
  * @property int $nationality_id
  * @property int $cutgroup_id
- * 
+ *
  * @property Nationality $nationality
  * @property CutGroup $cutgroup
- * 
+ *
  * @property int $warning
  * @property int $dander
  *
@@ -39,7 +39,7 @@ class CutGroupNationalityDate extends Model
 		'warning' => 'int',
 		'danger' => 'int',
 	];
-	
+
 	protected $fillable = [
 		'nationality_id',
 		'cutgroup_id',
@@ -59,19 +59,27 @@ class CutGroupNationalityDate extends Model
     {
         return $this->hasOneThrough(CutGroup::class, Species::class,"id","species_id","cutgroup_id");
     }
-	public function getSpeciesID():int 
+	public function getSpeciesID():int
 	{
 		return (int)$this->cutgroup()->get()->first()['species_id'];
 	}
+    static $STORED_RESULTS = array();
 	static function lookupFromProductID(int $id):CutGroupNationalityDate|null
 	{
-		return self::lookupFromProduct(Product::find($id));
+
+        if (array_key_exists($id,static::$STORED_RESULTS)) return static::$STORED_RESULTS[$id];
+		else
+        {
+            $result = static::lookupFromProduct(Product::find($id));
+            $STORED_RESULTS[$id] = $result;
+            return $result;
+        }
 	}
 	static function lookupFromProduct(Product $product):CutGroupNationalityDate|null
 	{
 		/** @var Cut $cut */
 		$cut = Cut::find($product->cut_id);
-		$r = self::where(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$product->nationality_id]);
+		$r = static::where(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$product->nationality_id]);
 		$re = $r->first();
 		return $re;
 	}
