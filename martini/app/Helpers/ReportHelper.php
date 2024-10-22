@@ -71,6 +71,7 @@ class ReportHelper
                 $filters['intake.id'] = $INTAKE_ID;
                 $ids = array_column($q->get()->toArray(),'id');
                 $ids = Pallet::where("intake_id",$INTAKE_ID)->pluck('id')->toArray();
+                $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
@@ -88,6 +89,7 @@ class ReportHelper
                 $filters['health_mark.id'] = $HEALTH_ID;
                 $ids = array_column($q->get()->toArray(),'id');
                 $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
@@ -830,8 +832,11 @@ class ReportHelper
             static::row_merge($result,$item);
 
             $col = "intake.health_id";
-            $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
-            static::row_merge($result,$item);
+            if ($result->$col!=-1)
+            {
+                $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
+                static::row_merge($result,$item);
+            }
         }
 
         return true;
