@@ -1,9 +1,14 @@
 <?php
 namespace App\Helpers;
 
+use App\Models\Cut;
+use App\Models\Intake;
+use App\Models\Pallet;
+use App\Models\Product;
 use App\Models\Report;
 use App\Models\ReportColumn;
 use App\Models\ReportTable;
+use App\Models\Species;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Query\Builder;
@@ -27,12 +32,223 @@ class ReportHelper
     private static array $cuts;
     private static array $cutgroups;
     private static array $species;
+    private static array $health_marks;
 
     /** @var Connection $conn */
     private static $conn;
     /** @var PDO $pdo */
     private static $pdo;
+    public static function filterBuilder(array &$INTERESTED_PICKS,
+    string $INVOICE_ID = null,
+    string $INTAKE_ID = null,
+    string $PALLET_ID = null,
+    string $USER_ID = null,
+    string $CUSTOMER_ID = null,
+    string $SPECIES_ID = null,
+    string $CUTGROUP_ID = null,
+    string $COOLING_ID = null,
+    string $BRAND_ID = null,
+    string $NATIONALITY_ID = null,
+    string $SUPPLIER_ID = null,
+    string $HEALTH_ID = null,
+    string $INTERNAL_NUM = null,
+    string $IMPORT_NUM = null
+    ):array{
+        $INTERESTED_PRODUCTIDS=[];
+        $filters=[];
+        if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0')
+        {
+            $filters['pickerSheets.id'] = $INVOICE_ID;
+            $INTERESTED_PICKS[] = $INVOICE_ID;
+        }
 
+        if ($INTAKE_ID != null && $INTAKE_ID != '' && $INTAKE_ID != '...' && $INTAKE_ID != '0')
+        {
+
+            $q = Intake::find($INTAKE_ID);
+            if ($q)
+            {
+                $filters['intake.id'] = $INTAKE_ID;
+                $ids = array_column($q->get()->toArray(),'id');
+                $ids = Pallet::where("intake_id",$INTAKE_ID)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+
+        if ($HEALTH_ID != null && $HEALTH_ID != '' && $HEALTH_ID != '...' && $HEALTH_ID != '0')
+        {
+
+            $q = Intake::where("health_id",$HEALTH_ID);
+            if ($q)
+            {
+                $filters['health_mark.id'] = $HEALTH_ID;
+                $ids = array_column($q->get()->toArray(),'id');
+                $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+        if ($INTERNAL_NUM != null && $INTERNAL_NUM != '' && $INTERNAL_NUM != '...' && $INTERNAL_NUM != '0')
+        {
+
+            $q = Intake::where('internal_num',$INTERNAL_NUM);
+            if ($q)
+            {
+                $filters['intake.internal_num'] = $INTERNAL_NUM;
+                $ids = array_column($q->get()->toArray(),'id');
+                $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+        if ($IMPORT_NUM != null && $IMPORT_NUM != '' && $IMPORT_NUM != '...' && $IMPORT_NUM != '0')
+        {
+
+            $q = Intake::where("import_num",$IMPORT_NUM);
+            if ($q)
+            {
+                $filters['intake.import_num'] = $IMPORT_NUM;
+                $ids = array_column($q->get()->toArray(),'id');
+                $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+        if ($PALLET_ID != null && $PALLET_ID != '' && $PALLET_ID != '...' && $PALLET_ID != '0')
+        {
+            $filters['pallet.id'] = $PALLET_ID;
+            $ids = Product::where("pallet_id",$PALLET_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+            }
+        }
+
+        if ($USER_ID != null && $USER_ID != '' && $USER_ID != '...' && $USER_ID != '0') $filters['pickerSheets.user_from_id'] = $USER_ID;
+
+        if ($CUSTOMER_ID != null && $CUSTOMER_ID != '' && $CUSTOMER_ID != '...' && $CUSTOMER_ID != '0') $filters['customers.id'] = $CUSTOMER_ID;
+
+        if ($SPECIES_ID != null && $SPECIES_ID != '' && $SPECIES_ID != '...' && $SPECIES_ID != '0')
+        {
+            $ids = Cut::where("species_id",$SPECIES_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['species.id'] = $SPECIES_ID;
+                $ids = Product::whereIn("cut_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+
+        if ($CUTGROUP_ID != null && $CUTGROUP_ID != '' && $CUTGROUP_ID != '...' && $CUTGROUP_ID != '0')
+        {
+            $ids = Cut::where("cutgroup_id",$CUTGROUP_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['cuts.cutgroup_id'] = $CUTGROUP_ID;
+                $ids = Product::whereIn("cut_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
+        }
+
+        if ($COOLING_ID != null && $COOLING_ID != '' && $COOLING_ID != '...' && $COOLING_ID != '0')
+        {
+
+            $ids = Product::where("cooling_id",$COOLING_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['product.cooling_id'] = $COOLING_ID;
+                if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+            }
+        }
+
+        if ($BRAND_ID != null && $BRAND_ID != '' && $BRAND_ID != '...' && $BRAND_ID != '0')
+        {
+            $ids = Product::where("brand_id",$BRAND_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['brands.id'] = $BRAND_ID;
+                if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+            }
+        }
+
+        if ($NATIONALITY_ID != null && $NATIONALITY_ID != '' && $NATIONALITY_ID != '...' && $NATIONALITY_ID != '0')
+        {
+            $ids = Product::where("nationality_id",$NATIONALITY_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['nationality.id'] = $NATIONALITY_ID;
+                if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+            }
+        }
+
+        if ($SUPPLIER_ID != null && $SUPPLIER_ID != '' && $SUPPLIER_ID != '...' && $SUPPLIER_ID != '0')
+        {
+            $ids = Intake::where("supplier_id",$SUPPLIER_ID)->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['supplier.id'] = $SUPPLIER_ID;
+                $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
+                    if (count($ids)>0)
+                    {
+                        if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                        else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    }
+                }
+            }
+        }
+
+        if (count($INTERESTED_PRODUCTIDS)>0)
+        {
+            $INTERESTED_PRODUCTIDS = static::custom_unique($INTERESTED_PRODUCTIDS);
+            $q = DB::connection("tandc_live")->select("SELECT DISTINCT `pickersheet_id` FROM `pickeritems`  USE INDEX (`product_pickersheet`) WHERE `product_id` IN (".implode(",",$INTERESTED_PRODUCTIDS).") ORDER BY `pickersheet_id`");
+            $picks = array();
+            foreach ($q as $r)
+            {
+                $picks[] = $r->pickersheet_id;
+            }
+            if (count($picks)> 0)
+            {
+                $INTERESTED_PICKS = array_merge($INTERESTED_PICKS,$picks);
+            }
+
+        }
+        if (count($INTERESTED_PICKS)>0)
+        {
+            $INTERESTED_PICKS = static::custom_unique($INTERESTED_PICKS);
+            sort($INTERESTED_PICKS,SORT_NUMERIC);
+        }
+        return $filters;
+    }
     public static function getCollectionsForReportRange(Report $report,string $dateType,Carbon $start = NULL,Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL, array $filters = NULL):array
     {
         ini_set('memory_limit', '4G');
@@ -68,16 +284,12 @@ class ReportHelper
                 foreach ($collection as $item)
                 {
 					$original = 'original_'.$field;
-                    if (property_exists($item,$field) || property_exists($item,$original))
+                    foreach (explode(",",$values) as $value)
                     {
-
-                        foreach (explode(",",$values) as $value)
+                        if ((property_exists($item,$field)&&$item->$field == $value) || (property_exists($item,$original)&&$item->$original == $value))
                         {
-                            if ($item->$field == $value || $item->$original == $value)
-                            {
-                                $rolling->add($item);
-                                break;
-                            }
+                            $rolling->add($item);
+                            break;
                         }
                     }
                 }
@@ -547,6 +759,7 @@ class ReportHelper
         static::$cuts = static::$conn->table("cuts")->select("cuts.*")->get()->toArray();
         static::$cutgroups = static::$conn->table("cutgroups")->select("cutgroups.*")->get()->toArray();
         static::$species = static::$conn->table("species")->select("species.*")->get()->toArray();
+        static::$health_marks = static::$conn->table("health_mark")->select("health_mark.*")->get()->toArray();
 
     }
     private static function bulkMergeIn(&$result,$full = true):bool {
@@ -614,6 +827,10 @@ class ReportHelper
 
             $col = "cuts.species_id";
             $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
+            static::row_merge($result,$item);
+
+            $col = "intake.health_id";
+            $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
             static::row_merge($result,$item);
         }
 

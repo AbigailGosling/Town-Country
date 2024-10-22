@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Class ReportTable
- * 
+ *
  * @property int $id
  * @property string $name
  * @property string $mode
@@ -31,11 +31,15 @@ class ReportTable extends Model
         'isSup',
 	];
     private Collection $columns;
-    public function getColumns():Collection 
+    public function getColumns():Collection
     {
         if (!isset($this->columns)){
             $reportColIDs = ReportTableColumn::where(["table_id"=>$this->id])->orderBy("order")->get()->pluck("column_id")->toArray();
-            $this->columns = ReportColumn::whereIn('id',$reportColIDs)->get();
+            $this->columns = new Collection();
+            foreach($reportColIDs as $cid)
+            {
+                $this->columns->add(ReportColumn::findOrFail($cid));
+            }
         }
         return $this->columns;
     }

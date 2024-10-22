@@ -4,6 +4,7 @@ use App\Http\Controllers\ActiveHolidayCoverController;
 use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\CutGroupNationalityDateController;
 use App\Http\Controllers\DropdownController;
+use App\Http\Controllers\HealthMarkController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
@@ -54,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('users', 'App\Http\Controllers\UserController');
 
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
-    
+
     Route::resource('sites', 'App\Http\Controllers\SiteController');
     Route::get('/sites/{site}/locations/create', [LocationController::class, 'create'])->name('locations.create');
     Route::post('/sites/{site}/locations/store', [LocationController::class, 'store'])->name('locations.store');
@@ -65,10 +66,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('deleteholiday/{holiday}', [ActiveHolidayCoverController::class, 'destroy'])->name('holidays.delete');
     Route::resource('holidays', 'App\Http\Controllers\ActiveHolidayCoverController');
-    
+
     Route::post('/cutdates/search', [CutGroupNationalityDateController::class, 'search'])->name('cutdates.search');
     Route::get('api/fetch-cutgroups', [DropdownController::class, 'fetchCutGroups']);
-    
+
     Route::get('/customers/overrides', [CustomerOverridesController::class, 'index'])->name('overrides.index');
     Route::get('/customers/overrides/search', [CustomerOverridesController::class, 'search'])->name('overrides.search');
     Route::get('/customers/overrides/edit/{customer}', [CustomerOverridesController::class, 'edit'])->name('overrides.edit');
@@ -77,6 +78,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/report/{report}', [ReportController::class, 'show'])->name('report.show');
     Route::post('/report/{report}', [ReportController::class, 'show'])->name('report.show');
+
+    Route::get('health_marks/search', [HealthMarkController::class, 'search'])->name('health_marks.search');
+    Route::resource('health_marks', 'App\Http\Controllers\HealthMarkController');
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

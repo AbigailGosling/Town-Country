@@ -1,6 +1,7 @@
 <?php
 global $processed;
 $processed = [];
+$cutgroupsSorted =[];
 if (!isset($dateType)) $dateType = "assembled";
 ?>
 <x-app-layout>
@@ -13,8 +14,10 @@ if (!isset($dateType)) $dateType = "assembled";
     <form align="left" method="POST" action="{{route('report.show',[$report->id])}}">
     {{ method_field('POST') }}
     @csrf
-        <x-form>
-            <x-form-section columns="3">
+        <x-xlform>
+            <x-xlform-section>
+            </x-xlform-section>
+            <x-xlform-section>
                 <div>
                     <x-input-label for="start" :value="__('Start')"/>
 
@@ -29,8 +32,6 @@ if (!isset($dateType)) $dateType = "assembled";
 
                     <x-input-error :messages="$errors->get('end')" class="mt-2"/>
                 </div>
-            </x-form-section>
-            <x-form-section columns="3">
                 <div>
                     <x-input-label for="dateType" :value="__('Date Type')"/>
                     <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="dateType" name="dateType">
@@ -41,7 +42,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-error :messages="$errors->get('selector')" class="mt-2"/>
                 </div>
                 <div>
-                    <x-input-label for="selector" :value="__('Select View')"/>
+                    <x-input-label for="selector" :value="__('View')"/>
                     <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="selector" name="selector">
                         @foreach($reports as $item)
                             <option value="{{$item->id}}" @if($item->id == $report->id) selected @endif>{{$item->name}}</option>
@@ -49,7 +50,130 @@ if (!isset($dateType)) $dateType = "assembled";
                     </select>
                     <x-input-error :messages="$errors->get('selector')" class="mt-2"/>
                 </div>
-            </x-form-section>
+                <div>
+                    <x-input-label for="user_id" :value="__('User')"/>
+                    <select id="user_id" name="user_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($users as $user)
+                        <option value="{{$user->id}}" @if ($user_id==$user->id) selected @endif>{{$user->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('user_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="customer_id" :value="__('Customer')"/>
+                    <select id="customer_id" name="customer_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($customers as $customer)
+                        <option value="{{$customer->id}}" @if ($customer_id==$customer->id) selected @endif>{{$customer->businessname}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('customer_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="picksheet_id" :value="__('Invoice ID')"/>
+                    <x-text-input id="picksheet_id" class="block mt-1 w-full" type="number" name="pickersheet_id" :value="$pickersheet_id"/>
+                    <x-input-error :messages="$errors->get('picksheet_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="intake_id" :value="__('Intake ID')"/>
+                    <x-text-input id="intake_id" class="block mt-1 w-full" type="number" name="intake_id" :value="$intake_id"/>
+                    <x-input-error :messages="$errors->get('intake_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="pallet_id" :value="__('Pallet ID')"/>
+                    <x-text-input id="pallet_id" class="block mt-1 w-full" type="number" name="pallet_id" :value="$pallet_id"/>
+                    <x-input-error :messages="$errors->get('pallet_id')" class="mt-2"/>
+                </div>
+            </x-xlform-section>
+            <x-xlform-section>
+                <div>
+                    <x-input-label for="species_id" :value="__('Species')"/>
+                    <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="species_id" name="species_id">
+                        <option value="" selected></option>
+                        @foreach ($species as $specie)
+                        <option value="{{$specie->id}}" @if ($species_id==$specie->id) selected @endif>{{$specie->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('species_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="cutgroup_id" :value="__('Cut Group')"/>
+                    <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="cutgroup_id" name="cutgroup_id">
+                        <option value="" selected></option>
+                        @foreach ($cut_groups as $cut_group)
+                        <?php
+                            if (!array_key_exists($cut_group->species_id,$cutgroupsSorted)) $cutgroupsSorted[$cut_group->species_id] = [];
+                            $cutgroupsSorted[$cut_group->species_id][$cut_group->id]=$cut_group->name;
+                        ?>
+                        @if ($species_id==$cut_group->species_id)
+                        <option value="{{$cut_group->id}}" @if ($cutgroup_id==$cut_group->id) selected @endif>{{$cut_group->name}}</option>
+                        @endif
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('cut_group')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="brand_id" :value="__('Brand')"/>
+                    <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="brand_id" name="brand_id">
+                        <option value="" selected></option>
+                        @foreach ($brands as $brand)
+                        <option value="{{$brand->id}}" @if ($brand_id==$brand->id) selected @endif>{{$brand->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('brand_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="supplier_id" :value="__('Supplier')"/>
+                    <select id="supplier_id" name="supplier_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($suppliers as $supplier)
+                        <option value="{{$supplier->id}}" @if ($supplier_id==$supplier->id) selected @endif>{{$supplier->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('supplier_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="nationality_id" :value="__('Nationality')"/>
+                    <select id="nationality_id" name="nationality_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($nationalities as $nationality)
+                        <option value="{{$nationality->id}}" @if ($nationality_id==$nationality->id) selected @endif>{{$nationality->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('nationality_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="cooling_id" :value="__('Tempurature')"/>
+                    <select id="cooling_id" name="cooling_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($tempuratures as $tempurature)
+                        <option value="{{$tempurature->id}}" @if ($cooling_id==$tempurature->id) selected @endif>{{$tempurature->temperature}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('cooling_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="health_id" :value="__('Health Mark')"/>
+                    <select id="health_id" name="health_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
+                        <option value="" selected></option>
+                        @foreach ($health_marks as $health_mark)
+                        <option value="{{$health_mark->id}}" @if ($health_id==$health_mark->id) selected @endif>{{$health_mark->name}}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('health_id')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="internal_num" :value="__('T&C Number')"/>
+                    <x-text-input id="internal_num" class="block mt-1 w-full" type="text" name="internal_num" :value="$internal_num"/>
+                    <x-input-error :messages="$errors->get('internal_num')" class="mt-2"/>
+                </div>
+                <div>
+                    <x-input-label for="import_num" :value="__('Customs Import Entry')"/>
+                    <x-text-input id="customs" class="block mt-1 w-full" type="text" name="import_num" :value="$import_num"/>
+                    <x-input-error :messages="$errors->get('import_num')" class="mt-2"/>
+                </div>
+            </x-xlform-section>
             <!-- Form Action Buttons -->
             <x-slot name="buttons">
                 <x-form-button title="Search" background="green" iconClass="fa-circle-arrow-right" :submit="true">
@@ -57,7 +181,7 @@ if (!isset($dateType)) $dateType = "assembled";
                 <x-form-button id="export" title="Loading..." background="green" iconClass="fa-file-spreadsheet" :disable="true">
                 </x-form-button>
             </x-slot>
-    </x-form>
+    </x-xlform>
     </form>
     </div>
     <div>
@@ -70,7 +194,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     $data = $dataRanges[$index];
                     $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
                     if(count($data)==0 && $index!=0)continue;
-                    ?>
+                ?>
                 @if ($index%2==0)
                 <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
                 @else
@@ -121,11 +245,26 @@ if (!isset($dateType)) $dateType = "assembled";
 @stack('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.1/xlsx.full.min.js"></script>
 <script>
+    setTimeout(readyEvent, 1);
+    let cutrgoupsSorted = {!!json_encode($cutgroupsSorted)!!}
+
      function readyEvent() {
         $("#export").css("pointer-events","auto");
         $("#export-text").text(" Export ");
+        $("#species_id").on('change',speciesIDChanged);
      }
-     setTimeout(readyEvent, 1);
+
+     function speciesIDChanged(event){
+        console.log(event.target.value);
+        let cutSelector = $("#cutgroup_id");
+        cutSelector.empty();
+        cutSelector.append($("<option></option>").attr("value", "").text("").attr("disabled", true).attr("selected", true));
+        $.each(cutrgoupsSorted[event.target.value], function(key,value) {
+            cutSelector.append($("<option></option>").attr("value", key).text(value));
+        });
+        console.log(event.target.value);
+     }
+
      function changed(e){
         var d = $(e).attr('id');
         d = d.split("_");
