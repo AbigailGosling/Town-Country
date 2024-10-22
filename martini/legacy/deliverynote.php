@@ -11,18 +11,18 @@ $s = (int)(microtime(true));
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
-	
+
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
 	$pickSheetRow = $y->fetch_assoc();
-	
+
 	$customer_id = $pickSheetRow['customer_id'];
-	
+
 	$x2 = "SELECT * FROM `customers` WHERE id=?";
 	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-	
-	$customerRow = $y2->fetch_assoc(); 
-	
+
+	$customerRow = $y2->fetch_assoc();
+
 	if(request()->input('deleteInternalDocument') !== null && $user['user_type'] == 'A'){
 		$internal_doc_id = request()->input('deleteInternalDocument');
 		$pickersheet_id = request()->input('id');
@@ -42,14 +42,14 @@ $s = (int)(microtime(true));
 
 </script>
 	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
-<main class="int int--extra-padding">	
+<main class="int int--extra-padding">
 <?php
 	if ($creditCheck['overcredit'] && !$customerRow['allowPrint']) {
 		$admin_email = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE document_id = ? AND `type` = ?",'is',[$pickersheet_id,SLabsEmailerType::CrdtAlert]);
 		if ($admin_email->num_rows == 0)
 		{
 			$admin_email = prepareExecuteQuery("SELECT `key_value` FROM `system_settings` WHERE `key_name` = 'CREDIT_ALERT_EMAIL'");
-			
+
 			$admin_email = $admin_email->fetch_assoc();
 			$admin_email = $admin_email['key_value'];
 			$subject = "CREDIT ALERT: ".$customerRow['businessname']." cannot progress with delivery $pickersheet_id.";
@@ -74,7 +74,7 @@ $s = (int)(microtime(true));
 	<div id="print">
 	<div class="topheading">
 		<a href="#" id="sample" style="display:none;">test</a>
-		 
+
 		 <div class="logocontainer">
 			<img class="logo" src="https:<?php echo $domain; ?>images/tandclogo.jpg">
 			13-17 Landport Ind. Est. Landport Road<br/>
@@ -82,11 +82,11 @@ $s = (int)(microtime(true));
 			<span>Vat. No: 701 075 285</span><br/>
 			<span>Company Reg. No. 12192223</span><br/>
 			<b>01902457924</b><br/>
-				
+
 		</div>
-		
+
 		<div class="invoice">
-			 
+
 			<b style="font-size:10px;color:#8c8c8c;">Invoice address</b>
 			<div class="invoicebox">
 				<?php
@@ -94,7 +94,7 @@ $s = (int)(microtime(true));
 					$x = "SELECT * FROM `customers` WHERE id=?";
 					$y = prepareExecuteQuery($x,'i',[$customer_id]);
 					$customer = $y->fetch_assoc();
-					
+
 				?>
 				<p>
 					<?php echo $customer['businessname']; ?><br/>
@@ -108,8 +108,8 @@ $s = (int)(microtime(true));
 				<span style="display:none;">Account No: 1123ml</span>
 			</div>
 		</div>
-		
- 		
+
+
 		<div class="delivery">
 			<div class="deliverybox" style="border:0px;">
 				<div class="po">Delivery No: <span>000<?php echo $pickersheet_id; ?></span></div>
@@ -121,11 +121,11 @@ $s = (int)(microtime(true));
 			<?php
 				$date = str_replace('/', '-', $pickSheetRow['date_completed']);
 				$assemblydate = date('d/m/Y', strtotime($date));
-				
+
 				$date = DateTime::createFromFormat('d/m/Y', ''.$assemblydate);
-				
+
 				$paydayDelay = $customerRow['credit_terms'];
-				
+
 				$date->modify('+'. $paydayDelay .' day');
 				$payByDate = $date->format('d/m/Y');
    			?>
@@ -136,14 +136,15 @@ $s = (int)(microtime(true));
 					<?php echo $customer['businessname']; ?><br/>
 					t/a <?php echo $customer['tradingas']; ?><br/>
 					<?php
-						
+
 						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
 
 						echo $customer['address'.$pickSheetRow['addressid'].'_1'] . '<br/>';
 						echo $customer['address'.$pickSheetRow['addressid'].'_2'] . '<br/>';
 						echo $customer['address'.$pickSheetRow['addressid'].'_3'] . '<br/>';
+                        echo $customer['address'.$pickSheetRow['addressid'].'_4'] . '<br/>';
 						echo $customer['postcode_'.$pickSheetRow['addressid'].''] . '<br/>';
-						
+
 					?>
 				</p>
 				<span><?php echo $pickSheetRow['comments']; ?></span>
@@ -215,7 +216,7 @@ $s = (int)(microtime(true));
 		<?php } ?>
  	</form>
 	<br/><br/>
-	<?php 
+	<?php
 		} ?>
 
 	<table width="100%" border="0">
@@ -231,40 +232,40 @@ $s = (int)(microtime(true));
                 <th align="right" class="price">Total</th>
             <?php } ?>
          </tr>
-          
+
          <?php
 		 		$numOfRows = 0;
                 $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
-                
+
                 $outpalletCount = $outpalletResult2->num_rows;
-				
+
 				$total_qty_count = 0;
 				$total_weight_count = 0;
 				$total_case_count = 0;
                 while($outpallet = $outpalletResult2->fetch_assoc()){
                     $weightids = explode(',', $outpallet['weight_ids']);
-					
+
                     $productIDArray = array();
-						
+
                     foreach($weightids as $weightid){
                         $x = "SELECT * FROM `weights` WHERE id=?";
                         $y = prepareExecuteQuery($x,'i',[$weightid]);
                         $weight = $y->fetch_assoc();
-                       
+
                         if(!in_array($weight['product_id'], $productIDArray)){
                             array_push($productIDArray, $weight['product_id']);
                         }
 
                         $queryBits .= ' id = ' . $weightid . ' || ';
                     }
- 
+
                     foreach($productIDArray as $productID){
 
                         $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);
                         $product = $y1->fetch_assoc();
-                         
+
 
                         if($product['unit'] == 'PPC'){
                             $ext = ' Cases';
@@ -279,11 +280,11 @@ $s = (int)(microtime(true));
                         $count = $y2->num_rows;
 
                         ${"globalProductCount" . $product['id']} += $count;
-                         
+
                         $k = 0;
-						
+
                         while($weight = $y2->fetch_assoc()){
-                            
+
                             if($weight['weight_tear'] == $weight['weight_gross']){
                                 (double)$w = (double)$weight['weight_gross'];
                             }else{
@@ -317,7 +318,7 @@ $s = (int)(microtime(true));
 					<td align="left">
 						<b class="unit">
 						<?php
-							
+
 							if($product['unit'] == 'C'){
 								$unit = 'Cases';
 							}else if($product['unit'] == 'PPC'){
@@ -329,7 +330,7 @@ $s = (int)(microtime(true));
 							}else{
 								$unit = 'Cases';
 							}
-							
+
 							echo $unit;
 						?>
 						</b>
@@ -337,30 +338,30 @@ $s = (int)(microtime(true));
 					<td align="right">
 					<b class="weight">
                       <?php
-					  
+
 						$qBit = '';
-						
+
 						$kg = 0;
 						$queryVars = $weightids;
 						array_unshift($queryVars,$productID);
 						$xxWeight = "SELECT * FROM `weights` WHERE  product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
 						$yyWeight = prepareExecuteQuery($xxWeight,str_repeat('i',count($weightids)+1),$queryVars);
-						
+
 						while($weightRow = mysqli_fetch_array($yyWeight)){
-							
+
 							if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 								(double)$tw = (double)$weightRow['weight_gross'];
 							}else{
 								(double)$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
 							}
-							
+
 							$kg = $kg + $tw;
-							
+
 							$kg = number_format($kg, 3, '.', '');
-							
+
 						}
-						 
-						
+
+
 						if($product['unit'] == 'PPC'){
 							echo $count . ' Cases';
 							$total_case_count += $count;
@@ -368,7 +369,7 @@ $s = (int)(microtime(true));
 							echo $kg . ' kg';
 							$total_weight_count += $kg;
 						}
-						
+
 					  ?>
 					  </b>
                     </td>
@@ -390,18 +391,18 @@ $s = (int)(microtime(true));
                 }
             ?>
 
- 
-		
+
+
 		<?php
-		
+
 		$target = 15 - $numOfRows;
-	
+
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">
 					<td align="left"><span class="palletid">.</span></td>
 					<td align="left"><b class="species"></b></td>
 					<td align="left"><b class="cut"></b></td>
-					<td align="left"><b class="brand"></b></td>	
+					<td align="left"><b class="brand"></b></td>
 					<td align="left"><b class="quantity"></b></td>
 					<td align="left">
 						<b class="unit"></b>
@@ -422,8 +423,8 @@ $s = (int)(microtime(true));
             <?php } ?>
 		</tr>
 	</table>
-  	 
-		
+
+
 		<div class="bankdetails">
 			<b style="font-size: 10px;">Bank Details:</b>
 			<div class="bankbox">
@@ -441,15 +442,15 @@ $s = (int)(microtime(true));
                     </div>
 				</div>
 				<div class="col3">
-                <?php if($customerRow['pricedefault'] == 1){ ?>    
+                <?php if($customerRow['pricedefault'] == 1){ ?>
                     <div class="totalPayable"><b>Total Payable:</b> <span class="payvalue"><b>£<?php echo number_format((double)$totalPrice, 2, '.', ''); ?></b></span></div>
                 <?php } ?>
                     <div class="paymentDue">Payment due by: <span class="payvalue"><?php echo $payByDate; ?></span></div>
-                     
+
 				</div>
 			</div>
 		</div>
-		
+
 		<div class="bottom">
 			<div class="col footerlogo">
  				<img class="one" src="https:<?php echo $domain; ?>images/footer1.png">
@@ -457,14 +458,14 @@ $s = (int)(microtime(true));
 				<img class="two" src="https:<?php echo $domain; ?>images/AIMS_LOGO_2008_002.gif">
 				<img class="two" src="https:<?php echo $domain; ?>images/the-food-awards-england-2017-winner.jpg">
  			</div>
-			
+
 			<div class="col">
 				<p>All goods remain the property of Town and Country Meats Group Ltd until paid for in full.</p>
 				<p>Any claims must be notified within 24 hours of delivery by e-mail to:</p>
 				<p>gemma@townandcountrymeats.co.uk</p>
 				<p>office@townandcountrymeats.co.uk</p>
 			</div>
-			
+
 			<div class="col">
 				<div class="signbox">
 					<span>Sign ..................................</span>
@@ -473,7 +474,7 @@ $s = (int)(microtime(true));
 			</div>
 		</div>
 	</div>
-	
+
 </main>
 <div id="btm"></div>
 <div id="box" style="display:none;">
@@ -488,20 +489,20 @@ $s = (int)(microtime(true));
 	});
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
-		
+
 		$('.aWeight').each(function() {
 			totalIntakeWeight = parseFloat(totalIntakeWeight) + parseFloat($(this).val());
-			
+
 			// var xxD = parseFloat(totalIntakeWeight).toFixed(2);
-		
+
 		});
-		
+
 		var xxD = parseFloat(totalIntakeWeight).toFixed(3);
-		
+
 		$('#intakeTotalWeightA').text(xxD + ' KG');
-	
+
 	});
-	
+
 	function togglePrices(){
 		$('.price').toggle('');
 	}
@@ -512,26 +513,26 @@ $s = (int)(microtime(true));
 		location.reload();
 	}
 	function editWeight(intake_id, pallet_id, product_id, weight_id){
-	
-		$.get( "ajax/getEditProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id + "&product_id=" + product_id + "&weight_id=" + weight_id, function( data ) {	
+
+		$.get( "ajax/getEditProduct.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id + "&product_id=" + product_id + "&weight_id=" + weight_id, function( data ) {
 			$('#editBox').html(data);
 			$('#editBox').fadeIn();
 		});
-		
-		
+
+
 	}
-	
+
 	$('#updateIntakeButton').click(function(){
-		
+
 		var supplier_id = $('#supplier_id').val();
 		var vehicle_reg = $('#vehicle_reg').val();
 		var date_received = $('#date_received').val();
 		var vehicle_temperature = $('#vehicle_temp').val();
 		var delivery_note_number = $('#delivery_note_number').val();
-		
+
 		var good = 1;
 		var msg = "";
-		
+
 		if(vehicle_reg == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#vehicle_reg').css('border','2px solid red');
@@ -539,7 +540,7 @@ $s = (int)(microtime(true));
 		}else{
 			$('#vehicle_reg').css('border','1px solid grey');
 		}
-		
+
 		if(date_received == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#date_received').css('border','2px solid red');
@@ -547,7 +548,7 @@ $s = (int)(microtime(true));
 		}else{
 			$('#date_received').css('border','1px solid grey');
 		}
-		
+
 		if(vehicle_temperature == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#vehicle_temp').css('border','2px solid red');
@@ -555,7 +556,7 @@ $s = (int)(microtime(true));
 		}else{
 			$('#vehicle_temperature').css('border','1px solid grey');
 		}
-		
+
 		if(delivery_note_number == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#delivery_note_number').css('border','2px solid red');
@@ -563,9 +564,9 @@ $s = (int)(microtime(true));
 		}else{
 			$('#delivery_note_number').css('border','1px solid grey');
 		}
-		
+
 		$('#msgNotice').html(msg);
-		
+
 		if(good == 1){
 			var formName = '#updateIntakeInfo';
 			var xhttp = new XMLHttpRequest();
@@ -574,22 +575,22 @@ $s = (int)(microtime(true));
 			xhttp.send($(formName).serialize());
 		}
 	});
-	
+
 	function deleteProduct(product_id, cut_id){
 	}
-	
+
 	function palletDetail(id){
-		
+
 		$('.palletDetail-' + id).toggle();
 	}
-	
+
 	function printIntake(intake_id){
 		$.ajax({
 			headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 			type: "POST",
 			url: 'printIntake.php?intake_id=' + intake_id,
 			type: 'get',
-			success: function( response ) { 
+			success: function( response ) {
 
 				var contents = response;
 				var idname = name;
@@ -605,7 +606,7 @@ $s = (int)(microtime(true));
 				frameDoc.document.open();
 				frameDoc.document.write('<html><head><meta http-equiv="Content-Type" content="text/html; charset=euc-kr"><title></title>');
 
-	 
+
 
 
 				frameDoc.document.write('</head><body>');
@@ -617,18 +618,18 @@ $s = (int)(microtime(true));
 				window.frames["frame1"].print();
 				document.body.removeChild(frame1);
 				}, 500);
-				return false; 
+				return false;
 			}
 		});
 	}
-	
+
 	function printContent(el){
 		var restorepage = $('body').html();
 		var printcontent = $('#' + el).clone();
 		$('body').empty().html(printcontent);
 		window.print();
 		// $('body').html(restorepage);
-		
+
 		setTimeout(
 			function() {
 				window.location.reload(1);
@@ -636,39 +637,39 @@ $s = (int)(microtime(true));
 	}
 
 	function palletDetail(id){
-		
+
 		$('.palletDetail-' + id).toggle();
 	}
-	
+
 	function openAddPallet(intake_id){
-		
+
 		$.get( "ajax/addPalletForm.php?intake_id=" + intake_id, function( data ) {
 			$('#box').html(data);
 		});
-		
+
 		// $('#add_to_pallet_id').val(pallet_id);
 		// $('.add_to_pallet_id').html('0000' + pallet_id);
 		$('#box').fadeIn();
 	}
-	
-	
+
+
 	function openAddtoPallet(intake_id, pallet_id){
-		
+
 		$.get( "ajax/editPalletForm.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id, function( data ) {
 			$('#box').html(data);
 		});
-		
+
 		// $('#add_to_pallet_id').val(pallet_id);
 		// $('.add_to_pallet_id').html('0000' + pallet_id);
 		$('#box').fadeIn();
 	}
-	
+
 	function deleteRow(intake_id, pallet_id){
 		if(confirm('Are you sure you want to delete this?')){
 			window.location.href = "scripts/deletePallet.php?intake_id=" + intake_id + "&pallet_id=" + pallet_id;
 		}
 	}
-	
+
 	function hideItemsPrint(){
 		$('#top').hide();
 		$('.printhide').hide();
@@ -687,11 +688,11 @@ $s = (int)(microtime(true));
 	}
 
 	function beforePrint(){ // CTRL + P
-		
+
 		$.get("ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
 			hideItemsPrint();
 		});
-	
+
 	}
 
 	function printCompleted() {
@@ -702,34 +703,34 @@ $s = (int)(microtime(true));
 		$('main').removeAttr("style")
 	}
 
-	
+
 	function generatePDF(){
 		$.get("ajax/generatePDFdeliveryNote.php?id=<?php echo request()->input('id'); ?>", function(data, status){
-			
+
 			var name = data.replace(/\s+/g, '');
-			
+
 			downloadURI('<?php echo $domain; ?>PDF/' + name, name);
-			
+
 		});
 	}
-	
-	function downloadURI(uri, name) 
+
+	function downloadURI(uri, name)
 	{
 		var link = document.createElement("a");
 		link.download = name;
 		link.href = uri;
 		link.click();
 	}
-	
+
 	// printContent(1);
-	
+
 	function printContent(id){
 	   $.ajax({
 		headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
 				type: "POST",
 				url: 'printContent.php?id=' + id,
 				type: 'get',
-				success: function( response ) { 
+				success: function( response ) {
 
 					  var contents = response;
 					 var idname = name;
@@ -744,13 +745,13 @@ $s = (int)(microtime(true));
 
 				frameDoc.document.open();
 				frameDoc.document.write('<html><head><title></title>');
-			   
+
 			 frameDoc.document.write('<style>table {  border-collapse: collapse;  border-spacing: 0; width:100%; margin-top:20px;} .table td, .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th{ padding:8px 18px;  } .table-bordered, .table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {     border: 1px solid #e2e2e2;} </style>');
-		 
+
 		  // your title
 		   frameDoc.document.title = "Print Content with ajax in php";
-	   
-	   
+
+
 		  frameDoc.document.write('</head><body>');
 				frameDoc.document.write(contents);
 				frameDoc.document.write('</body></html>');
@@ -760,20 +761,20 @@ $s = (int)(microtime(true));
 					window.frames["frame1"].print();
 					document.body.removeChild(frame1);
 				}, 500);
-				return false; 
+				return false;
 
-		
-		
-		
+
+
+
 				}
 			});
-	  
+
 	}
-	
+
 </script>
 <?php
 if($customerRow['pricedefault'] == '0'){
-	?><script> $('.price').hide(); </script> <?php 
+	?><script> $('.price').hide(); </script> <?php
 	}
 ?>
 <style type="text/css">
@@ -783,7 +784,7 @@ if($customerRow['pricedefault'] == '0'){
 		font-weight:700;
 		padding-left:10px;
 	}
-	
+
 	.printICON{
 		font-size:24px !important;
 	}

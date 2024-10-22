@@ -184,8 +184,9 @@ use Illuminate\Support\Facades\Auth;
                     <td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
                     <td colspan="1">
                         <form method="post">
-                            <textarea name="pallet-comment" class="overviewcomment"><?php echo $pallet_comments; ?></textarea>
+                            <textarea name="pallet-comment" palletid="<?php echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment"><?php echo $pallet_comments; ?></textarea>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
+							<i class="fa fa-save" onclick="saveDeepComment(<?php echo $productsRow2['pallet_id']; ?>,<?php echo $productsRow2['productid']; ?>)"></i>
                         </form>
                     </td>
                     <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
@@ -257,6 +258,16 @@ use Illuminate\Support\Facades\Auth;
     $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
+	function saveDeepComment(pallet_id,product_id){
+		var currentComment = $('[palletid="'+pallet_id+'-'+product_id+'"]').val();
+		console.log(currentComment);
+		var pallet = pallet_id;
+		$.ajax({
+			method: "POST",
+			url: "ajax/loggedDataChange.php",
+			data: {body: currentComment, entity_id: pallet_id, type:'pallet'},
+		});
+	}
     $(document).ready(function()
     {
         $('select[name="location"]') .each(function()
@@ -271,23 +282,6 @@ use Illuminate\Support\Facades\Auth;
                 });
             });
         });
-        
-        $('textarea[name="pallet-comment"]') .each(function()
-        {
-            $(this).on('keypress',function(e) 
-            {
-                if(e.keyCode == 13) 
-                {
-                    var location = $(this).parent().find('textarea[name="pallet-comment"]').val();
-                    var pallet = $(this).parent().find('[name="pallet_id"]').val();
-                    console.log(location);
-                    console.log(pallet);
-                    $.post("ajax/loggedDataChange.php", {'body': location, 'entity_id': pallet, 'type':'pallet'}, function(data, status){
-                        console.log(data);
-                    });
-                }
-            });
-        });
     });
-
+	
  </script>

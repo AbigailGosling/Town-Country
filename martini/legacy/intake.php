@@ -245,12 +245,53 @@ use Illuminate\Support\Facades\Auth;
 				<?php echo ($lastUpdated!= '')?DateTime::createFromFormat('Y-m-d H:i:s',$lastUpdated)->format('d/m/Y H:i:s'):"Unknown"; ?>
 			</div>
 		</div>
-		<div class="overview_block">
-			<div>
+        <?php } ?>
+        <div class="overview_block">
 
+		</div>
+        <div class="overview_block">
+			<div>
+                <label>T&C Number</label>
+                <form method="POST" action="scripts/changeIntakeInternalNum.php" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <input type="text" name="internal_num" value="<?php echo $intake['internal_num']; ?>" style="width:140px;">
+                    <input type="submit" value="Save">
+                </form>
 			</div>
 		</div>
-		<?php } ?>
+        <div class="overview_block">
+			<div>
+                <label>Health Mark</label>
+                <form id="changeIntakeHealthForm" method="post" action="scripts/changeIntakeHealth.php">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <select id="changeIntakeHealth" style="height:30px;outline:none;border:0px;width: 100%;" name="health_id">
+                    <option value="-1" disabled<?php if(-1 == $intake['health_id']||null == $intake['health_id']||"" == $intake['health_id']){ echo 'selected'; } ?>></option>
+                        <?php
+                            $y = prepareExecuteQuery("SELECT * FROM `health_mark` ORDER BY `name` ASC");
+
+                            while($healthmark = mysqli_fetch_array($y)){
+                            ?><option value="<?php echo $healthmark['id']; ?>" <?php if($healthmark['id'] == $intake['health_id']){ echo 'selected'; } ?> <?php if($healthmark['disabled'] == 1){ echo 'disabled'; } ?>><?php echo $healthmark['name']; ?></option>
+                            <?php }
+                        ?>
+                    </select>
+                </form>
+			</div>
+		</div>
+        <div class="overview_block">
+			<div>
+                <label>Customs Import Entry</label>
+                <form method="POST" action="scripts/changeIntakeImportNum.php" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <input type="text" name="import_num" value="<?php echo $intake['import_num']; ?>" style="width:140px;">
+                    <input type="submit" value="Save">
+                </form>
+			</div>
+		</div>
+        <div class="overview_block">
+
+		</div>
 		<div style="clear:both;"></div>
 	</div>
 	<br/><br/>
@@ -893,7 +934,14 @@ use Illuminate\Support\Facades\Auth;
 			data: $('#changeIntakeSupplierForm').serialize(), // serializes the form's elements
 		});
     });
-
+    $('#changeIntakeHealth').change(function(){
+		$.ajax({ // make an AJAX request
+			type: "POST",
+			headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
+			url: "scripts/changeIntakeHealth.php", // it's the URL of your component B
+			data: $('#changeIntakeHealthForm').serialize(), // serializes the form's elements
+		});
+    });
 	$('.loadPalletBtn').click(function(){
 		$('#ajaxContent').html('<center><img src="https://i.gifer.com/7plQ.gif"></center>');
 		$.get( "ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {
