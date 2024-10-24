@@ -398,6 +398,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 			<td colspan="1">
 				<form method="post">
 					<textarea name="comments" class="overviewcomment" productid="<?php echo $productsRow['productid']; ?>"><?php echo $productsRow['weightnote']; ?></textarea>
+					<i class="fa fa-save" onclick="saveOverViewComment(<?php echo $productsRow['productid']; ?>)"></i>
 					<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 				</form>
 			</td>
@@ -615,16 +616,24 @@ var newWeight = parseFloat(currentWeight) + parseFloat(value);
 $('.weightVal').text(newWeight);
 
 }
-
+function saveOverViewComment(productid){
+	var currentComment = $('[productid="'+productid+'"]').val();
+	 $.ajax({
+		method: "POST",
+		url: "ajax/saveCommentPicker.php",
+		data: {
+			comment:currentComment,
+			productid:productid
+		},
+	});
+}
 $(document).ready(function(){
 
     $('.overviewcomment').focus(function() {
-        console.log($(this)[0].scrollHeight)
         $(this).height($(this)[0].scrollHeight)
     })
 
     $('.overviewcomment').blur(function() {
-        console.log($(this)[0].scrollHeight)
         $(this).height(47)
     })
 
@@ -650,42 +659,6 @@ $.each(document.cookie.split(/; */), function()  {
             }
         }
     }
-});
-
-
-
-
-$('.overviewcomment').each(function(){
-    $(this).on('keypress', function(e){
-        if(e.which == 13){
-            var currentComment = $(this).val();
-            //currentComment += "#";
-            $(this).val(currentComment);
-
-            console.log('CurrentComment: ' + currentComment);
-             // var pallet = $(this).parent().find('.pallet').val();
-
-            var productid = $(this).attr('productid');
-            // var productid = 10;
-
-            // $.get("ajax/saveCommentPicker.php?comment="+currentComment+'&productid=1'+productid, function(data, status){
-                // console.log(data);
-            // });
-
-            $.ajax({
-                method: "POST",
-                url: "ajax/saveCommentPicker.php",
-                data: {
-                    comment:currentComment,
-                    productid:productid
-                },
-            }).done(function( result ) {
-                console.log(result);
-            });
-
-
-        }
-    });
 });
 
 $('.quantitybox').change(function(){
