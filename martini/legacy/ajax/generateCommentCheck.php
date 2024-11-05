@@ -57,34 +57,72 @@ if (count($queryArray) > 0)
 {
     $sql .= " WHERE ".implode(" AND ",$queryArray);
 }
-$sql .= " ORDER BY `comment_logging`.`id` DESC LIMIT 1000 OFFSET ".($page*10000);
+$sql .= " ORDER BY `comment_logging`.`id` DESC LIMIT 1000 OFFSET ".($page*1000);
 $res = prepareExecuteQuery($sql);
+$lastProductIDs = array();
+$lastProductFound = null;
+$lastProductEntry = null;
 while ($row = mysqli_fetch_assoc($res))
 {
     $date = DateTime::createFromFormat("Y-m-d H:i:s" , $row['datetime']);
     $row['body'] = stripslashes($row['body']);
-    if ($row['type'] == "credit_override" || $row['type'] == "delivery_override" )
-    {
-        $customer = Customer::find($row['entity_id']);
-        echo "<tr><td>$row[type]</td><td>$customer->businessname</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
-    }
-    else if (strpos($row['type'],"product")===0)
+
+    if (strpos($row['type'],"product")===0)
     {
         $product = Product::find($row['entity_id']);
         if ($product)
         {
-            $pallet = Pallet::find($product->pallet_id);
-            $intake_id = ($pallet)?$pallet->intake_id:"";
-            echo "<tr><td>$row[type]</td><td>$row[entity_id] ($intake_id)</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+            if ($lastProductFound != null && ($row['body'] != $lastProductEntry['body']))
+            {
+                if (count($lastProductIDs)>0)
+                {
+                    productExport($lastProductIDs,$lastProductEntry,$lastProductFound);
+                }
+            }
+            $lastProductIDs[] = $row['entity_id'];
+            $lastProductFound = $product;
+            $lastProductEntry = $row;
+
         }
         else
         {
-            echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+            if (count($lastProductIDs)>0)
+            {
+                productExport($lastProductIDs,$lastProductEntry,$lastProductFound);
+            }
+            echo "<tr><td title='$row[id]'>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
         }
 
     }
-    else {
-        echo "<tr><td>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+    else
+    {
+        if (count($lastProductIDs)>0)
+        {
+            productExport($lastProductIDs,$lastProductEntry,$lastProductFound);
+        }
+        if ($row['type'] == "credit_override" || $row['type'] == "delivery_override" )
+        {
+            $customer = Customer::find($row['entity_id']);
+            echo "<tr><td title='$row[id]'>$row[type]</td><td>$customer->businessname</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+        }
+        else {
+            echo "<tr><td title='$row[id]'>$row[type]</td><td>$row[entity_id]</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";
+        }
     }
+}
+if (count($lastProductIDs)>0)
+{
+    productExport($lastProductIDs,$lastProductEntry,$lastProductFound);
+}
+function productExport(array &$lastProductIDs,array &$lastProductEntry,&$lastProductFound){
+    array_unique($lastProductIDs,SORT_NUMERIC);
+    $additionalIDs= (count($lastProductIDs)>1)?"*":"";
+    $pallet = Pallet::find($lastProductFound->pallet_id);
+    $intake_id = ($pallet)?$pallet->intake_id:"";
+    $date2 = DateTime::createFromFormat("Y-m-d H:i:s" , $lastProductEntry['datetime']);
+    echo "<tr><td title='$lastProductEntry[id]'>$lastProductEntry[type]</td><td title='".implode(",",$lastProductIDs)."'>$lastProductIDs[0]$additionalIDs ($intake_id)</td><td>$lastProductEntry[name]</td><td>$lastProductEntry[body]</td><td>".$date2->format('d/m/Y H:i:s')."</td></tr>";
+    $lastProductIDs = array();
+    $lastProductEntry=null;
+    $lastProductFound=null;
 }
 ?>
