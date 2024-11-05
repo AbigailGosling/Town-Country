@@ -626,6 +626,7 @@ function saveOverViewComment(productid){
 			productid:productid
 		},
 	});
+    alert("Done!");
 }
 $(document).ready(function(){
 

@@ -31,8 +31,8 @@ use Illuminate\Support\Facades\Auth;
     }
 
     $totalW = 0;
-     
-         
+
+
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -43,45 +43,45 @@ use Illuminate\Support\Facades\Auth;
 
         ####
         $productsX2 = "SELECT * , product.id productid
-        FROM `product` 
-        INNER JOIN `pallet` 
-        ON product.pallet_id=pallet.id 
+        FROM `product`
+        INNER JOIN `pallet`
+        ON product.pallet_id=pallet.id
         WHERE pallet.intake_id= ?
         && product.cut_id = ?
 		&& product.nationality_id= ?
         && ".$palletFilter."
         ORDER BY product.cut_id DESC";
-        
+
         $productsY2 = prepareExecuteQuery($productsX2,'iii',[$intake_id,$cut_id,$nationality_id]);
         $products2Count = mysqli_num_rows($productsY2);
         ####
         $totalW = 0;
-        
+
         $relatedWeights = [];
-        
+
         foreach($weights as $weight){
-            
+
             if($weight["product_id"] == $productsRow["productid"])
             {
-                $relatedWeights[] = $weight; 
+                $relatedWeights[] = $weight;
             }
 
         }
-        
-        
+
+
         foreach($relatedWeights as $weight){
-           
-           
+
+
 	        $w = 0;
 			if($weight['weight_tear'] == $weight['weight_gross']){
 				$w = $weight['weight_gross'];
 			}else{
 				$w = $weight['weight_gross'] - $weight['weight_tear'];
 			}
-			
+
 			$totalW = $totalW + $w;
- 			
-		
+
+
         }
  		if($products2Count > 0){
 			while($productsRow2 = mysqli_fetch_array($productsY2)){
@@ -112,7 +112,7 @@ use Illuminate\Support\Facades\Auth;
                     }else{
                         $this_row_weight = weightSoldFromProductID($product_id);
                     }
-                    
+
                     if($productsRow2['grosspallet'] == 1){
                         if($this_row_weight == 0){ continue; }
                     }
@@ -123,7 +123,7 @@ use Illuminate\Support\Facades\Auth;
                         if ($toDate2 < $toDate) $toDate = $toDate2;
                         $cutResult= CutGroupNationalityDate::lookupFromProductID($productsRow2['productid']);
                         $bgCol = "";
-                        $now = time();         
+                        $now = time();
                         if (isset($cutResult['warning']) && $cutResult['warning'] != "")
                         {
                             $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
@@ -198,7 +198,7 @@ use Illuminate\Support\Facades\Auth;
                         $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
                         $cutResult= mysqli_fetch_assoc($cutQuery);
                         $bgCol = "";
-                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != "")) 
+                        if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != ""))
                         {
                             $bgCol = '';
                             $now = time();
@@ -221,16 +221,16 @@ use Illuminate\Support\Facades\Auth;
                                 }
                             }
                         }
-                        
-                        
+
+
                         if(isset($smallestDate)) echo '<td '.$bgCol.'>'.$ubtext . ' ' . $smallestDate . '-' . $largestDate2.'</td>';
                         else echo '<td>--</td>';
                     }else{
                         echo '<td>'.$ubtext . ' ' . $smallestDate . ' - ' . $largestDate2.'</td>';
                     }
                     ?>
-                    
-                    <td class="bold"><?php 
+
+                    <td class="bold"><?php
 
                     if($productsRow2['grosspallet'] == 1){
                         echo '[GT] ';
@@ -246,7 +246,7 @@ use Illuminate\Support\Facades\Auth;
                     <td>
                     <?php if(Location::find($productsRow2['storage_location'])->name != "Coldstore" && $locked != true){ ?>
                         <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
-                    <?php } ?>                    
+                    <?php } ?>
                     </td>
                 </tr>
                 <?php
@@ -267,13 +267,14 @@ use Illuminate\Support\Facades\Auth;
 			url: "ajax/loggedDataChange.php",
 			data: {body: currentComment, entity_id: pallet_id, type:'pallet'},
 		});
+        alert("Done!");
 	}
     $(document).ready(function()
     {
         $('select[name="location"]') .each(function()
         {
             $(this).change(function() {
-                
+
                 var location = $(this).parent().find('select[name="location"]').val();
                 var pallet = $(this).parent().find('[name="pallet_id"]').val();
                 console.log(location);
@@ -283,5 +284,5 @@ use Illuminate\Support\Facades\Auth;
             });
         });
     });
-	
+
  </script>

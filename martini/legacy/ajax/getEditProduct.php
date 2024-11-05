@@ -87,7 +87,7 @@ use App\Models\Site;
 
 		<div id="best_by_range_extension_container">
 			<label>Extension</label>
-			<input name="best_by_range_extension" id="best_by_range_extension" value="<?php echo $productRow['range_extension']; ?>" type="text" onfocus="blur()">
+			<input name="best_by_range_extension" id="best_by_range_extension" value="<?php echo $productRow['range_extension']; ?>" type="text" onfocus="blur()"><div onclick="clearEx()" id="clearEX">Clear</div>
 		</div>
 
 		<label>Fresh/Frozen</label>
@@ -651,5 +651,7 @@ use App\Models\Site;
 		$('#best_by_range_to_container').fadeOut();
 	}
 
-
+    function clearEx(){
+		$('#best_by_range_extension').val("");
+	}
 </script>
