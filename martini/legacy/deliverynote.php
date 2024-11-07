@@ -38,11 +38,6 @@ $s = (int)(microtime(true));
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
-<script type="text/javascript">
-
-</script>
-	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
-<main class="int int--extra-padding">
 <?php
 	if ($creditCheck['overcredit'] && !$customerRow['allowPrint']) {
 		$admin_email = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE document_id = ? AND `type` = ?",'is',[$pickersheet_id,SLabsEmailerType::CrdtAlert]);
@@ -57,20 +52,38 @@ $s = (int)(microtime(true));
 			SLabsEmailer::send_email($customer_id,SLabsEmailerType::CrdtAlert,array($admin_email),$subject,$htmlBody,'','',$pickersheet_id);
 		}
 ?>
-	<div class="row custom-warning-box" id="warning" style="background:#ff6666; border: 2px solid #ff0000">
-		<?php echo $creditCheck['message']; ?>
+	<div style="visibility:visible;
+            left:20%;
+            pointer-events: none;
+            position:absolute;
+            z-index:100;
+            background:none;
+            display:block;
+            height:100%;
+            width:115%;">
+            <p style="opacity: 0.5; display: block; height: 100%;
+            color:red;
+            text-align:center; text-justify: inter-word;
+            font-size:60px; font-weight: bold;
+            transform:rotate(-60deg);
+            -webkit-transform:rotate(-60deg);"><br><br>
+            Delivery note print restriction<br><br>
+            Please inform the Salesman and Accounts<br><br>
+            DO NOT USE THIS AS A DELIVERY NOTE</p>
 	</div>
 <?php
-	} else {
+	}
 ?>
+<script type="text/javascript">
+
+</script>
+	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
+<main class="int int--extra-padding">
 	<div class="formBackButton" style="float:right;font-size:22px;">
 		<a href="viewCompletedPickSheet.php?id=<?php echo $pickersheet_id; ?>">Pick Note</a>|
 		<a href="javascript:;" onclick="printStuff()">Print &nbsp;</a>|
 		<a href="javascript:;" onclick="generatePDF()">PDF Copy</a>
 	</div>
-	<?php
-	}
-?>
 	<div id="print">
 	<div class="topheading">
 		<a href="#" id="sample" style="display:none;">test</a>
