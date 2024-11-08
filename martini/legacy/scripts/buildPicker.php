@@ -48,24 +48,23 @@ use App\Models\Product;
 		$details = explode('-', $value);
 		$product_id = $details[0];
 		$priceTypeSorted[$product_id] = $price_types[$key];
+        $defProduct = Product::find($product_id);
 		$location = Location::find(
 			Pallet::find(
-				Product::find(
-					$product_id
-					)->pallet_id
+				$defProduct->pallet_id
 				)->storage_location
 			);
 		$found = false;
 		foreach ($location->sale_rules as $locID => $valIsAlwaysTrue){
-			if (array_key_exists($locID,$baskets)){
+			if (array_key_exists($locID."-".$defProduct->cooling_id,$baskets)){
 				$found = true;
-				$baskets[$locID][] = $value;
+				$baskets[$locID."-".$defProduct->cooling_id][] = $value;
 				break;
 			}
 		}
 		if ($found == false) {
-			if (!array_key_exists($location->id,$baskets)) $baskets[$location->id] = array();
-			$baskets[$location->id][] = $value;
+			if (!array_key_exists($location->id."-".$defProduct->cooling_id,$baskets)) $baskets[$location->id."-".$defProduct->cooling_id] = array();
+			$baskets[$location->id."-".$defProduct->cooling_id][] = $value;
 		}
 	}
 	foreach ($baskets as $basket) {
