@@ -12,13 +12,7 @@ use \Socketlabs\Message\Attachment;
 use Illuminate\Support\Facades\Log;
 
 class SLabsEmailer {
-    //This function generates a Unique ID using Mersenne Twister RNG
-    //Going to want to switch RNG algo before pushing to LIVE!!!!
-
     //SOCKETLABS CONFIG//
-    const SocketID = 42191;
-    const InjectionAPIKey = "Kr86CiGz24Bes9F7Wyk5";
-    const NotifcationAPIKey="Zq39SfPb75Ddi4CWa2n";
     static function generate_uuid() {
         return sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
@@ -39,7 +33,7 @@ class SLabsEmailer {
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
 
-        $client = new SocketLabsClient(self::SocketID, self::InjectionAPIKey);
+        $client = new SocketLabsClient(env("MAIL_SOCKET_ID"), env("MAIL_INJECTION_KEY"));
         foreach($toEmails as $email)
         {
             $trimmed = trim($email);

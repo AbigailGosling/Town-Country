@@ -1,11 +1,12 @@
 <?php
 
-    $dbHost = '';
-    $dbUser = '';
-    $dbPass = '';
-    $dbName = '';
+    $dbHost = env("DB_HOST_SECOND");
+    $dbUser = env("DB_USERNAME_SECOND");
+    $dbPass = env("DB_PASSWORD_SECOND");
+    $dbName = env("DB_DATABASE_SECOND");
 
     $domain = '';
+    $domainOld = '';
 
     $mail_host = 'smtp.mandrillapp.com';
     $mail_email = 'info@devclever.co.uk';
