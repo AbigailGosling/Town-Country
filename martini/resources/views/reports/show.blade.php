@@ -2,6 +2,8 @@
 global $processed;
 $processed = [];
 $cutgroupsSorted =[];
+$footerResults=[];
+
 if (!isset($dateType)) $dateType = "assembled";
 ?>
 <x-app-layout>
@@ -240,7 +242,27 @@ if (!isset($dateType)) $dateType = "assembled";
                 <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
                 @endif
                     @foreach($columns as $column)
-                    <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
+                    <?php
+                    $h = App\Helpers\ReportHelper::resolveHeader($column,$table->mode);
+                    $t = App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode);
+                    $footerResult[$h] = preg_replace("/[£,]/", '',$t);
+                    ?>
+                    <x-data-table-header>{{$t}}
+                    @if (stripos($h,"Profit")!==false)
+                    <?php
+                        $percision = 3;
+	                    $magShift = pow(10,$percision);
+                        $target = (stripos($h,"Actual"))?"Actual Cost Value":"Cost Value";
+                        $rollingProfit = filter_var($footerResult[$h], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+                        $rollingProfit = ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+                        $rollingCost = filter_var($footerResult[$target], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+			            $rollingCost = ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+                        $profitRatio = $rollingProfit/$rollingCost;
+                        $percentage = ReportHelper::floorDec($profitRatio*100,3);
+                    ?>
+                     {{$percentage}}%
+                    @endif
+                    </x-data-table-header>
                     @endforeach
                 </tr></tfoot>
             </table>
