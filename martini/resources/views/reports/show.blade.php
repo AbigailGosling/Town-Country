@@ -54,7 +54,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="user_id" :value="__('User')"/>
                     <select id="user_id" name="user_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($users as $user)
+                        @foreach ($users->sortBy("name") as $user)
                         <option value="{{$user->id}}" @if ($user_id==$user->id) selected @endif>{{$user->name}}</option>
                         @endforeach
                     </select>
@@ -64,8 +64,10 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="customer_id" :value="__('Customer')"/>
                     <select id="customer_id" name="customer_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($customers as $customer)
+                        @foreach ($customers->sortBy("businessname") as $customer)
+                        @if ($customer->businessname!="")
                         <option value="{{$customer->id}}" @if ($customer_id==$customer->id) selected @endif>{{$customer->businessname}}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('customer_id')" class="mt-2"/>
@@ -91,7 +93,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="species_id" :value="__('Species')"/>
                     <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="species_id" name="species_id">
                         <option value="" selected></option>
-                        @foreach ($species as $specie)
+                        @foreach ($species->sortBy("name") as $specie)
                         <option value="{{$specie->id}}" @if ($species_id==$specie->id) selected @endif>{{$specie->name}}</option>
                         @endforeach
                     </select>
@@ -101,7 +103,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="cutgroup_id" :value="__('Cut Group')"/>
                     <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="cutgroup_id" name="cutgroup_id">
                         <option value="" selected></option>
-                        @foreach ($cut_groups as $cut_group)
+                        @foreach ($cut_groups->sortBy("name") as $cut_group)
                         <?php
                             if (!array_key_exists($cut_group->species_id,$cutgroupsSorted)) $cutgroupsSorted[$cut_group->species_id] = [];
                             $cutgroupsSorted[$cut_group->species_id][$cut_group->id]=$cut_group->name;
@@ -117,8 +119,10 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="brand_id" :value="__('Brand')"/>
                     <select class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full' id="brand_id" name="brand_id">
                         <option value="" selected></option>
-                        @foreach ($brands as $brand)
+                        @foreach ($brands->sortBy("name") as $brand)
+                        @if($brand->name!="")
                         <option value="{{$brand->id}}" @if ($brand_id==$brand->id) selected @endif>{{$brand->name}}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('brand_id')" class="mt-2"/>
@@ -127,8 +131,10 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="supplier_id" :value="__('Supplier')"/>
                     <select id="supplier_id" name="supplier_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($suppliers as $supplier)
+                        @foreach ($suppliers->sortBy("name") as $supplier)
+                        @if($supplier->name!="")
                         <option value="{{$supplier->id}}" @if ($supplier_id==$supplier->id) selected @endif>{{$supplier->name}}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('supplier_id')" class="mt-2"/>
@@ -137,8 +143,10 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="nationality_id" :value="__('Nationality')"/>
                     <select id="nationality_id" name="nationality_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($nationalities as $nationality)
+                        @foreach ($nationalities->sortBy("name") as $nationality)
+                        @if ($nationality->name != "")
                         <option value="{{$nationality->id}}" @if ($nationality_id==$nationality->id) selected @endif>{{$nationality->name}}</option>
+                        @endif
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('nationality_id')" class="mt-2"/>
@@ -147,7 +155,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="cooling_id" :value="__('Tempurature')"/>
                     <select id="cooling_id" name="cooling_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($tempuratures as $tempurature)
+                        @foreach ($tempuratures->sortBy("name") as $tempurature)
                         <option value="{{$tempurature->id}}" @if ($cooling_id==$tempurature->id) selected @endif>{{$tempurature->temperature}}</option>
                         @endforeach
                     </select>
@@ -157,7 +165,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-input-label for="health_id" :value="__('Health Mark')"/>
                     <select id="health_id" name="health_id" class='rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 block mt-1 w-full'>
                         <option value="" selected></option>
-                        @foreach ($health_marks as $health_mark)
+                        @foreach ($health_marks->sortBy("name") as $health_mark)
                         <option value="{{$health_mark->id}}" @if ($health_id==$health_mark->id) selected @endif>{{$health_mark->name}}</option>
                         @endforeach
                     </select>
@@ -219,7 +227,7 @@ if (!isset($dateType)) $dateType = "assembled";
                         @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
                         <td style="width:100px" align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</input></td>
                         @else
-                        <td style="width:100px" align="center" id="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</td>
+                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center" id="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</td>
                         @endif
                         @endforeach
                     </tr>
@@ -231,7 +239,6 @@ if (!isset($dateType)) $dateType = "assembled";
                 @else
                 <tfoot class="bg-orange-100" style="position: sticky; bottom: 0;"><tr>
                 @endif
-
                     @foreach($columns as $column)
                     <x-data-table-header>{{App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode)}}</x-data-table-header>
                     @endforeach

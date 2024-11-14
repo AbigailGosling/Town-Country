@@ -1212,28 +1212,6 @@ use Illuminate\Support\Facades\Auth;
 <script>
 	$(document).ready(function(){
 
-		$('.comment').each(function(){
-			$(this).on('keypress',function(e) {
-				if(e.which == 13) {
-					var comment = $(this).val();
-					// comment = comment + " &#10;";
-
-					// console.log('the comment: ' + comment);
-
-
-
-					var productid = $(this).attr('productid');
-
-
-					console.log('the productid: ' + productid);
-
-					$.get("<?php echo $domain; ?>ajax/saveComment.php?comment="+comment+'&productid='+productid, function(data, status){
-						console.log(data);
-					});
-				}
-			});
-		});
-
 		$('#closePalletPopup').click(function(){
 			$('.palletnotepopup').fadeOut();
 		});
