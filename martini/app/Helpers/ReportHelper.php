@@ -439,7 +439,7 @@ class ReportHelper
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             ->groupBy(["pickerSheets.id"]);
-        if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
+        if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
@@ -631,27 +631,41 @@ class ReportHelper
     }
     public static function resolveFooter(ReportColumn $reportColumn,array $data,string $mode):string
     {
+       if ($reportColumn->metadata!=null && array_key_exists('footer',$reportColumn->metadata) != null)return static::recursiveResolveFooter($reportColumn,$reportColumn->metadata['footer'], $data, $mode);
+       else return "";
+    }
+    private static function recursiveResolveFooter(ReportColumn $reportColumn,array|string $function, array $data, string $mode)
+    {
         $result = null;
-        $percision = 3;
-        $magShift = pow(10,$percision);
-        if ($reportColumn->metadata != null && isset($reportColumn->metadata['footer']))
+        if (is_array($function)) {
+            foreach ($function as $fun)
+            {
+                $result .= static::recursiveResolveFooter($reportColumn, $fun, $data, $mode);
+            }
+        }
+        else
         {
+            $percision = 3;
+            $magShift = pow(10,$percision);
             $columnData = array_column($data,$reportColumn->getLabel($mode));
-            //
             for($i=0;$i<count($columnData);$i++)
             {
-                $rolling =  filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+                $rolling = filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
                 $rolling = static::floorDec(floatval($rolling)*$magShift,0);
 
-                switch($reportColumn->metadata['footer'])
+                switch($function)
                 {
                     case "array_sum":
                     {
                         $result += $rolling;
                         break;
                     }
-                }
+                    case "":
+                    {
 
+                        break;
+                    }
+                }
             }
             $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
         }
@@ -1029,7 +1043,7 @@ class ReportHelper
             }
         }
     }
-    private static function floorDec($val, $precision = 2) {
+    public static function floorDec($val, $precision = 2) {
 		if ($precision < 0) { $precision = 0; }
 		$numPointPosition = intval(strpos($val, '.'));
 		if ($numPointPosition === 0) { //$val is an integer

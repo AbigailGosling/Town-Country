@@ -254,11 +254,18 @@ if (!isset($dateType)) $dateType = "assembled";
 	                    $magShift = pow(10,$percision);
                         $target = (stripos($h,"Actual"))?"Actual Cost Value":"Cost Value";
                         $rollingProfit = filter_var($footerResult[$h], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-                        $rollingProfit = ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+                        $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                         $rollingCost = filter_var($footerResult[$target], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-			            $rollingCost = ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
-                        $profitRatio = $rollingProfit/$rollingCost;
-                        $percentage = ReportHelper::floorDec($profitRatio*100,3);
+			            $rollingCost = App\Helpers\ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+                        if ($rollingProfit==0 && $rollingCost==0)
+                        {
+                            $percentage = "0.000";
+                        }
+                        else
+                        {
+                            $profitRatio = $rollingProfit/$rollingCost;
+                            $percentage = App\Helpers\ReportHelper::floorDec($profitRatio*100,3);
+                        }
                     ?>
                      {{$percentage}}%
                     @endif
