@@ -521,16 +521,29 @@ class ReportHelper
             }
             if ($rollingItem == null) continue;
             static::row_merge($result,$rollingItem,"weights.");
+
+            $prodPalletCheck = array_keys($processedProds);
+            $prodPallet = static::$conn->table("product")
+                ->selectRaw("product.*")
+                ->whereIn("product.id",$prodPalletCheck)
+                ->groupBy("product.pallet_id")->get();
+            $bulkMergeFull = false;
             $subTotal = "pickerSheets.subTotal";
             $result->$subTotal = $rollingTotal;
+            if (count($prodPallet)==1)
+            {
+                $bulkMergeFull = true;
+                static::row_merge($result,$prodPallet[0],"product.");
+            }
+            else
+            {
+                $subTotal = "pickerSheets.cost";
+                $result->$subTotal = $rollingCost;
 
-            $subTotal = "pickerSheets.cost";
-            $result->$subTotal = $rollingCost;
-
-            $subTotal = "pickerSheets.actCost";
-            $result->$subTotal = $rollingActCost;
-
-            if (static::bulkMergeIn($result,false))
+                $subTotal = "pickerSheets.actCost";
+                $result->$subTotal = $rollingActCost;
+            }
+            if (static::bulkMergeIn($result,$bulkMergeFull))
             {
                 $col = "pickerSheets.isSupplemental";
                 if ($result->$col === true || $result->$col === 1)
@@ -603,20 +616,32 @@ class ReportHelper
             }
             if ($rollingItem == null) continue;
             static::row_merge($result,$rollingItem,"weights.");
-            $subTotal = "pickerSheets.subTotal";
-            $result->$subTotal = $rollingTotal;
-
-            $subTotal = "pickerSheets.cost";
-            $result->$subTotal = $rollingCost;
-
-            $subTotal = "pickerSheets.actCost";
-            $result->$subTotal = $rollingActCost;
 
             $dateCol = "pickerSheets.date";
             $dateTo = "invoice_payments.created_at";
             $result->$dateTo =  $result->$dateCol;
+            $prodPalletCheck = array_keys($processedProds);
+            $prodPallet = static::$conn->table("product")
+                ->selectRaw("product.*")
+                ->whereIn("product.id",$prodPalletCheck)
+                ->groupBy("product.pallet_id")->get();
+            $bulkMergeFull = false;
+            $subTotal = "pickerSheets.subTotal";
+            $result->$subTotal = $rollingTotal;
+            if (count($prodPallet)==1)
+            {
+                $bulkMergeFull = true;
+                static::row_merge($result,$prodPallet[0],"product.");
+            }
+            else
+            {
+                $subTotal = "pickerSheets.cost";
+                $result->$subTotal = $rollingCost;
 
-            if (static::bulkMergeIn($result,false))
+                $subTotal = "pickerSheets.actCost";
+                $result->$subTotal = $rollingActCost;
+            }
+            if (static::bulkMergeIn($result,$bulkMergeFull))
             {
                 $col = "pickerSheets.isSupplementalCredit";
                 if ($result->$col === true || $result->$col === 1) $finalSuppCred->add($result);
@@ -684,7 +709,7 @@ class ReportHelper
             $workingResult['internal_id'] = $dbRow->$col;
             foreach ($reportTable->getColumns() as $reportColumn)
             {
-                $workingResult[$reportColumn->getLabel($reportTable->mode)] = "";
+                $workingResult[$reportColumn->getLabel($mode)] = "";
                 if (!static::filterCheck($reportColumn,$workingResult,$dbRow))
                 {
                     $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,"","");
@@ -852,7 +877,6 @@ class ReportHelper
                 static::row_merge($result,$item);
             }
         }
-
         return true;
     }
     private static function resolveFallback(ReportColumn $reportColumn,$workingResult,$dbRow,string $mode):string
