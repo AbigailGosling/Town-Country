@@ -3,7 +3,8 @@ global $processed;
 $processed = [];
 $cutgroupsSorted =[];
 $footerResults=[];
-
+$percision = 3;
+$magShift = pow(10,$percision);
 if (!isset($dateType)) $dateType = "assembled";
 ?>
 <x-app-layout>
@@ -225,6 +226,24 @@ if (!isset($dateType)) $dateType = "assembled";
                         $d->$col = preg_replace("/[£,]/", '', $t);
                         $columnNameSimplified = preg_replace("/\W|_/", '', strtolower($column->getLabel($table->mode)));
                         $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
+                        if (stripos($col,"Profit")!==false)
+                        {
+                            $target = (stripos($col,"Actual"))?"Actual Cost Value":"Cost Value";
+                            $rollingProfit = filter_var($d->$col, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+                            $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+                            $rollingCost = filter_var($d->$target, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
+                            $rollingCost = App\Helpers\ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+                            if ($rollingProfit!=0 && $rollingCost!=0)
+                            {
+                                $profitRatio = $rollingProfit/$rollingCost;
+                                $percentage = App\Helpers\ReportHelper::floorDec($profitRatio*100,3);
+                            }
+                            else
+                            {
+                                $percentage = "0.000";
+                            }
+                            $t .= " ".number_format($percentage,3)."%";
+                        }
                         ?>
                         @if(isset($column->metadata) && isset($column->metadata['isInput']) && $column->metadata['isInput'] == true)
                         <td style="width:100px" align="center"><input style="width:100%" type="number" step="0.01" pattern="^\d*(\.\d{0,2})?$" onpaste="changed(this)" oncut="changed(this)" onkeyup="changed(this)" id="{{$fieldName}}" name="{{$fieldName}}" og="{{$d->$col}}">{{$t}}</input></td>
@@ -250,24 +269,22 @@ if (!isset($dateType)) $dateType = "assembled";
                     <x-data-table-header>{{$t}}
                     @if (stripos($h,"Profit")!==false)
                     <?php
-                        $percision = 3;
-	                    $magShift = pow(10,$percision);
                         $target = (stripos($h,"Actual"))?"Actual Cost Value":"Cost Value";
                         $rollingProfit = filter_var($footerResult[$h], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
                         $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                         $rollingCost = filter_var($footerResult[$target], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
 			            $rollingCost = App\Helpers\ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
-                        if ($rollingProfit==0 && $rollingCost==0)
-                        {
-                            $percentage = "0.000";
-                        }
-                        else
+                        if ($rollingProfit!=0 && $rollingCost!=0)
                         {
                             $profitRatio = $rollingProfit/$rollingCost;
                             $percentage = App\Helpers\ReportHelper::floorDec($profitRatio*100,3);
                         }
+                        else
+                        {
+                            $percentage = "0.000";
+                        }
                     ?>
-                     {{$percentage}}%
+                     {{number_format($percentage,3)}}%
                     @endif
                     </x-data-table-header>
                     @endforeach
