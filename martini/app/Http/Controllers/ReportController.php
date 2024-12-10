@@ -18,42 +18,14 @@ use App\Models\Supplier;
 use App\Models\Temperature;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
+use stdClass;
 
 class ReportController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -151,38 +123,22 @@ class ReportController extends Controller
         ];
         return view("reports.show", $args);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Report  $report
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Report $report)
+    public function userCustomer()
     {
-        //
-    }
+        $result = new Collection();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Report  $report
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Report $report)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Report  $report
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Report $report)
-    {
-        //
+        foreach (User::where("disabled",false)->orderBy("name")->get() as $user)
+        {
+            foreach (Customer::where("disabled",false)->where("default_salesman_id",$user->id)->orderBy("businessname")->get() as $customer)
+            {
+                $out = new stdClass();
+                $out->user_id = $user->id;
+                $out->user_name = $user->name;
+                $out->customer_id= $customer->id;
+                $out->customer_name=$customer->businessname;
+                $result->add($out);
+            }
+        }
+        return view("reports.usercustomer", ["list"=>$result]);
     }
 }

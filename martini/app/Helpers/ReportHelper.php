@@ -96,6 +96,19 @@ class ReportHelper
                     else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
+            $q = Product::where("health_id",$HEALTH_ID);
+            if ($q)
+            {
+                $filters['health_mark.id'] = $HEALTH_ID;
+                $ids = array_column($q->get()->toArray(),'id');
+                $ids = Pallet::whereIn("intake_id",$ids)->pluck('id')->toArray();
+                $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
+                if (count($ids)>0)
+                {
+                    if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
+                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                }
+            }
         }
         if ($INTERNAL_NUM != null && $INTERNAL_NUM != '' && $INTERNAL_NUM != '...' && $INTERNAL_NUM != '0')
         {
@@ -874,6 +887,12 @@ class ReportHelper
             if ($result->$col!=-1)
             {
                 $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
+                static::row_merge($result,$item);
+            }
+            $col = "product.health_id";
+            if ($result->$col!=-1)
+            {
+                $item = static::array_search_multidim(static::$health_marks,"product.health_id",$result->$col);
                 static::row_merge($result,$item);
             }
         }

@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\CutGroupNationalityDateController;
 use App\Http\Controllers\DropdownController;
 use App\Http\Controllers\HealthMarkController;
+use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
@@ -78,6 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/report/{report}', [ReportController::class, 'show'])->name('report.show');
     Route::post('/report/{report}', [ReportController::class, 'show'])->name('report.show');
+
+    Route::get('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
+    Route::post('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
+
 
     Route::get('health_marks/search', [HealthMarkController::class, 'search'])->name('health_marks.search');
     Route::resource('health_marks', 'App\Http\Controllers\HealthMarkController');
