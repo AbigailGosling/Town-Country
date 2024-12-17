@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
     Route::post('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
 
+    Route::get('/usercustomer', [ReportController::class, 'userCustomer'])->name('report.usercustomer');
 
     Route::get('health_marks/search', [HealthMarkController::class, 'search'])->name('health_marks.search');
     Route::resource('health_marks', 'App\Http\Controllers\HealthMarkController');
