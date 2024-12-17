@@ -252,7 +252,7 @@ use App\Models\User;
 	function removeFromList(id, pallet_id, product_id){
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
-		checkUBDates();
+		masterChecklist();
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
@@ -627,72 +627,100 @@ function cancelSale()
     {
         $('#sendfake').attr('disabled', true);
         $('#searcher').attr('disabled', (getCustomResult=="" || getCustomResult==null || $('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null));
+        console.log("1");
         if (getCustomResult=="" || getCustomResult==null || !setCustomerCreditFeedback()) return;
-        if ($('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null|| !checkDelDay() || !checkUBDates()) return;
+        console.log("2");
+        if ($('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null|| !checkDelDay()) return;
+        console.log("3");
+        if ($('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null || !checkUBDates()) return;
+        console.log("4");
         if (!checkSites()) return;
-        $('#sendfake').attr('disabled', false);
+        console.log("5");
+        console.log("L"+$('#basketTable #ubDate').length);
+        if ($('#basketTable #ubDate').length>0)$('#sendfake').attr('disabled', false);
     }
 	function ddChanged(dateText, inst)
     {
         masterChecklist();
 	}
-    function setCustomerDetails(customer_id, empty='false')
-    {
-		customerID = customer_id;
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
-			getCustomResult = data;
-            masterChecklist();
-		});
-	}
-    function setCustomerCreditFeedback()
-    {
-		var data = getCustomResult;
-		$('#address').html(data);
-        $('.rating').fadeIn();
-
-        $('#addressline1').prop('readonly', true);
-        $('#addressline2').prop('readonly', true);
-        $('#addressline3').prop('readonly', true);
-        $('#addressline4').prop('readonly', true);
-        $('#addresspostcode').prop('readonly', true);
-        $('#deliverynumber').prop('readonly', true);
-
-        $('#warning').css('background', "#90EE90");
-        $('#warning').css('border', "2px solid #00FF00");
-
-        $('#warning').css('display', "inline-block");
-        $('#warning').html(warningMessage);
-
-        if (!transactionAllowed || showWarning)
-        {
-            if (!showWarning)
-            {
-                $('#warning').css('background', "#ff6666");
-                $('#warning').css('border', "2px solid #ff0000");
-                return false;
-            }
-            else if (showHigherWarning)
-            {
-                $('#warning').css('background', "#ff6666");
-                $('#warning').css('border', "2px solid #ff0000");
-                return false;
-            }
-            else
-            {
-                $('#warning').css('background', "#ffc266");
-                $('#warning').css('border', "2px solid #ff9900");
-            }
-        }
-        return true;
-	}
-	function checkUBDates()
-    {
-		var dateText = $('#estimated_delivery_date').val();
+	var recursionProtection = false;
+	function checkUBDates(dateText = null){
+		if (!checkSites()) return;
+		if (dateText == null) dateText = $('#estimated_delivery_date').val();
 		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+		if (dateObj != null && delCheckingOn){
+			var daySelected = dateObj.getDay();
+			var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
+			var weekdayInt = weekdayLookup[daySelected];
+		}
+		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
+		{
+			day = weekday[daySelected];
+			$('#sendfake').attr('disabled', true);
+			$('#searcher').attr('disabled', true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+			return;
+		}
+		else if (warningMessage){
+			$('#warning').css('background', "#90EE90");
+			$('#warning').css('border', "2px solid #00FF00");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html(warningMessage);
+			$('#sendfake').attr('disabled', false);
+			$('#searcher').attr('disabled', false);
+		}
 
+		if (transactionAllowed){
+			var ubs = $('#basketTable #ubDate');
+			var temps = $('#basketTable #temp_id');
+			if (ubs.length == 0 || dateText == null || dateText == "") return;
+			var date = parseDMY(dateText).getTime();
+			$('#sendfake').prop('disabled',false);
+			var beyondBB = false;
+			for(var x = 0; x < ubs.length; x++){
+				var ub = ubs[x];
+				var temp = temps[x];
+				if (customerID == "420") break;
+				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
+				{
+					continue;
+				}
+				var ubd = parseDMY(ub.innerHTML).getTime();
+				if (ubd < date)
+				{
+					$(ub).css('background', "#ff6666");
+					beyondBB = true;
+				}
+				else
+				{
+					$(ub).css('background', "#ffffff");
+				}
+			}
+			if (beyondBB)
+			{
+				$('#sendfake').prop('disabled',true);
+				$('#warning').css('background', "#ff6666");
+				$('#warning').css('border', "2px solid #ff0000");
+				$('#warning').css('display', "inline-block");
+				$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
+			}
+			else
+			{
+				recursionProtection = true;
+				setCustomerCreditFeedback();
+				recursionProtection = false;
+			}
+
+		}
+	}
+	function checkSites(){
         var ubs = $('#basketTable #ubDate');
         var temps = $('#basketTable #temp_id');
-        if (ubs.length == 0 || dateText == null || dateText == "") return;
+        if (ubs.length == 0 || dateText == null || dateText == "") return true;
         var date = dateObj.getTime();
         var beyondBB = false;
         for(var x = 0; x < ubs.length; x++){
@@ -756,6 +784,28 @@ function cancelSale()
         var dateObj = $('#estimated_delivery_date').datepicker('getDate');
         if (dateObj != null && delCheckingOn){
             console.log("t1");
+            var daySelected = dateObj.getDay();
+            var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+            var weekdayLookup = [01			,64			,32			,16			,08			,04			,02			];
+            var weekdayInt = weekdayLookup[daySelected];
+        }
+        if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
+        {
+            day = weekday[daySelected];
+            $('#warning').css('background', "#ff6666");
+            $('#warning').css('border', "2px solid #ff0000");
+            $('#warning').css('display', "inline-block");
+            $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    function checkDelDay()
+    {
+        var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+        if (dateObj != null && delCheckingOn){
             var daySelected = dateObj.getDay();
             var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
             var weekdayLookup = [01			,64			,32			,16			,08			,04			,02			];

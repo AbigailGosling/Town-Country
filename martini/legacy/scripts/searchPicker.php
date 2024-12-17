@@ -580,7 +580,7 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
         $.get( "scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
             $('.basketTable').append(data);
-            checkUBDates(null);
+            masterChecklist();
         });
 
         firstExecution = milliseconds
