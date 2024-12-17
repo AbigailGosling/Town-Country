@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 
 require(__DIR__.'/../functions.php');
 
-	
+
 $id = request()->input('id');
 define('DEL_SUNDAY',     1);
 define('DEL_SATURDAY',   2);
@@ -34,7 +34,7 @@ $cl->entity_id = $id;
 $cl->body = ($customer->delivery_day_override == "1")?"Enabled : by old system":"Disabled : by old system";
 $cl->save();
 
-$y = prepareExecuteQuery($x,'i',[$id]);
+$y = prepareExecuteQuery($x,'si',[$days,$id]);
 
 
 ?>
