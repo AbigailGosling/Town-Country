@@ -69,7 +69,6 @@ class ReportHelper
             if ($q)
             {
                 $filters['intake.id'] = $INTAKE_ID;
-                $ids = array_column($q->get()->toArray(),'id');
                 $ids = Pallet::where("intake_id",$INTAKE_ID)->pluck('id')->toArray();
                 $ids = Product::whereIn("pallet_id",$ids)->pluck('id')->toArray();
                 if (count($ids)>0)
