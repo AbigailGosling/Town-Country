@@ -262,24 +262,6 @@ use Illuminate\Support\Facades\Auth;
 		</div>
         <div class="overview_block">
 			<div>
-                <label>Health Mark</label>
-                <form id="changeIntakeHealthForm" method="post" action="scripts/changeIntakeHealth.php">
-                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
-                    <select id="changeIntakeHealth" style="height:30px;outline:none;border:0px;width: 100%;" name="health_id">
-                    <option value="-1" disabled<?php if(-1 == $intake['health_id']||null == $intake['health_id']||"" == $intake['health_id']){ echo 'selected'; } ?>></option>
-                        <?php
-                            $y = prepareExecuteQuery("SELECT * FROM `health_mark` ORDER BY `name` ASC");
-
-                            while($healthmark = mysqli_fetch_array($y)){
-                            ?><option value="<?php echo $healthmark['id']; ?>" <?php if($healthmark['id'] == $intake['health_id']){ echo 'selected'; } ?> <?php if($healthmark['disabled'] == 1){ echo 'disabled'; } ?>><?php echo $healthmark['name']; ?></option>
-                            <?php }
-                        ?>
-                    </select>
-                </form>
-			</div>
-		</div>
-        <div class="overview_block">
-			<div>
                 <label>Customs Import Entry</label>
                 <form method="POST" action="scripts/changeIntakeImportNum.php" class="flex">
                     <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
@@ -288,6 +270,9 @@ use Illuminate\Support\Facades\Auth;
                     <input type="submit" value="Save">
                 </form>
 			</div>
+		</div>
+        <div class="overview_block">
+
 		</div>
         <div class="overview_block">
 

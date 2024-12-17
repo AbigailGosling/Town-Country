@@ -173,6 +173,17 @@ use App\Models\Site;
 		</div>
 		<input name="cut_id" id="cut_id" type="text" value="<?php echo $productRow['cut_id']; ?>" style="display:none;">
 
+        <label>Health Mark</label>
+		<select name="health_id" id="health_id">
+			<option value="--">--</option>
+			<?php
+				$x = "SELECT * FROM `health_mark` WHERE `disabled` = 0 OR id = '".$productRow['health_id']."' ORDER BY `name` ASC";
+				$y = prepareExecuteQuery($x);
+				while($row = mysqli_fetch_array($y)){
+				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $productRow['health_id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+				}
+			?>
+		</select>
 
 		<label>Units of measurement</label>
 		<select name="unit" id="unit">

@@ -134,6 +134,17 @@ use App\Models\Site;
 			</select>
 		</div>
 
+        <label>Health Mark</label>
+		<select name="health_id" id="health_id">
+			<option value="--">--</option>
+			<?php
+				$x = "SELECT * FROM `health_mark` WHERE `disabled` = 0 OR id = '".$pallet['health_id']."' ORDER BY `name` ASC";
+				$y = prepareExecuteQuery($x);
+				while($row = mysqli_fetch_array($y)){
+				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['health_id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+				}
+			?>
+		</select>
 		<label>Units of measurement</label>
 		<select name="unit" id="unit">
  			<option value="C">Case</option>
