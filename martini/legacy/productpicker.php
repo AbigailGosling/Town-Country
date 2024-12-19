@@ -25,11 +25,11 @@ use App\Models\User;
 			<label>Delivery Date</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
 		</div>
-
+	  
 	</div>
-
+	
 	<div class="row" id="address"></div>
-
+	
 	<div class="row">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
@@ -37,7 +37,7 @@ use App\Models\User;
 		</div>
 		<div class="col"></div>
 	</div>
-
+	
 	<div class="row">
 		<div class="col">
 			<label>	Order Reference Number</label><br/>
@@ -55,7 +55,7 @@ use App\Models\User;
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
 					$_users = User::where(['disabled'=>0])->orderBy('name')->get();
-
+	
 					foreach ($_users as $_user) {
 						if (!$_user->hasPermission(Permission::find(1))) continue;
 						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -66,7 +66,7 @@ use App\Models\User;
 		<div class="col"></div>
 	</div>
 	<?php } ?>
-	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>
+	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>	  
 </div>
 
 <div class="rightPanel">
@@ -85,7 +85,7 @@ use App\Models\User;
 			<th>Value</th>
 		</tr>
 	</table>
-
+	
 	<div>
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
@@ -106,7 +106,7 @@ use App\Models\User;
 					<?php
 						$x = "SELECT * FROM `species`";
 						$y = prepareExecuteQuery($x);
-
+						
 						while($row = mysqli_fetch_array($y)){
 						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 						}
@@ -118,11 +118,11 @@ use App\Models\User;
 						<?php
 							$x = "SELECT * FROM `cutgroups`";
 							$y = prepareExecuteQuery($x);
-
+							
 							$i=0;
 							while($row = mysqli_fetch_array($y)){
-
-
+								
+								
 								$thisid = $row['species_id'];
 								$y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
 								$species = mysqli_fetch_array($y2);
@@ -137,7 +137,7 @@ use App\Models\User;
 					<?php
 						$x = "SELECT * FROM `brands` ORDER BY `name`";
 						$y = prepareExecuteQuery($x);
-
+						
 						while($row = mysqli_fetch_array($y)){
 						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 						}
@@ -150,7 +150,7 @@ use App\Models\User;
 						<?php
 							$x = "SELECT * FROM `nationality` ORDER BY `name`";
 							$y = prepareExecuteQuery($x);
-
+							
 							while($row = mysqli_fetch_array($y)){
 							?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 							}
@@ -171,24 +171,24 @@ use App\Models\User;
 				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;" disabled></td>
 			</tr>
 		</table>
-
+		
 		</form>
 
 
     <div class="weightTotal" style="display:none;">Total Weight: <span class="weightVal">0</span>kg</div>
-
+	
 	<div id="loadResults" class="resultsContainer"></div>
 </div>
 
-<script type="text/javascript" src="js/modal-dialog.js"></script>
+<script type="text/javascript" src="js/modal-dialog.js"></script>  
 <div class="clearfix"></div>
-<?php
+<?php 
 	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
 		alert('<?php echo request()->input('msg');?>');
 	</script>
-	<?php
+	<?php	
 	}
 ?>
 <script type="text/javascript">
@@ -207,7 +207,7 @@ use App\Models\User;
 
 		document.getElementById('menu').addEventListener('click', function(e) {
 			if (formHasChanged && !submitted) {
-				e.preventDefault()
+				e.preventDefault()	
 				changePage('menu')
 			}
 		})
@@ -222,12 +222,12 @@ use App\Models\User;
 
 		$(document).on('click', '.intakeLink', function(e) {
 			if (formHasChanged && !submitted) {
-				e.preventDefault()
+				e.preventDefault()	
 				changePage($(this).attr('id'))
 			}
 		})
 
-		function changePage(prop) {
+		function changePage(prop) {					
 			var alert = confirm('Are you sure you want to leave?')
 
 			if (alert === true) {
@@ -242,13 +242,13 @@ use App\Models\User;
     });
 
 	function addToList(id){
-
+		
 		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
 		});
-
+		
 	}
-
+	
 	function removeFromList(id, pallet_id, product_id){
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
@@ -256,7 +256,7 @@ use App\Models\User;
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
-
+	
 function checkStock(){
 	modalDialog.showMask();
     var readyToSubmit = 1;
@@ -273,7 +273,7 @@ function checkStock(){
 
 		$.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
 			var product_stock_count = parseInt(num);
-
+			
 			if(quantity_wanted <= product_stock_count){
 
 			}else{
@@ -307,7 +307,7 @@ function checkStock(){
 		{
 			$('#pickerForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:finalSaleSucess,error:finalSaleFailure});
 		}
-
+		
 	},5)
 
 }
@@ -333,9 +333,9 @@ function cancelSale()
 </script>
 
 <style type="text/css">
-
-
-
+     
+    
+    
 
 	.rightPanel {
 		padding:50px;
@@ -348,38 +348,38 @@ function cancelSale()
 		border:1px solid #f4f4f4;
 		position:relative;
 	}
-
+	
 	.clearfix{
 		clear:both;
 	}
-
+	
 	.inputbox-button{
 		width:323px;
 		height:34px;
 		margin-bottom:10px;
 	}
-
+	
 	.inputbox{
 		width:300px;
 		height:34px;
 		padding-left:18px;
-
+ 
 	}
-
+	
 	.createCustomerContainer{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-
+	
 	.weightTotal{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-
+	
 	.resultsContainer{
 		min-height: 400px;
 		border: 2px dashed #cacaca;
@@ -440,7 +440,7 @@ function cancelSale()
 	}
 
 	@media only screen
-	and (min-device-width : 768px)
+	and (min-device-width : 768px) 
 	and (max-device-width : 1024px)  {
 		.searchRContent {
 			font-size: 10px
@@ -516,7 +516,7 @@ function cancelSale()
 		var sellAsUser = $('#sales_person').val();
 		var UserSet = false;
 		dateEntered = false;
-
+		
 		if (customer_id != undefined) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
@@ -531,7 +531,7 @@ function cancelSale()
 			UserSet = false;
  			$('#sales_person').css('border','1px solid red');
 		}
-
+		
 		if (date != '') {
 			dateEntered = true;
 			$('#estimated_delivery_date').css('border-color', '#f2f2f2');
@@ -545,7 +545,7 @@ function cancelSale()
 		var priceEntered = true;
 		var pricedCorrectly = true;
 		var doneOnce = false;
-
+		
 		$('.price').each(function(index,element){
 			doneOnce = true;
  			var value = $(element).val();
@@ -563,12 +563,12 @@ function cancelSale()
 				showPriceCheck = true;
 			}
 		});
-
+		
 		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
 			checkStock();
 			return false;
 		}else{
-
+			
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
@@ -577,156 +577,214 @@ function cancelSale()
 			}
 			$('#sendfake').prop('disabled', false);
 
-		}
+		}		
 	});
 	var getCustomResult;
 	var addressID;
+	function setCustomerDetails(customer_id, empty='false'){
+		customerID = customer_id;
+		
+		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
+			getCustomResult = data;
+			setCustomerCreditFeedback(data);
+		});
+	}
+	function setCustomerCreditFeedback(data){
+		if (data == "") data = getCustomResult;
+		$('#address').html(data);
+			$('.rating').fadeIn();
+			
+			$('#addressline1').prop('readonly', true);
+			$('#addressline2').prop('readonly', true);
+			$('#addressline3').prop('readonly', true);
+			$('#addressline4').prop('readonly', true);
+			$('#addresspostcode').prop('readonly', true);
+			$('#deliverynumber').prop('readonly', true);
+
+			if (!transactionAllowed || showWarning)
+			{
+				if (!showWarning)
+				{
+					$('#sendfake').attr('disabled', true);
+					$('#searcher').attr('disabled', true);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+				}
+				else if (showHigherWarning)
+				{
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+				}
+				else
+				{
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					$('#warning').css('background', "#ffc266");
+					$('#warning').css('border', "2px solid #ff9900");
+				}
+				$('#warning').css('display', "inline-block");
+				$('#warning').html(warningMessage);
+			}
+			else
+			{
+				var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+				if (dateObj != null && delCheckingOn){
+					var daySelected = dateObj.getDay();
+					var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+					var weekdayLookup = [01			,64			,32			,16			,08			,04			,02			];
+					var weekdayInt = weekdayLookup[daySelected];
+				}
+				if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0) 
+				{	
+					day = weekday[daySelected];
+					$('#sendfake').attr('disabled', true);
+					$('#searcher').attr('disabled', true);
+					$('#warning').css('background', "#ff6666");
+					$('#warning').css('border', "2px solid #ff0000");
+					$('#warning').css('display', "inline-block");
+					$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+				}
+				else {
+					$('#warning').css('background', "#90EE90");
+					$('#warning').css('border', "2px solid #00FF00");
+					$('#warning').css('display', "inline-block");
+					$('#warning').html(warningMessage);
+					$('#sendfake').attr('disabled', false);
+					$('#searcher').attr('disabled', false);
+					if (recursionProtection == false && dateObj != null)checkUBDates($('#estimated_delivery_date').val());
+				}
+			}
+	}
 
 	ready = true;
 	setInterval(function(){
 		ready = true;
 		var totalPrice = 0;
-
+		
 		$('.price').each(function(){
 			var q = $(this).attr('q');
-
+			
 			if(this.value != ''){
 				var finalVal = (parseFloat(this.value)) * q;
-
+				
 				totalPrice += finalVal;
 			}else{
 				ready = false;
 			}
-
+			
 		});
-
-
+		
+		
  	}, 300);
-
-
-
-	$(document).ready(function(){
+	
+		
+	
+	$(document).ready(function(){  
 
 		$.each(document.cookie.split(/; */), function(){
 		  var splitCookie = this.split('=');
 
-
+			
 			if(splitCookie[0].includes('quantity-')){
-				document.cookie = splitCookie[0] + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+				document.cookie = splitCookie[0] + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';	
 			}
 		});
-
+	  
 		$( "#estimated_delivery_date" ).datepicker({
 			onSelect: ddChanged,
 			dateFormat: 'dd/mm/yy'
 		});
-
-
+		
+		
 	});
-    function masterChecklist()
-    {
-        $('#sendfake').attr('disabled', true);
-        $('#searcher').attr('disabled', (getCustomResult=="" || getCustomResult==null || $('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null));
-        if (getCustomResult=="" || getCustomResult==null || !setCustomerCreditFeedback()) return;
-        if ($('#estimated_delivery_date').val()=="" || $('#estimated_delivery_date').val()==null|| !checkDelDay() || !checkUBDates()) return;
-        if (!checkSites()) return;
-        $('#sendfake').attr('disabled', false);
-    }
-	function ddChanged(dateText, inst)
-    {
-        masterChecklist();
+	function ddChanged(dateText, inst){
+		if (customerID == null) checkUBDates(dateText);
+		else
+		{
+			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false', function(data){
+				getCustomResult = data;
+				setCustomerCreditFeedback(data);
+			});
+		}
+		
 	}
-    function setCustomerDetails(customer_id, empty='false')
-    {
-		customerID = customer_id;
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
-			getCustomResult = data;
-            masterChecklist();
-		});
-	}
-    function setCustomerCreditFeedback()
-    {
-		var data = getCustomResult;
-		$('#address').html(data);
-        $('.rating').fadeIn();
-
-        $('#addressline1').prop('readonly', true);
-        $('#addressline2').prop('readonly', true);
-        $('#addressline3').prop('readonly', true);
-        $('#addressline4').prop('readonly', true);
-        $('#addresspostcode').prop('readonly', true);
-        $('#deliverynumber').prop('readonly', true);
-
-        $('#warning').css('background', "#90EE90");
-        $('#warning').css('border', "2px solid #00FF00");
-
-        $('#warning').css('display', "inline-block");
-        $('#warning').html(warningMessage);
-
-        if (!transactionAllowed || showWarning)
-        {
-            if (!showWarning)
-            {
-                $('#warning').css('background', "#ff6666");
-                $('#warning').css('border', "2px solid #ff0000");
-                return false;
-            }
-            else if (showHigherWarning)
-            {
-                $('#warning').css('background', "#ff6666");
-                $('#warning').css('border', "2px solid #ff0000");
-                return false;
-            }
-            else
-            {
-                $('#warning').css('background', "#ffc266");
-                $('#warning').css('border', "2px solid #ff9900");
-            }
-        }
-        return true;
-	}
-	function checkUBDates()
-    {
-		var dateText = $('#estimated_delivery_date').val();
+	var recursionProtection = false;
+	function checkUBDates(dateText = null){
+		if (!checkSites()) return;
+		if (dateText == null) dateText = $('#estimated_delivery_date').val();
 		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
+		if (dateObj != null && delCheckingOn){
+			var daySelected = dateObj.getDay();
+			var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
+			var weekdayInt = weekdayLookup[daySelected];
+		}
+		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0) 
+		{	
+			day = weekday[daySelected];
+			$('#sendfake').attr('disabled', true);
+			$('#searcher').attr('disabled', true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+			return;
+		}
+		else if (warningMessage){
+			$('#warning').css('background', "#90EE90");
+			$('#warning').css('border', "2px solid #00FF00");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html(warningMessage);
+			$('#sendfake').attr('disabled', false);
+			$('#searcher').attr('disabled', false);
+		}
+		
+		if (transactionAllowed){
+			var ubs = $('#basketTable #ubDate');
+			var temps = $('#basketTable #temp_id');
+			if (ubs.length == 0 || dateText == null || dateText == "") return;
+			var date = parseDMY(dateText).getTime();
+			$('#sendfake').prop('disabled',false);
+			var beyondBB = false; 
+			for(var x = 0; x < ubs.length; x++){
+				var ub = ubs[x];
+				var temp = temps[x];
+				if (customerID == "420") break;
+				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
+				{
+					continue;
+				}
+				var ubd = parseDMY(ub.innerHTML).getTime();
+				if (ubd < date)
+				{
+					$(ub).css('background', "#ff6666");
+					beyondBB = true;
+				}
+				else
+				{
+					$(ub).css('background', "#ffffff");
+				}
+			}
+			if (beyondBB)
+			{
+				$('#sendfake').prop('disabled',true);
+				$('#warning').css('background', "#ff6666");
+				$('#warning').css('border', "2px solid #ff0000");
+				$('#warning').css('display', "inline-block");
+				$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
+			}
+			else
+			{
+				recursionProtection = true;
+				setCustomerCreditFeedback();
+				recursionProtection = false;
+			}
 
-        var ubs = $('#basketTable #ubDate');
-        var temps = $('#basketTable #temp_id');
-        if (ubs.length == 0 || dateText == null || dateText == "") return;
-        var date = dateObj.getTime();
-        var beyondBB = false;
-        for(var x = 0; x < ubs.length; x++){
-            var ub = ubs[x];
-            var temp = temps[x];
-            if (customerID == "420") break;
-            if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
-            {
-                continue;
-            }
-            var ubd = parseDMY(ub.innerHTML).getTime();
-            if (ubd < date)
-            {
-                $(ub).css('background', "#ff6666");
-                beyondBB = true;
-            }
-            else
-            {
-                $(ub).css('background', "#ffffff");
-            }
-        }
-        if (beyondBB)
-        {
-            $('#warning').css('background', "#ff6666");
-            $('#warning').css('border', "2px solid #ff0000");
-            $('#warning').css('display', "inline-block");
-            $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
-            return false;
-        }
-        return true;
-
-    }
-	function checkSites()
-    {
+		}
+	}
+	function checkSites(){
 		var allPass = true;
 		var siteid = null;
 		var elems = $('#basketTable > tbody > tr');
@@ -751,29 +809,6 @@ function cancelSale()
 		}
 		return allPass;
 	}
-    function checkDelDay()
-    {
-        var dateObj = $('#estimated_delivery_date').datepicker('getDate');
-        if (dateObj != null && delCheckingOn){
-            console.log("t1");
-            var daySelected = dateObj.getDay();
-            var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
-            var weekdayLookup = [01			,64			,32			,16			,08			,04			,02			];
-            var weekdayInt = weekdayLookup[daySelected];
-        }
-        if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
-        {
-            day = weekday[daySelected];
-            $('#warning').css('background', "#ff6666");
-            $('#warning').css('border', "2px solid #ff0000");
-            $('#warning').css('display', "inline-block");
-            $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
-            return false;
-        }
-        else {
-            return true;
-        }
-    }
 	function parseDMY(value) {
 		var date = value.split("/");
 		var d = parseInt(date[0], 10),
@@ -805,7 +840,7 @@ function cancelSale()
 
         //doSearch();
 	});
-
+	
 	// hide cuts on load
 	$('#SearchCutgroups option.allsoption').hide();
 	// iOS fix - display:none doesn't work on select options
@@ -813,11 +848,11 @@ function cancelSale()
 
     $('#SearchCutgroups').change(function(){
         var id = $(this).val();
-
+		
         //doSearch();
     });
 
-
+ 
 	function doSearch(){
 		var cut = $('#SearchCut').val();
 		var palletID = $('#SearchPallet').val();
@@ -832,10 +867,10 @@ function cancelSale()
 		 var customer_id = $('#customer_id').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
-
+			
 			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id, function(data, status){
 				$('#loadResults').html(data);
-
+				
 			});
 
 			$('#SearchBrand').prop('selectedIndex',0);
@@ -851,12 +886,12 @@ function cancelSale()
 			alert('Please fill out the form before searching');
 		}
 	}
-
+	
 	function ShowWeights(pallet_id,species_id, cut_id){
 		// $('#weightsContainer').fadeOut();
 		$('.weights' + pallet_id + species_id + cut_id).toggle();
 	}
-
+	
 	$('#submitCustomerAccount').click(function(){
 		$.ajax({
 			type: 'POST',
@@ -868,11 +903,11 @@ function cancelSale()
 			}
 		});
 	});
-
+	
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
-
+		
 		var request = $.ajax({
 			type: "POST",
 			url: "ajax/getCustomerDropdown.php",
@@ -890,11 +925,11 @@ function cancelSale()
 		request.fail(function(jqXHR, textStatus) {
 			// alert( "Request failed: " + textStatus );
 		});
-
+	
 	});
-
-
-
+		
+		
+		
 	function changeAddress(customer_id, address_id){
 
 		$('#addressid').val(address_id);
@@ -904,8 +939,8 @@ function cancelSale()
 			$('.lity-close').trigger('click');
 		});
 	}
-
-
+		
+	
 </script>
 
 <style type="text/css">
