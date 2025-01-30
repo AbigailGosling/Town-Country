@@ -54,6 +54,7 @@ class ReportHelper
     string $INTERNAL_NUM = null,
     string $IMPORT_NUM = null
     ):array{
+        ini_set('max_execution_time', 0);
         $INTERESTED_PRODUCTIDS=[];
         $filters=[];
         if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0')
