@@ -29,7 +29,7 @@ $x = "UPDATE `customers` SET `delivery_day_override` = NOT `delivery_day_overrid
 $customer = Customer::find($id);
 $cl = new CommentLogging();
 $cl->type = "delivery_override";
-$cl->user_id = Auth::id();
+$cl->user_id = Auth::user()->id;
 $cl->entity_id = $id;
 $cl->body = ($customer->delivery_day_override == "1")?"Enabled : by old system":"Disabled : by old system";
 $cl->save();
