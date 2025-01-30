@@ -32,13 +32,13 @@ use Illuminate\Support\Facades\Auth;
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
-    <h1 class="int">Your Pick Sheets</h1>	
+    <h1 class="int">Your Pick Sheets</h1>
     <br/><br/>
 	<div id="menu_wrasp" style="width:95%;">
  		<?php
-		
+
 			session_start();session_write_close();
-			
+
 			$userid = $_SESSION['USER'];
  			$x = "SELECT * FROM `pickerSheets` WHERE completed='0' && deleted !='1' ORDER BY STR_TO_DATE(estimated_delivery_date,'%d/%m/%Y') ASC";
 			$y = prepareExecuteQuery($x);
@@ -55,10 +55,10 @@ use Illuminate\Support\Facades\Auth;
                 $allProdsByPick[$row['pickersheet_id']] = $row['prod_ids'];
             }
 			$usermodel = User::find(Auth::id());
-			while($row = mysqli_fetch_assoc($y)){               
+			while($row = mysqli_fetch_assoc($y)){
                 $picksheetid = $row['id'];
                 if ($allProdsByPick[$picksheetid] == null) continue;
-                $product_ids = explode(",",$allProdsByPick[$picksheetid]);       
+                $product_ids = explode(",",$allProdsByPick[$picksheetid]);
                 if (count($product_ids)>0)
                 {
                     $product_ids = implode(',', $product_ids);
@@ -76,7 +76,7 @@ use Illuminate\Support\Facades\Auth;
 
                     $result_frozen= prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id IN (2,3) LIMIT 1");
                     $count_frozen = mysqli_num_rows($result_frozen);
-                    
+
                     if ($count_frozen>0)
                     {
                         $result_location_frozen= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (2,3) LIMIT 1");
@@ -89,28 +89,28 @@ use Illuminate\Support\Facades\Auth;
                     $count_frozen = 0;
                     $count_fresh = 0;
                 }
-                    
-                    
+
+
                 $customer_id = $row['customer_id'];
 				if (!$usermodel->canViewCustomer($customer_id)) continue;
 				$date = $row['date'];
-				
+
 				$date=date_create($date);
-				$date = date_format($date,"d/m/Y");
-				
-				
+				$date = date_format($date,"d/m/Y H:i");
+
+
 				$x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";
 				$y2 = prepareExecuteQuery($x2);
-				
+
 				$row2 = mysqli_fetch_assoc($y2);
-				
+
             ?>
             <?php if($count_fresh == 1 && $row['completed_fresh'] == '0'){ rowprinter(false,$row,$row2,$date,explode(",",$location_fresh));?>
 
             <?php } ?>
 
             <?php if($count_frozen == 1 && $row['completed_frozen'] == '0'){ rowprinter(true,$row,$row2,$date,explode(",",$location_frozen)); ?>
-                
+
             <?php } ?>
 
 
@@ -154,9 +154,9 @@ use Illuminate\Support\Facades\Auth;
             <?php
             }
         ?>
-         
-        
-	</div>	
+
+
+	</div>
 </main>
 <div id="btm"></div>
 <style>
