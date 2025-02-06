@@ -23,6 +23,7 @@ use App\Models\Weight;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
 class IntakeReportController extends Controller
@@ -104,7 +105,10 @@ class IntakeReportController extends Controller
                 $salePickItems = $pickItems->whereIn("pickersheet_id",$sale->id);
                 foreach ($salePickItems as $pickItem)
                 {
-                    if (!array_key_exists($pickItem->product_id,$weightIDsForSale))dd([$pickItem->product_id,$weightIDsForSale]);
+                    if (!array_key_exists($pickItem->product_id,$weightIDsForSale)){
+                        Log::error(json_encode([$pickItem->product_id,$weightIDsForSale]));
+                        continue;
+                    }
                     $out = new stdClass();
                     $product = $products->find($pickItem->product_id);
                     $cut = $cuts->find($product->cut_id);
@@ -161,9 +165,9 @@ class IntakeReportController extends Controller
                     $out->new_intake_id = Pallet::find($newproduct->pallet_id)->intake_id;
                     $out->pallet_id = $newproduct->pallet_id;
                     $out->product_name = Species::find($cut->species_id)->name ." ".$cut->name;
-                    $out->nationality_name = $nationalities->find($newproduct->nationality_id)->name;
-                    $out->cooling_name = Temperature::find($newproduct->cooling_id)->temperature;
-                    $out->brand_name = $brands->find($newproduct->brand_id)->name;
+                    $out->nationality_name = $nationalities->find($newproduct->nationality_id)?->name;
+                    $out->cooling_name = Temperature::find($newproduct->cooling_id)?->temperature;
+                    $out->brand_name = $brands->find($newproduct->brand_id)?->name;
                     $out->supplier_name = ($supplier)?$supplier->name:$supCust->businessname;
                     $out->qty = $creditNote->quantity;
                     switch ($orgproduct->unit)
@@ -226,9 +230,9 @@ class IntakeReportController extends Controller
                     $out->customer = $customer->businessname;
                     $out->pallet_id = $product->pallet_id;
                     $out->product_name = Species::find($cut->species_id)->name ." ".$cut->name;
-                    $out->nationality_name = $nationalities->find($product->nationality_id)->name;
+                    $out->nationality_name = $nationalities->find($product->nationality_id)?->name;
                     $out->cooling_name = Temperature::find($product->cooling_id)->name;
-                    $out->brand_name = $brands->find($product->brand_id)->name;
+                    $out->brand_name = $brands->find($product->brand_id)?->name;
                     $out->supplier_name = ($supplier)?$supplier->name:$supCust->businessname;
                     $out->qty = count($weightIDsForSale[$product->id]);
                     switch ($product->unit)
