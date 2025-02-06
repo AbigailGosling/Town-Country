@@ -23,6 +23,7 @@ use App\Models\Weight;
 use Illuminate\Database\Eloquent\Collection;
 use stdClass;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 
 class IntakeReportController extends Controller
 {
@@ -37,6 +38,10 @@ class IntakeReportController extends Controller
             do
             {
                 $intake = Intake::find($intake_id);
+                if ($intake == null)
+                {
+                    return Redirect::back()->withErrors("Intake $intake_id does not Exist");
+                }
                 $pallets = Pallet::where("intake_id",$intake->id)->get();
                 $products = Product::whereIn("pallet_id",$pallets->pluck("id")->toArray())->get();
                 if (!($products->first()->original_intake_id == null || $products->first()->original_intake_id == ""))
