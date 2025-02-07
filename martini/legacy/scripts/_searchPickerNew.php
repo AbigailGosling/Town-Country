@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Auth;
         }
 
         ####
-        $productsX2 = "SELECT * , product.id productid
+        $productsX2 = "SELECT * , product.id productid, product.comments as productcomments
         FROM `product`
         INNER JOIN `pallet`
         ON product.pallet_id=pallet.id
@@ -84,7 +84,7 @@ use Illuminate\Support\Facades\Auth;
 
         }
  		if($products2Count > 0){
-			while($productsRow2 = mysqli_fetch_array($productsY2)){
+			while($productsRow2 = mysqli_fetch_assoc($productsY2)){
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
                     if (stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")!=false || $locked){
@@ -99,13 +99,16 @@ use Illuminate\Support\Facades\Auth;
                     $largestDate2 = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?"EXTENSION":$productsRow2['range_to'];
                     $pallet_id = $productsRow2['pallet_id'];
                     $product_id = $productsRow2['productid'];
-                    $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
-                    $pallet_comments_query = mysqli_query($mysqli,$pallet_comments_query_sql);
-                    $pallet_comments = "";
-                    if (mysqli_num_rows($pallet_comments_query) > 0)
-                    {
-                        $pallet_comments = mysqli_fetch_assoc($pallet_comments_query);
-                        $pallet_comments = $pallet_comments['body'];
+                    $pallet_comments = $productsRow2['productcomments'];
+                    if ($pallet_comments==""){
+                        $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
+                        $pallet_comments_query = mysqli_query($mysqli,$pallet_comments_query_sql);
+
+                        if (mysqli_num_rows($pallet_comments_query) > 0)
+                        {
+                            $pallet_comments = mysqli_fetch_assoc($pallet_comments_query);
+                            $pallet_comments = $pallet_comments['body'];
+                        }
                     }
                     if($productsRow2['akg'] != ''){
                         $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$nationality_id);
@@ -117,7 +120,7 @@ use Illuminate\Support\Facades\Auth;
                         if($this_row_weight == 0){ continue; }
                     }
                     $state = 0;
-                    if($ubbb != 2 && $temp_id == 1){
+                    if($ubbb != 2 && $ubbb !=6 && $temp_id == 1){
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;
@@ -260,12 +263,11 @@ use Illuminate\Support\Facades\Auth;
 	});
 	function saveDeepComment(pallet_id,product_id){
 		var currentComment = $('[palletid="'+pallet_id+'-'+product_id+'"]').val();
-		console.log(currentComment);
 		var pallet = pallet_id;
 		$.ajax({
 			method: "POST",
-			url: "ajax/loggedDataChange.php",
-			data: {body: currentComment, entity_id: pallet_id, type:'pallet'},
+			url: "ajax/saveDeepComment.php",
+			data: {body: currentComment, product_id: product_id},
 		});
         alert("Done!");
 	}
