@@ -388,7 +388,9 @@ class ReportHelper
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"product.");
-
+            $col = "pickerSheets.isSupplemental";
+            if ($result->$col !== true && $result->$col !== 1)
+            {
             $col1 = "product.original_pallet_id";
             $col2 = "product.cut_id";
             $col3 = "product.brand_id";
@@ -419,6 +421,7 @@ class ReportHelper
             $item =$qb->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"pickerItems.");
+            }
 
             if (static::bulkMergeIn($result))
             {
@@ -810,21 +813,20 @@ class ReportHelper
 
         $col = "pickerSheets.user_from_id";
         $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
-        if ($item===null) return false;
-        static::row_merge($result,$item);
+        if ($item!==null) static::row_merge($result,$item);
 
         if ($full)
         {
             $col = "product.pallet_id";
             $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
-            if ($item===null) return false;
+            if ($item!==null)
+            {
             static::row_merge($result,$item,"pallet.");
-
             $col = "pallet.intake_id";
             $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-            if ($item===null) return false;
+                    if ($item!==null)
+                    {
             static::row_merge($result,$item,"intake.");
-
             $col = "intake.supplier_id";
             $col2 = "intake.returned";
             if ($result->$col2!=1)
@@ -876,6 +878,10 @@ class ReportHelper
                 $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
                 static::row_merge($result,$item);
             }
+                }
+
+            }
+
         }
         return true;
     }
