@@ -388,37 +388,40 @@ class ReportHelper
             $item = static::$conn->table("product")->select("product.*")->where("product.id",$result->$col)->first();
             if ($item===null) continue;
             static::row_merge($result,$item,"product.");
+            $col = "pickerSheets.isSupplemental";
+            if ($result->$col !== true && $result->$col !== 1)
+            {
+                $col1 = "product.original_pallet_id";
+                $col2 = "product.cut_id";
+                $col3 = "product.brand_id";
+                $col4 = "product.nationality_id";
+                $item = static::$conn->table("product")->select("product.*")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]])->first();
+                if ($item===null) continue;
+                static::row_merge($result,$item,"original_product.");
 
-            $col1 = "product.original_pallet_id";
-            $col2 = "product.cut_id";
-            $col3 = "product.brand_id";
-            $col4 = "product.nationality_id";
-            $item = static::$conn->table("product")->select("product.*")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]])->first();
-            if ($item===null) continue;
-            static::row_merge($result,$item,"original_product.");
+                $col = "product.original_pallet_id";
+                $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
+                if ($item===null) continue;
+                static::row_merge($result,$item,"original_pallet.");
 
-            $col = "product.original_pallet_id";
-            $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
-            if ($item===null) continue;
-            static::row_merge($result,$item,"original_pallet.");
+                $col = "original_pallet.intake_id";
+                $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
+                if ($item===null) continue;
+                static::row_merge($result,$item,"original_intake.");
 
-            $col = "original_pallet.intake_id";
-            $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-            if ($item===null) continue;
-            static::row_merge($result,$item,"original_intake.");
+                $col = "original_intake.supplier_id";
+                $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
+                if ($item===null) continue;
+                static::row_merge($result,$item,"original_supplier.");
 
-            $col = "original_intake.supplier_id";
-            $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
-            if ($item===null) continue;
-            static::row_merge($result,$item,"original_supplier.");
-
-            $co  = "original_product.id";
-            $col = "product.id";
-            $col2 = "pickerSheets.id";
-            $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
-            $item =$qb->first();
-            if ($item===null) continue;
-            static::row_merge($result,$item,"pickerItems.");
+                $co  = "original_product.id";
+                $col = "product.id";
+                $col2 = "pickerSheets.id";
+                $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
+                $item =$qb->first();
+                if ($item===null) continue;
+                static::row_merge($result,$item,"pickerItems.");
+            }
 
             if (static::bulkMergeIn($result))
             {
@@ -810,72 +813,74 @@ class ReportHelper
 
         $col = "pickerSheets.user_from_id";
         $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
-        if ($item===null) return false;
-        static::row_merge($result,$item);
+        if ($item!==null) static::row_merge($result,$item);
 
         if ($full)
         {
             $col = "product.pallet_id";
             $item = static::$conn->table("pallet")->select("pallet.*")->where("pallet.id",$result->$col)->first();
-            if ($item===null) return false;
-            static::row_merge($result,$item,"pallet.");
-
-            $col = "pallet.intake_id";
-            $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
-            if ($item===null) return false;
-            static::row_merge($result,$item,"intake.");
-
-            $col = "intake.supplier_id";
-            $col2 = "intake.returned";
-            if ($result->$col2!=1)
+            if ($item!==null)
             {
-                $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+                static::row_merge($result,$item,"pallet.");
+                $col = "pallet.intake_id";
+                $item = static::$conn->table("intake")->select("intake.*")->where("intake.id",$result->$col)->first();
+                if ($item!==null)
+                {
+                    static::row_merge($result,$item,"intake.");
+                    $col = "intake.supplier_id";
+                    $col2 = "intake.returned";
+                    if ($result->$col2!=1)
+                    {
+                        $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+                    }
+                    else
+                    {
+                        $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
+                        $item2 = new stdClass();
+                        $k1 = "customers.id";
+                        $k2 = "supplier.id";
+                        $item2->$k2 = $item->$k1;
+
+                        $k1 = "customers.businessname";
+                        $k2 = "supplier.name";
+                        $item2->$k2 = $item->$k1;
+                        $item = $item2;
+                    }
+                    static::row_merge($result,$item);
+
+                    $col = "product.brand_id";
+                    $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "product.nationality_id";
+                    $item = static::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "product.cooling_id";
+                    $item = static::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "product.cut_id";
+                    $item = static::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "cuts.cutgroup_id";
+                    $item = static::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "cuts.species_id";
+                    $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
+                    static::row_merge($result,$item);
+
+                    $col = "intake.health_id";
+                    if ($result->$col!=-1)
+                    {
+                        $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
+                        static::row_merge($result,$item);
+                    }
+                }
             }
-            else
-            {
-                $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
-                $item2 = new stdClass();
-                $k1 = "customers.id";
-                $k2 = "supplier.id";
-                $item2->$k2 = $item->$k1;
 
-                $k1 = "customers.businessname";
-                $k2 = "supplier.name";
-                $item2->$k2 = $item->$k1;
-                $item = $item2;
-            }
-            static::row_merge($result,$item);
-
-            $col = "product.brand_id";
-            $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "product.nationality_id";
-            $item = static::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "product.cooling_id";
-            $item = static::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "product.cut_id";
-            $item = static::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "cuts.cutgroup_id";
-            $item = static::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "cuts.species_id";
-            $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
-            static::row_merge($result,$item);
-
-            $col = "intake.health_id";
-            if ($result->$col!=-1)
-            {
-                $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
-                static::row_merge($result,$item);
-            }
         }
         return true;
     }
