@@ -9,16 +9,20 @@ use InternalScripts\SLabsEmailerStatus;
     $limit = 80;
     $searchterm = request()->input('searchterm');
 	$usermodel = User::find(Auth::id());
-	if($searchterm != ''){      
+	if($searchterm != ''){
         # Check if any customer names match the search input
         $customerIDs = [];
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?"
-    ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
-        while($customer = mysqli_fetch_array($customerResult)){ 
+            ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
+        while($customer = mysqli_fetch_array($customerResult)){
             if (!$usermodel->canViewCustomer($customer['id']) && !$usermodel->hasPermission("view_all_sale_confirmations")) continue;
-            array_push($customerIDs, $customer['id']); 
+            array_push($customerIDs, $customer['id']);
         }
-
+        $customerResult = prepareExecuteQuery("SELECT * FROM `supplier` WHERE `name` LIKE ? || REPLACE(`name`, ' ', '') LIKE ?"
+            ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
+        while($customer = mysqli_fetch_array($customerResult)){
+            array_push($customerIDs, $customer['id']);
+        }
         $x = "SELECT * FROM `pickerSheets` WHERE id = ? || id LIKE ?";
 
         if(count($customerIDs) > 0){
@@ -29,7 +33,7 @@ use InternalScripts\SLabsEmailerStatus;
         $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
     }else{
         if (!$usermodel->hasPermission("view_all_sale_confirmations"))
-            $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+            $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") AND is_return_to_supplier = 0) OR is_return_to_supplier = 1 ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
         else
             $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` ORDER BY date DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
     }
@@ -46,23 +50,35 @@ use InternalScripts\SLabsEmailerStatus;
         $date_purchased = date('d/m/Y', strtotime($picksheet['date']));
     ?>
         <tr class="pages"><td align="center" class="pos">
+            <?php
+            if ($picksheet['is_return_to_supplier']==0)
+            {
+            ?>
             <a href="viewSalesconfirmation.php?id=<?php echo $picksheet['id']; ?>" class="intake">
+            <?php } else { ?>
+            <a href="viewSupplierreturn.php?id=<?php echo $picksheet['id']; ?>" class="intake">
+            <?php } ?>
                 <table width="100%" border="0">
                     <tr>
                         <td width="25%" align="left">ID: <?php echo $picksheet['id']; ?> </td>
                         <td align="left" style="font-size: 14px;">
                             <?php
-                            
-                                
-                                $x1 = "SELECT * from `customers` WHERE id=?";
-                                $y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
-                                
-                                $customer = mysqli_fetch_array($y1);
-                            
-                            ?>
-                            <?php echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas']; ?>
 
-                            <?php
+                                if ($picksheet['is_return_to_supplier']==0)
+                                {
+                                    $x1 = "SELECT * from `customers` WHERE id=?";
+                                    $y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
+                                    $customer = mysqli_fetch_array($y1);
+                                    echo $customer['businessname'] . '  <span style="text-transform:lowercase;">t/a</span>  ' . $customer['tradingas'];
+                                }
+                                else
+                                {
+                                    $x1 = "SELECT * from `supplier` WHERE id=?";
+                                    $y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
+                                    $customer = mysqli_fetch_array($y1);
+                                    echo $customer['name'];
+                                }
+
                                 if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){
                                     echo "(VOID)";
                                     if($picksheet['deleted_by_user_id'] != ''){
@@ -77,7 +93,7 @@ use InternalScripts\SLabsEmailerStatus;
             </a>
  <?php
         $mailResult = prepareExecuteQuery("SELECT `status`,`secondary_code`,`addressee` FROM `mail_tracking` WHERE document_id = ? AND `type` = 'SALES_CONFIRMATION' AND `customer_id` = ? ORDER BY `id` DESC",'ii',[$picksheet['id'],$customer_id]);
-        $style = ""; 
+        $style = "";
         $title = "";
         if (mysqli_num_rows($queryResult) > 0)
         {
@@ -87,7 +103,7 @@ use InternalScripts\SLabsEmailerStatus;
                 $mailData = $tmpD;
                 if (strpos($tmpD['addressee'],"townandcountrymeats.co.uk") == -1) break;
             }
-            if ($mailData['status']!=null) 
+            if ($mailData['status']!=null)
             {
                 $title = 'title="'.SLabsEmailerStatus::getTextStatus($mailData['status'],$mailData['secondary_code']).'"';
                 $style = "background-color:".SLabsEmailerStatus::getTrafficStatus($mailData['status']);

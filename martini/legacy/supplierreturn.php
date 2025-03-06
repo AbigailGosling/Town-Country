@@ -11,15 +11,15 @@ use App\Models\User;
 </div>
 
 
-<form id="pickerForm" method="POST" action="scripts/buildPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
+<form id="pickerForm" method="POST" action="scripts/buildReturnPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
 <div class="container container--pt">
 	<div class="row" style="padding-top: 15px;">
 		<div class="col">
-			<label>Customer</label><br/>
-			<input class="form-control" type="text" id="customer" class="inputbox" required>
-			<div id="customer_search_results" style="position:relative;z-index:99999;"></div>
+			<label>Supplier</label><br/>
+			<input class="form-control" type="text" id="supplier" class="inputbox" required>
+			<div id="supplier_search_results" style="position:relative;z-index:99999;"></div>
 		</div>
 		<div class="col">
 			<label>Delivery Date</label><br/>
@@ -32,7 +32,7 @@ use App\Models\User;
 
 	<div class="row">
 		<div class="col">
-			<label>Picksheet Notes</label><br/>
+			<label>Supplier Return Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
 		<div class="col"></div>
@@ -40,7 +40,7 @@ use App\Models\User;
 
 	<div class="row">
 		<div class="col">
-			<label>	Order Reference Number</label><br/>
+			<label>External Reference Number</label><br/>
 			<input class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
 		</div>
 		<div class="col"></div>
@@ -51,7 +51,7 @@ use App\Models\User;
 	<?php }else{ ?>
 	<div class="row">
 		<div class="col">
-			<label> Salesperson</label><br />
+			<label>Operator</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
 					$_users = User::where(['disabled'=>0])->orderBy('name')->get();
@@ -168,7 +168,7 @@ use App\Models\User;
 				<td></td>
 				<td><input type="number" name="intake_id" id="IntakeID" placeholder="Intake ID" style="width:65px;height: 33px;padding-left: 10px; border-radius: 0;"></td>
 				<td><input type="number" name="pallet_id" id="PalletID" placeholder="Pallet ID" style="width:65px;height: 33px;padding-left: 10px; border-radius: 0;"></td>
-				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;" disabled></td>
+				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;"></td>
 			</tr>
 		</table>
 
@@ -196,7 +196,7 @@ use App\Models\User;
 	var showWarning = false;
 	var showHigherWarning = false;
 	var warningMessage = "";
-	var customerID = null;
+	var supplierID = null;
 	var infoMessage = "";
 	var showPriceCheck = false;
 	var delCheckingOn = false;
@@ -212,7 +212,7 @@ use App\Models\User;
 			}
 		})
 
-        $(document).on('change', 'form #customer', function (e) {
+        $(document).on('change', 'form #supplier', function (e) {
             formHasChanged  = true;
         });
 
@@ -366,7 +366,7 @@ function cancelSale()
 
 	}
 
-	.createCustomerContainer{
+	.createSupplierContainer{
 		font-weight:700;
 		position:absolute;
 		top:50px;
@@ -510,19 +510,19 @@ function cancelSale()
 
 		$(this).prop('disabled', true);
 		showPriceCheck = false;
-		var customer_id = $('#customer_id').val();
-		var customer = $('#customer').val();
+		var supplier_id = $('#supplier_id').val();
+		var supplier = $('#supplier').val();
 		var date = $('#estimated_delivery_date').val();
 		var sellAsUser = $('#sales_person').val();
 		var UserSet = false;
 		dateEntered = false;
 
-		if (customer_id != undefined) {
-			customerEntered = true;
-			$('#customer').css('border-color', '#f2f2f2');
+		if (supplier_id != undefined) {
+			supplierEntered = true;
+			$('#supplier').css('border-color', '#f2f2f2');
 		} else{
-			customerEntered = false;
- 			$('#customer').css('border','1px solid red');
+			supplierEntered = false;
+ 			$('#supplier').css('border','1px solid red');
 		}
 		if (sellAsUser != undefined) {
 			UserSet = true;
@@ -564,12 +564,12 @@ function cancelSale()
 			}
 		});
 
-		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
+		if(doneOnce && supplierEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
 			checkStock();
 			return false;
 		}else{
 
-			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
+			if(!supplierEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
 			else if (showPriceCheck) {
@@ -581,81 +581,25 @@ function cancelSale()
 	});
 	var getCustomResult;
 	var addressID;
-	function setCustomerDetails(customer_id, empty='false'){
-		customerID = customer_id;
+	function setSupplierDetails(supplier_id, empty='false'){
+		supplierID = supplier_id;
 
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
+		$.get( "ajax/getSupplierAddress.php?id=" + supplier_id + '&empty=' + empty, function( data ) {
 			getCustomResult = data;
-			setCustomerCreditFeedback(data);
+			setSupplierCreditFeedback(data);
 		});
 	}
-	function setCustomerCreditFeedback(data){
+	function setSupplierCreditFeedback(data){
 		if (data == "") data = getCustomResult;
 		$('#address').html(data);
-			$('.rating').fadeIn();
+        $('.rating').fadeIn();
 
-			$('#addressline1').prop('readonly', true);
-			$('#addressline2').prop('readonly', true);
-			$('#addressline3').prop('readonly', true);
-			$('#addressline4').prop('readonly', true);
-			$('#addresspostcode').prop('readonly', true);
-			$('#deliverynumber').prop('readonly', true);
-
-			if (!transactionAllowed || showWarning)
-			{
-				if (!showWarning)
-				{
-					$('#sendfake').attr('disabled', true);
-					$('#searcher').attr('disabled', true);
-					$('#warning').css('background', "#ff6666");
-					$('#warning').css('border', "2px solid #ff0000");
-				}
-				else if (showHigherWarning)
-				{
-					$('#sendfake').attr('disabled', false);
-					$('#searcher').attr('disabled', false);
-					$('#warning').css('background', "#ff6666");
-					$('#warning').css('border', "2px solid #ff0000");
-				}
-				else
-				{
-					$('#sendfake').attr('disabled', false);
-					$('#searcher').attr('disabled', false);
-					$('#warning').css('background', "#ffc266");
-					$('#warning').css('border', "2px solid #ff9900");
-				}
-				$('#warning').css('display', "inline-block");
-				$('#warning').html(warningMessage);
-			}
-			else
-			{
-				var dateObj = $('#estimated_delivery_date').datepicker('getDate');
-				if (dateObj != null && delCheckingOn){
-					var daySelected = dateObj.getDay();
-					var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
-					var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
-					var weekdayInt = weekdayLookup[daySelected];
-				}
-				if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
-				{
-					day = weekday[daySelected];
-					$('#sendfake').attr('disabled', true);
-					$('#searcher').attr('disabled', true);
-					$('#warning').css('background', "#ff6666");
-					$('#warning').css('border', "2px solid #ff0000");
-					$('#warning').css('display', "inline-block");
-					$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
-				}
-				else {
-					$('#warning').css('background', "#90EE90");
-					$('#warning').css('border', "2px solid #00FF00");
-					$('#warning').css('display', "inline-block");
-					$('#warning').html(warningMessage);
-					$('#sendfake').attr('disabled', false);
-					$('#searcher').attr('disabled', false);
-					if (recursionProtection == false && dateObj != null)checkUBDates($('#estimated_delivery_date').val());
-				}
-			}
+        $('#addressline1').prop('readonly', true);
+        $('#addressline2').prop('readonly', true);
+        $('#addressline3').prop('readonly', true);
+        $('#addressline4').prop('readonly', true);
+        $('#addresspostcode').prop('readonly', true);
+        $('#deliverynumber').prop('readonly', true);
 	}
 
 	ready = true;
@@ -700,91 +644,23 @@ function cancelSale()
 
 	});
 	function ddChanged(dateText, inst){
-		if (customerID == null) checkUBDates(dateText);
+		if (supplierID == null) checkUBDates(dateText);
 		else
 		{
-			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false', function(data){
+			$.get("ajax/getSupplierAddress.php?id=" + supplierID  + '&empty=false', function(data){
 				getCustomResult = data;
-				setCustomerCreditFeedback(data);
+				setSupplierCreditFeedback(data);
 			});
 		}
 
 	}
 	var recursionProtection = false;
 	function checkUBDates(dateText = null){
-		if (!checkSites()) return;
 		if (dateText == null) dateText = $('#estimated_delivery_date').val();
-		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
-		if (dateObj != null && delCheckingOn){
-			var daySelected = dateObj.getDay();
-			var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
-			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
-			var weekdayInt = weekdayLookup[daySelected];
-		}
-		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
-		{
-			day = weekday[daySelected];
-			$('#sendfake').attr('disabled', true);
-			$('#searcher').attr('disabled', true);
-			$('#warning').css('background', "#ff6666");
-			$('#warning').css('border', "2px solid #ff0000");
-			$('#warning').css('display', "inline-block");
-			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
-			return;
-		}
-		else if (warningMessage){
-			$('#warning').css('background', "#90EE90");
-			$('#warning').css('border', "2px solid #00FF00");
-			$('#warning').css('display', "inline-block");
-			$('#warning').html(warningMessage);
-			$('#sendfake').attr('disabled', false);
-			$('#searcher').attr('disabled', false);
-		}
-
-		if (transactionAllowed){
-			var ubs = $('#basketTable #ubDate');
-			var temps = $('#basketTable #temp_id');
-			if (ubs.length == 0 || dateText == null || dateText == "") return;
-			var date = parseDMY(dateText).getTime();
-			$('#sendfake').prop('disabled',false);
-			var beyondBB = false;
-			for(var x = 0; x < ubs.length; x++){
-				var ub = ubs[x];
-				var temp = temps[x];
-				if (customerID == "420") break;
-				if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
-				{
-					continue;
-				}
-				var ubd = parseDMY(ub.innerHTML).getTime();
-				if (ubd < date)
-				{
-					$(ub).css('background', "#ff6666");
-					beyondBB = true;
-				}
-				else
-				{
-					$(ub).css('background', "#ffffff");
-				}
-			}
-			if (beyondBB)
-			{
-				$('#sendfake').prop('disabled',true);
-				$('#warning').css('background', "#ff6666");
-				$('#warning').css('border', "2px solid #ff0000");
-				$('#warning').css('display', "inline-block");
-				$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
-			}
-			else
-			{
-				recursionProtection = true;
-				setCustomerCreditFeedback();
-				recursionProtection = false;
-			}
-
-		}
+        $('#sendfake').prop('disabled', (!($('#basketTable > tbody > tr').length>0 && checkSites())));
 	}
 	function checkSites(){
+        console.log("test");
 		var allPass = true;
 		var siteid = null;
 		var elems = $('#basketTable > tbody > tr');
@@ -816,15 +692,14 @@ function cancelSale()
 			y = parseInt(date[2], 10);
 		return new Date(y, m - 1, d);
 	}
-	function setCustomer(customer_id, text){
-		$('#customer_search_results').fadeOut();
-		$('#customer_id').val(customer_id);
-		$('#customer').val(text);
-		setCustomerDetails(customer_id);
+	function setSupplier(supplier_id, text){
+		$('#supplier_search_results').fadeOut();
+		$('#supplier_id').val(supplier_id);
+		$('#supplier').val(text);
+		setSupplierDetails(supplier_id);
 	}
 
     $('#SearchSpecies').change(function(){
-
         var thisval = $(this).val();
         $('#SearchCutgroups option.allsoption').hide();
         $('#SearchCutgroups option.s'+thisval).show();
@@ -838,7 +713,6 @@ function cancelSale()
 
         var id = $(this).val();
 
-        //doSearch();
 	});
 
 	// hide cuts on load
@@ -849,7 +723,6 @@ function cancelSale()
     $('#SearchCutgroups').change(function(){
         var id = $(this).val();
 
-        //doSearch();
     });
 
 
@@ -864,11 +737,11 @@ function cancelSale()
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
-		 var customer_id = $('#customer_id').val();
+		 var supplier_id = $('#supplier_id').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 
-			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id, function(data, status){
+			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&supplierID="+supplier_id, function(data, status){
 				$('#loadResults').html(data);
 
 			});
@@ -892,25 +765,13 @@ function cancelSale()
 		$('.weights' + pallet_id + species_id + cut_id).toggle();
 	}
 
-	$('#submitCustomerAccount').click(function(){
-		$.ajax({
-			type: 'POST',
-			url: '/scripts/addCustomer.php',
-			data: $('#createCustomerForm').serialize(),
-			success: function () {
-				$('#createCustomerForm')[0].reset();
-				alert('Customer Added - please refresh to see changes!');
-			}
-		});
-	});
-
-	$('#customer').keyup(function(){
-		var val = $('#customer').val();
-		$('#customer_search_results').fadeIn();
+	$('#supplier').keyup(function(){
+		var val = $('#supplier').val();
+		$('#supplier_search_results').fadeIn();
 
 		var request = $.ajax({
 			type: "POST",
-			url: "ajax/getCustomerDropdown.php",
+			url: "ajax/getSupplierDropdown2.php",
 			data: {
 				searchterm: val,
 				salescreen: "y"
@@ -919,7 +780,7 @@ function cancelSale()
 		});
 
 		request.done(function(data) {
-			$('#customer_search_results').html(data);
+			$('#supplier_search_results').html(data);
  		});
 
 		request.fail(function(jqXHR, textStatus) {
@@ -930,11 +791,11 @@ function cancelSale()
 
 
 
-	function changeAddress(customer_id, address_id){
+	function changeAddress(supplier_id, address_id){
 
 		$('#addressid').val(address_id);
 
-		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getSupplierAddress.php?id=" + supplier_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});

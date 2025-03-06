@@ -57,6 +57,11 @@ use App\Models\Site;
 			</select>
 		</div>
 
+        <label>Kill Date</label>
+		<input name="kill_date" id="kill_date" type="text" value="<?php echo $productRow['kill_date']; ?>" onfocus="blur()">
+		<div onclick="killDateNA()" id="bestbyBtn">SET N/A</div>
+		<div class="clearfix"></div>
+
 		<label>Pack Date</label>
 		<input name="best_by" id="best_by2" type="text" value="<?php echo $productRow['best_by']; ?>" onfocus="blur()">
 		<div onclick="bestByNA()" id="bestbyBtn">SET N/A</div>
@@ -87,7 +92,7 @@ use App\Models\Site;
 
 		<div id="best_by_range_extension_container">
 			<label>Extension</label>
-			<input name="best_by_range_extension" id="best_by_range_extension" value="<?php echo $productRow['range_extension']; ?>" type="text" onfocus="blur()"><div onclick="clearEx()" id="clearEX">Clear</div>
+			<input name="best_by_range_extension" id="best_by_range_extension" value="<?php echo $productRow['range_extension']; ?>" type="text" onfocus="blur()"><div onclick="clearEx()" id="bestbyBtn">Clear</div>
 		</div>
 
 		<label>Fresh/Frozen</label>
@@ -254,7 +259,11 @@ use App\Models\Site;
 			$start = date('Y', strtotime('-5 year'));
 			$end = date('Y', strtotime('+5 year'));
 		?>
-
+        $( "#kill_date" ).datepicker({
+			dateFormat: 'dd/mm/yy',
+			changeYear: true,
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
+		});
 		$( "#best_by2" ).datepicker({
 			dateFormat: 'dd/mm/yy',
 			changeYear: true,
@@ -373,10 +382,11 @@ use App\Models\Site;
 		var good = 1;
 		var msg = "";
 
-		if(ubbb != 2){
+		if(ubbb == 2){}
+        else{
 
 			if(best_by_range_from == ''){
-				msg = "The highlighted fields cannot be blank!9";
+				msg = "The highlighted fields cannot be blank!";
 				$('#best_by_range_from').css('border','2px solid red');
 				good = 0;
 			}else{
@@ -384,7 +394,7 @@ use App\Models\Site;
 			}
 
 			if(best_by_range_to == ''){
-				msg = "The highlighted fields cannot be blank!8";
+				msg = "The highlighted fields cannot be blank!";
 				$('#best_by_range_to').css('border','2px solid red');
 				good = 0;
 			}else{
@@ -394,7 +404,7 @@ use App\Models\Site;
 		}
 		var product_temp = species_id = $('#product_temp').val();
 		if(product_temp == ''){
-			msg = "The highlighted fields cannot be blank!7";
+			msg = "The highlighted fields cannot be blank!";
 			$('#product_temp').css('border','2px solid red');
 			good = 0;
 		}else{
@@ -474,13 +484,14 @@ use App\Models\Site;
 		if(val == 2){
 			$('#best_by_range_from_container').fadeOut();
 			$('#best_by_range_to_container').fadeOut();
+            $('#best_by_range_extension_container').fadeOut();
 		}else{
 			$('#best_by_range_from_container').fadeIn();
 			$('#best_by_range_to_container').fadeIn();
+            $('#best_by_range_extension_container').fadeIn();
 		}
 
 	});
-
 	// THIS IS FOR HANDLING WHEN A SPECIES IS CHANGED AND YOU WANT THE CUTS LIST TO UPDATE.
 
 	$('#species_id').change(function(){
@@ -639,16 +650,22 @@ use App\Models\Site;
 	$('.closeAddPallet').click(function(){
 		$('#box').fadeOut();
 	});
+    function bestByNA(){
+		$('#best_by3').val('N/A');
+	}
 
 	function bestByNA(){
 		$('#best_by2').val('N/A');
 	}
-
+    function killDateNA(){
+		$('#kill_date').val('');
+	}
 
 	function ubbbyNA(){
 		$('#ubbb').val('2');
 		$('#best_by_range_from_container').fadeOut();
 		$('#best_by_range_to_container').fadeOut();
+        $('#best_by_range_extension_container').fadeOut();
 	}
 
     function clearEx(){

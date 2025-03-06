@@ -309,6 +309,7 @@ class ReportHelper
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
             ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
@@ -322,6 +323,7 @@ class ReportHelper
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            //->where("pickerSheets.is_return_to_supplier","=","0")
             ->orderBy("invoice_payments.created_at")
             ->groupBy(["pickerSheets.id","credit_note_items.product_id"]);
 		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
@@ -336,6 +338,7 @@ class ReportHelper
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, false);
         $finalSupp = new Collection();
         $finalDebits = new Collection();
+        $supplierReturns = new Collection();
 
         foreach($debits as $result)
         {
@@ -362,13 +365,21 @@ class ReportHelper
 
             if (static::bulkMergeIn($result))
             {
-                $col = "pickerSheets.isSupplemental";
+                $col = "pickerSheets.is_return_to_supplier";
                 if ($result->$col === true || $result->$col === 1)
                 {
-                    $col = "pickerSheets.isSupplementalCredit";
-                    if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
+                    $supplierReturns->add($result);
                 }
-                else $finalDebits->add($result);
+                else
+                {
+                    $col = "pickerSheets.isSupplemental";
+                    if ($result->$col === true || $result->$col === 1)
+                    {
+                        $col = "pickerSheets.isSupplementalCredit";
+                        if ($result->$col === false || $result->$col === 0) $finalSupp->add($result);
+                    }
+                    else $finalDebits->add($result);
+                }
             }
         }
 		$finalCredits = new Collection();
@@ -430,7 +441,7 @@ class ReportHelper
                 else $finalCredits->add($result);
             }
         }
-		return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred);
+		return array($finalDebits,$finalCredits,$finalSupp,$finalSuppCred,$supplierReturns);
     }
     private static function getInvoiceRange(string $dateType, Carbon $start = NULL, Carbon $end = NULL, array $pickIDs = NULL, int $customerID = NULL, int $userID = NULL):array
     {
@@ -441,6 +452,7 @@ class ReportHelper
             ->join("palletsOut","pickerSheets.id"               ,'=',"palletsOut.pickersheet_id")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id"]);
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
@@ -454,6 +466,7 @@ class ReportHelper
             ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id"])
             ->orderBy("invoice_payments.created_at");
 		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
@@ -657,21 +670,23 @@ class ReportHelper
     {
         return sprintf($reportColumn->header,$reportColumn->getLabel($mode));
     }
-    public static function resolveFooter(ReportColumn $reportColumn,array $data,string $mode):string
+    public static function resolveFooter(ReportColumn $reportColumn,array $existingFooter,array $data,string $mode):string
     {
-       if ($reportColumn->metadata!=null && array_key_exists('footer',$reportColumn->metadata) != null)return static::recursiveResolveFooter($reportColumn,$reportColumn->metadata['footer'], $data, $mode);
+       if ($reportColumn->metadata!=null && array_key_exists('footer',$reportColumn->metadata) != null)return static::recursiveResolveFooter($reportColumn,$reportColumn->metadata['footer'],$existingFooter, $data, $mode);
        else return "";
     }
-    private static function recursiveResolveFooter(ReportColumn $reportColumn,array|string $function, array $data, string $mode)
+    private static function recursiveResolveFooter(ReportColumn $reportColumn,array|string $function,array $existingFooter, array $data, string $mode)
     {
         $result = null;
+        $columnFuncs = array("array_sum");
+        $rowFuncs = array("recalculate");
         if (is_array($function)) {
             foreach ($function as $fun)
             {
-                $result .= static::recursiveResolveFooter($reportColumn, $fun, $data, $mode);
+                $result .= static::recursiveResolveFooter($reportColumn, $fun, $existingFooter, $data, $mode);
             }
         }
-        else
+        else if (in_array($function,$columnFuncs))
         {
             $percision = 3;
             $magShift = pow(10,$percision);
@@ -697,6 +712,23 @@ class ReportHelper
             }
             $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
         }
+        else if (in_array($function,$rowFuncs))
+        {
+            switch($function)
+            {
+                case "recalculate":
+                {
+                    $result += static::calculate($reportColumn->metadata['calculate']['operator'],
+                    $reportColumn->metadata['calculate']['args'],$data,$data);
+                    break;
+                }
+                case "":
+                {
+
+                    break;
+                }
+            }
+        }
         if ($result == null || $reportColumn->footer == "") $result = "";
         return $result;
     }
@@ -713,6 +745,7 @@ class ReportHelper
             foreach ($reportTable->getColumns() as $reportColumn)
             {
                 $workingResult[$reportColumn->getLabel($mode)] = "";
+
                 if (!static::filterCheck($reportColumn,$workingResult,$dbRow))
                 {
                     $workingResult[$reportColumn->getLabel($mode)] = static::resolveCell($reportColumn,"","");
@@ -807,6 +840,7 @@ class ReportHelper
 
     }
     private static function bulkMergeIn(&$result,$full = true):bool {
+
         $col = "pickerSheets.customer_id";
         $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
         static::row_merge($result,$item);
@@ -882,6 +916,16 @@ class ReportHelper
             }
 
         }
+        $col = "pickerSheets.is_return_to_supplier";
+        if ($result->$col==1)
+        {
+            $col = "pickerSheets.customer_id";
+            $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+            $col = "customers.businessname";
+            $col2 = "supplier.name";
+            $result->$col = $item->$col2;
+        }
+        Log::error(json_encode($result));
         return true;
     }
     private static function resolveFallback(ReportColumn $reportColumn,$workingResult,$dbRow,string $mode):string

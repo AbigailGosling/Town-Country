@@ -25,6 +25,11 @@
 			</select>
 		</div>
 
+        <label>Kill Date</label>
+		<input name="kill_date" id="kill_date" type="text" onfocus="blur()">
+		<div onclick="killDateNA()" id="bestbyBtn">SET N/A</div>
+		<div class="clearfix"></div>
+
 		<label>Pack Date</label>
 		<input name="best_by" id="best_by3" type="text" onfocus="blur()">
 		<div onclick="bestByNA()" id="bestbyBtn">SET N/A</div>
@@ -54,7 +59,7 @@
 		</div>
 		<div id="best_by_range_extension_container">
 			<label>Extension</label>
-			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()"><div onclick="clearEx()" id="clearEX">Clear</div>
+			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()"><div onclick="clearEx()" id="bestbyBtn">Clear</div>
 		</div>
 		<label>Fresh/Frozen</label>
 		<select name="temperature_id">
@@ -234,7 +239,11 @@ $.ajaxSetup({
 			}
 			return true;
 		});
-
+        $( "#kill_date" ).datepicker({
+			dateFormat: 'dd/mm/yy',
+			changeYear: true,
+			yearRange: "<?php echo $start; ?>:<?php echo $end; ?>"
+		});
 		$( "#best_by3" ).datepicker({
 			dateFormat: 'dd/mm/yy',
 			changeYear: true,
@@ -323,9 +332,11 @@ $.ajaxSetup({
 		if(val == 2){
 			$('#best_by_range_from_container').fadeOut();
 			$('#best_by_range_to_container').fadeOut();
+            $('#best_by_range_extension_container').fadeOut();
 		}else{
 			$('#best_by_range_from_container').fadeIn();
 			$('#best_by_range_to_container').fadeIn();
+            $('#best_by_range_extension_container').fadeIn();
 		}
 
 	});
@@ -752,11 +763,14 @@ $.ajaxSetup({
 	function bestByNA(){
 		$('#best_by3').val('N/A');
 	}
-
+    function killDateNA(){
+		$('#kill_date').val('');
+	}
 	function ubbbyNA(){
 		$('#ubbb').val('2');
 		$('#best_by_range_from_container').hide();
 		$('#best_by_range_to_container').hide();
+        $('#best_by_range_extension_container').fadeOut();
 	}
     function clearEx(){
 		$('#best_by_range_extension').val("");

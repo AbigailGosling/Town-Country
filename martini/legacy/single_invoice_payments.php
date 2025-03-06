@@ -28,16 +28,28 @@ if (!empty($paymentID)) {
 </div>
 <div class="search">
     <div class="container flex space-between" style="align-items:center">
-        <a href="customer_soa.php?id=<?php echo $customerID; ?>" class="back">BACK</a>
+        <?php if (request()->has("return")) {?>
+            <a href="supplier_return_statement.php?id=<?php echo $customerID; ?>" class="back">BACK</a>
+        <?php } else {?>
+            <a href="customer_soa.php?id=<?php echo $customerID; ?>" class="back">BACK</a>
+        <?php }?>
     </div>
 </div>
 <div class="container">
+<?php if (request()->has("return")) {?>
+    <h3>Payments for Supplier Return ID <?php echo $invoiceID; ?></h3>
+<?php } else {?>
     <h3>Payments for the invoice ID <?php echo $invoiceID; ?></h3>
+<?php }?>
     <table class="table table-bordered table-striped" width="100%">
         <thead>
             <tr>
                 <th align="left">#</th>
+                <?php if (request()->has("return")) {?>
+                <th align="left">Return ID</th>
+                    <?php } else {?>
                 <th align="left">Invoice ID</th>
+                <?php }?>
                 <th align="left">Payment Method</th>
                 <th align="left">Paid On</th>
                 <th align="left">Payment Entered By</th>
@@ -64,7 +76,7 @@ if (!empty($paymentID)) {
                         }else{
                             echo $invoicePayment['payment_method'];
                         }
-                        
+
                     ?>
                 </td>
                 <td><?php echo $invoicePayment['created_at']; ?></td>
@@ -101,13 +113,17 @@ if (!empty($paymentID)) {
                 <td align="right" colspan="1">£<?php echo number_format($runningBalance, 2, ".", ","); ?></td>
             </tr>
         </tfoot>
-        
+
     </table>
 </div>
 
 <div class="container container--pt">
     <div style="background:#f2f2f2;padding:10px;">
+    <?php if (request()->has("return")) {?>
+        <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return</h2>
+    <?php } else {?>
 <h2 style="font-size:22px;padding-bottom:10px;">Original Invoice</h2>
+<?php }?>
 <table width="100%" border="0">
 <tr style="border-bottom:1px solid #f1f1f1;">
     <th align="left">Intake ID</th>
@@ -165,18 +181,18 @@ if (!empty($paymentID)) {
 
             $y2 = prepareExecuteQuery($x2,str_repeat('i',count($qVars)),$qVars);
             $count = mysqli_num_rows($y2);
-            
-             
-            
-            while($weightRow = mysqli_fetch_array($y2)){               
+
+
+
+            while($weightRow = mysqli_fetch_array($y2)){
                 if($weightRow['weight_tear'] == $weightRow['weight_gross']){
                     $tw = (double)$weightRow['weight_gross'];
                 }else{
                     $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
                 }
-                
+
                 $kg = $kg + $tw;
-                
+
                 $kg = number_format($kg, 3, '.', '');
             }
 
@@ -184,7 +200,7 @@ if (!empty($paymentID)) {
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
             <td align="left"><span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
             <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
-            <td align="left">                    
+            <td align="left">
                 <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
                 <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                 <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
@@ -225,7 +241,7 @@ if (!empty($paymentID)) {
             <td>
                 <?php echo $kg; ?> kg
             </td>
-             
+
             <td align="left" class="">£<input type="number" disabled style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?>"></td>
             <td>
             </td>
@@ -234,7 +250,7 @@ if (!empty($paymentID)) {
             }
         }
     ?>
-</table> 
+</table>
 </div>
 <br/>
 
@@ -246,14 +262,21 @@ if (!empty($paymentID)) {
     <form id="payment_entry" method="POST" action="scripts/save_invoice_payment_entry.php">
         <div class="row">
             <div class="col">
+            <?php if (request()->has("return")) {?>
+                <label for="invoice_id">Return ID</label>
+            <?php } else { ?>
                 <label for="invoice_id">Invoice ID</label>
+            <?php }?>
                 <input class="form-control" id="invoice_id" type="text" name="invoice_id" value="<?php echo $invoiceID; ?>" />
             </div>
             <div class="col">
                 <label for="payment_method">Payment Method</label>
                 <select class="form-select" id="payment_method" name="payment_method">
-                    <?php foreach (PAYMENT_METHODS as $paymentMethod) {
-
+                    <?php
+                        $returnIntakeResult = prepareExecuteQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
+                        $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
+                        foreach (PAYMENT_METHODS as $paymentMethod) {
+                            if ($paymentMethod == "CREDIT_NOTE" && $countReturnedIntakes == 0)continue;
                         if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == $paymentMethod) {
                             echo '<option value="' . $paymentMethod . '" selected>' . $paymentMethod . '</option>';
                         } else {
@@ -299,10 +322,10 @@ if (!empty($paymentID)) {
                     <th align="left"></th>
                 </tr>
                 <?php
-                
+
                 $payment_id = $selectedPaymentData['id'];
 
-                
+
                 $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
@@ -311,9 +334,9 @@ if (!empty($paymentID)) {
 
                 foreach($productIDs as $productID){
                     $i++;
-                    
+
                     $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
-                     
+
 
                     if($productID == 0){
                         ?>
@@ -326,7 +349,7 @@ if (!empty($paymentID)) {
                             $('.product-return-header').hide();
                             $('.product-custom-return-header').show();
                         </script>
-                        
+
                         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
                             <td align="left">
                                 <input type="hidden" name="product_id[]" value="0">
@@ -350,12 +373,12 @@ if (!empty($paymentID)) {
                         # get number of weights for this product
                         $weightCountResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
                         $count = mysqli_num_rows($weightCountResult);
-                        
+
                         $productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE id=?",'i',[$productID]);
                         $product = mysqli_fetch_array($productResult);
 
                         $rowClass = "customProductRow" . $i;
-                    
+
                 ?>
                 <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
                     <td align="left">
@@ -364,14 +387,14 @@ if (!empty($paymentID)) {
                         <input type="hidden" name="credit_id[]" value="<?php echo $creditNoteDetails['id']; ?>">
                     </td>
                     <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
-                    <td align="left">                    
+                    <td align="left">
                         <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
                         <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                         <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
                         <b class=""><?php echo getCut($product['cut_id']); ?></b>
                         <b class=""><?php echo getBrand($product['brand_id']); ?></b>
                     </td>
-                    
+
                     <?php
                         $productID = $product['id'];
                         $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
@@ -419,20 +442,20 @@ if (!empty($paymentID)) {
             </div>
         </div>
         <br/>
-        
+
         <div class="row">
             <div class="col d-flex justify-content-start">
                 <input type="hidden" name="customer_id" value="<?php echo $customerID; ?>" />
                 <input type="hidden" name="payment_id" value="<?php echo (!empty($selectedPaymentData)) ? $selectedPaymentData['id'] : ''; ?>" />
-                <input id="payment_submit" class="btn btn-success" type="button" onclick="mainForm2()" value="SUBMIT" />  
+                <input id="payment_submit" class="btn btn-success" type="button" onclick="mainForm2()" value="SUBMIT" />
             </div>
         </div>
-    </form>    
+    </form>
 </div>
 
 <div class="clearfix"></div>
 <script type="text/javascript">
-    
+
     function deleteId(id){
         var ids = $('#delete_ids').val();
         $('#delete_ids').val(ids + id + ',');
@@ -442,8 +465,8 @@ if (!empty($paymentID)) {
     }
 
     $('#payment_method').change(function(){
-        var payment_type = $(this).val(); 
- 
+        var payment_type = $(this).val();
+
         if(payment_type == 'CREDIT_NOTE'){
             $('.products_container').fadeIn();
             $('#amountContainer').hide();

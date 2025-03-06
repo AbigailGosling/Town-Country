@@ -10,7 +10,7 @@ function get_customer_soa_results($customer_id,$adv)
     $customer = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
     $customer = $customer->fetch_assoc();
 
-    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
+    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.is_return_to_supplier = 0 AND pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
     $pickSheets1 = mysqli_fetch_all($customerPicksheets,MYSQLI_ASSOC);
     $knownPickIDs = [];
     $pickSheets = [];
@@ -122,7 +122,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
 
 
     $invoiceList = array();
-    $check = prepareExecuteQuery("SELECT id FROM pickerSheets WHERE customer_id = ? ORDER BY `pickerSheets`.`id` DESC",'i',[$customer_id]);
+    $check = prepareExecuteQuery("SELECT id FROM pickerSheets WHERE is_return_to_supplier = 0 AND customer_id = ? ORDER BY `pickerSheets`.`id` DESC",'i',[$customer_id]);
     $row = mysqli_fetch_assoc($check);
     if ($row == null)
     {
@@ -158,7 +158,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
     $cacheRow['pending'] = null;
     $lastRow = null;
 
-    $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
+    $checkQ = prepareExecuteQuery( "SELECT pickerSheets.id, pickerSheets.date, invoice_payments.id as payment_id, pickerSheets.estimated_delivery_date FROM pickerSheets LEFT JOIN invoice_payments ON pickerSheets.id = invoice_payments.invoice_id WHERE pickerSheets.is_return_to_supplier = 0 AND pickerSheets.customer_id = ? AND (pickerSheets.id >= ? OR invoice_payments.id > ?) ORDER BY `pickerSheets`.`id` ASC",'iii',[$customer_id,$oldest,$lastpayment]);
     while($row = mysqli_fetch_assoc($checkQ))
     {
         $row['outstanding'] = (double)(getOutstandingPicksheetTotal($row['id']) - totalValueCreditedOnInvoiceID($row['id']));

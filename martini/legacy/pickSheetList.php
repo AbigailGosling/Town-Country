@@ -90,33 +90,39 @@ use Illuminate\Support\Facades\Auth;
                     $count_fresh = 0;
                 }
 
-
-                $customer_id = $row['customer_id'];
-				if (!$usermodel->canViewCustomer($customer_id)) continue;
 				$date = $row['date'];
 
 				$date=date_create($date);
 				$date = date_format($date,"d/m/Y H:i");
+                $customer_id = $row['customer_id'];
+                $isSupplierReturn = ($row['is_return_to_supplier']==1);
+				if ($isSupplierReturn==false)
+                {
+				    if (!$usermodel->canViewCustomer($customer_id)) continue;
+                    $x2 = "SELECT * FROM `customers` WHERE id = ?";
+                    $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
 
+                    $row2 = mysqli_fetch_assoc($y2);
+                }
+                else
+                {
+                    $x2 = "SELECT * FROM `supplier` WHERE id = ?";
+                    $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
 
-				$x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";
-				$y2 = prepareExecuteQuery($x2);
+                    $row2 = mysqli_fetch_assoc($y2);
+                }
 
-				$row2 = mysqli_fetch_assoc($y2);
+                if($count_fresh == 1 && $row['completed_fresh'] == '0')
+                {
+                    rowprinter(false,$row,$row2,$date,explode(",",$location_fresh),$isSupplierReturn);
+                }
+                if($count_frozen == 1 && $row['completed_frozen'] == '0')
+                {
+                    rowprinter(true,$row,$row2,$date,explode(",",$location_frozen),$isSupplierReturn);
+                }
 
-            ?>
-            <?php if($count_fresh == 1 && $row['completed_fresh'] == '0'){ rowprinter(false,$row,$row2,$date,explode(",",$location_fresh));?>
-
-            <?php } ?>
-
-            <?php if($count_frozen == 1 && $row['completed_frozen'] == '0'){ rowprinter(true,$row,$row2,$date,explode(",",$location_frozen)); ?>
-
-            <?php } ?>
-
-
-            <?php
 			}
-            function rowprinter($isFrozen,$row,$row2,$date,$locs)
+            function rowprinter($isFrozen,$row,$row2,$date,$locs,$isSupplierReturn)
             {
                 $t = "FRESH";
                 if ($isFrozen == true) $t = "FROZEN";
@@ -133,7 +139,7 @@ use Illuminate\Support\Facades\Auth;
                             <tr style="height:52px;">
                                 <td align="left" style="width:85px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" ><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
                                 <td align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';">Ord: <?php echo $row['id']; ?></td>
-                                <td align="left" style="width:460px;height:52px;font-size:18px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"><?php echo $row2['businessname'];?></td>
+                                <td align="left" style="width:460px;height:52px;font-size:18px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"><?php echo ($isSupplierReturn==false)?$row2['businessname']:$row2['name'];?></td>
                                 <td align="left" style="height:52px;font-size:8px;width:50px;white-space: nowrap;">(Created <?php echo $date;?>)</td>
                                 <td align="left" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $row['estimated_delivery_date'];?>)</td>
                                 <td align="right" style="height:52px;font-size:12px;width:70px;white-space: nowrap;line-height:1"><?php echo $loc;?></td>

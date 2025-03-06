@@ -17,11 +17,40 @@ $s = (int)(microtime(true));
 	$pickSheetRow = $y->fetch_assoc();
 
 	$customer_id = $pickSheetRow['customer_id'];
+    if ($pickSheetRow['is_return_to_supplier']==0)
+    {
+        $x2 = "SELECT * FROM `customers` WHERE id=?";
+        $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
+        $customerRow = $y2->fetch_assoc();
+        $name = $customerRow['businessname'];
+        $ta = 't/a'. $customerRow['tradingas'];
+        if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+        $address1 = $customerRow['address'.$pickSheetRow['addressid'].'_1'];
+        $address2 = $customerRow['address'.$pickSheetRow['addressid'].'_2'];
+        $address3 = $customerRow['address'.$pickSheetRow['addressid'].'_3'];
+        $address4 = $customerRow['address'.$pickSheetRow['addressid'].'_4'];
+        $postcode = $customerRow['postcode_'.$pickSheetRow['addressid'].''];
+        $contactN = $customerRow['address'.$pickSheetRow['addressid'].'_number'];
+        $accountaddress_1 = $customerRow['accounts_address_1'];
+        $accountaddress_2 = $customerRow['accounts_address_2'];
+        $accountaddress_3 = $customerRow['accounts_address_3'];
+        $accountaddress_4 = $customerRow['accounts_address_4'];
+    }
+    else
+    {
+        $x2 = "SELECT * FROM `supplier` WHERE id=?";
+        $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
+        $customerRow = $y2->fetch_assoc();
+        $name = $customerRow['name'];
+        $ta = '';
+        $accountaddress_1 = $address1 = $customerRow['address_1'];
+        $accountaddress_2 = $address2 = $customerRow['address_2'];
+        $accountaddress_3 = $address3 = $customerRow['address_3'];
+        $address4 = $customerRow['address_4'];
+        $accountaddress_4 = $postcode = $customerRow['postcode'];
+        $contactN = $customerRow['contact_number'];
+    }
 
-	$x2 = "SELECT * FROM `customers` WHERE id=?";
-	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-
-	$customerRow = $y2->fetch_assoc();
 
 	if(request()->input('deleteInternalDocument') !== null && $user['user_type'] == 'A'){
 		$internal_doc_id = request()->input('deleteInternalDocument');
@@ -102,21 +131,15 @@ $s = (int)(microtime(true));
 
 			<b style="font-size:10px;color:#8c8c8c;">Invoice address</b>
 			<div class="invoicebox">
-				<?php
-					$customer_id = $pickSheetRow['customer_id'];
-					$x = "SELECT * FROM `customers` WHERE id=?";
-					$y = prepareExecuteQuery($x,'i',[$customer_id]);
-					$customer = $y->fetch_assoc();
-
-				?>
 				<p>
-					<?php echo $customer['businessname']; ?><br/>
-					t/a <?php echo $customer['tradingas']; ?><br/>
-					<?php echo $customer['accounts_address_1']; ?><br/>
-					<?php echo $customer['accounts_address_2']; ?><br/>
-					<?php echo $customer['accounts_address_3']; ?><br/>
-                    <?php echo $customer['accounts_address_4']; ?><br/>
-                    Customer ID: <?php echo str_pad($customer['id'], 4, '0', STR_PAD_LEFT); ?><br/>
+					<?php
+                    echo $name .'<br/>';
+					echo $ta .'<br/>';
+					echo $accountaddress_1 .'<br/>';
+					echo $accountaddress_2 .'<br/>';
+					echo $accountaddress_3 .'<br/>';
+                    echo $accountaddress_4 .'<br/>';
+                    echo 'ID:'.  str_pad($customerRow['id'], 4, '0', STR_PAD_LEFT) .'<br/>';?>
 				</p>
 				<span style="display:none;">Account No: 1123ml</span>
 			</div>
@@ -146,17 +169,14 @@ $s = (int)(microtime(true));
 			<b style="color: #8c8c8c;font-size: 12px;">Delivery address</b>
 			<div class="deliverybox">
 				<p>
-					<?php echo $customer['businessname']; ?><br/>
-					t/a <?php echo $customer['tradingas']; ?><br/>
-					<?php
+					<?php echo $name.'<br/>'.$ta .'<br/>';
 
-						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
 
-						echo $customer['address'.$pickSheetRow['addressid'].'_1'] . '<br/>';
-						echo $customer['address'.$pickSheetRow['addressid'].'_2'] . '<br/>';
-						echo $customer['address'.$pickSheetRow['addressid'].'_3'] . '<br/>';
-                        echo $customer['address'.$pickSheetRow['addressid'].'_4'] . '<br/>';
-						echo $customer['postcode_'.$pickSheetRow['addressid'].''] . '<br/>';
+						echo $address_1. '<br/>';
+						echo $address_2. '<br/>';
+						echo $address_3. '<br/>';
+                        echo $address_4. '<br/>';
+						echo $postcode . '<br/>';
 
 					?>
 				</p>

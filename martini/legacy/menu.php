@@ -1,5 +1,9 @@
 <?php
+
+use App\Models\User;
+
 	include_once('functions.php');
+    $userModel = User::find($user['id']);
 ?>
 <!doctype html>
 <html class="int">
@@ -10,7 +14,7 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/responsive.css" rel="stylesheet" type="text/css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
-	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>		
+	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
 </head>
 <body class="menu">
@@ -18,7 +22,7 @@
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main>
-	<h1 class="int">Town &amp; Country 3</h1>	
+	<h1 class="int">Town &amp; Country 3</h1>
 	<div id="menu_wrap">
 		<?php
 			$ids = $user['pages'];
@@ -35,7 +39,7 @@
 				?></div><?php
 			}
 
- 
+
 			$resultsColumn2 = prepareExecuteQuery("SELECT * FROM `page_permissions` WHERE `column` = 2 && `id` IN ($ids)");
 			$count = mysqli_num_rows($resultsColumn2);
 
@@ -61,6 +65,11 @@
 						?><a onclick="exportstockPDF(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 					}else{
 						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+                        if ($userModel->hasPermission("manageSuppliers.php") && $page['file'] == "manageSuppliers.php") {
+                            ?>
+                            <a href="supplier_return_statements.php">Supplier Return Statements</a>
+                            <?php
+                        }
 					}
 				}
 
@@ -92,13 +101,13 @@
 			display:flex !important;
 			justify-content:justify-content;
 		}
-		
+
 		#menu_wrap .col h1{
 			color: #fff;
 			width: 100%;
 			font-size: 20px;
 		}
-		
+
 		#menu_wrap .col{
 			width:100%;
 		}
