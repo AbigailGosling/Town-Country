@@ -101,12 +101,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $delivery_day_checking
  * @property bool $delivery_day_override
  * @property int $delivery_days
+ * @property string|null $sage_no
  *
  * @package App\Models
  */
 class Customer extends Model
 {
-protected $connection = 'tandc_live';
+	protected $connection = 'tandc_live';
 	protected $table = 'customers';
 	public $timestamps = false;
 
@@ -216,6 +217,7 @@ protected $connection = 'tandc_live';
 		'markup_amount',
 		'delivery_day_checking',
 		'delivery_day_override',
-		'delivery_days'
+		'delivery_days',
+		'sage_no'
 	];
 }

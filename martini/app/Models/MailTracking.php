@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class MailTracking
- * 
+ *
  * @property int $id
  * @property int $customer_id
  * @property int|null $document_id
@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $secondary_code
  * @property string|null $attachments
  * @property Carbon $date_sent
- * @property Carbon $last_update
+ * @property Carbon|null $last_update
  *
  * @package App\Models
  */

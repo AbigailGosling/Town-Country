@@ -13,7 +13,12 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property int $id
  * @property string|null $name
+ * @property string|null $address_1
+ * @property string|null $address_2
+ * @property string|null $address_3
+ * @property string|null $address_4
  * @property string|null $postcode
+ * @property string|null $email
  * @property string|null $contact_number
  * @property string|null $contact_name
  * @property int|null $user_id
@@ -24,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Supplier extends Model
 {
-protected $connection = 'tandc_live';
+	protected $connection = 'tandc_live';
 	protected $table = 'supplier';
 	public $timestamps = false;
 
@@ -35,7 +40,12 @@ protected $connection = 'tandc_live';
 
 	protected $fillable = [
 		'name',
+		'address_1',
+		'address_2',
+		'address_3',
+		'address_4',
 		'postcode',
+		'email',
 		'contact_number',
 		'contact_name',
 		'user_id',

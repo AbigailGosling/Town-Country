@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Intake
- * 
+ *
  * @property int $id
  * @property int $returned
  * @property string|null $supplier_id
@@ -26,9 +26,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $security_id
  * @property string|null $notes
  * @property Carbon|null $date_paid
- * @property boolean $approved
- * @property int $approved_by
+ * @property bool $deleted
+ * @property bool $approved
+ * @property int|null $approved_by
  * @property Carbon|null $approved_date
+ * @property string|null $import_num
+ * @property int $health_id
+ * @property string|null $internal_num
+ * @property string|null $packaging_notes
  *
  * @package App\Models
  */
@@ -39,10 +44,14 @@ class Intake extends Model
 	public $timestamps = true;
 
 	protected $casts = [
-		'returned' => 'int'
+		'returned' => 'int',
+		'deleted' => 'bool',
+		'approved' => 'bool',
+		'approved_by' => 'int',
+		'approved_date' => 'datetime',
+		'health_id' => 'int'
 	];
-
-	protected $dates = [
+    protected $dates = [
 		'date_paid'
 	];
 
@@ -60,8 +69,13 @@ class Intake extends Model
 		'security_id',
 		'notes',
 		'date_paid',
+		'deleted',
 		'approved',
 		'approved_by',
 		'approved_date',
+		'import_num',
+		'health_id',
+		'internal_num',
+		'packaging_notes'
 	];
 }

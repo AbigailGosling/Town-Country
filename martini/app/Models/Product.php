@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Product
- * 
+ *
  * @property int $id
  * @property int|null $pallet_id
  * @property int|null $cut_id
@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $status
  * @property string|null $range_from
  * @property string|null $range_to
+ * @property string|null $range_extension
  * @property string|null $ubbb
  * @property string|null $unit
  * @property string|null $comments
@@ -39,7 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $quantity
  *
  * @property Cut|null $cut
- * 
+ *
  * @package App\Models
  */
 class Product extends Model
@@ -51,7 +52,8 @@ protected $connection = 'tandc_live';
 	protected $casts = [
 		'pallet_id' => 'int',
 		'cut_id' => 'int',
-		'quantity' => 'int'
+		'quantity' => 'int',
+		'health_id' => 'int'
 	];
 
 	protected $fillable = [
@@ -79,7 +81,9 @@ protected $connection = 'tandc_live';
 		'note_units',
 		'note_weight',
 		'akg',
-		'quantity'
+		'quantity',
+		'health_id',
+		'kill_date'
 	];
 	public function cut():BelongsTo
 	{
