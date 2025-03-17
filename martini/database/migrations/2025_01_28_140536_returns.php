@@ -55,6 +55,13 @@ return new class extends Migration
         DB::connection('tandc_live')->statement("UPDATE `tandc_live`.`mail_tracking` SET `last_update` = NULL WHERE CAST(`last_update` AS CHAR(20)) = '0000-00-00 00:00:00';");
         DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`mail_tracking` CHANGE COLUMN `type` `type` ENUM('STATEMENT','SALES_CONFIRMATION','CREDIT_ALERT','RETRACTION','TEST','SUPPLIER_RETURN') CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;");
         DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`mail_tracking` CHANGE COLUMN `last_update` `last_update` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;");
+
+        DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`supplier_returns` CHANGE COLUMN `created_at` `created-at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`supplier_returns` CHANGE COLUMN `updated_at` `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;");
+
+        DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`supplier_return_items` CHANGE COLUMN `created_at` `created-at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+        DB::connection('tandc_live')->statement("ALTER TABLE `tandc_live`.`supplier_return_items` CHANGE COLUMN `updated_at` `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;");
+
         DB::connection('tandc_live')->statement("SET SQL_SAFE_UPDATES = 1;");
         //END BLOCK
         $newPerm = new Permission();

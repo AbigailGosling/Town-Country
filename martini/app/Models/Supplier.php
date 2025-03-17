@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Supplier
- * 
+ *
  * @property int $id
  * @property string|null $name
  * @property string|null $address_1
@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $user_id
  * @property string|null $internal_number
  * @property bool $disabled
+ * @property string $return_notes
  *
  * @package App\Models
  */

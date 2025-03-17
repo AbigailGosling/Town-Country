@@ -136,9 +136,9 @@ $serverRoot = request()->server("SERVER_NAME");
     <a href="menu.php" id="menu">MENU</a>
     <a href="logout" id="logout">LOGOUT</a>
 </div>
+<a href="../supplierreturnstatements" class="backbtn">&lt; Back</a>
 
-
-<div id="printDiv" class="container" style="">
+<div id="printDiv" class="container">
 
     <?php
     if (request()->input('id') != '') {
@@ -157,7 +157,7 @@ $serverRoot = request()->server("SERVER_NAME");
             <span>Company Reg. No. 12192223</span><br/>
             <b>01902 457924</b><br/>
         </div>
-		<table>
+		<table style="width: 100%;">
         <tr>
         <td>
 		<div class="invoice">
@@ -176,7 +176,18 @@ $serverRoot = request()->server("SERVER_NAME");
 			</div>
 		</div>
         </td>
-        <td style="width:100%">
+        <td align="right">
+		<div class="invoice">
+			<b style="font-size:10px;color:#8c8c8c;">Supplier Notes</b>
+			<div class="invoicebox">
+                <form method="POST" action="scripts/saveReturnNotes.php" enctype="multipart/form-data">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+			        <input type="hidden" name="supplier_id" value="<?php echo $supplier['id']; ?>">
+                    <textarea name="return_notes"><?php echo $supplier['return_notes']; ?></textarea>
+                    <input type="submit" value="Save">
+                </form>
+			</div>
+		</div>
         </td>
         </tr>
         </table>
@@ -219,7 +230,7 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
 
     while($returnProduct= mysqli_fetch_assoc($returnProducts))
     {
-        if ($returnItem['unit']=="PPC")
+        if ($returnProduct['unit']=="PPC")
         {
             $itemCost = $returnProduct["price"] * $returnProduct["count"];
         }

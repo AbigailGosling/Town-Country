@@ -67,7 +67,7 @@ use App\Models\User;
 						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                         if ($userModel->hasPermission("manageSuppliers.php") && $page['file'] == "manageSuppliers.php") {
                             ?>
-                            <a href="supplier_return_statements.php">Supplier Return Statements</a>
+                            <a href="../supplierreturnstatements/">Supplier Return Statements</a>
                             <?php
                         }
 					}
