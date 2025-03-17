@@ -30,11 +30,12 @@ $s = (int)(microtime(true));
         $address3 = $customerRow['address'.$pickSheetRow['addressid'].'_3'];
         $address4 = $customerRow['address'.$pickSheetRow['addressid'].'_4'];
         $postcode = $customerRow['postcode_'.$pickSheetRow['addressid'].''];
-        $contactN = $customerRow['address'.$pickSheetRow['addressid'].'_number'];
+        $delPhone = $customerRow['address'.$pickSheetRow['addressid'].'_number'];
         $accountaddress_1 = $customerRow['accounts_address_1'];
         $accountaddress_2 = $customerRow['accounts_address_2'];
         $accountaddress_3 = $customerRow['accounts_address_3'];
         $accountaddress_4 = $customerRow['accounts_address_4'];
+        $accountPhone = ($customerRow['contactnumber'] != null && $customerRow['contactnumber'] != "")?$customerRow['contactnumber']:$customerRow['tel_number'];
     }
     else
     {
@@ -48,7 +49,7 @@ $s = (int)(microtime(true));
         $accountaddress_3 = $address3 = $customerRow['address_3'];
         $address4 = $customerRow['address_4'];
         $accountaddress_4 = $postcode = $customerRow['postcode'];
-        $contactN = $customerRow['contact_number'];
+        $accountPhone = $delPhone = $customerRow['contact_number'];
     }
 
 
@@ -139,6 +140,7 @@ $s = (int)(microtime(true));
 					echo $accountaddress_2 .'<br/>';
 					echo $accountaddress_3 .'<br/>';
                     echo $accountaddress_4 .'<br/>';
+                    echo $accountPhone .'<br/>';
                     echo 'ID:'.  str_pad($customerRow['id'], 4, '0', STR_PAD_LEFT) .'<br/>';?>
 				</p>
 				<span style="display:none;">Account No: 1123ml</span>
@@ -177,7 +179,7 @@ $s = (int)(microtime(true));
 						echo $address_3. '<br/>';
                         echo $address_4. '<br/>';
 						echo $postcode . '<br/>';
-
+                        echo $delPhone . '<br/>';
 					?>
 				</p>
 				<span><?php echo $pickSheetRow['comments']; ?></span>
