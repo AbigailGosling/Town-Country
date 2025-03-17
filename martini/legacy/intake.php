@@ -290,7 +290,15 @@ use Illuminate\Support\Facades\Auth;
 			</div>
 		</div>
         <div class="overview_block">
-
+            <div>
+                <label>No Open Product</label>
+                <form method="POST" action="scripts/changeIntakePackagingNote.php" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <input type="text" name="packaging_notes" value="<?php echo $intake['packaging_notes']; ?>" style="width:140px;">
+                    <input type="submit" value="Save">
+                </form>
+			</div>
 		</div>
 		<div style="clear:both;"></div>
 	</div>

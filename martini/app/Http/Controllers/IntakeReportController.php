@@ -281,7 +281,7 @@ class IntakeReportController extends Controller
                 $out->actSubTotal = ($productsForCut->first()->unit!="PPC")? $this->quickFloatMulti($out->actCost , $out->kg) : $this->quickFloatMulti($out->actCost , $out->qty);
                 $stockInfo->add($out);
             }
-            return view("reports.intake", ['intake_id'=>$intake_id,'search_intake_id'=>$search_intake_id,'summary'=>$summary,"saleInfo"=>$saleInfo,"creditInfo"=>$creditInfo,"resaleInfo"=>$resaleInfo,"stockInfo"=>$stockInfo]);
+            return view("reports.intake", ['intake_id'=>$intake_id,'search_intake_id'=>$search_intake_id,'summary'=>$summary->toArray(),"saleInfo"=>$saleInfo,"creditInfo"=>$creditInfo,"resaleInfo"=>$resaleInfo,"stockInfo"=>$stockInfo]);
         }
     }
     private function guessTheOriginal(Product $newproduct):Product

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class PickerSheet
- * 
+ *
  * @property int $id
  * @property string|null $picker_id
  * @property string|null $user_from_id
@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $transaction_id
  * @property bool $isSupplemental
  * @property bool $isSupplementalCredit
+ * @property bool $is_return_to_supplier
  *
  * @package App\Models
  */
@@ -48,6 +49,8 @@ protected $connection = 'tandc_live';
 
 	protected $casts = [
 		'customer_id' => 'int',
+		'date' => 'datetime',
+		'date_completed' => 'datetime',
 		'deliverynote_printed' => 'int',
 		'invoice_printed' => 'int',
 		'sent' => 'int',
@@ -86,6 +89,8 @@ protected $connection = 'tandc_live';
 		'picksheet_note',
 		'admin_approved',
 		'transaction_id',
-		'isSupplemental'
+		'isSupplemental',
+		'isSupplementalCredit',
+		'is_return_to_supplier'
 	];
 }

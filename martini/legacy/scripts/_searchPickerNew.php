@@ -120,7 +120,7 @@ use Illuminate\Support\Facades\Auth;
                         if($this_row_weight == 0){ continue; }
                     }
                     $state = 0;
-                    if($ubbb != 2 && $ubbb !=6 && $temp_id == 1){
+                    if($ubbb != 2 && $temp_id == 1){
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;

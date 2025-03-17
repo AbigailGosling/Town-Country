@@ -59,12 +59,16 @@ use Ramsey\Uuid\Type\Decimal;
 	{
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
-		$r = prepareExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+		$r = finalExecuteQuery($sql, $varTypes, $vars, $returnInsert);
 		Log::error($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
 	global $knownStatements;
 	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
+	{
+		return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert,$store);
+	}
+    function finalExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false,$store = true)
 	{
 		global $mysqli;
 		global $knownStatements;
@@ -72,8 +76,8 @@ use Ramsey\Uuid\Type\Decimal;
 		$res = null;
 		try
 		{
-			if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
-			$stmt = $knownStatements[$sql."_".$varTypes];
+            if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
+            $stmt = $knownStatements[$sql."_".$varTypes];
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
 			$s = time();
 			$d = date('Y-m-d H:i:s');
@@ -650,24 +654,32 @@ use Ramsey\Uuid\Type\Decimal;
     function countNumProductsForCutOnPalletArrays($palletIDS, $cutIDS, $nationalityID){
         global $mysqli;
 
-        $palletIDS = implode(',', $palletIDS);
-        $cutIDS = implode(',', $cutIDS);
+        $numOfPallets = 0;
+        $numInPicking = 0;
+        foreach ($palletIDS as $palletID)
+        {
+            $check = "SELECT GROUP_CONCAT(DISTINCT `cut_id`) as `cuts` FROM `product` WHERE `pallet_id` = ?";
+            $cr = custom_intersect($cutIDS,explode(",",prepareExecuteQuery($check,'i',[$palletID])->fetch_assoc()['cuts']));
 
-        $x = "SELECT COUNT(weights.id) as num FROM `weights` INNER JOIN `product` ON weights.product_id=product.id WHERE product.cut_id IN ($cutIDS) && product.pallet_id IN ($palletIDS) && weights.status_id != 1 && product.nationality_id=?";
-		$y = prepareExecuteQuery($x,'i',[$nationalityID]);
-        $row = $y->fetch_assoc();
+            foreach ($cr as $cutID)
+            {
+                $x = "SELECT * FROM `weights` INNER JOIN `product` ON weights.product_id=product.id WHERE product.cut_id = ? && product.pallet_id = ? && weights.status_id != 1 && product.nationality_id=?";
+		        $y = prepareExecuteQuery($x,'iii',[$cutID,$palletID,$nationalityID]);
+                $numOfPallets += $y->num_rows;
 
-
-		if($row["num"] == 0)
+                $x1 = "SELECT * FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.deleted !=1 && pickerItems.status = '0' && product.pallet_id = ? && product.cut_id = ?";
+                $y1 = prepareExecuteQuery($x1,'ii',[$palletID,$cutID]);
+                $numInPicking = $y1->num_rows;
+            }
+        }
+		if($numOfPallets == 0)
 		{
-			return 0;
+			return $numOfPallets;
 		}
-
-        $x1 = "SELECT pickerItems.id, product.id AS productid  FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.deleted !=1 && pickerItems.status = '0' && product.pallet_id IN ($palletIDS) && product.cut_id IN ($cutIDS)";
-        $y1 = prepareExecuteQuery($x1);
-		$numInPicking = $y1->num_rows;
-
-        return $row['num'] - $numInPicking;
+        else
+        {
+            return $numOfPallets - $numInPicking;
+        }
     }
 
 	function numWeightsAvailableFromProductID($product_id){
@@ -1921,4 +1933,14 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 		return ($lastUpdated)?DateTime::createFromFormat("U",$lastUpdated)->format('Y-m-d H:i:s'):'';
 	}
+    function custom_intersect(array $arrayOne, array $arrayTwo):array
+    {
+        //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
+        $first = array_flip($arrayOne);
+        $second = array_flip($arrayTwo);
+
+        $x = array_intersect_key($first, $second);
+
+        return array_flip($x);
+    }
 ?>

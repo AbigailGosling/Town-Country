@@ -6,12 +6,13 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class User
- * 
+ * Class Location
+ *
  * @property int $id
  * @property string $name
  * @property int $site_id
@@ -26,32 +27,19 @@ class Location extends Model
 {
     protected $connection = 'tandc_live';
 	protected $table = 'location';
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-    ];
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-    ];
-	protected $dates = [
-	];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
+		'site_id' => 'int',
         'disabled' => 'bool',
         'sale_rules' => 'array'
     ];
+
+	protected $fillable = [
+		'site_id',
+		'name',
+		'sale_rules',
+		'disabled'
+	];
     public function site():BelongsTo
     {
         return $this->belongsTo(Site::class,"site_id","id");
@@ -76,22 +64,22 @@ class Location extends Model
                 }
             }
             else {
-                if (array_key_exists($otherLocation->id,$myRules)) 
+                if (array_key_exists($otherLocation->id,$myRules))
                 {
                     $otherRules = $myRules;
                 }
-                else 
+                else
                 {
                     foreach($myRules as $property => $value)
                     {
                         unset($otherRules[$property]);
                     }
                 }
-                
+
             }
             $otherLocation->sale_rules = $otherRules;
             $otherLocation->save();
         }
-        
+
     }
 }

@@ -18,7 +18,7 @@ class PDFRenderer{
         $browserFactory = new BrowserFactory();
         // starts headless chrome
         if ($debug) Log::error("Browser",[$targetURL,$pathToFile,$fileName]);
-        $browser = $browserFactory->createBrowser(['noSandbox' => true,'debugLogger'     => Log::getLogger(),'connectionDelay' => 0.8,  'headless' => false,]);
+        $browser = $browserFactory->createBrowser(['noSandbox' => true,'debugLogger'     => Log::getLogger(),'connectionDelay' => 0.8,  'headless' => true, 'ignoreCertificateErrors' => true,]);
         try {
             // creates a new page and navigate to an URL
             if ($debug) Log::error("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);

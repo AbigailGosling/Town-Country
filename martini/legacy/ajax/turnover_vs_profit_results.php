@@ -84,7 +84,8 @@ use Illuminate\Support\Facades\Auth;
     }
 	$INTERESTED_PICKS = [];
 
-    $INVOICE_ID = request()->input('invoice_id');
+    $INVOICE_ID = request()->input('invoice_id',null);
+    if ($INVOICE_ID!=null && $INVOICE_ID!="")$INTERESTED_PICKS[] =$INVOICE_ID;
     $INTAKE_ID = request()->input('intake_id');
     $PALLET_ID = request()->input('pallet_id');
     $USER_ID = request()->input('user_id');
@@ -215,7 +216,7 @@ use Illuminate\Support\Facades\Auth;
 			if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
 			{
 				$col = $reportCol->getLabel($table->mode);
-				$re = ReportHelper::resolveFooter($reportCol,$processed[$table->name],$table->mode);
+				$re = ReportHelper::resolveFooter($reportCol,[],$processed[$table->name],$table->mode);
 				$kgS=($garyCol=="kg")?" kg":"";
 				echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$re.$kgS;
 				break;

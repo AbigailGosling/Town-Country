@@ -5,20 +5,39 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	include('includes/frontHeader.php');
-	
+
 	$picksheetid = request()->input('id');
-	
+
 	$x = "SELECT * FROM `pickerSheets` WHERE id =?";
 	$y = prepareExecuteQuery($x,'i',[$picksheetid]);
-	
+
 	$pickerSheet = mysqli_fetch_array($y);
-	
-	
-	$customerName = customerName($pickerSheet['customer_id']);
-	
-	$customer_id = $pickerSheet['customer_id'];
-	$customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE id=?",'i',[$customer_id]);
-	$customer = mysqli_fetch_array($customerResult);
+    if($pickerSheet['addressid'] == ''){ $pickerSheet['addressid'] = 1; }
+	if ($pickerSheet['is_return_to_supplier']==0)
+    {
+        $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE id=?",'i',[$pickerSheet['customer_id']]);
+        $customer = mysqli_fetch_array($customerResult);
+
+        $recieverName = $customer['businessname'];
+        $recieverTA = 't/a '.$customer['tradingas'];
+        $recieverAddress1 = $customer['address'.$pickerSheet['addressid'].'_1'] . '<br/>';
+        $recieverAddress2 = $customer['address'.$pickerSheet['addressid'].'_2'] . '<br/>';
+        $recieverAddress3 = $customer['address'.$pickerSheet['addressid'].'_3'] . '<br/>';
+        $recieverPostCode = $customer['postcode_'.$pickerSheet['addressid'].''] . '<br/>';
+    }
+    else
+    {
+        $customerResult = prepareExecuteQuery("SELECT * FROM `supplier` WHERE id=?",'i',[$pickerSheet['customer_id']]);
+        $customer = mysqli_fetch_array($customerResult);
+
+        $recieverName = $customer['name'];
+        $recieverTA = "";
+        $recieverAddress1 = $customer['address_1'] . '<br/>';
+        $recieverAddress2 = $customer['address_2'] . '<br/>';
+        $recieverAddress3 = $customer['address_3'] . '<br/>';
+        $recieverPostCode = $customer['postcode'] . '<br/>';
+    }
+
 
 	$type = request()->input('type');
 
@@ -50,9 +69,9 @@ use Illuminate\Support\Facades\Auth;
 </script>
 
 <main class="int container">
-	
+
 	<a href="<?php echo $domain; ?>pickSheetList.php" class="backbtn">< Back</a>
-	
+
 	<h1>PICK FORM</h1>
 	<?php
 		$notification = prepareExecuteQuery("SELECT * FROM `pickerNotifications` WHERE `pickersheet_id` = ? ORDER BY id DESC LIMIT 1",'i',[$picksheetid])->fetch_assoc();
@@ -68,7 +87,7 @@ use Illuminate\Support\Facades\Auth;
 				<div class="row custom-warning-box" id="warning" style="<?php if ($controlLock) //echo "width:75%;";?>background:rgb(255, 102, 102); border: 2px solid rgb(255, 0, 0)">
 					Locked by <?php echo $sendingUser['name']; ?> : <?php echo $notification['message']; ?>
 					<?php
-						
+
 					?>
 				</div>
 				<?php
@@ -126,10 +145,10 @@ use Illuminate\Support\Facades\Auth;
 		<?php } ?><br/>
 		<div class="customer_info" style="flex-wrap: wrap;">
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;">
-				<label><b>Customer Name:</b> <?php echo $customerName; ?></label><br/>
+				<label><b>Customer Name:</b> <?php echo $recieverName; ?></label><br/>
 				<label><b>Order Number:</b> <?php echo $pickerSheet['id']; ?></label>
 			</div>
-			
+
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;text-align:right;">
 				<label><b>Delivery Date:</b> <?php echo $pickerSheet['estimated_delivery_date']; ?></label>
 			</div>
@@ -138,18 +157,18 @@ use Illuminate\Support\Facades\Auth;
 				<label><b>Delivery Address:</b>
 			<div class="deliverybox">
 				<p>
- 					<?php echo $customer['businessname']; ?><br/>
-					t/a <?php echo $customer['tradingas']; ?><br/>
+ 					<?php echo $recieverName; ?><br/>
+					<?php echo $recieverTA; ?><br/>
 					<?php
-						
-						if($pickerSheet['addressid'] == ''){ $pickerSheet['addressid'] = 1; }
 
-						echo $customer['address'.$pickerSheet['addressid'].'_1'] . '<br/>';
-						echo $customer['address'.$pickerSheet['addressid'].'_2'] . '<br/>';
-						echo $customer['address'.$pickerSheet['addressid'].'_3'] . '<br/>';
-						echo $customer['postcode_'.$pickerSheet['addressid'].''] . '<br/>';
+
+
+						echo $recieverAddress1 . '<br/>';
+						echo $recieverAddress2 . '<br/>';
+						echo $recieverAddress3 . '<br/>';
+						echo $recieverPostCode . '<br/>';
 					?>
-					
+
 				</p>
 				</label>
 			</div>
@@ -164,34 +183,34 @@ use Illuminate\Support\Facades\Auth;
 	</div>
 	<form method="POST" id="palletAddBtnForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
 	<?php
-		
+
 		##########################
 		$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? GROUP BY product_id";
 		$y = prepareExecuteQuery($x,'i',[$picksheetid]);
-		
+
 		$productids = '';
-		
+
 		while($row = mysqli_fetch_array($y)){ $productids .= '(id = ' . $row['product_id'] . ' && cooling_id IN ('. $type_value .')) ||'; }
 		$productids = rtrim($productids," ||");
 		if($productids == '') return;
 		##########################
-		
+
 		$productsQuery = "SELECT * FROM `product` WHERE $productids";
 		$productsResult = prepareExecuteQuery($productsQuery);
-		
+
 		while($product = mysqli_fetch_array($productsResult)){
 		$palletID = $product['pallet_id'];
-		
+
 		$productID = $product['id'];
-		$cut_id = $product['cut_id']; 
-		
-			
+		$cut_id = $product['cut_id'];
+
+
 		# PALLET START
 		$xPallet = "SELECT * FROM `pallet` WHERE id=? LIMIT 1";
 		$yPallet = prepareExecuteQuery($xPallet,'i',[$palletID]);
 		$pallet = mysqli_fetch_array($yPallet);
 		# PALLET END
-		
+
 		$pickerItemsResult = prepareExecuteQuery("SELECT id,target_weight FROM `pickerItems` WHERE pickersheet_id=? && product_id=?",'ii',[$picksheetid,$productID]);
 		$pickerItemsData = mysqli_fetch_array($pickerItemsResult);
 
@@ -201,8 +220,8 @@ use Illuminate\Support\Facades\Auth;
 		$temp_id = $product['cooling_id'];
 	?>
 	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" >
-	<?php 
-		
+	<?php
+
 		$smallestDate = $product['range_from'];
 		$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
 
@@ -244,7 +263,7 @@ use Illuminate\Support\Facades\Auth;
  					<td><?php echo $product['akg']; ?></td>
 				</tr>
 			</table>
-			
+
 			<div class="rowEndContainer">
 				<div class="numRequired"><?php echo $numRequired; ?></div>
 				<div class="weightcomment"><?php echo $target_weight . 'kg'; ?></div>
@@ -260,47 +279,47 @@ use Illuminate\Support\Facades\Auth;
 						$thisproductid = $product['id'];
 						$w1 = "SELECT * FROM `weights` WHERE product_id=?";
 						$w2 = prepareExecuteQuery($w1,'i',[$thisproductid]);
-						
+
 						$thisweight = mysqli_fetch_array($w2);
 					?>
 						<input type="text" name="dolavs[]" value="<?php echo $thisweight['id']; ?>" style="display:none;">
 						<div style="padding:10px;"><input type="number" name="dolav_<?php echo $thisweight['id']; ?>"><span> / <?php echo $product['akg']; ?></span></div>
-					<?php					
+					<?php
 					}else{
 					?>
-					
+
 					<?php
 					$weightsQuery = "SELECT * FROM `weights` WHERE product_id=? && status_id != '1' ORDER BY ABS(weight_gross) ASC";
  					$weightsResult = prepareExecuteQuery($weightsQuery,'i',[$productID]);
 					$numrows = mysqli_num_rows($weightsResult);
-					
+
 					if($numRequired >= 10 && $numrows != 0){ ?><div class="rowSelector" valselect='<?php echo $numRequired; ?>'><b>Select</b></div><?php }
-					
+
 					$count=0;
-                    
+
 					while($weights = mysqli_fetch_array($weightsResult)){
 						$count++;
-						
+
 						$weightgross = $weights['weight_gross'];
-						
+
 						// $weightsQuery2 = "SELECT id FROM `weights` WHERE product_id='$productID' && weight_gross='$weightgross'";
 						// $weightsResult2 = prepareExecuteQuery($mysqli, $weightsQuery2);
 						// $weightsRow = mysqli_fetch_array($weightsResult2);
 						// $ccount = mysqli_num_rows($weightsResult2);
-						
-						
+
+
                         $someString = getSpeciesFromCutID($product['cut_id']) . ' ' . getCut($product['cut_id']). ' ' . getNationality($product['nationality_id']) . ' ' . $numRequired;
-                      
-                    
+
+
                         if($pallet['grosspallet']){
-                            
+
                             $netWeight = number_format($weights['weight_gross'], 2, '.', '');
                         ?>
                          	<div style="position:relative;padding:10px;">
                                 <input type="hidden" value="<?php echo $weights['id']; ?>" name="grossids[]">
                                 <input oninput="maxValueCheck(this, <?php echo (int)$netWeight; ?>)" type="number" class="counter" name="gross_<?php echo $weights['id']; ?>" value="0" min="0"><div style="position:absolute;right:25px;top:12px;color:red;"> / <?php echo $netWeight; ?></div>
                             </div>
-                            <?php             
+                            <?php
                         }else{
                         ?>
                         <div class="weightbox" onclick="addStringName('<?php echo $someString; ?>'); addBoxIDtoList(<?php echo $weights['id']; ?>,<?php echo $product['cut_id']; ?>,<?php echo $product['id']; ?>,this,'<?php if($product['weightnote'] != ''){ echo 'true'; }else{ echo 'false'; } ?>');">
@@ -317,26 +336,26 @@ use Illuminate\Support\Facades\Auth;
 						}
 					}
 				?>
-					<?php					
+					<?php
 					}
 				?>
 			</div>
-			
+
 			<div class="customWeightContainer" style="display:none;"><input type="text" class="selectedValue" name="selectedValue"></div>
 		</div>
 	</div>
 	</div>
 	<?php } ?>
-		  
+
 	<br/><br/>
-	
+
 	<?php
 		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
 		$outpalletResult = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
-		
+
 		$outpalletCount = mysqli_num_rows($outpalletResult);
 	?>
-	
+
 	<?php if($pickerSheet['completed'] != '1'){ ?>
 	<div class="picksheet_controls" style="position:fixed;bottom:0px;right:10px;display:none;">
 		 	<input type="text" id="weightids" name="weightids" style="display:none;">
@@ -354,16 +373,16 @@ use Illuminate\Support\Facades\Auth;
 		</form>
 
 	</div>
-	
+
 	<script>
 		var globalReady = 0;
 		var globalNeed = 1;
 	</script>
-	 
+
 	<?php } ?>
-	
+
 	<br/><br/><br/>
-		
+
 		<?php if($pickerSheet['completed'] == '1'){ ?>
         	<div class="outgoing_pallets">
 		<?php }else{ ?>
@@ -373,7 +392,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
                 $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
-                
+
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
 
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
@@ -381,25 +400,25 @@ use Illuminate\Support\Facades\Auth;
                     ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
 
                     $productIDArray = array();
-						
+
                     foreach($weightids as $weightid){
                         $x = "SELECT * FROM `weights` WHERE id=?";
                         $y = prepareExecuteQuery($x,'i',[$weightid]);
                         $weight = mysqli_fetch_array($y);
-                       
+
                         if(!in_array($weight['product_id'], $productIDArray)){
                             array_push($productIDArray, $weight['product_id']);
                         }
 
                         $queryBits .= ' id = ' . $weightid . ' || ';
                     }
- 
+
                     foreach($productIDArray as $productID){
 
                         $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);
                         $product = mysqli_fetch_array($y1);
-                         
+
 
                         if($product['unit'] == 'PPC'){
                             $ext = ' Cases';
@@ -413,7 +432,7 @@ use Illuminate\Support\Facades\Auth;
                         $count = mysqli_num_rows($y2);
 
                         ${"globalProductCount" . $product['id']} += $count;
-                        
+
                         ?>
                         <script>
 							$('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>').val(<?php echo $count; ?>);
@@ -421,12 +440,12 @@ use Illuminate\Support\Facades\Auth;
 							var howManyWeGot = '<?php echo ${"globalProductCount" . $product['id']}; ?>';
 							var target = $('#topform<?php echo $product['id']; ?>').attr('targetamount');
 							console.log('How many we have: ' + howManyWeGot + ' ||||  target: ' + target + '  ('+ howManyWeGot +'/'+ target +')');
-							
+
 							if(parseInt(howManyWeGot) >= parseInt(target)){
 								$('#topform<?php echo $product['id']; ?>').css('opacity','0.2');
 								$('#topform<?php echo $product['id']; ?>').css("pointer-events", "none");
 								globalReady++;
- 
+
                                 $('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>').val( $('#counter-<?php echo $product['cut_id']; ?>-<?php echo $product['id']; ?>-max').val());
 							}
 						</script>
@@ -434,7 +453,7 @@ use Illuminate\Support\Facades\Auth;
                         $k = 0;
 
                         while($weight = mysqli_fetch_array($y2)){
-                            
+
                             if($weight['weight_tear'] == $weight['weight_gross']){
                                 (double)$w = (double)$weight['weight_gross'];
                             }else{
@@ -471,18 +490,18 @@ function mainFormSucess(){
         	$(ele).val(max);
     	}
 	}
-	
+
 	$('.picksheetType').click(function(){
 		$(this).next('.pickerSheetType_content').toggle();
 	});
-	
+
 	$('.rowSelector').click(function(){
-		
+
 		var maxselect = $(this).attr('valselect');
-		
+
 		var i = 0;
 		maxselect++;
-		
+
 		$(this).parent().find('.weightbox').each(function(){
 			i++;
 			if(i < maxselect){
@@ -491,7 +510,7 @@ function mainFormSucess(){
 		});
 	});
 
-	
+
 	function setPickMode(mode){
 		$('.pickmodeContainer').hide();
 		$('.picksheet_controls').show();
@@ -500,7 +519,7 @@ function mainFormSucess(){
 			$('.productGroup.frozen').hide();
 			$('.productGroup.fresh').show();
 		}
-		
+
 		if(mode == 'frozen'){
 			$('.productGroup.fresh').hide();
 			$('.productGroup.frozen').show();
@@ -511,13 +530,13 @@ function mainFormSucess(){
 			$('.productGroup.frozen').show();
 		}
 	}
-	
+
 	function addBoxIDtoList(id, cut_id, product_id, ele, customWeight, count = 1){
-		
+
 		if(customWeight == 'true'){
 			// $('.customWeightContainer').fadeIn();
 		}
-		
+
 		if($(ele).hasClass('activeWeight')){
 			$(ele).removeClass('activeWeight');
 			var ids = $('#weightids').val();
@@ -526,28 +545,28 @@ function mainFormSucess(){
 			ids = ids.replace(id + ',','');
 			ids = ids.replace(id + '-' + cut_id + ',', '');
 			console.log('new-ids: ' + ids);
-			
+
 			$('#weightids').val(ids);
-			
-			
+
+
 			var counter = $('#counter-' + cut_id + '-' + product_id).val();
 			counter--;
 			$('#counter-' + cut_id + '-' + product_id).val(counter);
-			
+
 
 		}else{
-			
+
 			var maxCounter = $('#counter-' + cut_id + '-' + product_id + '-max').val();
 			var counter = $('#counter-' + cut_id + '-' + product_id).val();
-			
+
 			if(counter == maxCounter){
 				alert('You have already selected ' + maxCounter + '/' + maxCounter + ' weights!');
 			}else{
 				counter++;
 				$('#counter-' + cut_id + '-' + product_id).val(counter);
-				
+
 				$(ele).addClass('activeWeight');
-				
+
 				if(count > 1){
 					for(var i=0;i<count;i++){
 						var ids = $('#weightids').val();
@@ -557,17 +576,17 @@ function mainFormSucess(){
 					var ids = $('#weightids').val();
 					$('#weightids').val(ids + id + ',');
 				}
-				
+
 			}
-			
+
 		}
 	}
-	
+
 	$('#nextPallet').click(function(){
 		$('#functype').val('NEW');
 		checkSelectedWeightsAndSubmit();
 	});
-		
+
 	$('#palletAddBtn').click(function(){
 		$('#functype').val('ADD');
 		checkSelectedWeightsAndSubmit();
@@ -603,47 +622,47 @@ function mainFormSucess(){
 	function addStringName(data){
 		$('#theRowName').append(data);
 	}
-	
+
 	t = 0;
-	
+
 	if(t > 1){
 		window.onbeforeunload = function(){
 			// alert('test');
 			return 1;
 		};
-	
+
 	}
 
 	function checkSelectedWeightsAndSubmit()
 	{
 		var bigValue = '';
-		
+
 		$('.selectedValue').each(function(){
 			var value = $(this).val();
  			bigValue += value + ',';
  		});
-		
+
 		$('#newweightvals').val(bigValue);
-		
+
 		var shouldSubmit = false;
 		var needApprovalBeforeSubmit = false;
 
 		$('.productGroup.<?php echo request()->input('type'); ?>').each(function(){
-			
+
 			var numRequired = $(this).attr('targetamount');
 			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());
 			if(selectedWeightsCount)
 			{
 				shouldSubmit = true;
 			}
-			
+
 
 			if(numRequired != selectedWeightsCount)
 			{
 				needApprovalBeforeSubmit = true;
-			}			
+			}
 		 });
-		 
+
 
 		 if(!shouldSubmit)
 		 {
@@ -663,7 +682,7 @@ function mainFormSucess(){
 
 	function askForIncompleteSelectionApprovalAndSubmit()
 	{
-		 
+
 		Swal.fire({
 			title: 'Are you sure?',
 			text: "You haven't selected all the required weights",

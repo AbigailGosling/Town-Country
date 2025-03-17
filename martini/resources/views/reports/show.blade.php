@@ -263,7 +263,7 @@ if (!isset($dateType)) $dateType = "assembled";
                     @foreach($columns as $column)
                     <?php
                     $h = App\Helpers\ReportHelper::resolveHeader($column,$table->mode);
-                    $t = App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$table->mode);
+                    $t = App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$footerResults,$table->mode);
                     $footerResult[$h] = preg_replace("/[£,]/", '',$t);
                     ?>
                     <x-data-table-header>{{$t}}

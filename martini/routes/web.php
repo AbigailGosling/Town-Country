@@ -10,6 +10,7 @@ use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -86,6 +87,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('health_marks/search', [HealthMarkController::class, 'search'])->name('health_marks.search');
     Route::resource('health_marks', 'App\Http\Controllers\HealthMarkController');
+
+    Route::get('supplierreturnstatements', [SupplierReturnController::class, 'index'])->name('supplierreturnstatements.index');
+    Route::get('supplierreturnstatements/{supplier}', [SupplierReturnController::class, 'show'])->name('supplierreturnstatements.show');
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

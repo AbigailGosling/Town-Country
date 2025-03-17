@@ -1,4 +1,5 @@
 <?php
+use App\Helpers\ReportHelper;
 $finalSummary = [];
 if (!isset($intake_id)) $intake_id = "";
 ?>
@@ -34,18 +35,35 @@ if (!isset($intake_id)) $intake_id = "";
             <table class="text-sm mt-4" style="width:100%;">
                 <thead style="width:100%; position: sticky; top: 0;"><tr class="py-12" style="width:100%;">Overview Table</tr>
                     <tr class="py-12" style="width:100%;" >
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Prod</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Qty</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">kg</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Cost</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Act Cost</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Sub Total</th>
-                <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Act Sub Total</th>
-                </tr></thead>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Prod</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Qty</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">kg</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Cost</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Act Cost</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Sub Total</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">Act Sub Total</th>
+                    </tr>
+                </thead>
                 <tbody class="bg-white">
                     @if(isset($summary))
+                    <?php
+                        $sumQty =0;
+                        $sumKg = 0;
+                        $sumCost=0;
+                        $sumActc=0;
+                        $sumsubT=0;
+                        $sumbubS=0;
+                    ?>
                     @foreach($summary as $row)
                     <tr>
+                        <?php
+                            $sumQty +=ReportHelper::floorDec($row->qty,3);
+                            $sumKg  +=ReportHelper::floorDec($row->kg,3);
+                            $sumCost+=ReportHelper::floorDec($row->cost,3);
+                            $sumActc+=ReportHelper::floorDec($row->actCost,3);
+                            $sumsubT+=ReportHelper::floorDec($row->subTotal,3);
+                            $sumbubS+=ReportHelper::floorDec($row->actSubTotal,3);
+                        ?>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{$row->name}}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{number_format($row->qty)}}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{number_format($row->kg,3)}}</td>
@@ -57,6 +75,19 @@ if (!isset($intake_id)) $intake_id = "";
                     @endforeach
                     @endif
                 </tbody>
+                <tfoot>
+                    @if(isset($summary))
+                    <tr class="py-12" style="width:100%;" >
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center"></th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{number_format($sumQty,0)}}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{number_format($sumKg,3)}} </th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{number_format($sumCost,3)}}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{number_format($sumActc,3)}}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{number_format($sumsubT,3)}}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{number_format($sumbubS,3)}}</th>
+                    </tr>
+                    @endif
+                </tfoot>
             </table>
         </div>
     </div>
@@ -117,13 +148,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->sell,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit !=0)
-                            {{number_format($item->cost/$item->profit,3)}}%
+                            {{number_format($item->cost/$item->sell,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->profit !=0)
-                            {{number_format($item->actCost/$item->profit,3)}}%
+                            {{number_format($item->actCost/$item->sell,3)}}%
                         @else
                             0.000%
                         @endif
