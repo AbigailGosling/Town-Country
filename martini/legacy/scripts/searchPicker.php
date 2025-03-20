@@ -169,8 +169,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $ubbb = $productsRow['ubbb'];
         $smallestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_from'];
         $largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
-        // ??: Don't we already have the intake_id from the query?
-        //$intake_id = intakeIDfromPalletID($pallet_id);
+
         $intake_id = $productsRow['intake_id'];
         $nationality_id = $productsRow['nationality_id'];
         $local = $productsRow['local'];
@@ -226,6 +225,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     $product2_quantity = $product2_quantity + $numOfWeights;
                     }
             }
+            if ($numOfWeights == 0) continue;
             if($numOfWeights > 0){
                 $product2_brands[]= $product2['brand_id'];
                 $product2_nationalities[]= $product2['nationality_id'];
@@ -246,7 +246,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             }
 
         }
-
+        //if ($product2_quantity == 0) continue;
         $uniqueBrands = count(array_unique($product2_brands));
         $uniqueNationalities = count(array_unique($product2_nationalities));
         $uniqueTemperatures = count(array_unique($product2_temperatures));
@@ -254,7 +254,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $bgCol = '';
         $earliestStartDate = '';
         $latestEndDate = '';
-
+        if ($uniqueTemperatures == 0)continue;
         if($uniqueDateranges == 1){
             $earliestStartDate = explode("-",$product2_dateranges[0])[0];
             $latestEndDate = explode("-",$product2_dateranges[0])[1];
