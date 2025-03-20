@@ -925,7 +925,6 @@ class ReportHelper
             $col2 = "supplier.name";
             $result->$col = $item->$col2;
         }
-        Log::error(json_encode($result));
         return true;
     }
     private static function resolveFallback(ReportColumn $reportColumn,$workingResult,$dbRow,string $mode):string

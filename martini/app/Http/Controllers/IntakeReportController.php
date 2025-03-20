@@ -100,8 +100,8 @@ class IntakeReportController extends Controller
                     }
                 }
                 if ($internalCount==0)continue;
-                $customer = Customer::find($sale->customer_id)->first();
-                $user = User::find($customer->default_salesman_id)->first();
+                $customer = Customer::find($sale->customer_id);
+                $user = User::find($customer->default_salesman_id);
                 $salePickItems = $pickItems->whereIn("pickersheet_id",$sale->id);
                 foreach ($salePickItems as $pickItem)
                 {
