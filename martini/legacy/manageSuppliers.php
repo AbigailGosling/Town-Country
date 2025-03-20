@@ -53,25 +53,25 @@
             <tr>
                 <td style="width:49%">
                     <label>Address 1</label>
-                    <input type="text" id="supname" name="name" value="<?php echo $data['address_1']; ?>" required>
+                    <input type="text" id="supname" name="address_1" value="<?php echo $data['address_1']; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 2</label>
-                    <input type="text" id="supname" name="name" value="<?php echo $data['address_2']; ?>" required>
+                    <input type="text" id="supname" name="address_2" value="<?php echo $data['address_2']; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 3</label>
-                    <input type="text" id="supname" name="name" value="<?php echo $data['address_3']; ?>" required>
+                    <input type="text" id="supname" name="address_3" value="<?php echo $data['address_3']; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 4</label>
-                    <input type="text" id="supname" name="name" value="<?php echo $data['address_4']; ?>" required>
+                    <input type="text" id="supname" name="address_4" value="<?php echo $data['address_4']; ?>" required>
                 </td>
             </tr>
 			<tr>

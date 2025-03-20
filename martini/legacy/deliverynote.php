@@ -174,10 +174,10 @@ $s = (int)(microtime(true));
 					<?php echo $name.'<br/>'.$ta .'<br/>';
 
 
-						echo $address_1. '<br/>';
-						echo $address_2. '<br/>';
-						echo $address_3. '<br/>';
-                        echo $address_4. '<br/>';
+						echo $address1. '<br/>';
+						echo $address2. '<br/>';
+						echo $address3. '<br/>';
+                        echo $address4. '<br/>';
 						echo $postcode . '<br/>';
                         echo $delPhone . '<br/>';
 					?>

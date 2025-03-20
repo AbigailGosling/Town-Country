@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $secondary_code
  * @property string|null $attachments
  * @property Carbon $date_sent
- * @property Carbon|null $last_update
+ * @property Carbon $last_update
  *
  * @package App\Models
  */

@@ -55,8 +55,9 @@ use Ramsey\Uuid\Type\Decimal;
 		$rollingError = new \Exception;
 		$rollingTimestamp = (int)(microtime(true)*1000);
 	}
-	function loggedQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
+	function loggedQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
 	{
+        if (Auth::id()!=54)return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert);
 		$e = new \Exception;
 		$s = (int)(microtime(true)*1000);
 		$r = finalExecuteQuery($sql, $varTypes, $vars, $returnInsert);
@@ -64,11 +65,11 @@ use Ramsey\Uuid\Type\Decimal;
 		return $r;
 	}
 	global $knownStatements;
-	function prepareExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false)
+	function prepareExecuteQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
 	{
 		return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert,$store);
 	}
-    function finalExecuteQuery(string $sql, string $varTypes = null, array $vars = null,$returnInsert = false,$store = true)
+    function finalExecuteQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
 	{
 		global $mysqli;
 		global $knownStatements;

@@ -266,7 +266,7 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
         <td <?php if ($i != 0) { ?>style="border-top:1px solid lightgray"<?php } ?> data-sort="<?php echo $picksheet['sortableDueDateFormat']; ?>" width="100"><?php echo $picksheet['date']; ?></td>
         <td <?php if ($i != 0) { ?>style="border-top:1px solid lightgray"<?php } ?> align="right" width="100" class="digit_value" value="<?php echo number_format($internalValue,2,".",""); ?>"><?php echo '£' . number_format($internalValue,2,".",","); ?></td>
         <td <?php if ($i != 0) { ?>style="border-top:1px solid lightgray"<?php } ?> align="right" width="100" class="digit_paid" value="<?php echo number_format($internalPaid,2,".",""); ?>"><?php echo '£' . number_format($internalPaid, 2, ".", ",");?></td>
-        <td style="<?php if ($i != 0) { ?>border-top:1px solid lightgray;<?php }if($internalOutstanding < 0) { echo ' color:red;'; } ?>" align="right" width="100" class="digit_outstanding" value="<?php echo number_format($internalOutstanding, 2, ".", ""); ?>"><?php if(number_format($internalOutstanding, 2, ".", ",") != 0){ echo '£' . number_format($internalOutstanding, 2, ".", ",");?></td>
+        <td style="<?php if ($i != 0) { ?>border-top:1px solid lightgray;<?php }if($internalOutstanding < 0) { echo ' color:red;'; } ?>" align="right" width="100" class="digit_outstanding" value="<?php echo number_format($internalOutstanding, 2, ".", ""); ?>"><?php if(number_format($internalOutstanding, 2, ".", ",") != 0){ echo '£' . number_format($internalOutstanding, 2, ".", ",");}?></td>
     </tr>
     <?php
     }
@@ -287,7 +287,6 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
     </div>
     <?php
     }
-}
     ?>
 </div>
 <div class="clearfix"></div>

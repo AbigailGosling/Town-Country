@@ -28,7 +28,6 @@ class SLabsEmailer {
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
         global $mysqli;
-        $toEmails = ['andrew.gosling@tang.solutions'];
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');

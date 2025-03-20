@@ -5,8 +5,8 @@
     $dbPass = env("DB_PASSWORD_SECOND");
     $dbName = env("DB_DATABASE_SECOND");
 
-    $domain = '//tcdev.tang.solutions/legacy/';
-    $domainOld = '//tcdev.tang.solutions/';
+    $domain = '//townandcountrystock.co.uk/legacy/';
+    $domainOld = '//townandcountrystock.co.uk/';
 
     $mail_host = 'smtp.mandrillapp.com';
     $mail_email = 'info@devclever.co.uk';
@@ -15,6 +15,6 @@
 
     $mail_from_address = 'noreply-accountinfo@townandcountrymeats.co.uk';
 
-    //$artisanLocation = 'D:\\wwwroot\\martini\\artisan';
-    $artisanLocation = 'C:\\inetpub\\wwwroot\\martini\\artisan';
+    $artisanLocation = 'D:\\wwwroot\\martini\\artisan';
+    //$artisanLocation = 'C:\\inetpub\\wwwroot\\martini\\artisan';
 ?>
