@@ -148,13 +148,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->sell,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit !=0)
-                            {{number_format($item->cost/$item->sell,3)}}%
+                            {{number_format(($item->profit/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->profit !=0)
-                            {{number_format($item->actCost/$item->sell,3)}}%
+                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->actProfit !=0)
+                            {{number_format(($item->profit/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -183,13 +183,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $profit !=0)
-                            {{number_format($cost/$profit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $actProfit !=0)
-                            {{number_format($cost/$actProfit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -255,13 +255,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->actCost,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->sell,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit!=0)
-                            {{number_format($item->cost/$item->profit,3)}}%
+                            {{number_format(($item->actCost/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->profit!=0)
-                            {{number_format($item->actCost/$item->profit,3)}}%
+                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->actProfit!=0)
+                            {{number_format(($item->actCost/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -290,13 +290,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $profit !=0)
-                            {{number_format($cost/$profit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $actProfit !=0)
-                            {{number_format($cost/$actProfit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($actCost!=0 && $sell !=0)
+                            {{number_format(($profit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -362,13 +362,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->sell,3) }}</td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit !=0)
-                            {{number_format($item->cost/$item->profit,3)}}%
+                            {{number_format(($item->profit/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
                         <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->profit !=0)
-                            {{number_format($item->actCost/$item->profit,3)}}%
+                            {{number_format(($item->profit/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -397,13 +397,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $profit !=0)
-                            {{number_format($cost/$profit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $actProfit !=0)
-                            {{number_format($cost/$actProfit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -465,13 +465,13 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $profit !=0)
-                            {{number_format($cost/$profit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $actProfit !=0)
-                            {{number_format($cost/$actProfit,3)}}%
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                            {{number_format(($profit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
