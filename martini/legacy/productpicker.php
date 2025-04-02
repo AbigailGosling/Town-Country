@@ -23,7 +23,7 @@ use App\Models\User;
 		</div>
 		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" onkeydown="return false;" placeholder="">
 		</div>
 
 	</div>

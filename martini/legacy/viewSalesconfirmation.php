@@ -80,7 +80,7 @@ use Illuminate\Support\Facades\Auth;
 		</div>
 		<div class="col">
 			<label>Delivery Date</label><br/>
-			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="" <?php if (!User::find(Auth::id())->hasPermission("change_sale_details")) {?>disabled<?php }?>>
+			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="" onkeydown="return false;" <?php if (!User::find(Auth::id())->hasPermission("change_sale_details")) {?>disabled<?php }?>>
 		</div>
 
 	</div>

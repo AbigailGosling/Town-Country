@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Auth;
         $date = $row['estimated_delivery_date'];
 
         $date=DateTime::createFromFormat('d/m/Y',$date);
-        $date = date_format($date,"d/m/Y");
+        $date = ($date instanceof DateTimeInterface)?date_format($date,"d/m/Y"):"INVALID DELIVERY DATE!";
 
         if ($row['is_return_to_supplier']==0)
         {
@@ -50,7 +50,7 @@ use Illuminate\Support\Facades\Auth;
 
                 <td width="25%" align="right"><?php if($row['deliverynote_printed'] == 1){ ?>
                         <div class="printedLabel">Printed</div>
-                    <?php } ?><?php echo $row['estimated_delivery_date']; ?></td>
+                    <?php } ?><?php echo $date; ?></td>
             </tr>
         </table>
     </a>
