@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Auth;
         <table width="100%" border="0">
             <tr>
                 <td width="100" align="left">ID: <?php echo $row['id']; ?></td>
-                <td align="center" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
+                <td align="center" style="font-size: 18px;"><?php echo ($row['is_return_to_supplier']==0)?$row2['businessname']:$row2['name']; ?></td>
                 <td width="100" align="right"><?php echo $row['estimated_delivery_date']; ?></td>
             </tr>
         </table>
