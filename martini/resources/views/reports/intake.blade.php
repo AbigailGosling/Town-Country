@@ -64,13 +64,13 @@ if (!isset($intake_id)) $intake_id = "";
                             $sumsubT+=ReportHelper::floorDec($row->subTotal,3);
                             $sumbubS+=ReportHelper::floorDec($row->actSubTotal,3);
                         ?>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{$row->name}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{number_format($row->qty)}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{number_format($row->kg,3)}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{number_format($row->cost,3)}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{number_format($row->actCost,3)}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{number_format($row->subTotal,3)}}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{number_format($row->actSubTotal,3)}}</td>
+                        <td style="width:100px;" align="center">{{$row->name}}</td>
+                        <td style="width:100px;" align="center">{{number_format($row->qty)}}</td>
+                        <td style="width:100px;" align="center">{{number_format($row->kg,3)}}</td>
+                        <td style="width:100px;" align="center">£{{number_format($row->cost,3)}}</td>
+                        <td style="width:100px;" align="center">£{{number_format($row->actCost,3)}}</td>
+                        <td style="width:100px;" align="center">£{{number_format($row->subTotal,3)}}</td>
+                        <td style="width:100px;" align="center">£{{number_format($row->actSubTotal,3)}}</td>
                     </tr>
                     @endforeach
                     @endif
@@ -128,33 +128,35 @@ if (!isset($intake_id)) $intake_id = "";
                         $actCost+=$item->actCost;
                         $sell+=$item->sell;
                         $profit+=$item->profit;
-                        $actProfit+=$item->profit;?>
+                        $actProfit+=$item->actProfit;?>
                     <tr>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->salesperson }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->date }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->invoice_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->customer }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $intake_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->pallet_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->nationality_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->cooling_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->product_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->brand_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->supplier_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->qty }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->unit }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ number_format($item->kg,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->cost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->sell,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit !=0)
+                        <td style="width:100px;" align="center">{{ $item->salesperson }}</td>
+                        <td style="width:100px;" align="center">{{ $item->date }}</td>
+                        <td style="width:100px;" align="center">{{ $item->invoice_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->customer }}</td>
+                        <td style="width:100px;" align="center">{{ $intake_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->pallet_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->nationality_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->cooling_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->product_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->brand_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->supplier_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->qty }}</td>
+                        <td style="width:100px;" align="center">{{ $item->unit }}</td>
+                        <td style="width:100px;" align="center">{{ number_format($item->kg,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->cost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->actCost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->sell,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->profit,3) }}<br>
+                        @if ($item->cost!=0 && $item->profit !=0)
                             {{number_format(($item->profit/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->actProfit !=0)
-                            {{number_format(($item->profit/$item->actCost)*100,3)}}%
+                        <td style="width:100px;" align="center">£{{ number_format($item->actProfit,3) }}<br>
+                        @if ($item->actCost!=0 && $item->actProfit !=0)
+                            {{number_format(($item->actProfit/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -183,13 +185,16 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>
+                        @if ($cost!=0 && $profit !=0)
                             {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
-                        @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $sell !=0)
-                            {{number_format(($profit/$actCost)*100,3)}}%
+                        @endif
+                        </th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>
+                        @if ($actCost!=0 && $actProfit !=0)
+                            {{number_format(($actProfit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -235,33 +240,35 @@ if (!isset($intake_id)) $intake_id = "";
                         $actCost+=$item->actCost;
                         $sell+=$item->sell;
                         $profit+=$item->profit;
-                        $actProfit+=$item->profit;?>
+                        $actProfit+=$item->actProfit;?>
                     <tr>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->salesperson }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->date }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->invoice_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->customer }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->new_intake_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->pallet_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->nationality_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->cooling_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->product_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->brand_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->supplier_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->qty }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->unit }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ number_format($item->kg,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->cost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->actCost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->sell,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit!=0)
-                            {{number_format(($item->actCost/$item->cost)*100,3)}}%
+                        <td style="width:100px;" align="center">{{ $item->salesperson }}</td>
+                        <td style="width:100px;" align="center">{{ $item->date }}</td>
+                        <td style="width:100px;" align="center">{{ $item->invoice_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->customer }}</td>
+                        <td style="width:100px;" align="center">{{ $item->new_intake_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->pallet_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->nationality_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->cooling_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->product_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->brand_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->supplier_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->qty }}</td>
+                        <td style="width:100px;" align="center">{{ $item->unit }}</td>
+                        <td style="width:100px;" align="center">{{ number_format($item->kg,3) }}</td>
+                        <td style="width:100px;" align="center">-£{{ number_format($item->cost,3) }}</td>
+                        <td style="width:100px;" align="center">-£{{ number_format($item->actCost,3) }}</td>
+                        <td style="width:100px;" align="center">-£{{ number_format($item->sell,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->profit,3) }}<br>
+                        @if ($item->cost!=0 && $item->profit !=0)
+                            {{number_format(($item->profit/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">-£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->actProfit!=0)
-                            {{number_format(($item->actCost/$item->actCost)*100,3)}}%
+                        <td style="width:100px;" align="center">£{{ number_format($item->actProfit,3) }}<br>
+                        @if ($item->actCost!=0 && $item->actProfit !=0)
+                            {{number_format(($item->actProfit/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -290,13 +297,16 @@ if (!isset($intake_id)) $intake_id = "";
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($cost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actCost,3) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($sell,3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>@if ($cost!=0 && $sell !=0)
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($profit,3) }}<br>
+                        @if ($cost!=0 && $profit !=0)
                             {{number_format(($profit/$cost)*100,3)}}%
                         @else
                             0.000%
-                        @endif</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($actCost!=0 && $sell !=0)
-                            {{number_format(($profit/$actCost)*100,3)}}%
+                        @endif
+                        </th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>
+                        @if ($actCost!=0 && $actProfit !=0)
+                            {{number_format(($actProfit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -342,33 +352,35 @@ if (!isset($intake_id)) $intake_id = "";
                         $actCost+=$item->actCost;
                         $sell+=$item->sell;
                         $profit+=$item->profit;
-                        $actProfit+=$item->profit;?>
+                        $actProfit+=$item->actProfit;?>
                     <tr>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->salesperson }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->date }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->invoice_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->customer }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $intake_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->pallet_id }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->nationality_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->cooling_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->product_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->brand_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->supplier_name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->qty }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->unit }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ number_format($item->kg,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->cost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->sell,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->profit,3) }}<br>@if ($item->cost!=0 && $item->profit !=0)
+                        <td style="width:100px;" align="center">{{ $item->salesperson }}</td>
+                        <td style="width:100px;" align="center">{{ $item->date }}</td>
+                        <td style="width:100px;" align="center">{{ $item->invoice_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->customer }}</td>
+                        <td style="width:100px;" align="center">{{ $intake_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->pallet_id }}</td>
+                        <td style="width:100px;" align="center">{{ $item->nationality_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->cooling_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->product_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->brand_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->supplier_name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->qty }}</td>
+                        <td style="width:100px;" align="center">{{ $item->unit }}</td>
+                        <td style="width:100px;" align="center">{{ number_format($item->kg,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->cost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->actCost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->sell,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->profit,3) }}<br>
+                        @if ($item->cost!=0 && $item->profit !=0)
                             {{number_format(($item->profit/$item->cost)*100,3)}}%
                         @else
                             0.000%
                         @endif
                         </td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actProfit,3) }}<br>@if ($item->actCost!=0 && $item->profit !=0)
-                            {{number_format(($item->profit/$item->actCost)*100,3)}}%
+                        <td style="width:100px;" align="center">£{{ number_format($item->actProfit,3) }}<br>
+                        @if ($item->actCost!=0 && $item->actProfit !=0)
+                            {{number_format(($item->actProfit/$item->actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif
@@ -471,7 +483,7 @@ if (!isset($intake_id)) $intake_id = "";
                             0.000%
                         @endif</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">£{{ number_format($actProfit,3) }}<br>@if ($cost!=0 && $sell !=0)
-                            {{number_format(($profit/$actCost)*100,3)}}%
+                            {{number_format(($actProfit/$actCost)*100,3)}}%
                         @else
                             0.000%
                         @endif</th>
@@ -505,13 +517,13 @@ if (!isset($intake_id)) $intake_id = "";
                         $actSubTotal+=$item->actSubTotal;?>
                     <tr>
 
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->name }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ $item->qty }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">{{ number_format($item->kg,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->cost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actCost,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->subTotal,3) }}</td>
-                        <td style="width:100px;word-wrap:break-word;white-space:-moz-pre-wrap;white-space:pre-wrap;" align="center">£{{ number_format($item->actSubTotal,3) }}</td>
+                        <td style="width:100px;" align="center">{{ $item->name }}</td>
+                        <td style="width:100px;" align="center">{{ $item->qty }}</td>
+                        <td style="width:100px;" align="center">{{ number_format($item->kg,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->cost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->actCost,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->subTotal,3) }}</td>
+                        <td style="width:100px;" align="center">£{{ number_format($item->actSubTotal,3) }}</td>
                     </tr>
                     @endforeach
                     @endif

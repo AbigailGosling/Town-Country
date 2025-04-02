@@ -8,14 +8,14 @@
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
 	$pickSheetRow = $y->fetch_assoc();
-	
+
 	$customer_id = $pickSheetRow['customer_id'];
-	
+
 	$x2 = "SELECT * FROM `customers` WHERE id=?";
 	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-	
-	$customerRow = $y2->fetch_assoc(); 
-	
+
+	$customerRow = $y2->fetch_assoc();
+
 	if(request()->input('deleteInternalDocument') != '' && $user['user_type'] == 'A'){
 		$internal_doc_id = request()->input('deleteInternalDocument');
 		$pickersheet_id = request()->input('id');
@@ -117,19 +117,49 @@
 										<b style="font-size:10px;color:#8c8c8c;">Invoice address</b>
 										<div class="invoicebox">
 											<?php
-                        $customer_id = $pickSheetRow['customer_id'];
-                        $x = "SELECT * FROM `customers` WHERE id=?";
-                        $y = prepareExecuteQuery($x,'i',[$customer_id]);
-                        $customer = $y->fetch_assoc();
-
-                        ?>
+                                            $customer_id = $pickSheetRow['customer_id'];
+                                            if ($pickSheetRow['is_return_to_supplier']==0)
+                                            {
+                                                $x = "SELECT * FROM `customers` WHERE id=?";
+                                                $y = prepareExecuteQuery($x,'i',[$customer_id]);
+                                                $customerRow = $customer = $y->fetch_assoc();
+                                                $name = $customerRow['businessname'];
+                                                $ta = 't/a'. $customerRow['tradingas'];
+                                                if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+                                                $address1 = $customerRow['address'.$pickSheetRow['addressid'].'_1'];
+                                                $address2 = $customerRow['address'.$pickSheetRow['addressid'].'_2'];
+                                                $address3 = $customerRow['address'.$pickSheetRow['addressid'].'_3'];
+                                                $address4 = $customerRow['address'.$pickSheetRow['addressid'].'_4'];
+                                                $postcode = $customerRow['postcode_'.$pickSheetRow['addressid'].''];
+                                                $delPhone = $customerRow['address'.$pickSheetRow['addressid'].'_number'];
+                                                $accountaddress_1 = $customerRow['accounts_address_1'];
+                                                $accountaddress_2 = $customerRow['accounts_address_2'];
+                                                $accountaddress_3 = $customerRow['accounts_address_3'];
+                                                $accountaddress_4 = $customerRow['accounts_address_4'];
+                                                $accountPhone = ($customerRow['contactnumber'] != null && $customerRow['contactnumber'] != "")?$customerRow['contactnumber']:$customerRow['tel_number'];
+                                            }
+                                            else
+                                            {
+                                                $x2 = "SELECT * FROM `supplier` WHERE id=?";
+                                                $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
+                                                $customerRow = $y2->fetch_assoc();
+                                                $name = $customerRow['name'];
+                                                $ta = '';
+                                                $accountaddress_1 = $address1 = $customerRow['address_1'];
+                                                $accountaddress_2 = $address2 = $customerRow['address_2'];
+                                                $accountaddress_3 = $address3 = $customerRow['address_3'];
+                                                $address4 = $customerRow['address_4'];
+                                                $accountaddress_4 = $postcode = $customerRow['postcode'];
+                                                $accountPhone = $delPhone = $customerRow['contact_number'];
+                                            }
+                                            ?>
 											<p>
-												<?php echo $customer['businessname']; ?><br />
-												t/a <?php echo $customer['tradingas']; ?><br />
-												<?php echo $customer['accounts_address_1']; ?><br />
-												<?php echo $customer['accounts_address_2']; ?><br />
-												<?php echo $customer['accounts_address_3']; ?><br />
-												<?php echo $customer['accounts_address_4']; ?><br />
+												<?php echo $name; ?><br />
+												<?php echo $ta; ?><br />
+												<?php echo $accountaddress_1; ?><br />
+												<?php echo $accountaddress_2; ?><br />
+												<?php echo $accountaddress_3; ?><br />
+												<?php echo $accountaddress_4; ?><br />
 												Customer ID:
 												<?php echo str_pad($customer['id'], 4, '0', STR_PAD_LEFT); ?><br />
 											</p>
@@ -142,17 +172,17 @@
 									<b style="color: #8c8c8c;font-size: 12px;">Delivery address</b>
 									<div class="deliverybox" style="background-color: #D5D5D5;">
 										<p>
-											<?php echo $customer['businessname']; ?><br />
-											t/a <?php echo $customer['tradingas']; ?><br />
+											<?php echo $name; ?><br />
+											<?php echo $ta; ?><br />
 											<?php
-    
+
                             if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
 
-                            echo $customer['address'.$pickSheetRow['addressid'].'_1'] . '<br/>';
-							echo $customer['address'.$pickSheetRow['addressid'].'_2'] . '<br/>';
-							echo $customer['address'.$pickSheetRow['addressid'].'_3'] . '<br/>';
-							echo $customer['postcode_'.$pickSheetRow['addressid'].''] . '<br/>';
-    
+                            echo $address1 . '<br/>';
+							echo $address2 . '<br/>';
+							echo $address3 . '<br/>';
+							echo $postcode . '<br/>';
+
                             ?>
 										</p>
 									</div>
@@ -262,14 +292,14 @@
 
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
- 
+
                     $productIDArray = array();
-						
+
                     foreach($weightids as $weightid){
                         $x = "SELECT * FROM `weights` WHERE id=?";
                         $y = prepareExecuteQuery($x,'i',[$weightid]);
                         $weight = mysqli_fetch_array($y);
-                       
+
                         if(!in_array($weight['product_id'], $productIDArray)){
                             array_push($productIDArray, $weight['product_id']);
                         }
@@ -280,7 +310,7 @@
                          $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);
                         $product = mysqli_fetch_array($y1);
-                         
+
 
                         if($product['unit'] == 'PPC'){
                             $ext = ' Cases';
@@ -294,11 +324,11 @@
                         $count = mysqli_num_rows($y2);
 
                         ${"globalProductCount" . $product['id']} += $count;
-                         
+
                         $k = 0;
 
                         while($weight = mysqli_fetch_array($y2)){
-                            
+
                             if($weight['weight_tear'] == $weight['weight_gross']){
                                 $w = (double)$weight['weight_gross'];
                             }else{
@@ -335,25 +365,25 @@
                             $howMany = mysqli_num_rows($howManyY);
 
 							$qBit = '';
-                                
+
                                 $kg = 0;
 
                                 $xxWeight = "SELECT * FROM `weights` WHERE product_id='$productID' AND id IN (".implode(",",$weightids).")";
                                 $yyWeight = prepareExecuteQuery($xxWeight);
-                                
+
                                 while($weightRow = mysqli_fetch_array($yyWeight)){
-                                    
+
                                     if($weightRow['weight_tear'] == $weightRow['weight_gross']){
                                         $tw = (double)$weightRow['weight_gross'];
                                     }else{
                                         $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
                                     }
-                                    
+
                                     $kg = $kg + $tw;
-                                    
+
                                     $kg = number_format($kg, 3, '.', '');
                                 }
-                                
+
                                 if($product['unit'] == 'PPC'){
 									$totalPriceRow = number_format((double)$count * $pickerItem['price'], 2, '.', '');
 									$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
@@ -369,7 +399,7 @@
 						<td align="left">
 							<b class="unit">
 								<?php
-                                
+
                                 if($product['unit'] == 'C'){
                                     $unit = 'Cases';
                                 }else if($product['unit'] == 'PPC'){
@@ -381,21 +411,21 @@
                                 }else{
                                     $unit = 'Cases';
                                 }
-                                
+
                                 echo $unit;
                             ?>
 							</b>
 						</td>
 						<td align="left">
 							<b class="weight">
-								<?php                                
+								<?php
                                 if($product['unit'] == 'PPC'){
 									echo $count . ' Cases';
-	
+
                                 }else{
                                     echo $kg . ' kg';
 								}
-                                
+
                             ?>
 							</b>
 						</td>
@@ -464,7 +494,7 @@
 			}
 		}
 		$target = 11 - $numOfRows;
-	 
+
 		for($i=0;$i<$target;$i++){ ?>
 					<tr class="productsRow">
 						<td align="left"><span class="palletid">.</span></td>
@@ -878,8 +908,8 @@
 <?php
 if($customerRow['pricedefault'] == '0'){
 	?><script>
-	//$('.price').hide(); 
-</script> <?php 
+	//$('.price').hide();
+</script> <?php
 	}
 ?>
 <style type="text/css">
