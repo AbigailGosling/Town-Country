@@ -1,6 +1,6 @@
 <?php
 include_once(__DIR__.'/../functions.php');
-$sql = "SELECT `pickerSheets`.*,`customers`.`businessname`,`customers`.`id` as `customer_id`,`customers`.`sage_no` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
+$sql = "SELECT `pickerSheets`.*,`customers`.`businessname`,`customers`.`id` as `customer_id`,`customers`.`sage_no`,`supplier`.`name` as `suppliername` FROM `pickerSheets` INNER JOIN `customers` ON `pickerSheets`.`customer_id` = `customers`.`id` LEFT JOIN `supplier` ON `pickerSheets`.`customer_id` = `supplier`.`id` WHERE `pickerSheets`.`admin_approved` = 0 AND ";
 if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="")
 {
     $start = request()->input('start');
@@ -32,11 +32,11 @@ $tracker=array();
 foreach ($list as $item)
 {
     $id = $item['id'];
-    $customername = $item['businessname'];
+    $customername = ($item['is_return_to_supplier'] == 0)?$item['businessname']:$item['suppliername'];
 
     $delDate = $item['estimated_delivery_date'];
     $custID = $item['customer_id'];
-    $sageNo = $item['sage_no'];
+    $sageNo = ($item['is_return_to_supplier'] == 0)?$item['sage_no']:"UNKOWN";
     $value = number_format((double)invoiceTotal($item['id']), 2, '.', '');
     $href = '';
     $status = '';
