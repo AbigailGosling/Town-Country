@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Site;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class SiteController extends Controller
 {
@@ -34,7 +34,7 @@ class SiteController extends Controller
      */
     public function create()
     {
-        return view('sites.edit', ['site' => new Site,'locations' => [], 'isNew' => true]);
+        return view('sites.edit', ['site' => new Site,'locations' => [],'movements' => [], 'isNew' => true]);
     }
 
     /**
@@ -48,13 +48,15 @@ class SiteController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'abbr' => ['nullable', 'string', 'max:255'],
+            'cutoff' => ['required', 'date_format:H:i'],
         ]);
         $input = $request->all();
         $site = new Site;
         $site->name = $input['name'];
         $site->abbreviation = $input['abbr'];
+        $site->cutoff = $input['cutoff'];
         $site->save();
-        redirect(route('sites.index'))->with(['message' => "Successfully created $site->name"]);
+        return redirect(route('sites.index'))->with(['message' => "Successfully created $site->name"]);
     }
 
     /**
@@ -66,10 +68,11 @@ class SiteController extends Controller
     public function show(Request $request,Site $site)
     {
         $showDisabled = $request->input('showDisabled', false);
-        return view('sites.edit', ['site' => $site,'locations' => 
-            ($showDisabled) ? 
+        return view('sites.edit', ['site' => $site,'locations' =>
+            ($showDisabled) ?
             $site->locations()->orderBy("name")->get() :
             $site->locations()->orderBy("name")->where("disabled",false)->get(),
+            'movements' => StockMovement::where("origin",$site->id)->get(),
             'isNew' => false]);
     }
 
@@ -93,14 +96,15 @@ class SiteController extends Controller
      */
     public function update(Request $request, Site $site)
     {
-        Log::debug($request);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'abbr' => ['nullable', 'string', 'max:255'],
+            'cutoff' => ['required', 'date_format:H:i'],
         ]);
         $input = $request->all();
         $site->name = $input['name'];
         $site->abbreviation = $input['abbr'];
+        $site->cutoff = $input['cutoff'];
         $site->disabled = array_key_exists("disabled", $input);
         $site->save();
         return redirect(route('sites.index'))->with(['message' => "Successfully updated $site->name"]);

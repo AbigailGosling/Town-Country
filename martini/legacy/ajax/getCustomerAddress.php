@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -8,10 +9,10 @@ use Illuminate\Support\Facades\Auth;
 
 	$customer_id = request()->input('id');
 	$address_id = request()->input('address_id');
-	
+
 	$x = "SELECT * FROM `customers` WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
-	
+
 	$row = mysqli_fetch_array($y);
 	$creditCheck = precredit_check($customer_id);
 ?>
@@ -26,10 +27,10 @@ use Illuminate\Support\Facades\Auth;
 <div class="col">
 	<div class="row">
 	<div class="col">
-	
+
 
 	<input class="form-control" type="text" id="customer_id" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
-	
+
 	<div>
 		<label>Contact Number</label><br/>
 		<input class="form-control input box" type="text" id="contactnumber" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
@@ -45,23 +46,23 @@ use Illuminate\Support\Facades\Auth;
 <?php
 	if($address_id != ''){
 
-		$addressNumber = $row['address'.$address_id.'_number'];	
+		$addressNumber = $row['address'.$address_id.'_number'];
 		$addressline1 = $row['address'.$address_id.'_1'];
 		$addressline2 = $row['address'.$address_id.'_2'];
 		$addressline3 = $row['address'.$address_id.'_3'];
 		$addressline4 = $row['address'.$address_id.'_4'];
-		$addresspostcode = $row['postcode_'.$address_id];	
+		$addresspostcode = $row['postcode_'.$address_id];
 
 	}else{
 		$addressNumber = $row['address1_number'];
-		
+
 		$addressline1 = $row['address1_1'];
 		$addressline2 = $row['address1_2'];
 		$addressline3 = $row['address1_3'];
 		$addressline4 = $row['address1_4'];
-		$addresspostcode = $row['postcode_1'];	
+		$addresspostcode = $row['postcode_1'];
 	}
-	
+
 ?>
 
 
@@ -90,27 +91,27 @@ use Illuminate\Support\Facades\Auth;
 </div>
 <div class="row">
 	<div class="col" style="">
-		
+
 	<div>
  		<?php
 			if(request()->input('empty') != 'true'){
-				
+
 				$current_outstanding = (double) $row['current_outstanding'];
 				$flaguplimit = (double) $row['flaguplimit'];
 				$credit_rating = (double) $row['credit_rating'];
-				 
-				if(false){ # temp disable credit control requested by Jamie 
+
+				if(false){ # temp disable credit control requested by Jamie
 					if($current_outstanding >= $credit_rating && $row['override'] != 1){
 					?>
 					<div class="status stop" style="width:90%;position:fixed;top:470px;left:5%;">Stop</div>
 					<script>
 						$('.leftPanel').css('pointer-events','none');
 						$('.leftPanel').css('opacity','0.2');
-						
+
 						$('#sendfake').css('pointer-events','none');
 						$('#sendfake').css('opacity','0.2');
-						
-						
+
+
 					</script>
 					<?php
 					}else if($current_outstanding >= $flaguplimit){
@@ -122,8 +123,8 @@ use Illuminate\Support\Facades\Auth;
 
 						$('#sendfake').css('pointer-events','all');
 						$('#sendfake').css('opacity','1');
-						
-						
+
+
 					</script>
 					<?php
 					}else{
@@ -131,8 +132,8 @@ use Illuminate\Support\Facades\Auth;
 					<script>
 						$('.leftPanel').css('pointer-events','all');
 						$('.leftPanel').css('opacity','1');
-						
-						
+
+
 						$('#sendfake').css('pointer-events','all');
 						$('#sendfake').css('opacity','1');
 					</script>
@@ -141,7 +142,7 @@ use Illuminate\Support\Facades\Auth;
 				}
 			}
  		?>
- 		 
+
  	</div>
 </div>
 <div class="col"></div>
@@ -172,15 +173,20 @@ use Illuminate\Support\Facades\Auth;
 		?>
 	</div>
 
-	
+    <script>
 	<?php
 		if($row['default_salesman_id'] != null){
 		?>
-		<script> $('#sales_person').val(<?php echo $row['default_salesman_id']; ?>); </script>
+
+                $('#sales_person').val(<?php echo $row['default_salesman_id']; ?>);
+
 		<?php
 		}
 	?>
-	
+    $('#served_by').val("<?php echo Site::find($row['site_id'])->name; ?>");
+    var served_by = <?php echo $row['site_id']; ?>
+    </script>
+
 	<style>
 		.addresses{
 			margin:0 auto;
