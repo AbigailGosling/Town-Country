@@ -11,11 +11,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class User
- * 
+ *
  * @property int $id
  * @property string $name
  * @property bool $disabled
  * @property string $abbreviation
+ * @property string $cutoff
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *

@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\Site;
+
 	include('functions.php');
 	define('DEL_SUNDAY',     1);
 	define('DEL_SATURDAY',   2);
@@ -12,7 +15,7 @@
 	{
 		$showDisabled = request()->input('showDisabled');
 	}
-	
+
 ?>
 <!doctype html>
 <html class="int">
@@ -20,13 +23,13 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Town &amp; Country</title>
-	
+
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/lity.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="js/lity.js"></script>
 
@@ -34,7 +37,7 @@
 	$( function() {
 		$( "#datepicker" ).datepicker();
 	});
-	   
+
     function blockSpecialChar(e) {
 		var k = e.keyCode;
 		return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8  ||  k == 67 || (k >= 48 && k <= 57));
@@ -89,11 +92,11 @@
 <main style="padding-top:0px !important;">
 	<?php
 		if(request()->input('id') != ''){
-			
+
 			$id = request()->input('id');
 			$x2 = "SELECT * FROM customers WHERE id = ?";
 			$yy2 = prepareExecuteQuery($x2,'i',[$id]);
-			
+
 
 			$data = mysqli_fetch_assoc($yy2);
 			totalOutstandingForCustomer($data['id']);
@@ -104,7 +107,7 @@
 	<div id="customerContainer">
 		<div class="box">
 			<h3>Customer Details</h3>
-			
+
 			<table width="100%" id="customerDetails">
 				<tr>
 					<td class="label"><label>Business Name</label></td>
@@ -128,7 +131,7 @@
 							<input type="text" class="input" name="address<?php echo $u; ?>_3" value="<?php echo $data['address'.$u.'_3']; ?>"><br/>
 							<input type="text" class="input" name="address<?php echo $u; ?>_4" value="<?php echo $data['address'.$u.'_4']; ?>">
 						</div>
-						
+
 					</td>
 				</tr>
 				<tr id="address<?php echo $u; ?>containerPostcode" style="<?php echo $style1; ?>">
@@ -139,7 +142,7 @@
 					<td class="label"><label>Delivery Contact No.</label></td>
 					<td><input type="text" class="input" name="address<?php echo $u; ?>_number" value="<?php echo $data['address'.$u.'_number']; ?>"></td>
 				</tr>
-				
+
 				<tr height="40"><td colspan="2"></td></tr>
 				<?php
 					}
@@ -148,24 +151,24 @@
 					<td class="label"><label>Name of buyer</label></td>
 					<td><input type="text" class="input" name="nameofbuyer" value="<?php echo $data['nameofbuyer']; ?>"></td>
 				</tr>
-				
+
 				<tr>
 					<td class="label"><label>Contact Number</label></td>
 					<td><input type="text" class="input" name="contactnumber" value="<?php echo $data['contactnumber']; ?>"></td>
 				</tr>
-				
+
 				<tr>
 					<td class="label"><label>Email</label></td>
 					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="customer_email"><?php echo $data['customer_email']; ?></textarea></td>
 				</tr>
-				
+
 				<tr>
 					<td class="label"><label>Disable Customer</label></td>
 					<td><input type="checkbox" name="disabled" value="1" <?php echo ($data['disabled'] == 1)?"checked":""; ?>></td>
-				</tr>				
+				</tr>
 			</table>
 		</div>
-		
+
 		<div class="box">
 			<h3>Internal use only</h3>
 			<table width="100%" id="customerDetails">
@@ -177,7 +180,7 @@
 					<td class="label"><label>Sage Number</label></td>
 					<td><input type="text" class="input" name="sage_no" value="<?php echo $data['sage_no']; ?>" style="background:#fff;"></td>
 				</tr>
-				<tr height="40"><td colspan="2"></td></tr>	
+				<tr height="40"><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Company Reg No.</label></td>
 					<td><input type="text" class="input" name="companyregno" value="<?php echo $data['companyregno']; ?>"></td>
@@ -206,7 +209,7 @@
  					</td>
 				</tr>
 
-				<tr height="40"><td colspan="2"></td></tr>	
+				<tr height="40"><td colspan="2"></td></tr>
 
 				<tr>
 					<td class="label"><label>Accounts Contact</label></td>
@@ -224,7 +227,7 @@
 				<tr>
 					<td class="label"><label>Due Warning</label></td>
 					<td><input type="number" class="input" name="due_warning" min="-1" value="<?php echo $data['due_warning']; ?>"></td>
-				</tr>	
+				</tr>
 				<tr>
 					<td class="label"><label>Insurance Terms</label></td>
 					<td><input type="number" class="input" name="credit_terms" min="-1" value="<?php echo $data['credit_terms']; ?>"></td>
@@ -233,13 +236,13 @@
 					<td class="label"><label>Grace Period</label></td>
 					<td><input type="number" class="input" name="credit_grace" min="-1" value="<?php echo $data['credit_grace']; ?>"></td>
 				</tr>
-				<tr height="40"><td colspan="2"></td></tr>	
+				<tr height="40"><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Prices & Extensions</label></td>
 					<td>
 						<select name="pricedefault">
                             <option value="0" <?php if($data['pricedefault'] == 0 && $data != ''){ echo 'selected'; } ?>>Hide</option>
-                            <option value="1" <?php if($data['pricedefault'] == 1 && $data != ''){ echo 'selected'; } ?>>Display</option>    
+                            <option value="1" <?php if($data['pricedefault'] == 1 && $data != ''){ echo 'selected'; } ?>>Display</option>
 						</select>
 					</td>
 				</tr>
@@ -251,9 +254,23 @@
 						<select id="sales_person" name="default_salesman_id">
 							<?php
 								$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
-				
+
 								while ($_user = mysqli_fetch_array($_users)) {
 									?><option value="<?php echo $_user['id']; ?>" <?php if($data['default_salesman_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
+								}
+							?>
+						</select>
+					</td>
+				</tr>
+                <tr height="40"><td colspan="2"></td></tr>
+				<tr>
+					<td class="label"><label>Served By</label></td>
+					<td>
+						<select id="site_id" name="site_id">
+							<?php
+								$sites = Site::all();
+								foreach ($sites as $site) {
+									?><option value="<?php echo $site->id; ?>" <?php if($data['site_id'] == $site->id){ echo 'selected'; } ?>><?php echo $site->name; ?></option><?php
 								}
 							?>
 						</select>
@@ -262,7 +279,7 @@
  			</table>
 		</div>
 	</div>
-	
+
 	<div id="flexContainerTwo">
 		<div class="fullbox controls">
 			<table width="100%">
@@ -270,10 +287,10 @@
 					<td class="label"><label>Credit Checking</label></td>
 					<td>
 						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-						
+
 					</td>
 				</tr>
-				<tr height=""><td colspan="2"></td></tr> 	
+				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Credit Rating</label></td>
 					<td><input type="text" class="input" name="credit_rating" value="<?php echo number_format((double)$data['credit_rating'], 2, '.', ''); ?>"></td>
@@ -286,14 +303,14 @@
 					<td class="label"><label>Current outstanding</label></td>
 					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']);?>"></td>
 				</tr>
-				<tr height=""><td colspan="2"></td></tr> 
+				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Override Credit Check</label></td>
 					<td>
 						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
-				<tr height=""><td colspan="2"></td></tr> 
+				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Price Markup/Markdown</label></td>
 					<td>
@@ -301,7 +318,7 @@
 
 					</td>
 				</tr>
-				<tr height=""><td colspan="2"></td></tr> 
+				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Markup/Markdown Amount</label></td>
 					<td><input type="number" class="input" id="markup_amount" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"><label> %</label></td>
@@ -317,7 +334,7 @@
 							$current_outstanding = (double) $data['current_outstanding'];
 							$flaguplimit = (double) $data['flaguplimit'];
 							$credit_rating = (double) $data['credit_rating'];
-							
+
 							if($current_outstanding >= $credit_rating){
 							?><div class="status stop">Stop</div><?php
 							}else if($current_outstanding >= $flaguplimit){
@@ -328,7 +345,7 @@
 				</tr>-->
 			</table>
 		</div>
-		
+
 		<div class="fullbox controls">
 			<table width="100%">
 				<tr>
@@ -365,7 +382,7 @@
 					<td class="label"><label>Sunday</label></td>
 					<td><input type="checkbox" id="del_sunday" name="del_sunday" value="1" <?php echo ($data['delivery_days'] & DEL_SUNDAY)?"checked":""; ?>></td>
 				</tr>
-				
+
 				<tr>
 					<td class="label"><label>Delivery Date Overide</label></td>
 					<td>
@@ -376,7 +393,7 @@
 		</div>
 	</div>
 	<div id="flexContainerTwo">
- 	 
+
     </div>
     	<div id="flexContainerTwo">
 
@@ -388,7 +405,7 @@
 							<a href="customer_soa.php?id=<?php echo $data['id']; ?>" class="update" style="color:white;background:orange;">View Statement of account</a>
 						<?php } ?>
 					</td>
-				</tr>			
+				</tr>
 			</table>
 		</div>
 
@@ -400,17 +417,17 @@
 						<a href="#" class="update" style="display:none;">Update & Save</a>
 						<input type="button" onclick="mainForm()" class="update" value="Update & Save">
 					</td>
-				</tr>			
+				</tr>
 			</table>
 		</div>
 	</div>
-	
+
 	</form>
 
 	<Br/><BR/>
 
 	<div id="intakelist">
- 
+
 		<h1 class="int">CUSTOMER LIST</h1>
 
 		<div>
@@ -422,7 +439,7 @@
 						onclick='window.location.href = window.location.href.split("?")[0] + "?showDisabled=" + <?php echo ($showDisabled == 1)?0:1; ?>'/></td>
 				</tr>
 			</table>
-			
+
 		</div>
 		<div id="cutAjax">
 
@@ -455,8 +472,8 @@
 						</tr>
 					</table>
 				</a>
-  
-				 
+
+
 			</td></tr>
 
 			</table>
@@ -468,7 +485,7 @@
 		?>
 		</div>
 	</div>
-	
+
 	<div class="transferPopup">
 		<div class="transferPopup-container">
 			<div class="transferPopup-content">
@@ -485,7 +502,7 @@
 							}
 						?>
 					</select>
-					
+
 					<input  type="button" onclick="mainForm2()" value="Transfer picksheets" class="transferbtn">
 				</form>
 			</div>
@@ -508,7 +525,7 @@ function mainForm2(){
 	});
 	$(document).ready(function() {
 		$("[name$=_email]").keypress(function(event) {
-			if(event.which == '13') {				
+			if(event.which == '13') {
 				return false;
 			}
 		});
@@ -521,7 +538,7 @@ function mainForm2(){
 			$('#address'+v.toString()+'containerNumber').show();
 		});
 	}
-	
+
 	$('#instantSearch').on('keypress',function(e){
 		if(e.which != 13) {
 			return;
@@ -530,20 +547,20 @@ function mainForm2(){
 
 		$.post('ajax/customersPageList.php',{'searchterm':val},function(data,status) {
 			if (status == "success") {
-				
+
 				$('#cutAjax').html(data);
 			}
 		});
 	});
-	
+
 	$('.transferPopup-container').click(function(e){
 		if(e.target != this) return;
 		$('.transferPopup').hide();
-		
+
 	});
 
 	function deleteRow(id, existingPicksheetsCount){
-		
+
 		if(existingPicksheetsCount > 0){
 			$('.transferPopup').show();
 			$('#transferCount').text(existingPicksheetsCount);
@@ -562,12 +579,12 @@ function mainForm2(){
 		var q = $('#overrider');
 		if (q.text() != "Disabled") {
 			q.css("background-color","red");
-			q.text("Disabled");			
+			q.text("Disabled");
 			setTimeout(alert,10,["Override Disabled!"]);
 		}
 		else {
 			q.css("background-color","lightgreen");
-			q.text("Enabled");			
+			q.text("Enabled");
 			setTimeout(alert,10,["Override Enabled!"]);
 		}
 		$.post("ajax/overrideSales.php",{

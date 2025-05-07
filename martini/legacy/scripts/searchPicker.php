@@ -16,6 +16,7 @@ $intake_id = request()->input('intakeID');
 $brand =  request()->input('brandID');
 $nationality =  request()->input('nationalityID');
 $customer_id =  request()->input('customerID');
+$site_id =request()->input('siteID');
 $timeSensitivityStatus = (int)request()->input('time',0);
 if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
@@ -125,6 +126,14 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if ($nationality != '' && $nationality != null && $nationality != 'null'){
         array_push($whereArray, "product.nationality_id = ". $nationality ."");
     }
+    Log::debug(json_encode($site_id));
+    if ($site_id != '' && $site_id != null && $site_id != 'null'){
+        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+    }
+    else
+    {
+        $locs = implode(",",array_column(prepareExecuteQuery("SELECT GROUP_CONCAT(id) as `ids` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+    }
     array_push($whereArray, "weights.status_id != 1");
 
     $whereString = implode(' && ',$whereArray);
@@ -191,6 +200,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         WHERE pallet.intake_id = ?
         && product.cut_id = ?
 		&& product.nationality_id = ?
+        AND pallet.storage_location IN ($locs)
         ORDER BY product.cut_id DESC";
         $productsY2 = prepareExecuteQuery($productsX2,'iss',[$intake_id,$cut_id,$nationality_id]);
         $products2Count = mysqli_num_rows($productsY2);

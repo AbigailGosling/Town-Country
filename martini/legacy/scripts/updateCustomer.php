@@ -55,8 +55,8 @@
 	$colNames[] = '`flaguplimit`=?';
 	$colValue[] = request()->input('flaguplimit');
 
-	$current_outstanding = request()->input('current_outstanding');	
-	$payment_received = request()->input('payment_received');	
+	$current_outstanding = request()->input('current_outstanding');
+	$payment_received = request()->input('payment_received');
 	$colNames[] = '`current_outstanding`=?';
 	$colValue[] = (float) $current_outstanding - (float) $payment_received;
 
@@ -80,6 +80,9 @@
 
 	$colNames[] = "`markup_amount`=?";
 	$colValue[] = request()->input('markup_amount');
+
+    $colNames[] = "`site_id`=?";
+	$colValue[] = (request()->input('site_id')!=null && request()->input('site_id') != "")?request()->input('site_id'):"1";
 
 	for ($u=1;$u<10;$u++)
 	{

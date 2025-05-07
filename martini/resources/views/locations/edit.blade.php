@@ -2,7 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             @if ($isNew)
-            {{ $site->name. " : Creatue New Locaiton" }}
+            {{ $site->name. " : Create New Location" }}
             @else
                 {{ $site->name. " : ".$location->name }}
             @endif

@@ -32,8 +32,8 @@ class LocationController extends Controller
     {
         return view('locations.edit', ['site' => $site,
                                         'otherSites' => Site::generateHTMLList($site->name),
-                                        'location' => new Location, 
-                                        'otherLocations' => $site->locations()->where('disabled',false)->orderBy("name")->get(), 
+                                        'location' => new Location,
+                                        'otherLocations' => $site->locations()->where('disabled',false)->orderBy("name")->get(),
                                         'rules' => [],
                                         'isNew' => true]);
     }
@@ -56,7 +56,7 @@ class LocationController extends Controller
         $location->site_id = Site::find($input['site_id'])->id;
         $location->save();
         $location->bulkUpdateSaleRule((array_key_exists('rules',$input))?$input['rules']:[]);
-        redirect(route('sites.edit',$location->site_id))->with(['message' => "Successfully created $location->name"]);
+        return redirect(route('sites.edit',$location->site_id))->with(['message' => "Successfully created $location->name"]);
     }
 
     /**
@@ -69,9 +69,9 @@ class LocationController extends Controller
     {
         return view('locations.edit', ['site' => $site,
                                     'otherSites' => Site::generateHTMLList($site->name),
-                                    'location' => $location, 
+                                    'location' => $location,
                                     'otherLocations' => $site->locations()->
-                                                where([['disabled','=',false],['id','<>',$location->id]])->orderBy("name")->get(), 
+                                                where([['disabled','=',false],['id','<>',$location->id]])->orderBy("name")->get(),
                                     'rules' => $location->sale_rules,
                                     'isNew' => false]);
     }

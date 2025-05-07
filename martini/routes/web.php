@@ -10,6 +10,7 @@ use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SiteController;
+use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
@@ -90,6 +91,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('supplierreturnstatements', [SupplierReturnController::class, 'index'])->name('supplierreturnstatements.index');
     Route::get('supplierreturnstatements/{supplier}', [SupplierReturnController::class, 'show'])->name('supplierreturnstatements.show');
+
+    Route::get('/sites/{site}/movement/create', [StockMovementController::class, 'create'])->name('stockmovements.create');
+    Route::get('/sites/movement/{stockmovement}/edit', [StockMovementController::class, 'show'])->name('stockmovements.edit');
+    Route::post('/sites/movement/store', [StockMovementController::class, 'store'])->name('stockmovements.store');
+    Route::put('/sites/movement/{stockmovement}', [StockMovementController::class, 'update'])->name('stockmovements.update');
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

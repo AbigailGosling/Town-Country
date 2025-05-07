@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Location;
+use App\Models\Site;
 use Illuminate\Support\Facades\Log;
 
 $e = new \Exception;
@@ -63,6 +65,12 @@ $s = (int)(microtime(true));
 	}
 
 	$creditCheck = precredit_check($customer_id);
+    $result_product = prepareExecuteQuery("SELECT `pickersheet_id`,GROUP_CONCAT(DISTINCT `product_id`) as `prod_ids` FROM `pickerItems` WHERE `pickersheet_id` IN ($pickersheet_id) GROUP BY `pickersheet_id`")->fetch_assoc()["prod_ids"];
+    $result_location = loggedQuery("SELECT GROUP_CONCAT(DISTINCT `pallet`.`storage_location`) as `loc` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id` = `pallet`.`id` WHERE `product`.`id` IN (".$result_product.") LIMIT 1");
+    $location = mysqli_fetch_assoc($result_location)['loc'];
+    $location = Location::whereIn("id",explode(",",$location))->pluck("site_id")->toArray();
+    Log::debug(json_encode($location));
+    $location = Site::whereIn("id",$location)->first()->name;
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -155,6 +163,7 @@ $s = (int)(microtime(true));
 			</div>
 			<br/>
 			<div class="deliverydate">Delivery Date: <span class="date"><?php echo $pickSheetRow['estimated_delivery_date']; ?></span></div>
+            <div class="deliverydate">Depo: <span class="date"><?php echo $location; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
 			<?php
 				$date = str_replace('/', '-', $pickSheetRow['date_completed']);

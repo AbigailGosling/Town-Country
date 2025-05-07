@@ -66,6 +66,13 @@ use App\Models\User;
 		<div class="col"></div>
 	</div>
 	<?php } ?>
+    <div class="row">
+		<div class="col">
+			<label>	Customer Served By</label><br/>
+			<input class="form-control" type="text" class="inputbox" name="served_by" id="served_by" value="" disabled>
+		</div>
+		<div class="col"></div>
+	</div>
 	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>
 </div>
 
@@ -101,6 +108,18 @@ use App\Models\User;
 	<form id="searchForm">
 		<table style="border-collapse: collapse;">
 			<tr>
+            <td style="width:20%"><select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+					<option value="" disabled selected>Select site..</option>
+					<?php
+						$x = "SELECT * FROM `site`";
+						$y = prepareExecuteQuery($x);
+
+						while($row = mysqli_fetch_array($y)){
+						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+						}
+					?>
+					</select>
+				</td>
 				<td style="width:20%"><select id="SearchSpecies" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select species..</option>
 					<?php
@@ -564,7 +583,7 @@ function cancelSale()
 			}
 		});
 
-		if(doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
+		if(checkSites() && doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
 			checkStock();
 			return false;
 		}else{
@@ -807,8 +826,80 @@ function cancelSale()
 			$('#warning').css('display', "inline-block");
 			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell from multiple sites</td>");
 		}
-		return allPass;
+		return allPass && checkNextDayCutoff(siteid);
 	}
+    const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    function checkNextDayCutoff(siteid) {
+        var targetCutoff = undefined;
+        for (var ll of sitecutoffLookup)
+        {
+            if (ll.id == siteid)
+            {
+                targetCutoff = ll.cutoff;
+                break;
+            }
+        }
+        if (targetCutoff == undefined) return true;
+        var deldate = $('#estimated_delivery_date').datepicker('getDate');
+        var now = new Date();
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23,59,59,0);
+        var todaysCutoff = new Date();
+        todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
+
+        if (now > todaysCutoff && deldate < tomorrow)
+        {
+            $('#sendfake').prop('disabled',true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
+            return false;
+        }
+        return checkStockMovement(parseInt(siteid),todaysCutoff);
+    }
+    function checkStockMovement(siteid,targetCutoff){
+        console.log(served_by,siteid,targetCutoff);
+        var leadtime = 0;
+        var deldate = $('#estimated_delivery_date').datepicker('getDate');
+        console.log(served_by,siteid,targetCutoff);
+        if (siteid != served_by)
+        {
+            for (var movementrule of stockMovementLookup)
+            {
+                console.log(movementrule,(movementrule.origin == siteid),(movementrule.destination == served_by));
+                if (movementrule.origin == siteid && movementrule.destination == served_by)
+                {
+                    leadtime = movementrule.days;
+                    console.log(leadtime, movementrule.days)
+                    break;
+                }
+            }
+        }
+        var leadingDay = new Date();
+        var now = new Date();
+        now.setHours(23,59,59,0);
+        if (leadingDay > targetCutoff)leadtime++;
+        leadingDay.setDate(leadingDay.getDate() + (leadtime-1));
+        leadingDay.setHours(23,59,59,0);
+        while (now < leadingDay)
+        {
+            if (now.getDay() === 0) leadingDay.setDate(leadingDay.getDate()+1);
+            now.setDate(now.getDate()+1);
+        }
+        if (leadtime > 0 && leadingDay > deldate)
+        {
+            $('#sendfake').prop('disabled',true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Stock will take at least "+leadtime+" working days to move</td>");
+            return false;
+        }
+        return true;
+    }
 	function parseDMY(value) {
 		var date = value.split("/");
 		var d = parseInt(date[0], 10),
@@ -864,15 +955,16 @@ function cancelSale()
  		var temperatureID = $('#temperatureID').val();
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
+        var siteID = $('#siteID').val();
 		 var customer_id = $('#customer_id').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 
-			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id, function(data, status){
+			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id +"&siteID="+siteID , function(data, status){
 				$('#loadResults').html(data);
 
 			});
-
+            $('#siteID').prop('selectedIndex',0);
 			$('#SearchBrand').prop('selectedIndex',0);
 			$('#SearchNationality').prop('selectedIndex',0);
 			$('#SearchSpecies').prop('selectedIndex',0);
