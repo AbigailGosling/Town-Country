@@ -508,8 +508,6 @@ function checkStockAvailabile(product_id, pallet_id, cut_id, theClass, date, eve
 
         var quantitySelected = parseInt($('#quantity-' + product_id + '-' + pallet_id).val());
         var howManyLeft = parseInt(num);
-        console.log('Selected: ' + quantitySelected + ' left: ' + howManyLeft);
-
         var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
         if(getCookie(COOKIE_NAME)){
             Swal.fire({
@@ -589,12 +587,9 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
 
         $.get( "scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
             $('.basketTable').append(data);
-            checkUBDates(null);
+            setCustomerCreditFeedback();
         });
-
         firstExecution = milliseconds
-    } else {
-        console.log('too early')
     }
 
 }
