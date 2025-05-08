@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Site;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class StockMovementController extends Controller
 {
@@ -56,14 +57,24 @@ class StockMovementController extends Controller
      */
     public function show(Request $request,StockMovement $stockmovement, bool $isNew = false)
     {
-        $sites = Site::where("id","<>",$stockmovement->origin)->whereNotIn("id",StockMovement::where("origin",$stockmovement->origin)->get()->pluck("destination"));
+        $existingMovements = StockMovement::where("origin",$stockmovement->origin)->get()->pluck("destination")->toArray();
+        $sites = Site::where("id","<>",$stockmovement->origin)->get();
+        $cleanedSites = new Collection();
+        foreach ($sites as $site)
+        {
+            if ($site->id == $stockmovement->destination || !in_array($site->id,$existingMovements))
+            {
+                $cleanedSites[] = $site;
+            }
+        }
+        if (!$isNew) $sites[] = Site::find($stockmovement->destination);
         return view('stockmovements.edit',
         [
             'stockmovement' => $stockmovement,
             'isMirrored' => $stockmovement->isMirrored(),
             'origin'=>Site::find($stockmovement->origin),
             'destination'=>Site::findOrNew($stockmovement->destination),
-            'sites'=>$sites->get(),
+            'sites'=>$cleanedSites,
             'isNew' => $isNew,
             'existingDestinations' => StockMovement::where("origin",$stockmovement->origin)->get()->pluck("destination"),
         ]);

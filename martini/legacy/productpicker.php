@@ -108,18 +108,6 @@ use App\Models\User;
 	<form id="searchForm">
 		<table style="border-collapse: collapse;">
 			<tr>
-            <td style="width:20%"><select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
-					<option value="" disabled selected>Select site..</option>
-					<?php
-						$x = "SELECT * FROM `site`";
-						$y = prepareExecuteQuery($x);
-
-						while($row = mysqli_fetch_array($y)){
-						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
-						}
-					?>
-					</select>
-				</td>
 				<td style="width:20%"><select id="SearchSpecies" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select species..</option>
 					<?php
@@ -149,6 +137,19 @@ use App\Models\User;
 									?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 								}
 						?>
+					</select>
+				</td>
+                <td style="width:20%">
+                    <select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+					<option value="" disabled selected>Select site..</option>
+					<?php
+						$x = "SELECT * FROM `site`";
+						$y = prepareExecuteQuery($x);
+
+						while($row = mysqli_fetch_array($y)){
+						?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+						}
+					?>
 					</select>
 				</td>
 				<td style="width:20%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
