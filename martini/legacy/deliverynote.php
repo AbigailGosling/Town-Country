@@ -163,7 +163,7 @@ $s = (int)(microtime(true));
 			</div>
 			<br/>
 			<div class="deliverydate">Delivery Date: <span class="date"><?php echo $pickSheetRow['estimated_delivery_date']; ?></span></div>
-            <div class="deliverydate">Depo: <span class="date"><?php echo $location; ?></span></div>
+            <div class="deliverydate">Depot: <span class="date"><?php echo $location; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
 			<?php
 				$date = str_replace('/', '-', $pickSheetRow['date_completed']);

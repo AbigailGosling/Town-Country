@@ -126,13 +126,12 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if ($nationality != '' && $nationality != null && $nationality != 'null'){
         array_push($whereArray, "product.nationality_id = ". $nationality ."");
     }
-    Log::debug(json_encode($site_id));
     if ($site_id != '' && $site_id != null && $site_id != 'null'){
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
     }
     else
     {
-        $locs = implode(",",array_column(prepareExecuteQuery("SELECT GROUP_CONCAT(id) as `ids` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
     }
     array_push($whereArray, "weights.status_id != 1");
 
