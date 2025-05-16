@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 	$class = request()->input('class');
 	$nationality_id = request()->input('nationality_id');
     $ubbb = request()->input('ubbb');
+    $site_id = request()->input('site_id');
     $timeSensitivityStatus = (int)request()->input('time',0);
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if (request()->input('locked') == "y"){
@@ -40,7 +41,13 @@ use Illuminate\Support\Facades\Auth;
         }else{
             $ubtext = 'N/A';
         }
-
+        if ($site_id != '' && $site_id != null && $site_id != 'null'){
+            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+        }
+        else
+        {
+            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+        }
         ####
         $productsX2 = "SELECT * , product.id productid, product.comments as productcomments
         FROM `product`
@@ -49,6 +56,7 @@ use Illuminate\Support\Facades\Auth;
         WHERE pallet.intake_id= ?
         && product.cut_id = ?
 		&& product.nationality_id= ?
+        AND pallet.storage_location IN ($locs)
         && ".$palletFilter."
         ORDER BY product.cut_id DESC";
 
