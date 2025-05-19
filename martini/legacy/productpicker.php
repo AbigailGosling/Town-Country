@@ -265,6 +265,7 @@ use App\Models\User;
 
 		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
+            setCustomerCreditFeedback();
 		});
 
 	}
@@ -660,6 +661,7 @@ function cancelSale()
 		});
 	}
 	function setCustomerCreditFeedback(data){
+        $('#warning').css('display', "none");
         var canContinue = true;
 		if (data == "") data = getCustomResult;
 		$('#address').html(data);
@@ -693,17 +695,17 @@ function cancelSale()
                 $('#warning').css('background', "#ffc266");
                 $('#warning').css('border', "2px solid #ff9900");
             }
-            $('#searcher').attr('disabled', !canContinue);
-            if (canContinue)
-            {
-                $('#sendfake').attr('disabled', !(checkAllowedDay() && checkNextDayCutoff() && checkStockMovement() && checkUBDates()));
-            }
-            else {
-                $('#sendfake').attr('disabled', true);
-            }
-
         }
-	}
+        $('#searcher').attr('disabled', !canContinue);
+        if (canContinue)
+        {
+            $('#sendfake').attr('disabled', !(checkAllowedDay() && checkSites() && checkUBDates()));
+        }
+        else
+        {
+            $('#sendfake').attr('disabled', true);
+        }
+    }
     function checkAllowedDay(){
         var dateObj = $('#estimated_delivery_date').datepicker('getDate');
         if (dateObj != null && delCheckingOn){
@@ -781,7 +783,7 @@ function cancelSale()
 			$('#warning').css('display', "inline-block");
 			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell from multiple sites</td>");
 		}
-		return allPass;
+		return (allPass && checkNextDayCutoff(siteid));
 	}
     const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
     const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
@@ -812,7 +814,7 @@ function cancelSale()
 			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
             return false;
         }
-        return true;
+        return checkStockMovement(siteid,targetCutoff);
     }
     function checkStockMovement(siteid,targetCutoff){
         var leadtime = 0;
