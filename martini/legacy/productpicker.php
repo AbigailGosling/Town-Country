@@ -661,7 +661,7 @@ function cancelSale()
 		});
 	}
 	function setCustomerCreditFeedback(data){
-        $('#warning').css('display', "none");
+
         var canContinue = true;
 		if (data == "") data = getCustomResult;
 		$('#address').html(data);
@@ -699,7 +699,9 @@ function cancelSale()
         $('#searcher').attr('disabled', !canContinue);
         if (canContinue)
         {
-            $('#sendfake').attr('disabled', !(checkAllowedDay() && checkSites() && checkUBDates()));
+            var allPass = (checkAllowedDay() && checkSites() && checkUBDates());
+            $('#sendfake').attr('disabled', !allPass);
+            if (allPass) $('#warning').css('display', "none");
         }
         else
         {
