@@ -673,14 +673,12 @@ function cancelSale()
         $('#addressline4').prop('readonly', true);
         $('#addresspostcode').prop('readonly', true);
         $('#deliverynumber').prop('readonly', true);
-
+        $('#warning').css('display', "inline-block");
+        $('#warning').html(warningMessage);
         if (!transactionAllowed || showWarning)
         {
-            $('#warning').css('display', "inline-block");
-            $('#warning').html(warningMessage);
             if (!showWarning)
             {
-
                 $('#warning').css('background', "#ff6666");
                 $('#warning').css('border', "2px solid #ff0000");
                 canContinue = false;
@@ -696,12 +694,16 @@ function cancelSale()
                 $('#warning').css('border', "2px solid #ff9900");
             }
         }
+        else
+        {
+            $('#warning').css('background', "#90EE90");
+            $('#warning').css('border', "2px solid #00FF00");
+        }
         $('#searcher').attr('disabled', !canContinue);
         if (canContinue)
         {
             var allPass = (checkAllowedDay() && checkSites() && checkUBDates());
             $('#sendfake').attr('disabled', !allPass);
-            if (allPass) $('#warning').css('display', "none");
         }
         else
         {
