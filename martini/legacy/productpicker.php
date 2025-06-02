@@ -838,7 +838,7 @@ function cancelSale()
         var now = new Date();
         now.setHours(23,59,59,0);
         if (leadingDay > targetCutoff)leadtime++;
-        leadingDay.setDate(leadingDay.getDate() + (leadtime-1));
+        leadingDay.setDate(leadingDay.getDate() + leadtime);
         leadingDay.setHours(23,59,59,0);
         while (now < leadingDay)
         {
