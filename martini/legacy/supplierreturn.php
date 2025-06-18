@@ -92,7 +92,7 @@ use App\Models\User;
 		<br/>
 		<input type="submit" value="Send" id="sendreal" class="inputbox-button" style="display:none">
 		<input type="hidden" value="<?php use Illuminate\Support\Str;echo Str::random(50);?>" id="transaction_id" name="transaction_id">
-		<input type="button" value="Completed" id="sendfake" class="inputbox-button" disabled>
+		<input type="button" value="Completed" id="sendfake" class="inputbox-button">
 	</div>
 </div>
 </form>

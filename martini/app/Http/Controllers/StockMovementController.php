@@ -30,7 +30,7 @@ class StockMovementController extends Controller
         $request->validate([
             'origin' => ['required','exists:tandc_live.site,id'],
             'destination' => ['required','exists:tandc_live.site,id'],
-            'days' => ['required', 'integer','min:1'],
+            'days' => ['required', 'integer','min:0'],
         ]);
         $input = $request->all();
         $stockmovement = new StockMovement;
@@ -103,7 +103,7 @@ class StockMovementController extends Controller
         $request->validate([
             'origin' => ['required','exists:tandc_live.site,id'],
             'destination' => ['required','exists:tandc_live.site,id'],
-            'days' => ['required', 'integer','min:1'],
+            'days' => ['required', 'integer','min:0'],
         ]);
         $input = $request->all();
         $stockmovement->origin = $input['origin'];
