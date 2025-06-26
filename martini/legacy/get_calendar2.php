@@ -1,28 +1,33 @@
 <?PHP
 
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	include_once('functions.php');
-	
+
 	function checkEvents($date){
 		global $mysqli;
-		
+
 		$x = "SELECT * FROM `purchase_form` WHERE date_due=?";
 		$y = prepareExecuteQuery($x,'s',[$date]);
 		$count = $y->num_rows;
-			
+
 		if($count >= 1){
 			return 1;
 		}else{
 			return 0;
 		}
 	}
-	
+    $sites = Site::where("disabled",0)->where("display_on_arrivals",1)->get();
+    $sites_by_id = [];
+    foreach ($sites as $site){
+        $sites_by_id[$site->id]=$site;
+    }
 	if(request()->input('temperature_id') != 0){
 		$temperature_id = request()->input('temperature_id');
-		
-		$temperatureQueryPiece = "&& temperature_id='$temperature_id'"; 
+
+		$temperatureQueryPiece = "&& temperature_id='$temperature_id'";
 	}else{
 		$temperature_id = 0;
 	}
@@ -52,7 +57,7 @@ use Illuminate\Support\Facades\Auth;
 		else if (request()->has('w')) {
 			$shownWeekStart->setDate($shownWeekStart->format('Y'),1,1);
 			$shownWeekStart->modify("+ ".request()->input('w')." weeks");
-		}		
+		}
 	}
 	while ($shownWeekStart->format('l')!="Monday"){
 		$shownWeekStart->modify("-1 day");
@@ -81,7 +86,7 @@ use Illuminate\Support\Facades\Auth;
 		<select name="year" class="calMonth" id="calYear">
 			<?php
 				$yearLoop = date('Y') - 3;
-				
+
 				while($yearLoop < (date('Y') + 2)){
 					$yearLoop++;
 					?><option value="<?php echo $yearLoop; ?>" <?php if($year == $yearLoop){ echo 'selected'; } ?>><?php echo $yearLoop; ?></option><?php
@@ -105,8 +110,13 @@ use Illuminate\Support\Facades\Auth;
 
 		<select name="site_id" class="calMonth" id="site_id" style="width:150px">
 			<option value="*" selected>Display All</option>
-			<option value="1" <?php if($show_site_id == "1"){ echo 'selected'; } ?>>Wolverhampton</option>
-			<option value="2" <?php if($show_site_id == "2"){ echo 'selected'; } ?>>Gatwick</option>
+			<?php foreach ($sites as $site)
+            {
+                ?>
+            <option value="<?php echo $site->id;?>" <?php if($show_site_id == $site->id){ echo 'selected'; } ?>><?php echo $site->name;?></option>
+                <?php
+            }
+			?>
 		</select>
 	</div>
 	<div>
@@ -126,7 +136,7 @@ use Illuminate\Support\Facades\Auth;
 <table style="border-collapse:collapse;">
 	<tr>
 			<td class="calendar_head_box time"></td>
-		<?php 
+		<?php
 		$headings = ["Mon","Tue","Wed","Thr","Fri","Sat","Sun"];
 		foreach($headings as $heading){  ?>
 			<td class="calendar_head_box"><?php echo $heading; ?></td>
@@ -137,10 +147,10 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 		$fakeCols = 0;
 		?>
-		<?php 
+		<?php
 		$workingDate = new DateTime();
 		$workingDate->setTimestamp($shownWeekStart->getTimestamp());
-		do{	
+		do{
 			$dayNumOut = $workingDate->format('jS');
 			if ($dayNumOut == "1st") {
 				$dayNumOut = $dayNumOut . " ".$workingDate->format('M')."";
@@ -162,7 +172,7 @@ use Illuminate\Support\Facades\Auth;
 				<tr style="height: 120px">
 					<td class="calendar_box time" style="background-color:<?php
 					if ($i % 2 == 0) {
-						echo "darkgray";				
+						echo "darkgray";
 					}
 					else {
 						echo "lightgray";
@@ -170,7 +180,7 @@ use Illuminate\Support\Facades\Auth;
 					?>;vertical-align:top;"><?php echo $i; ?>:00 <?php if($i < 12){ echo 'AM'; }else{ echo 'PM'; } ?></td>
 					<?php
 						$workingDate->setTimestamp($shownWeekStart->getTimestamp());
-						do{	
+						do{
 							$formatedDate = $workingDate->format('Y-m-d'). ' '. $i .':00:00';
 							$xxx = "SELECT * FROM purchase_form WHERE date_due = ? && deleted = '0' && direct_drop = '0' && booking_ref_number != '' $temperatureQueryPiece $siteQueryPiece";
 							$purchases = prepareExecuteQuery($xxx,'s',[$formatedDate]);
@@ -178,54 +188,46 @@ use Illuminate\Support\Facades\Auth;
 							?>
 							<td class="calendar_box" style="vertical-align:top;background-color:<?php
 								if ($i % 2 == 0) {
-									echo "darkgray";				
+									echo "darkgray";
 								}
 								else {
 									echo "lightgray";
 								}
 								?>;">
-								<?php while($row = $purchases->fetch_assoc()){ 
+								<?php while($row = $purchases->fetch_assoc()){
 									$items[] = $row;
 									$thisBatch[$row["site_id"]][] = $row;
 								}
-								if (!array_key_exists(1,$thisBatch)&&($show_site_id == "*"||$show_site_id == "1")) $thisBatch[1]=[];
-								if (!array_key_exists(2,$thisBatch)&&($show_site_id == "*"||$show_site_id == "2")) $thisBatch[2]=[];
+                                foreach ($sites as $site){
+                                    if (!array_key_exists($site->id,$thisBatch)&&($show_site_id == "*"||$show_site_id == $site->id)) $thisBatch[$site->id]=[];
+                                }
 								ksort($thisBatch);
 								$hasUnknown=false;
 								foreach ($thisBatch as $site_id=>$delsToSite)
 								{
-									switch ($site_id)
-									{
-										case "0":
-										{
-											$hasUnknown = true;
-											$header = "Unknown";
-											break;
-										}
-										case "1":
-										{
-											$header = "Wolverhampton";
-											break;
-										}
-										case "2":
-										{
-											$header = "Gatwick";
-											break;
-										}
-									}
+                                    if ($site_id == "0")
+                                    {
+                                        $hasUnknown = true;
+                                        $header = "Unknown";
+                                    }
+                                    else
+                                    {
+                                        $header = $sites_by_id[$site_id]->name;
+                                    }
+
 									$href = "site_id=".$site_id."&date=".urlencode($formatedDate);
 									$atleast1 = false;
 									if ($header == "Unknown" ||(!$hasUnknown && $header == "Wolverhampton" && ($show_site_id == "*" || $show_site_id == "1"))){
 									?>
 										<div style="position:relative;width:100%;top:0px;height:20px;">
-											<a style="color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;width:100%;text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+&nbsp;</span></a>
+											<a style="color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;position: absolute; top: 0; right: 0; width: 100px; text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+&nbsp;</span></a>
 										</div>
 
 									<?php
 									} else if ($show_site_id == "*" || $show_site_id == "2"){
 									?>
 									<div style="position:relative;width:100%;height:20px;">
-									<a style="border-top: 1px solid grey;color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;width:100%;text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+ &nbsp;</span></a>
+									<a style="border-top: 1px solid grey;color:#4C4C4C;width:100%;display:flex;padding-top:4px;" href="createPurchase.php?<?php echo $href;?>">&nbsp;<?php echo $header;?> <span style="color:#4C4C4C;position: absolute; top: 0; right: 0; width: 100px; text-align:right;line-height:0.6;font-size:13pt;font-weight:bold;">+ &nbsp;</span></a>
 									</div>
 									<?php
 									}
@@ -235,20 +237,20 @@ use Illuminate\Support\Facades\Auth;
 										<div style="margin:2pt;background:#<?php echo ($row['temperature_id'] == 1)? "c0392b" : "2980b9"; ?>;">
 										<a style="margin:2pt;color:white;min-height:3em;width:100%;display:flex;" href="#delivery<?php echo str_replace(' ','_', $row['id']); ?>" data-lity>
 										<?php
-											if ($display_col == "*" || $display_col == "supplier_id") 
-											{ 
+											if ($display_col == "*" || $display_col == "supplier_id")
+											{
 												echo $supplier['name'] . '<br>' ;
 												echo $row['purchase_comments'] . '<br>' ;
 											}
-											if($row['haulier'] && ($display_col == "*" || $display_col == "haulier")) 
-											{ 
-												echo $row['haulier']. '<br>'; 
+											if($row['haulier'] && ($display_col == "*" || $display_col == "haulier"))
+											{
+												echo $row['haulier']. '<br>';
 												echo '#' . $row['booking_ref_number'] . '<br>' ;
-											} 
+											}
 										?>
 										</a>
 										</div>
-								<?php 
+								<?php
 									}
 									for ($j=0;$j<$neededRow;$j++){
 										?>
@@ -264,8 +266,8 @@ use Illuminate\Support\Facades\Auth;
 											while ($divPadding > 0) { //For each empty block - pad it!
 												echo "<div style='position:relative;height:" . $divHeightIndividualEntry . "px;'></div>";
 												$divPadding -=1;
-											}	
-											
+											}
+
 										}
 									}
 								}
@@ -278,15 +280,15 @@ use Illuminate\Support\Facades\Auth;
 					?>
 				</tr>
 				<?php
- 
+
 			}
-		?>   
+		?>
 </table>
 
 <?php
 	foreach($items as $row){
 		$purchaseid = $row['id'];
-		
+
 		$supplier = getSupplier($row['supplier_id']);
 		?>
 		<div id="delivery<?php echo str_replace(' ','_', $row['id']); ?>" class="deliveryBox lity-hide">
@@ -295,7 +297,7 @@ use Illuminate\Support\Facades\Auth;
 			<p style="margin-top:5px;">#<?php echo $row['booking_ref_number']; ?></p>
 			<?php if($row['site_id'] && $row['site_id']!=0){ ?>
 				<b>Site</b>
-				<p style="margin-top:5px;"><?php echo ($row['site_id'] == 1) ? "Wolverhampton" : "Gatwick" ; ?></p>
+				<p style="margin-top:5px;"><?php echo $sites_by_id[$row['site_id']]->name ; ?></p>
 			<?php } ?>
 			<?php if($row['haulier']){ ?>
 				<b>Haulier</b>
@@ -304,7 +306,7 @@ use Illuminate\Support\Facades\Auth;
 
 			<?php if($row['temperature_id']){ ?>
 				<b>Fresh/Frz</b>
-				<p style="margin-top:5px;"><?php 
+				<p style="margin-top:5px;"><?php
 					switch ($row['temperature_id']) {
 						case 1:
 							echo "Fresh";
@@ -319,18 +321,18 @@ use Illuminate\Support\Facades\Auth;
 
 				?></p>
 			<?php } ?>
-			
+
 			<b>Comments</b>
 			<p style="margin-top: 4px;"><?php echo $row['purchase_comments']; ?></p>
-			
+
 			<ul style="padding-left:20px;">
 				<?php
 					$species = explode(',', $row['species']);
 					$cuts = explode(',', $row['cut']);
 					$units = explode(',', $row['units']);
-					
+
 					$size = sizeof($species);
-					
+
 					for($i=0;$i<$size;$i++){
 					?>
 					<li><?php echo ucfirst(strtolower($species[$i] . ' ' . $cuts[$i])); ?></li>
@@ -338,7 +340,7 @@ use Illuminate\Support\Facades\Auth;
 					}
 				?>
 			</ul>
-			
+
 			<?php
 				$tx = "SELECT id FROM intake WHERE purchase_id='$purchaseid'";
 				$ty = prepareExecuteQuery($tx);
@@ -352,7 +354,7 @@ use Illuminate\Support\Facades\Auth;
 			<?php } ?>
 		</div>
 		<?php
-	}	
+	}
 ?>
 
 <script>
@@ -367,10 +369,10 @@ use Illuminate\Support\Facades\Auth;
 		console.log(month);
 		updateCalendarByMonth(year, chilled_filter, month,display_col,site_id);
 	});
-	
+
 	$('#calYear').change(function(){
 		year = $(this).val();
-		
+
 		updateCalendar(year, chilled_filter, week,display_col,site_id);
 	});
 
@@ -388,7 +390,7 @@ use Illuminate\Support\Facades\Auth;
 		site_id = $(this).val();
 		updateCalendar(year, chilled_filter, week,display_col,site_id);
 	});
-	
+
 
 </script>
 

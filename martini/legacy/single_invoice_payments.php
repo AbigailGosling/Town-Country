@@ -276,7 +276,6 @@ if (!empty($paymentID)) {
                         $returnIntakeResult = prepareExecuteQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
                         $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
                         foreach (PAYMENT_METHODS as $paymentMethod) {
-                            if ($paymentMethod == "CREDIT_NOTE" && $countReturnedIntakes == 0)continue;
                         if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == $paymentMethod) {
                             echo '<option value="' . $paymentMethod . '" selected>' . $paymentMethod . '</option>';
                         } else {

@@ -203,7 +203,7 @@ function check_customer_outstanding_cache($customer_id,$forceReload = false)
         $cacheRow['picksheets'] = $qq = get_customer_soa_results($customer_id,false);
         foreach ($qq as $pick)
         {
-            $outstanding = $outstanding + $pick['outstanding'];
+            if ($pick['outstanding']!=0.01 && $pick['outstanding']!=-0.01)$outstanding = $outstanding + $pick['outstanding'];
         }
         $cacheRow['outstanding'] = $outstanding;
         update_customer_outstanding_cache($customer_id,$cacheRow);

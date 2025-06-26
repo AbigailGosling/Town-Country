@@ -1,18 +1,21 @@
 <?php
+
+use App\Models\Site;
+
 	include('functions.php');
 	// $id = request()->input('id');
-	
-	
+
+
 	// $intake_id = request()->input('id');
-	
-	
+
+
 	// $intake = getIntake($id);
-	
+
 	// $supplier = getSupplier($intake['supplier_id']);
-	
+
 	$purchase = getPurchase(request()->input('purchaseid'));
-	
-	
+
+
 	$supplierid = $purchase['supplier_id'];
 	$supplier = getSupplier($supplierid);
 ?>
@@ -27,7 +30,7 @@
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.min.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.20/jquery.datetimepicker.full.min.js"></script>
 </head>
@@ -37,8 +40,8 @@
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <main class="int">
-	<div id="product">		
-		<div id="product_heading">New Delivery</div>		
+	<div id="product">
+		<div id="product_heading">New Delivery</div>
 		<div id="product_options">
 			<a href="javascript:;" onclick="saveDelivery(event)">Save Delivery</a>
 		</div>
@@ -52,11 +55,11 @@
 				<tr>
 				<td>
 					<label>Supplier</label>
-					
+
 					<input name="supplier_id" id="supplier_id" type="text" style="display:none;" value="<?php echo $supplierid; ?>">
 					<input name="supplier_search" id="supplier_search" type="text" value="<?php echo $supplier['name']; ?>" autocomplete="off">
 					<div id="supplier_search_results">
-						
+
 					</div>
 
 				</td>
@@ -74,12 +77,26 @@
 					<label>Vehicle Temp (°C)</label>
 					<input type="text" width="184" name="vehicle_temperature" id="vehicle_temperature" placeholder="">
 				</td>
-			
+
 				</tr>
 				<tr>
 				<td>
 					<label>Delivery Note Number</label>
 					<input type="text" name="delivery_note_number" id="delivery_note_number">
+				</td>
+                <td>
+					<label>Depot</label>
+					<select name="site_id" id="secusite_idrity_id" style="width:192px;height:30px;" required>
+						<option selected value="0">Please choose below</option>
+						<?php
+                            foreach (Site::all() as $site)
+                            {
+                        ?>
+						<option value="<?php echo $site->id; ?>" <?php if($site_id == $site->id){ echo 'selected'; } ?>><?php echo $site->name; ?></option>
+                        <?php
+                            }
+                        ?>
+					</select>
 				</td>
 				</tr>
 				<tr>
@@ -95,7 +112,7 @@
 						<?php
 							$x = "SELECT * FROM `security`";
 							$y = prepareExecuteQuery($x);
-							
+
 							while($row = mysqli_fetch_array($y)){
 							?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 							}
@@ -107,12 +124,12 @@
 		</table>
 		</form>
 	</div>
-	 
+
 </main>
 <div id="btm"></div>
 <script>
-	
-	
+
+
 	function saveDelivery(event){
 		event.preventDefault();
 		var supplier_search = $('#supplier_search').val();
@@ -121,10 +138,10 @@
 		var product_temperature = $('#product_temperature').val();
 		var delivery_note_number = $('#delivery_note_number').val();
 		var security_id = $('#security_id').val();
-		
+
 		var good = 1;
 		var msg = "";
-		
+
 		if(supplier_search == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#supplier_search').css('border','2px solid red');
@@ -133,7 +150,7 @@
 			$('#supplier_search').css('border','1px solid grey');
 		}
 
-        	
+
 		if(security_id == 0){
 			msg = "The highlighted fields cannot be blank!";
 			$('#security_id').css('border','2px solid red');
@@ -142,7 +159,7 @@
 			$('#security_id').css('border','1px solid grey');
 		}
 
-		
+
 		// if(vehicle_reg == ''){
 			// msg = "The highlighted fields cannot be blank!";
 			// $('#vehicle_reg').css('border','2px solid red');
@@ -150,7 +167,7 @@
 		// }else{
 			// $('#vehicle_reg').css('border','1px solid grey');
 		// }
-		
+
 		if(date_received == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#date_received').css('border','2px solid red');
@@ -158,7 +175,7 @@
 		}else{
 			$('#date_received').css('border','1px solid grey');
 		}
-		
+
 		if(vehicle_temperature == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#vehicle_temperature').css('border','2px solid red');
@@ -166,7 +183,7 @@
 		}else{
 			$('#vehicle_temperature').css('border','1px solid grey');
 		}
-		
+
 		if(product_temperature == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#product_temperature').css('border','2px solid red');
@@ -174,7 +191,7 @@
 		}else{
 			$('#product_temperature').css('border','1px solid grey');
 		}
-		
+
 		if(delivery_note_number == ''){
 			msg = "The highlighted fields cannot be blank!";
 			$('#delivery_note_number').css('border','2px solid red');
@@ -182,9 +199,9 @@
 		}else{
 			$('#delivery_note_number').css('border','1px solid grey');
 		}
-		
+
 		$('#msgNotice').html(msg);
-		
+
 		if(good == 1){
 			$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 		}
@@ -197,13 +214,13 @@
 		// $( "#date_received" ).datepicker({
 		// 	dateFormat: 'dd/mm/yy'
 		// });
-		
+
 		jQuery('#date_received').datetimepicker({
 			defaultDate: new Date(),
 			defaultTime: '00:00',
 			format:'d/m/Y H:i',
 		});
-		
+
 		$('#supplier_search').keyup(function(){
 			var val = $('#supplier_search').val();
 			// $('#test2d').text(val);
@@ -212,9 +229,9 @@
 			}else{
 				$('#supplier_search_results').fadeOut();
 			}
-			
+
 			var species = $('#species_id').val();
-			
+
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -226,10 +243,10 @@
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 			xhttp.send("searchterm=" + val + "&species_id=" + species);
-		
+
 		});
-		
-		
+
+
 	});
 </script>
 </body>
