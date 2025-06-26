@@ -2,15 +2,16 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../functions.php');
-	
+
     $intake_picksheet_ids = array();
 	$term = request()->input('searchterm');
-    
+
     $x = "SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
     $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
-    
+
     $customerids = '';
     $usermodel = User::find(Auth::id());
     while($row = mysqli_fetch_array($y)){
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
         $rowid = $row['id'];
         $customerids .= " OR completed='1' && customer_id='$rowid'";
     }
-    
+
     // START - intake id + pallet id search
     $intakePicksheetSearchQuery = "SELECT pickerSheets.id FROM `pickerSheets`
                         JOIN `pickerItems` ON pickerItems.pickersheet_id = pickerSheets.id
@@ -39,11 +40,11 @@ use Illuminate\Support\Facades\Auth;
     $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && id= ? OR completed='1' && id LIKE ? $customerids $intakeQueryPiece ORDER BY `id` DESC";
 	$y = prepareExecuteQuery($x,'ss',[$term,'%'.$term.'%']);
     $count = mysqli_num_rows($y);
-	
+
 	if($count == 0){
 		?><h2 style="color:#fff;font-size:12px;">No invoices found</h2><?php
 	}else{
-        
+
         $page_limit = 50;
         $num_of_pages = 1;
         $entry_count = 0;
@@ -53,27 +54,35 @@ use Illuminate\Support\Facades\Auth;
                 $entry_count = 0;
                 $num_of_pages++;
             }
-
             $customer_id = $row['customer_id'];
-			if (!$usermodel->canViewCustomer($customer_id)) continue;		
+            if ($row['is_return_to_supplier']==0)
+            {
+                if (!$usermodel->canViewCustomer($customer_id)) continue;
+
+                $y2 = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
+                $row2 = mysqli_fetch_assoc($y2);
+                $name = $row2['businessname'];
+            }
+            else
+            {
+                $y2 = prepareExecuteQuery("SELECT * FROM `supplier` WHERE id = ?",'i',[$customer_id]);
+                $row2 = mysqli_fetch_assoc($y2);
+                $name = $row2['name'];
+                Log::error(json_encode($row2));
+            }
             $date = $row['estimated_delivery_date'];
-            
             $date=date_create($date);
             if ($date == false)$date=DateTime::createFromFormat('d/m/Y',"".$row['estimated_delivery_date']);
             if ($date == false) continue;
             $date = date_format($date,"d/m/Y");
-            
-            $x2 = "SELECT * FROM `customers` WHERE id = ?";
-            $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-            $row2 = mysqli_fetch_array($y2);
-            
+
         ?>
         <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">
         <a href="invoice.php?id=<?php echo $row['id']; ?>" class="intake" style="padding-left:10px;padding-right:10px;">
             <table width="100%" border="0">
                 <tr>
                     <td width="100" align="left">ID: <?php echo $row['id']; ?></td>
-                    <td align="center" style="font-size: 18px;"><?php echo $row2['businessname']; ?></td>
+                    <td align="center" style="font-size: 18px;"><?php echo $name; ?></td>
                     <td width="100" align="right"><?php echo $row['estimated_delivery_date']; ?></td>
                 </tr>
             </table>

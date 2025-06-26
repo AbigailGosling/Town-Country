@@ -35,7 +35,7 @@
                     <select id="destination" class="block mt-1 w-full" type="text" name="destination" required>
                         <option selected="true" disabled>Please Select an Option...</option>
                         @foreach ($sites as $site)
-                        @if ($site->id == $destination->id || $site->disabled == 0 || $site->old('destination'))
+                        @if ($site->id == $destination->id || $site->disabled == 0 || old('destination'))
                         <option @if($site->id == $destination->id)selected="true"@endif value="{{$site->id}}">{{$site->name}}</option>
                         @endif
                         @endforeach
