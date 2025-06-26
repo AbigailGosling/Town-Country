@@ -1,6 +1,10 @@
 <?php
-	require(__DIR__.'/../../functions.php');
 
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+	require(__DIR__.'/../../functions.php');
+    $trimmer = implode(",",User::find(Auth::id())->listViewableCustomers());
 	if (isset($_SESSION['SOAM_CACHING']))
 	{
 		if (time() > ($_SESSION['SOAM_CACHING'] + 600))
@@ -31,11 +35,11 @@
 	<?php
 	if($name != ''){
 
-		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `businessname` LIKE ? || `id` = ?",'ss',['%'.$name.'%',$name]);
+		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `businessname` LIKE ? || `id` = ? AND ID IN ($trimmer)",'ss',['%'.$name.'%',$name]);
 	}else{
-		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0");
+		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0 AND ID IN ($trimmer)");
 	}
-	$workingSet = [];				
+	$workingSet = [];
 	while($customer = mysqli_fetch_assoc($customerQueryResult)){
 		$customer['balance'] = "";
 		$customer['balNeg'] = false;
@@ -93,7 +97,7 @@
 						<td width="100" align="right">
 							<?php if ($showBal) {
 								if ($customer['balNeg'] == true) echo "-";
-								echo "£".number_format($customer['balance'],2);	
+								echo "£".number_format($customer['balance'],2);
 							}?></td>
 							<td width="40" id="customer_id_<?php echo $customer['id']; ?>" align="right" <?php echo $title . " " . $style; ?> title="<?php echo $title; ?>"><?php echo $text; ?></td>
 					</tr>
@@ -123,7 +127,7 @@
 					<td align="center" style="font-size: 18px;">Total: </td>
 					<td width="100" align="right">
 						<?php if ($showBal) {
-							echo "£".number_format($rollingTotal,2);								 
+							echo "£".number_format($rollingTotal,2);
 						}?></td>
 				</tr>
 				</table>
