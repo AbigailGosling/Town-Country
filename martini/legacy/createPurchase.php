@@ -1,31 +1,32 @@
 <?php
 
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	include('functions.php');
-	
+
 	if(request()->input('id') != ''){
-		
+
 		$id = request()->input('id');
-		
+
 		$x = "SELECT * FROM `purchase_form` WHERE id=?";
 		$y = $mysqli->prepare($x);
 		$y->bind_param('i',$id);
 		$y->execute();
 		$y = $y->get_result();
-		
+
 		$purchase = $y->fetch_assoc();
 		$edit=true;
 		$site_id = $purchase['site_id'];
 		$date_due = str_replace('/', '-', $purchase['date_due']);
 		$date_due = date('d/m/Y H:00', strtotime($date_due));
-		
-	}else{ 
-		$edit=false; 
+
+	}else{
+		$edit=false;
 		if (request()->has('site_id')) $site_id = request()->input('site_id');
 		if (request()->has('date')) $date_due =  date('d/m/Y H:00', strtotime(request()->input('date')));
-	}	
+	}
 ?>
 <!doctype html>
 <html>
@@ -38,7 +39,7 @@ use Illuminate\Support\Facades\Auth;
 	<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css">
 	<link href="css/jquery.datetimepicker.min.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script src="js/jquery.datetimepicker.min.js"></script>
 	<link href="css/bootstrap-combined.min.css" rel="stylesheet">
@@ -51,15 +52,15 @@ use Illuminate\Support\Facades\Auth;
 </div>
 <main class="int">
 	<div id="product">
-		<div id="product_heading" class="printhide"><?php if($edit){ echo 'Edit'; }else{ echo 'New'; } ?> Arrival</div>		
+		<div id="product_heading" class="printhide"><?php if($edit){ echo 'Edit'; }else{ echo 'New'; } ?> Arrival</div>
 		<form id="mainForm" method="POST" enctype="multipart/form-data" id="mainForm" action="scripts/<?php if($edit){ echo 'editPurchase.php'; } else { echo 'newPurchase.php'; } ?>" autocomplete="off">
 		<input autocomplete="off" name="hidden" type="text" style="display:none;">
         <div id="product_options" style="display:flex;flex-wrap:wrap;width:190px;">
 			<input type="button" onclick="mainForm()" value="<?php if($edit){ echo 'Update'; }else{ echo 'Save'; } ?> Arrival" class="printhide bluebtn" style="margin-top:10px;width:100%;display:block;">
-			
+
 			<?php
 				$purchaseid = $purchase['id'];
-				
+
 				$tx = "SELECT id FROM intake WHERE purchase_id=?";
 				$ty = prepareExecuteQuery($tx,'i',[$purchaseid]);
 				$txcount = $ty->num_rows;
@@ -68,7 +69,7 @@ use Illuminate\Support\Facades\Auth;
 					?><a href="scripts/deletePurchase.php?id=<?php echo $purchase['id']; ?>&ts=<?php echo strtotime($purchase['date_due']);?>" id="viewIntake" class="printhide bluebtn" style="width:100%;text-align:center;margin-top:10px;">Delete Arrival</a><?php
 					}
             ?>
-            
+
 		</div>
 		<table>
 			<tbody>
@@ -81,18 +82,18 @@ use Illuminate\Support\Facades\Auth;
 					<?php
 						if($edit && (User::find(Auth::id()))->hasPermission("createPurchase.php")){
 							$supplier_id = $purchase['supplier_id'];
-							
+
 							$x ="SELECT * FROM `supplier` WHERE id=?";
 							$y = prepareExecuteQuery($x,'i',[$supplier_id]);
-							$row = $y->fetch_assoc();	
+							$row = $y->fetch_assoc();
 						}
 					?>
 					<input name="id" id="id" type="text" style="display:none;" value="<?php echo $purchase['id']; ?>">
 					<input name="supplier_id" id="supplier_id" type="text" style="display:none;" value="<?php echo $purchase['supplier_id']; ?>" required>
 					<input name="supplier_search" id="supplier_search" type="text" value="<?php echo $row['name']; ?>">
 					<div id="supplier_search_results">
-						
-					</div> 
+
+					</div>
 				</td>
 				<td>
 					<!--<label class="printinput">Purchased By</label>
@@ -100,8 +101,14 @@ use Illuminate\Support\Facades\Auth;
 					<label class="printinput">Location</label>
 					<select name="site_id" id="site_id" style="width:192px;height:30px;">
 						<option selected disabled>Choose an option..</option>
-						<option value="1" <?php if($site_id == 1){ echo 'selected'; } ?>>Wolverhampton</option>
-						<option value="2" <?php if($site_id == 2){ echo 'selected'; } ?>>Gatwick</option>
+						<?php foreach (Site::all() as $site)
+                        {
+                            if ($site_id == $site->id ||  $site->disabled == false || $site->display_on_arrivals == true)
+                            ?>
+                        <option value="<?php echo $site->id;?>" <?php if($site_id == $site->id){ echo 'selected'; } ?>><?php echo $site->name;?></option>
+                            <?php
+                        }
+                        ?>
 					</select>
 				</td>
 				</tr>
@@ -135,7 +142,7 @@ use Illuminate\Support\Facades\Auth;
 					<div style="display:none;">
 					<label>Date Due</label>
 					</div>
-					
+
 					<div id="datetimepicker" class="input-append date">
 					  <label>Date Due</label>
 					  <input type="text" id="date_due" name="date_due" value="<?php echo $date_due; ?>" required></input>
@@ -162,7 +169,7 @@ use Illuminate\Support\Facades\Auth;
 						<label>Date Purchased</label>
 						<input type="text" name="date_puriuhsaiuhsachased" value="<?php //if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" id="date_purchased" required>
 					</div>
-					
+
 					<div id="datetimepicker2" class="input-append date">
 					  <label>Date Purchased</label>
 					  <input type="text" name="date_purchased" value="<?php //if($date_purchased != ''){ echo $date_purchased; }else { echo date('d/m/Y'); }?>" required></input>
@@ -170,20 +177,20 @@ use Illuminate\Support\Facades\Auth;
 						<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
 					  </span>
 					</div>
-					
-				</td> 
+
+				</td>
 				<td>
-					
-					
-					 
-					
-				</td> 
+
+
+
+
+				</td>
 				</tr>-->
 				<tr>
 				<!--<td colspan="2">
 					<label>Attachment <?php if($purchase['dfile'] != ''){ ?>- <a href="<?php echo $domain . 'documents/' . $purchase['dfile']; ?>" target="_blank">Click here to view file</a><?php } ?></label>
 					<?php //if($purchase['dfile'] != ''){ ?>
-					 
+
 					<?php //} ?>
 					<input type="file"name="dfile" style="width:600px;border:1px solid #cacaca;padding:5px;">
 				</td>-->
@@ -200,25 +207,25 @@ use Illuminate\Support\Facades\Auth;
 			<div class="productsList">
 				<?php
 					if($edit){
-						 
+
 
 						$species = explode('|', $purchase['species']);
 						$cuts = explode('|', $purchase['cut']);
 						$units = explode('|', $purchase['units']);
 						$prices = explode('|', $purchase['price']);
-						
+
 						$size = sizeof($species);
-						
+
 						for($i=0;$i<$size;$i++){
-							
+
 							?>
 							<div>
-							
+
 							<input type="text" name="species[]" class="producttext" value="<?php //echo $species[$i]; ?>">
 							<input type="text" name="cuts[]" class="producttext" value="<?php //echo $cuts[$i]; ?>">
 							<input type="text" name="units[]" class="producttext" value="<?php //echo $units[$i]; ?>" style="width:120px;">
 							<input type="text" name="prices[]" class="producttext" value="<?php //echo $prices[$i]; ?>" style="width:120px;">
- 
+
 							<span class="printhide"onclick="removeProduct(this);">[-]</span>
 							</div>
 							<?php
@@ -231,7 +238,7 @@ use Illuminate\Support\Facades\Auth;
 			</div>-->
 		</form>
 	</div>
-	 
+
 </main>
 <div id="btm"></div>
 <script>
@@ -286,7 +293,7 @@ function mainFormSucess(){
 	var dateObject = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
 	window.location.href = "calendar.php?ts="+dateObject.getTime()/1000;
 }
-	
+
 	function newProduct(){
 		div = '<div>';
 		div += '<input type="text" placeholder="species" class="producttext inputProductsText2" name="species[]">';
@@ -295,17 +302,17 @@ function mainFormSucess(){
 		div += '<input type="text" placeholder="price" class="producttext inputProductsText2" name="prices[]" style="width:120px;">';
 		div += '<span onclick="removeProduct(this);">[-]</span>';
 		div += '</div>';
-		
+
 		$('.productsList').append(div  + '');
 	}
-	
+
 	// newProduct();
 	function removeProduct(obj){
 		$(obj).parent().remove();
 	}
-	
+
 	<?php if(!$edit){ ?> for(i=0;i<5;i++){ newProduct(); } <?php } ?>
-	
+
 	$(document).ready(function(){
 		$('#direct_drop').change(function(){
 			if($(this).val() == '1'){
@@ -314,7 +321,7 @@ function mainFormSucess(){
 				$('#viewIntake').fadeIn();
 			}
 		});
-	 
+
 		$('#supplier_search').keydown(function(event){
 		var val = $('#supplier_search').val();
 		if(val != ''){
@@ -324,7 +331,7 @@ function mainFormSucess(){
 		}
 		if (val.length < 3)
 		var species = $('#species_id').val();
-		
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -336,14 +343,14 @@ function mainFormSucess(){
 		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 		xhttp.send("searchterm=" + val + "&species_id=" + species);
-		
-		}); 
+
+		});
 	});
 
     function myprint(){
         $('.printhide').hide();
         //$('.printinput').css('padding','5px');
-		print();   
+		print();
 
 
     }
@@ -374,10 +381,10 @@ function mainFormSucess(){
 			minuteStep: 30,
 			minView : 2,
 			minuteStepping:30,
-			
+
 			timeFormat:  "HH:00",
       });
-	  
+
 	  $('#datetimepicker2').datetimepicker({
         format: 'dd/MM/yyyy',
 		minuteStep: 30,
@@ -385,6 +392,6 @@ function mainFormSucess(){
 		timeFormat:  "HH:00"
       });
     </script>
-	
+
 </body>
 </html>
