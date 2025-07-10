@@ -2,6 +2,7 @@
 include_once('includes/frontHeader.php');
 include_once('ajax/customer_soa_results_function.php');
 $serverRoot = request()->server("SERVER_NAME");
+$printing = request()->input("printing",false);
 ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
 <style id="mainStyle">
@@ -9,7 +10,7 @@ $serverRoot = request()->server("SERVER_NAME");
     .printemailbuttons{
         display: none !important;
     }
-    
+
    .noprint {
     display: none;
    }
@@ -43,7 +44,7 @@ $serverRoot = request()->server("SERVER_NAME");
 }
     .printme{
         top: 0px;
-        
+
     }
 
     .loadingContainer {
@@ -89,7 +90,7 @@ $serverRoot = request()->server("SERVER_NAME");
 
     .table {
         margin-top: 10px;
-        
+
     }
 
     .table td {
@@ -138,8 +139,8 @@ $serverRoot = request()->server("SERVER_NAME");
 </div>
 
 
-<div id="printDiv" class="container" style=""> 
-    
+<div id="printDiv" class="container" style="">
+
     <?php
     if (request()->input('id') != '') {
 
@@ -162,7 +163,7 @@ $serverRoot = request()->server("SERVER_NAME");
         <tr>
         <td>
 		<div class="invoice">
-			 
+
 			<b style="font-size:10px;color:#8c8c8c;">Invoice address</b>
 			<div class="invoicebox">
 				<p>
@@ -185,7 +186,7 @@ $serverRoot = request()->server("SERVER_NAME");
              <div align="left" class="invoicebox">
                  <table style="font-size:10px;">
                 <?php
-                    if ($creditcheck['creditCheckRender'] == true) 
+                    if ($creditcheck['creditCheckRender'] == true)
                     {
                         $remainingCredit = (($customer['flaguplimit'])?$customer['flaguplimit']:$creditcheck['creditRating']) - $creditcheck['details']['outstanding'];
                 ?>
@@ -221,7 +222,7 @@ $serverRoot = request()->server("SERVER_NAME");
         <h4><?php echo $customer['businessname'];?> (ID: <?php echo $customer['id'];?>)<br>
         Statement of account as at: <?php echo date('d/m/Y @ H:i');?>
         </h4>
-        
+
         <div class="loadingContainer" style="display: none;">
             <div class="loadericoncenter">
             <img src="img/loading.gif" alt="">
@@ -260,7 +261,7 @@ $serverRoot = request()->server("SERVER_NAME");
         </div>
         <div style="" id="invoiceZone" class="myInvoice">
         </div>
-    
+
     </div>
     <?php
     }
@@ -270,7 +271,7 @@ $serverRoot = request()->server("SERVER_NAME");
 <div class="clearfix"></div>
 <script type="text/javascript">
 var invoiceCount = 0;
-var crCount = -1;                 
+var crCount = -1;
 var renderCompleted = false;
 $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
@@ -302,7 +303,7 @@ function isNumber(n) {
         table = $('#soaTable').DataTable({
             "pageLength": -1,
             "order": [[ 0, "ASC" ]],
-            
+
         });
         getData();
         //$("#printer").hide();
@@ -349,7 +350,7 @@ function isNumber(n) {
                 { "orderable": true, "targets": 5 }
             ]
         }).draw();
-        
+
         let nf = new Intl.NumberFormat('en-GB',{ style: 'currency', currency: 'GBP'});
 
         var total_digit_value = 0;
@@ -387,10 +388,10 @@ function isNumber(n) {
         $('.digit_outstanding').each(function(index) {
             total_digit_outstanding += parseFloat($(this).attr('value'));
         });
-        
+
         total_digit_outstanding = nf.format(total_digit_outstanding);
         $('.total_digit_outstanding').text(total_digit_outstanding);
-        
+
         getInvoices();
     }
     function renderComplete(){
@@ -420,10 +421,10 @@ function isNumber(n) {
             getInvoicesResp);
             crCount++;
             return;
-        }      
+        }
         else
         {
-            
+
             invoiceCount++;
             crCount = -1;
             if (invoiceCount < dataParsed.length)
@@ -437,7 +438,7 @@ function isNumber(n) {
                 renderCompleted = true;
             }
         }
-        
+
     }
     function getInvoicesResp(data, status) {
         $('#invoiceZone').append(data);
@@ -459,8 +460,8 @@ function isNumber(n) {
             var columnName = '';
             if (column == 2) columnName = 'sortableDueDateFormat';
             else columnName = 'sortableDateFormat';
-            
-            var sortDirection = -1;           
+
+            var sortDirection = -1;
             if (order == "asc") sortDirection = 1;
 
             return  b[columnName] < a[columnName] ? sortDirection
@@ -478,10 +479,10 @@ function isNumber(n) {
     }
     //Function that generates a PDF of the invoice using MPDF and stores it in '/PDF/Statement_{ID}_{Datestamp}.pdf'
     $('#generatepdf').click(function() {
-        
+
         $('.loadingContainer').show();
         $.post("ajax/generatePDFstatement.php", {ids: [customer_id]},logResponse);
-        
+
     });
 
 </script>

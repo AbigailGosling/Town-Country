@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Product
@@ -89,4 +90,7 @@ protected $connection = 'tandc_live';
 	{
 		return $this->belongsTo(Cut::class,"cut_id","id");
 	}
+    public function weights():HasMany{
+        return $this->hasMany(Weight::class,"product_id","id");
+    }
 }

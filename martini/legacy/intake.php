@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -247,7 +248,21 @@ use Illuminate\Support\Facades\Auth;
 		</div>
         <?php } ?>
         <div class="overview_block">
-
+            <div>
+				<label>Original Depo</label>
+				<form id="changeOriginalSiteForm" method="post" action="scripts/changeIntakeSite.php">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <select id="changeIntakeHealth" style="height:30px;outline:none;border:0px;width: 100%;" name="site_id">
+                    <option value="-1" disabled<?php if(-1 == $intake['site_id']||null == $intake['site_id']||"" == $intake['site_id']){ echo 'selected'; } ?>>Unkown</option>
+                        <?php
+                            foreach (Site::all() as $site)
+                            {
+                                ?><option value="<?php echo $site->id; ?>" <?php if($site->id == $intake['site_id']){ echo 'selected'; } ?>><?php echo $site->name; ?></option><?php
+                            }
+                        ?>
+                    </select>
+                </form>
+			</div>
 		</div>
         <div class="overview_block">
 			<div>
@@ -303,20 +318,16 @@ use Illuminate\Support\Facades\Auth;
 		<div style="clear:both;"></div>
 	</div>
 	<br/><br/>
-
 	<div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
 	<div style="width:45%;padding:15px;border: 1px solid grey;">
 		<h2 style="font-size: 20px;">Intake Notes</h2>
 		<form method="POST" action="scripts/saveIntakeNotes.php" enctype="multipart/form-data">
 			<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
 			<input type="text" name="intakeid" value="<?php echo $intake['id']; ?>" style="display:none;">
-
 			<label>Notes</label><br/>
 			<textarea class="intakeNotes" name="notes"><?php echo $intake['notes']; ?></textarea>
-
 			<br/><br/>
 			<input type="submit" value="Save">
-
 		</form>
 	</div>
 

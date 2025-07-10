@@ -21,17 +21,17 @@
 			<label>Delivery Date</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
 		</div>
-	  
+
 	</div>
-	
+
 	<div class="row" id="address"></div>
-	
+
 	<div class="row">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" id="picksheet_note" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
-		<div class="col">			
+		<div class="col">
 			<label>Type</label><br/>
 			<select id="sup_type" name="sup_type" class="form-control">
 			<option value="invoice" selected>Invoice</option>
@@ -39,10 +39,10 @@
 			</select>
 </div>
 	</div>
-	
+
 	<div class="row">
 		<div class="col">
-			<label>	Order Reference Number</label><br/>
+			<label>	Reference</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="orderReferenceNumber" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
 		</div>
 		<div class="col"></div>
@@ -57,7 +57,7 @@
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
 					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
-	
+
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($userid == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
 					}
@@ -67,24 +67,29 @@
 		<div class="col"></div>
 	</div>
 	<?php } ?>
-	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>	  
+	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>
 </div>
 <div class="leftPanel" style="position:relative;">
     <form id="searchForm">
-    <input type="text" name="itemname" id="itemname" placeholder="Item" style="width:80%;height: 33px;padding-left: 10px;">
-    <input type="number" name="itemcost" id="itemcost" placeholder="Cost" step=".01" style="width:100px;height: 33px;padding-left: 10px;">
+    <input type="text" name="itemname" id="itemname" placeholder="Item Description" style="width:70%;height: 33px;padding-left: 10px;">
+    <input type="number" name="itemweight" id="itemweight" placeholder="Unit Weight" step=".001" style="width:100px;height: 33px;padding-left: 10px;">
+    <input type="number" name="itemamount" id="itemamount" placeholder="Units" step="1" style="width:100px;height: 33px;padding-left: 10px;">
+    <input type="number" name="itemcost" id="itemcost" placeholder="Unit Cost" step=".01" style="width:100px;height: 33px;padding-left: 10px;">
     <input type="button" id="searcher" onclick="add()" value="Add" style="height: 39px;width: 80px;">
     </form>
 </div>
 <div class="leftPanel">
 	<table width="100%" class="basketTable" id="basketTable">
 		<tr align="left" style="background:#3FADDD;height:30px;color:#FFF;">
-			<th style="width:80%;">&nbsp;Item</th>
-			<th>&nbsp;Cost</th>
+			<th style="width:80%;">&nbsp;Item Description</th>
+            <th>&nbsp;Weight</th>
+            <th>&nbsp;Amount</th>
+			<th>&nbsp;Unit Cost</th>
+            <th>&nbsp;Line Total</th>
 			<th>&nbsp;X&nbsp;</th>
 		</tr>
 	</table>
-	
+
 	<div>
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
@@ -95,12 +100,12 @@
 	</div>
 </div>
 </form>
-<script type="text/javascript" src="js/modal-dialog.js"></script>  
+<script type="text/javascript" src="js/modal-dialog.js"></script>
 <div class="clearfix"></div>
 <style type="text/css">
-     
-    
-    
+
+
+
 
 	.rightPanel {
 		padding:50px;
@@ -113,38 +118,38 @@
 		border:1px solid #f4f4f4;
 		position:relative;
 	}
-	
+
 	.clearfix{
 		clear:both;
 	}
-	
+
 	.inputbox-button{
 		width:323px;
 		height:34px;
 		margin-bottom:10px;
 	}
-	
+
 	.inputbox{
 		width:300px;
 		height:34px;
 		padding-left:18px;
- 
+
 	}
-	
+
 	.createCustomerContainer{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-	
+
 	.weightTotal{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-	
+
 	.resultsContainer{
 		min-height: 400px;
 		border: 2px dashed #cacaca;
@@ -206,7 +211,7 @@
 	}
 
 	@media only screen
-	and (min-device-width : 768px) 
+	and (min-device-width : 768px)
 	and (max-device-width : 1024px)  {
 		.searchRContent {
 			font-size: 10px
@@ -231,7 +236,7 @@
 			width: 20px;
 		}
 
-		.searchRContent__unit {
+		.searchRContent__amount {
 			width: 55px;
 		}
 
@@ -277,7 +282,7 @@
 
 		document.getElementById('menu').addEventListener('click', function(e) {
 			if (formHasChanged && !submitted) {
-				e.preventDefault()	
+				e.preventDefault()
 				changePage('menu')
 			}
 		})
@@ -292,12 +297,12 @@
 
 		$(document).on('click', '.intakeLink', function(e) {
 			if (formHasChanged && !submitted) {
-				e.preventDefault()	
+				e.preventDefault()
 				changePage($(this).attr('id'))
 			}
 		})
 
-		function changePage(prop) {					
+		function changePage(prop) {
 			var alert = confirm('Are you sure you want to leave?')
 
 			if (alert === true) {
@@ -313,10 +318,12 @@
 	var pos = 0;
 	var items = [];
 	function add() {
+        var amount = $('#itemamount').val();
+        var weight = $('#itemweight').val();
 		var name = $('#itemname').val();
 		var cost = $('#itemcost').val();
-		items[pos.toString()] = {name:name,cost:cost};
-		$('.basketTable').append('<tr id="basketRow-'+pos+'" name="basketRow-'+pos+'"><td>'+name+'</td><td id="price">'+cost+'</td><td><a href="javascript:;" onclick="deleteRow('+pos+')"><i class="fa fa-trash" aria-hidden="true" style="margin-left:30px;font-size:24px;color:#000;"></i></a></td></tr>');
+		items[pos.toString()] = {name:name,cost:cost,amount:amount,weight:weight};
+		$('.basketTable').append('<tr id="basketRow-'+pos+'" name="basketRow-'+pos+'"><td>'+name+'</td><td id="weight">'+weight+'</td><td id="amount">'+amount+'</td><td id="price">'+cost+'</td><td>'+(weight*cost*amount)+'</td><td><a href="javascript:;" onclick="deleteRow('+pos+')"><i class="fa fa-trash" aria-hidden="true" style="margin-left:30px;font-size:24px;color:#000;"></i></a></td></tr>');
 		pos++;
 	}
 
@@ -348,7 +355,7 @@
 		var transaction_id = $('#transaction_id').val();
 		var sup_type = $('#sup_type').val();
 		dateEntered = false;
-		
+
 		if (customer_id != undefined) {
 			customerEntered = true;
 			$('#customer').css('border-color', '#f2f2f2');
@@ -370,7 +377,7 @@
 			UserSet = false;
  			$('#sup_type').css('border','1px solid red');
 		}
-		
+
 		if (date != '') {
 			dateEntered = true;
 			$('#estimated_delivery_date').css('border-color', '#f2f2f2');
@@ -406,7 +413,7 @@
 			$.ajax({
 				type: 'POST',
 				url: 'scripts/buildPicker2.php',
-				data: 
+				data:
 					{
 						"items" : items,
 						"customer_id": customer_id,
@@ -430,18 +437,18 @@
 
 			$('#sendfake').prop('disabled', false);
 
-		}		
+		}
 	});
 	function mainFormSucess(){
 		location.reload();
 	}
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
-		
+
 		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
 			$('#address').html(data);
 			$('.rating').fadeIn();
-			
+
 			$('#addressline1').prop('readonly', true);
 			$('#addressline2').prop('readonly', true);
 			$('#addressline3').prop('readonly', true);
@@ -485,13 +492,13 @@
 				$('#searcher').attr('disabled', false);
 			}
 		});
-	}	
-	$(document).ready(function(){  
+	}
+	$(document).ready(function(){
 		$( "#estimated_delivery_date" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 		});
-		
-		
+
+
 	});
 
 	function parseDMY(value) {
@@ -510,7 +517,7 @@
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
-		
+
 		var request = $.ajax({
 			type: "POST",
 			url: "ajax/getCustomerDropdown.php",
@@ -527,11 +534,11 @@
 		request.fail(function(jqXHR, textStatus) {
 			// alert( "Request failed: " + textStatus );
 		});
-	
+
 	});
-		
-		
-		
+
+
+
 	function changeAddress(customer_id, address_id){
 
 		$('#addressid').val(address_id);
@@ -542,8 +549,8 @@
 			$('.lity-close').trigger('click');
 		});
 	}
-		
-	
+
+
 </script>
 
 <style type="text/css">

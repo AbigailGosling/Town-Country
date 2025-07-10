@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Intake
@@ -78,4 +79,7 @@ class Intake extends Model
 		'internal_num',
 		'packaging_notes'
 	];
+    public function pallets():HasMany{
+        return $this->hasMany(Pallet::class,"intake_id","id");
+    }
 }

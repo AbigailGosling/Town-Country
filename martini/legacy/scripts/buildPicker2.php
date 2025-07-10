@@ -39,22 +39,29 @@ loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
 loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
 $items = request()->input('items');
 $weights = [];
+$totalCost = 0;
 foreach ($items as $item){
     if ($item == null) continue;
     $name = $item['name'];
     $cost = $item['cost'];
+    $weight=$item['weight'];
+    $amount=$item['amount'];
     if ($name == null || $name == "" || $cost == null || $cost == "")continue;
+    $totalCost = $totalCost + (floorDec($weight,3)*floorDec($cost,3)*floorDec($amount,3));
+
     //Cut Row
     $cutid = prepareExecuteQuery("INSERT INTO `tandc_live`.`cuts` ( `species_id`, `name`, `cutgroup_id`) VALUES (13, ?, -1)",'s',[$name],true);
     //Product Row
     $product_id = prepareExecuteQuery("INSERT INTO `tandc_live`.`product` (`pallet_id`, `cut_id`, `brand_id`, `nationality_id`, `cooling_id`, `status`, `range_from`, `range_to`, `ubbb`, `unit`, `comments`, `best_by`, `pricetype`, `cost`, `price`, `box_id`, `weightnote`, `product_temp`, `original_intake_id`, `original_pallet_id`, `note_units`, `note_weight`, `akg`, `quantity`)
-                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 1)",'',[],true);
+                                                  VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, ?)",'i',[$amount],true);
     //Weight Row
-    $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, 1, 1, 1, 1, 1, 1, '0', '0')",'',[],true);
+    for ($i=0;$i<$amount;$i++){
+        $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, 1, 1, 1, 1, 1, 1, '0', '0')",'',[],true);
 
-    $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-    if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'',0]);
-    else $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'',0]);
+        $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
+        if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'',$weight]);
+        else $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'',$weight]);
+    }
 }
 if (count($weights) == 0) die("N/A");
 $weightString = implode(',', $weights);
