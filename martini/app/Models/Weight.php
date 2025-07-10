@@ -7,15 +7,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Weight
- * 
+ *
  * @property int $id
  * @property int|null $product_id
  * @property int|null $status_id
- * @property string|null $weight_gross
- * @property string|null $weight_tear
+ * @property float|null $weight_gross
+ * @property float|null $weight_tear
  * @property float|null $pallet_tare
  * @property float|null $tare_per_carton
  * @property float|null $number_of_cartons
@@ -34,6 +35,8 @@ protected $connection = 'tandc_live';
 	protected $casts = [
 		'product_id' => 'int',
 		'status_id' => 'int',
+		'weight_gross' => 'float',
+		'weight_tear' => 'float',
 		'pallet_tare' => 'float',
 		'tare_per_carton' => 'float',
 		'number_of_cartons' => 'float',
@@ -53,4 +56,10 @@ protected $connection = 'tandc_live';
 		'tampered',
 		'grosstare'
 	];
+    public function pallet():BelongsTo{
+        return $this->belongsTo(Pallet::class,"id","pallet_id");
+    }
+    public function product():BelongsTo{
+        return $this->belongsTo(Product::class,"id","product_id");
+    }
 }

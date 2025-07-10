@@ -26,7 +26,7 @@ class SLabsEmailer {
             mt_rand( 0, 0xff4B )
         );
     }
-    public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null) {
+    public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null,$isAbsolPath = false) {
         global $mysqli;
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
@@ -51,8 +51,10 @@ class SLabsEmailer {
             {
                 $fullExplainedPath = "$pathToFile/$fileName";
                 try {
+                    $p = ($isAbsolPath == false)?Log::debug(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName))):$pathToFile.DIRECTORY_SEPARATOR.$fileName;
+                    Log::error($p);
                     $attachment = Attachment::createFromPath(
-                        join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)),
+                        $p,
                         $fileName,
                         "APPLICATION/PDF"
                     );
@@ -138,6 +140,8 @@ abstract class SLabsEmailerType
     const Sales     = 'SALES_CONFIRMATION';
     const CrdtAlert = 'CREDIT_ALERT';
     const Retraction= 'RETRACTION';
+    const SuppReturn= 'SUPPLIER_RETURN';
+    const ShortStock= 'SHORT_STOCK_NOTICE';
 }
 abstract class SLabsEmailerStatus
 {

@@ -15,7 +15,7 @@ function renderPDF($customerID){
 	$fileName = 'Statement_'.$customerID.'_'.$statementDate.'.pdf';
 	$pathToFile = 'PDF';
 
-	PDFRenderer::generatePDFfromWeb('customer_soam.php?id='.$customerID,$pathToFile,$fileName);
+	PDFRenderer::generatePDFfromWeb('customer_soam.php?id='.$customerID.'&printing=1',$pathToFile,$fileName);
 
 	$customerQueryResult = prepareExecuteQuery("SELECT businessname,accounts_email,internal_email FROM `customers` WHERE id = ?",'i',[$customerID]);
 	$customer = mysqli_fetch_assoc($customerQueryResult);

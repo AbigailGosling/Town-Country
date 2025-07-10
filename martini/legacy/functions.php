@@ -1244,18 +1244,18 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 
 	# Add new Intake
-	function addIntakeDupe($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature, $product_temperature, $delivery_note_number, $staff_id, $security_id, $purchase_id){
+	function addIntakeDupe($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature, $product_temperature, $delivery_note_number, $staff_id, $security_id, $purchase_id, $site_id){
 		global $mysqli;
 
 		if($purchase_id != '#'){
-			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id)
-			VALUES (?,?,?,?,?,?,?,?,?)";
-			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id];
+			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id,site_id)
+			VALUES (?,?,?,?,?,?,?,?,?,?)";
+			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id, $site_id];
 			$varSt= str_repeat('s',count($vars));
 		}else{
-			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id)
-			VALUES (?,?,?,?,?,?,?,?)";
-			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id];
+			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,site_id)
+			VALUES (?,?,?,?,?,?,?,?,?)";
+			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id, $site_id];
 			$varSt= str_repeat('s',count($vars));
 		}
 

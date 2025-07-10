@@ -34,6 +34,7 @@ use App\Models\User;
 				?><div class="col"><h1>Sales & Purchasing</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn1)){
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+                    if ($page['file'] =="productpicker.php") ?><a href="../shortstock">Short Stock Report</a><?php
 				}
 
 				?></div><?php

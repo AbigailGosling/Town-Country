@@ -269,14 +269,14 @@
 						<th align="left">Plt ID</th>
 						<th align="left" colspan="5"></th>
 					<?php } else { ?>
-						<th align="left" colspan="10"></th>
+                        <th align="left"></th>
+						<th align="left"></th>
+						<th align="left" colspan="5"></th>
 					<?php } ?>
-					<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<th align="center">Qty</th>
 						<th align="left">Unit</th>
 						<th align="right">Weight</th>
 						<th align="right" class="price">Price</th>
-					<?php } ?>
 						<th align="right" class="price">Total</th>
 					</tr>
 
@@ -342,21 +342,19 @@
 						?>
 					<tr class="productsRow">
 						<?php $numOfRows++; ?>
-						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<td align="left"><span
-								class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
-						<td align="left"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
+								class="palletid"><?php if ($pickSheetRow['isSupplemental'] == 0) echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
+						<td align="left"><span class="palletid"><?php if ($pickSheetRow['isSupplemental'] == 0) echo $product['pallet_id']; ?></span></td>
 						<td align="left"><span
 								class="palletid"><?php echo getNationality($product['nationality_id']); ?></span></td>
 						<td align="left"><span class="chilled"><?php echo getTemp($product['cooling_id']); ?></span>
 						</td>
 						<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
 						</td>
-						<?php } ?>
-						<td <?php if ($pickSheetRow['isSupplemental'] == 1) echo 'colspan="10" ';?>align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
-						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
+						<td align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
+
 						<td align="left"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
-						<?php } ?>
+
 						<?php
                             $productID = $product['id'];
                             $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
@@ -394,7 +392,6 @@
 									$total_weight_count += $kg;
 								}
                         ?>
-						<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<td align="left"><b class="quantity"><?php echo $count; ?></b></td>
 						<td align="left">
 							<b class="unit">
@@ -431,7 +428,6 @@
 						</td>
 						<td align="right" class="price">
 							£<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?></td>
-							<?php } ?>
 						<td align="right" class="price">£<?php echo $totalPriceRow; ?></td>
 					</tr>
 					<?php
@@ -514,16 +510,11 @@
 					<?php } ?>
 
 					<tr class="productsHeading" style="background-color: #7fabce9e;">
-					<?php if ($pickSheetRow['isSupplemental'] == 1) {?>
-						<th align="left" colspan="10">Total:</th>
-					<?php } else { ?>
 						<th align="left" colspan="7">Total:</th>
-					<?php } ?>
-					<?php if ($pickSheetRow['isSupplemental'] == 0) {?>
 						<th align="center"><?php echo $total_qty_count; ?></th>
 						<th align="left"></th>
 						<th align="right"><?php echo $total_weight_count; ?>kg (+ <?php echo $total_case_count; ?>
-							cases)</th><?php } ?>
+							cases)</th>
 						<th align="price" colspan="2" class="price"></th>
 					</tr>
 				</table>

@@ -7,10 +7,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Pallet
- * 
+ *
  * @property int $id
  * @property int|null $intake_id
  * @property string|null $comments
@@ -53,4 +55,10 @@ protected $connection = 'tandc_live';
 		'net_weight',
 		'user_id'
 	];
+    public function intake():BelongsTo {
+        return $this->belongsTo(Intake::class,"id","intake_id");
+    }
+    public function weights():HasMany {
+        return $this->hasMany(Weight::class,"pallet_id","id");
+    }
 }
