@@ -227,20 +227,24 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
     $picksheet = $supplierPicksheets[$i];
     $returnProducts = prepareExecuteQuery("SELECT *,COUNT(product_id) as `count` FROM `pickeritems` WHERE `pickersheet_id` = ".$picksheet['id']);
     $quickWeightLookup = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `palletsout` WHERE `pickersheet_id` = ".$picksheet['id'])->fetch_assoc()['weight_ids'];
-
-    while($returnProduct= mysqli_fetch_assoc($returnProducts))
+    $quickWeightLookup = rtrim($quickWeightLookup,",");
+    if ($quickWeightLookup != "")
     {
-        if ($returnProduct['unit']=="PPC")
+        while($returnProduct= mysqli_fetch_assoc($returnProducts))
         {
-            $itemCost = $returnProduct["price"] * $returnProduct["count"];
+            if ($returnProduct['unit']=="PPC")
+            {
+                $itemCost = $returnProduct["price"] * $returnProduct["count"];
+            }
+            else
+            {
+                $tear = prepareExecuteQuery("SELECT SUM(`weight_tear`) as `tear` FROM `weights` WHERE id IN (".$quickWeightLookup.") AND `product_id` = ".$returnProduct['product_id'])->fetch_assoc()['tear'];
+                $itemCost = $returnProduct["price"] * $tear;
+            }
+            $internalValue += $itemCost;
         }
-        else
-        {
-            $tear = prepareExecuteQuery("SELECT SUM(`weight_tear`) as `tear` FROM `weights` WHERE id IN (".$quickWeightLookup.") AND `product_id` = ".$returnProduct['product_id'])->fetch_assoc()['tear'];
-            $itemCost = $returnProduct["price"] * $tear;
-        }
-        $internalValue += $itemCost;
     }
+
     $internalPaid = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$picksheet['id'])->fetch_assoc()['amount'];
     if ($internalPaid==null)$internalPaid=0;
     $internalOutstanding = ($internalValue - $internalPaid);
