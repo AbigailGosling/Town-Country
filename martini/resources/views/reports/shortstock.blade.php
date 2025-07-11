@@ -1,9 +1,4 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Short Stock') }}
-        </h2>
-    </x-slot>
+<x-app-layout :hideLink="true">
     <div class="grid grid-cols-1 md:grid-cols-4 pl-4">
         <div><x-form-button id="export" title="Loading..." background="green" iconClass="fa-file-spreadsheet" :disable="true">
         </x-form-button></div>

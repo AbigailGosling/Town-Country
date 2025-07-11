@@ -12,12 +12,14 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                    @if (isset($hideLinks) && $hideLinks == true)
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                         {{ __('Users') }}
                     </x-nav-link>
+                    @endif
                 </div>
             </div>
 
