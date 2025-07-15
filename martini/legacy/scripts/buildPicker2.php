@@ -96,10 +96,10 @@ $y = prepareExecuteQuery($x,'si',[$newVal,$customer_id]);
 if ($isCredit)
 {
     $x = "INSERT INTO `invoice_payments` (`invoice_id`,`payment_method`,`amount`,`payment_recorded_by`) VALUES (?,?,?,?)";
-    $y = prepareExecuteQuery($x,'issi',[$pickersheet_id,'CREDIT_NOTE',$cost,$userid],true);
+    $y = prepareExecuteQuery($x,'issi',[$pickersheet_id,'CREDIT_NOTE',$totalCost,$userid],true);
 
     $x = "INSERT INTO `credit_note_items` (`payment_id`,`product_id`,`quantity`,`price`) VALUES (?,?,?,?)";
-    $y = prepareExecuteQuery($x,'iiis',[$y,$product_id,1,$cost],true);
+    $y = prepareExecuteQuery($x,'iiis',[$y,$product_id,1,$totalCost],true);
 }
 
 echo $pickersheet_id;
