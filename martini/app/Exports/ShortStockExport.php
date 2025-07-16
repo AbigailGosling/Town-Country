@@ -46,9 +46,9 @@ class ShortStockExport implements FromCollection
         if (!isset($this->t))
         {
             $m=[];
-            $target_date = Carbon::now()->setDay(+9)->startOfDay()->format("d/m/Y");
-            $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.price",">",0],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->get();
-            $target_date = Carbon::now()->addDays(9)->startOfDay();
+            $target_date = Carbon::now()->setDay(+10)->startOfDay()->format("d/m/Y");
+            $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->cursor();
+            $target_date = Carbon::now()->addDays(+10)->startOfDay();
             foreach ($lazysearch as $lw)
             {
                 $p=Product::find($lw->id);
@@ -77,8 +77,7 @@ class ShortStockExport implements FromCollection
         });
         $temp = [];
         foreach ($c[0] as $key=>$value){
-            if (strlen($key)>2) $temp[$key] = Str::title($key);
-            else $temp[$key] = $key;
+            $temp[$key] = $key;
         }
         $c->prepend($temp);
         $this->t = $c;
@@ -87,23 +86,23 @@ class ShortStockExport implements FromCollection
     {
         $r = [];
         $now = Carbon::now()->timestamp;
+        //if($product->cost == '0.00' || $product->cost == '') return null;
         $thisweights = Weight::where([["product_id",$product->id],["status_id",0]])->get();
-        if ($thisweights->count() == 0) return null;
+        if ($thisweights->count() == 0)  return null;
 
         $range_from = ($product->range_from == null || $product->range_from == "")?Carbon::createFromFormat("d/m/Y",$product->range_to):Carbon::createFromFormat("d/m/Y",$product->range_from);
         $range_to = ($product->range_to == null || $product->range_to == "")?Carbon::createFromFormat("d/m/Y",$product->range_from):Carbon::createFromFormat("d/m/Y",$product->range_to);
         if ($product->range_extension != null || $product->range_extension != "") $range_from = $range_to = Carbon::createFromFormat("d/m/Y",$product->range_extension);
-        if ($range_from->isAfter($target_date) || $range_to->isAfter($target_date))return null;
+        if ($range_from->isAfter($target_date) && $range_to->isAfter($target_date)) return null;
         $shortestDate = ($range_from->isBefore($range_to))?$range_from:$range_to;
 
         $cut =$this->cuts->firstWhere("id",$product->cut_id);
+        if ($cut == null) return null;
         $s = $this->species->firstWhere("id",$cut->species_id);
-        if ($s->id == 14 || $s->id == 11 || $s->id == 12) return null;
+        if ($s == null || $s->id == 14 || $s->id == 11 || $s->id == 12)return null;
         $pallet = Pallet::find($product->pallet_id);
-        $r['intake']=$pallet->intake_id;
-        $r['pallet']=$product->pallet_id;
-        $r['nationality']=$this->nationalities->firstWhere("id",$product->nationality_id)->name;
-        $r['brand']=$this->brands->firstWhere("id",$product->brand_id)->name;
+        $r['Intake']=$pallet->intake_id;
+        $r['Pallet']=$product->pallet_id;
         $kg = (double)0;
         $count = 0;
         foreach ($thisweights as $weight)
@@ -120,13 +119,18 @@ class ShortStockExport implements FromCollection
             }
         }
         $r['kg']=$this->floorDec($kg,3);
-        $r['cases']=$count - PickerItem::where([["product_id",$product->id],["deleted",false],['status',0]])->count();
-        if ($r['cases'] < 1 && $product->unit != 'PPC') return null;
-        if ($product->unit == 'PPC') $r['kg']=$r['cases'];
-        $r['cut']=$s->name." ".$this->cutgroups->firstWhere("id",$cut->cutgroup_id)->name." ".$cut->name;
-        $r['date from']=($product->range_extension != null || $product->range_extension != "")?"EXTENDED":$product->range_from;
-        $r['date to']=$product->range_to;
-        $r['qc hold']=($shortestDate->timestamp<$now)?"QC HOLD":"";
+        $r['Cases']=$count - PickerItem::where([["product_id",$product->id],["deleted",false],['status',0]])->count();
+        if ($r['Cases'] < 1 && $product->unit != 'PPC') return null;
+        if ($product->unit == 'PPC') $r['kg']=$r['Cases'];
+        if ($r['kg'] < 1 || $r['Cases'] < 1) return null;
+        $r['Species']=$s->name;
+        $r['Product Name']=$this->cutgroups->firstWhere("id",$cut->cutgroup_id)->name." ".$cut->name;
+        $r['Nationality']=$this->nationalities->firstWhere("id",$product->nationality_id)->name;
+        $r['Brand']=$this->brands->firstWhere("id",$product->brand_id)->name;
+        $r['Date From']=($product->range_extension != null || $product->range_extension != "")?"EXTENDED":$product->range_from;
+        $r['Date To']=$product->range_to;
+        $r['Cost']="£".$product->cost;
+        $r['QC HOLD']=($shortestDate->timestamp<$now)?"QC HOLD":"";
         $r['d']=$shortestDate->timestamp;
         return $r;
     }
