@@ -15,10 +15,10 @@ class PDFRenderer{
         ini_set('memory_limit', '1024M');
         set_time_limit(1800); //seconds
         if ($debug) Log::error("BrowserFactory",[$targetURL,$pathToFile,$fileName]);
-        $browserFactory = new BrowserFactory();
+        $browserFactory = new BrowserFactory("C:\Program Files\Google\Chrome\Application\chrome.exe");
         // starts headless chrome
         if ($debug) Log::error("Browser",[$targetURL,$pathToFile,$fileName]);
-        $browser = $browserFactory->createBrowser(['noSandbox' => true,'debugLogger'     => Log::getLogger(),'connectionDelay' => 0.8,  'headless' => false,]);
+        $browser = $browserFactory->createBrowser(['noSandbox' => true,'debugLogger'     => Log::getLogger(),'connectionDelay' => 0.8,  'headless' => true,]);
         try {
             // creates a new page and navigate to an URL
             if ($debug) Log::error("LoginPage",['https:'.$domain,$targetURL,$pathToFile,$fileName]);

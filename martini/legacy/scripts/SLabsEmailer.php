@@ -51,8 +51,7 @@ class SLabsEmailer {
             {
                 $fullExplainedPath = "$pathToFile/$fileName";
                 try {
-                    $p = ($isAbsolPath == false)?Log::debug(join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName))):$pathToFile.DIRECTORY_SEPARATOR.$fileName;
-                    Log::error($p);
+                    $p = ($isAbsolPath == false)?join(DIRECTORY_SEPARATOR,array(__DIR__,'..',$pathToFile,$fileName)):$pathToFile.DIRECTORY_SEPARATOR.$fileName;
                     $attachment = Attachment::createFromPath(
                         $p,
                         $fileName,

@@ -113,7 +113,7 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 		catch (Exception $e)
 		{
-			Log::error($e,["sql"=>$sql,"varTypes"=>$varTypes,"vars"=>$vars]);
+			Log::error($e,["sql"=>$sql,"varTypes"=>$varTypes,"vars"=>$vars,"requestVars"=>request()->all()]);
 			$stmt = $mysqli->prepare("SELECT * FROM `customers` WHERE 1=0");
 			$stmt->execute();
 			$res = $stmt->get_result();
