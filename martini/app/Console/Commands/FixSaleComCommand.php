@@ -1,6 +1,6 @@
 <?php
 namespace App\Console\Commands;
-require "D:\wwwroot\martini\legacy\scripts\PDFRenderer.php";
+require_once "D:\wwwroot\martini\legacy\scripts\PDFRenderer.php";
 
 use App\Models\PickerSheet;
 use App\Models\User;
