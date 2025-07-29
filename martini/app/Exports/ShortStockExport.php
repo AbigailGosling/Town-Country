@@ -49,9 +49,10 @@ class ShortStockExport implements FromCollection
             $target_date = Carbon::now()->setDay(+10)->startOfDay()->format("d/m/Y");
             $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->cursor();
             $target_date = Carbon::now()->addDays(+10)->startOfDay();
-            foreach ($lazysearch as $lw)
+            $products = Product::whereIn("id",$lazysearch->pluck("id"))->get();
+            $r = null;
+            foreach ($products as $p)
             {
-                $p=Product::find($lw->id);
                 if ($p)$r=$this->process($p,$target_date);
                 if ($r !== null)$m[]=$r;
             }
@@ -67,7 +68,6 @@ class ShortStockExport implements FromCollection
     public function file() {
         $this->addHeader();
         $r = Carbon::now()->format('d-M-Y').".xlsx";//Storage::path("app/".Carbon::now().".xlsx");
-        Log::debug(Excel::store($this,$r,"public"));
         return $r;
     }
     private function addHeader(){

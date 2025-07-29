@@ -61,4 +61,7 @@ protected $connection = 'tandc_live';
     public function weights():HasMany {
         return $this->hasMany(Weight::class,"pallet_id","id");
     }
+    public function products():HasMany {
+        return $this->hasMany(Product::class,"pallet_id","id");
+    }
 }

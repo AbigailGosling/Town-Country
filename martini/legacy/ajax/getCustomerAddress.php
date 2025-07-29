@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 	delCheckingOn		= <?php echo ($row['delivery_day_checking'] == 1 && $row['delivery_day_override'] == 0)?"true":"false"; ?>;
 	delDays				= <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
 	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo $creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
+    bipassNDandTenD     = <?php echo ($user['override_saledate_check']>0||$row['check_saledate']==0)?"true":"false"; ?>;
 </script>
 <div class="col">
 	<div class="row">

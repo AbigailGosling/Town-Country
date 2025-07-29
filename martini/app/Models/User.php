@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class User
- * 
+ *
  * @property int $id
  * @property string $name
  * @property string $email
@@ -32,7 +32,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string $hash_method
- * 
+ * @property bool $override_saledate_check
+ *
  * @property Collection|Permission[] $permissions
  *
  * @package App\Models
@@ -106,14 +107,14 @@ class User extends Authenticatable
         else if ($permission instanceof Permission){
             return $this->hasPermissionClarified($permission);
         }
-        
+
     }
     public function canViewCustomer(int $customer_id)
     {
         return in_array($customer_id,$this->listViewableCustomers());
     }
     private $_listViewableCustomers = null;
-    public function listViewableCustomers() 
+    public function listViewableCustomers()
     {
         if ($this->_listViewableCustomers === null)
         {

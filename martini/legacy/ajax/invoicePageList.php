@@ -68,7 +68,6 @@ use Illuminate\Support\Facades\Log;
                 $y2 = prepareExecuteQuery("SELECT * FROM `supplier` WHERE id = ?",'i',[$customer_id]);
                 $row2 = mysqli_fetch_assoc($y2);
                 $name = $row2['name'];
-                Log::error(json_encode($row2));
             }
             $date = $row['estimated_delivery_date'];
             $date=date_create($date);

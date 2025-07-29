@@ -220,7 +220,8 @@ use App\Models\User;
 	var infoMessage = "";
 	var showPriceCheck = false;
 	var delCheckingOn = false;
-	var delDays = 0;
+    var bipassNDandTenD = false;
+    var delDays = 0;
     $(document).ready(function() {
         var formHasChanged = false;
         var submitted = false;
@@ -805,20 +806,34 @@ function cancelSale()
         var deldate = $('#estimated_delivery_date').datepicker('getDate');
         var now = new Date();
         var tomorrow = new Date();
+        var tenDays = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(23,59,59,0);
+        tenDays.setDate(tenDays.getDate() + 10);
+        tenDays.setHours(0,0,0,0);
         var todaysCutoff = new Date();
         todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
 
-        if (now > todaysCutoff && deldate < tomorrow)
-        {
-			$('#warning').css('background', "#ff6666");
-			$('#warning').css('border', "2px solid #ff0000");
-			$('#warning').css('display', "inline-block");
-			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
-            return false;
+        if (!bipassNDandTenD){
+            if (now > todaysCutoff && deldate < tomorrow)
+            {
+                $('#warning').css('background', "#ff6666");
+                $('#warning').css('border', "2px solid #ff0000");
+                $('#warning').css('display', "inline-block");
+                $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
+                return false;
+            }
+            if (deldate > tenDays)
+            {
+                $('#warning').css('background', "#ff6666");
+                $('#warning').css('border', "2px solid #ff0000");
+                $('#warning').css('display', "inline-block");
+                $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell ten days into the future</td>");
+                return false;
+            }
+            return checkStockMovement(siteid,targetCutoff);
         }
-        return checkStockMovement(siteid,targetCutoff);
+        return true;
     }
     function checkStockMovement(siteid,targetCutoff){
         var leadtime = 0;

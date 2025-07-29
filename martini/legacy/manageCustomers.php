@@ -389,6 +389,13 @@ use App\Models\Site;
 						<a href="javascript:;" id="delivery_day_override" onclick="delDayOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
 					</td>
 				</tr>
+
+                <tr>
+					<td class="label"><label>Next Day and Long Reservation Controls</label></td>
+					<td>
+						<a href="javascript:;" id="check_saledate" onclick="checkSaleDate(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['check_saledate'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['check_saledate'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+					</td>
+				</tr>
 			</table>
 		</div>
 	</div>
@@ -670,6 +677,23 @@ function mainForm2(){
 			su: $('#del_sunday').is(":checked")?1:0,
 		});
 	}
+    function checkSaleDate(ele, id){
+		var q = $('#check_saledate');
+		if (q.text() != "Disabled") {
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Next Day and Long Reservation Controls Disabled!"]);
+		}
+		else {
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Next Day and Long Reservation Controls Enabled!"]);
+		}
+		$.post("ajax/toggleNextDay.php",{
+			id: id,
+		});
+	}
+
 </script>
 
 <div id="btm"></div>

@@ -3,6 +3,7 @@ namespace App\Helpers;
 
 use App\Models\Cut;
 use App\Models\Intake;
+use App\Models\Location;
 use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\Report;
@@ -33,6 +34,8 @@ class ReportHelper
     private static array $cutgroups;
     private static array $species;
     private static array $health_marks;
+    private static array $sites;
+    private static array $locations;
 
     /** @var Connection $conn */
     private static $conn;
@@ -52,7 +55,8 @@ class ReportHelper
     string $SUPPLIER_ID = null,
     string $HEALTH_ID = null,
     string $INTERNAL_NUM = null,
-    string $IMPORT_NUM = null
+    string $IMPORT_NUM = null,
+    string $SITE_ID = null
     ):array{
         ini_set('max_execution_time', 0);
         $INTERESTED_PRODUCTIDS=[];
@@ -228,21 +232,33 @@ class ReportHelper
                 }
             }
         }
-
+        if ($SITE_ID != null && $SITE_ID != '' && $SITE_ID != '...' && $SITE_ID != '0')
+        {
+            $ids = Location::where([["site_id",$SITE_ID]])->pluck('id')->toArray();
+            if (count($ids)>0)
+            {
+                $filters['site.id'] = $SITE_ID;
+            }
+        }
         if (count($INTERESTED_PRODUCTIDS)>0)
         {
             $INTERESTED_PRODUCTIDS = static::custom_unique($INTERESTED_PRODUCTIDS);
-            $q = DB::connection("tandc_live")->select("SELECT DISTINCT `pickersheet_id` FROM `pickeritems`  USE INDEX (`product_pickersheet`) WHERE `product_id` IN (".implode(",",$INTERESTED_PRODUCTIDS).") ORDER BY `pickersheet_id`");
-            $picks = array();
-            foreach ($q as $r)
+            $total = count($INTERESTED_PRODUCTIDS);
+            $increment = 100;
+            for ($i=0;$i<$total;$i+=$increment)
             {
-                $picks[] = $r->pickersheet_id;
+                $limit = ($i+$increment>$total)?$total-$i:$increment;
+                $q = DB::connection("tandc_live")->select("SELECT DISTINCT `pickersheet_id` FROM `pickeritems`  USE INDEX (`product_pickersheet`) WHERE `product_id` IN (".implode(",",array_slice($INTERESTED_PRODUCTIDS,$i,$limit)).") ORDER BY `pickersheet_id`");
+                $picks = array();
+                foreach ($q as $r)
+                {
+                    $picks[] = $r->pickersheet_id;
+                }
+                if (count($picks)> 0)
+                {
+                    $INTERESTED_PICKS = array_merge($INTERESTED_PICKS,$picks);
+                }
             }
-            if (count($picks)> 0)
-            {
-                $INTERESTED_PICKS = array_merge($INTERESTED_PICKS,$picks);
-            }
-
         }
         if (count($INTERESTED_PICKS)>0)
         {
@@ -837,6 +853,8 @@ class ReportHelper
         static::$cutgroups = static::$conn->table("cutgroups")->select("cutgroups.*")->get()->toArray();
         static::$species = static::$conn->table("species")->select("species.*")->get()->toArray();
         static::$health_marks = static::$conn->table("health_mark")->select("health_mark.*")->get()->toArray();
+        static::$sites = static::$conn->table("site")->select("site.*")->get()->toArray();
+        static::$locations = static::$conn->table("location")->select("location.*")->get()->toArray();
 
     }
     private static function bulkMergeIn(&$result,$full = true):bool {
@@ -909,8 +927,20 @@ class ReportHelper
                     $col = "intake.health_id";
                     if ($result->$col!=-1)
                     {
-                        $item = static::array_search_multidim(static::$health_marks,"intake.health_id",$result->$col);
+                        $item = static::array_search_multidim(static::$health_marks,"health_mark.id",$result->$col);
                         static::row_merge($result,$item);
+                    }
+                    $col = "pallet.storage_location";
+                    if ($result->$col!=-1)
+                    {
+                        $item = static::array_search_multidim(static::$locations,"location.id",$result->$col);
+                        static::row_merge($result,$item);
+                        $col = "location.site_id";
+                        if ($result->$col!=-1)
+                        {
+                            $item = static::array_search_multidim(static::$sites,"site.id",$result->$col);
+                            static::row_merge($result,$item);
+                        }
                     }
                 }
             }

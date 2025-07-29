@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Models\User;
 use App\Observers\UserObserver;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -33,5 +35,9 @@ class AppServiceProvider extends ServiceProvider
         //Observers
         User::observe(UserObserver::class);
         View::share('user_agent', new Agent());
+
+        /*DB::listen(function ($query) {
+            Log::info(json_encode(["query"=>$query->sql,"time"=>$query->time]));     // the query being executed
+        });*/
     }
 }

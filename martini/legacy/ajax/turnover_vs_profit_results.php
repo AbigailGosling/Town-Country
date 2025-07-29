@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
             'Cust.' => "Customer",
             'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
+            'Site' => "Site Name",
             //'Species' => "Species",
             'Nation.' => "Nationality",
             'Temp.' => "Temp",
@@ -44,6 +45,7 @@ use Illuminate\Support\Facades\Auth;
             'Int ID' => "Intake ID",
             'Plt ID' => "Pallet ID",
             //'Species' => "Species",
+            'Site' => "Site Name",
             'Nation.' => "Nationality",
             'Temp.' => "Temp",
             //'Cat.' => "Group",
@@ -96,13 +98,14 @@ use Illuminate\Support\Facades\Auth;
     $BRAND_ID = request()->input('brand_id');
     $NATIONALITY_ID = request()->input('nationality_id');
     $SUPPLIER_ID = request()->input('supplier_id');
+    $SITE_ID = request()->input('site_id');
 
     $CASES = "Cases";
     $GT = "G/T";
     $PPC = "PPC";
 
     $report = Report::find(1);
-    $filters = ReportHelper::filterBuilder($INTERESTED_PICKS,$INVOICE_ID,$INTAKE_ID,$PALLET_ID,$USER_ID,$CUSTOMER_ID,$SPECIES_ID,$CUTGROUP_ID,$COOLING_ID,$BRAND_ID,$NATIONALITY_ID,$SUPPLIER_ID);
+    $filters = ReportHelper::filterBuilder($INTERESTED_PICKS,$INVOICE_ID,$INTAKE_ID,$PALLET_ID,$USER_ID,$CUSTOMER_ID,$SPECIES_ID,$CUTGROUP_ID,$COOLING_ID,$BRAND_ID,$NATIONALITY_ID,$SUPPLIER_ID,null,null,null,$SITE_ID);
     if (count(array_keys($filters))==0)$filters = null;
 	if ($date_start=== null && $date_end=== null && ($INTERESTED_PICKS === null||count($INTERESTED_PICKS)==0)) $dataRanges= [];
     else $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);

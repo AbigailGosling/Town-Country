@@ -148,7 +148,6 @@ use Illuminate\Support\Facades\Auth;
 		</tr>
 		<?php
 
-
 			$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id=?";
 			$y = prepareExecuteQuery($x,'i',[$picksheet_id]);
 			$vars = array();
@@ -157,10 +156,6 @@ use Illuminate\Support\Facades\Auth;
 			}
 			$query = "SELECT * FROM `product` WHERE id IN (".implode(",",array_fill(0,count($vars),"?")).")";
 
-		?>
-
-
-		<?php
  			$yproduct = prepareExecuteQuery($query,str_repeat('i',count($vars)),$vars);
 
 			while($product = mysqli_fetch_array($yproduct)){
@@ -231,7 +226,6 @@ use Illuminate\Support\Facades\Auth;
 		?>
 
  	</table>
-
 	<div style="float:right;">
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
@@ -311,7 +305,6 @@ use Illuminate\Support\Facades\Auth;
 			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
 			var weekdayInt = weekdayLookup[daySelected];
 		}
-        console.log([dateObj,delCheckingOn,weekdayInt,delDays]);
 		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
 		{
 			day = weekday[daySelected];
@@ -359,12 +352,69 @@ use Illuminate\Support\Facades\Auth;
         }
         else
         {
+            if (!checkNextDayCutoff(siteid)) return;
             $('#warning').css('display', "none");
             $('#sendfake').attr('disabled', false);
             $('#searcher').attr('disabled', false);
         }
 
 	}
+    const siteid = '<?php
+    $loc = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id=?",'i',[$thispalletid])->fetch_assoc()['storage_location'];
+        echo prepareExecuteQuery("SELECT * FROM `location` WHERE id=?",'i',[$loc])->fetch_assoc()['site_id'];?>';
+    const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    function checkNextDayCutoff() {
+        var targetCutoff = undefined;
+        for (var ll of sitecutoffLookup)
+        {
+            if (ll.id == siteid)
+            {
+                targetCutoff = ll.cutoff;
+                break;
+            }
+        }
+        if (targetCutoff == undefined) return true;
+        var deldate = $('#estimated_delivery_date').datepicker('getDate');
+        var now = new Date();
+        var tomorrow = new Date();
+        var tenDays = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23,59,59,0);
+        tenDays.setDate(tenDays.getDate() + 10);
+        tenDays.setHours(0,0,0,0);
+        var todaysCutoff = new Date();
+        todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
+
+        if (deldate < now)
+        {
+            $('#sendfake').attr('disabled', true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot Delivery date in the past</td>");
+            return false;
+        }
+        if (now > todaysCutoff && deldate < tomorrow)
+        {
+            $('#sendfake').attr('disabled', true);
+			$('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
+            return false;
+        }
+        if (deldate > tenDays)
+        {
+            $('#sendfake').attr('disabled', true);
+            $('#warning').css('background', "#ff6666");
+			$('#warning').css('border', "2px solid #ff0000");
+			$('#warning').css('display', "inline-block");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell ten days into the future</td>");
+            return false;
+        }
+        return true;
+    }
 	function addToList(id){
 
 		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {

@@ -8,9 +8,7 @@
             <x-data-table>
                 <x-slot:headers>
                     @foreach ($data[0] as $key=>$value)
-                        @if (strlen($key)>2)
-                        <x-data-table-header>{{Str::title($key)}}</x-data-table-header>
-                        @elseif (strlen($key)>1)
+                        @if (strlen($key)>1)
                         <x-data-table-header>{{$key}}</x-data-table-header>
                         @endif
                     @endforeach
@@ -19,9 +17,9 @@
                     @foreach($data as $item)
                     <tr>
                     @foreach ($item as $key=>$value)
-                            @if (strlen($key)>1)
-                            <x-data-table-column>{{$value}}</x-data-table-column>
-                            @endif
+                        @if (strlen($key)>1)
+                        <x-data-table-column>{{$value}}</x-data-table-column>
+                        @endif
                     @endforeach
                         </tr>
                     @endforeach
