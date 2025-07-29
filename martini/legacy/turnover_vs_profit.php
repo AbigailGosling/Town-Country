@@ -4,7 +4,7 @@ use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-	include('includes/frontHeader.php');   
+	include('includes/frontHeader.php');
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -12,25 +12,25 @@ use Illuminate\Support\Facades\Auth;
 </div>
 
 <style type="text/css">
-    
+
     .result{
         width:100%;
         background:#f2f2f2;
         margin:5px;
         height:50px;
     }
- 
+
 	.leftPanel{
 		height:100%;
 		padding:30px;
 		border:1px solid #f4f4f4;
 		position:relative;
 	}
-	
+
 	.clearfix{
 		clear:both;
 	}
-	
+
 	.resultsContainer{
 		min-height: 400px;
 		border: 2px dashed #cacaca;
@@ -38,7 +38,7 @@ use Illuminate\Support\Facades\Auth;
 		margin-top: 20px;
 		padding-top: 14px;
 	}
-   
+
 </style>
 <div class="leftPanel" style="position:relative;">
     <h2>Turnover VS Profit Reports</h2>
@@ -52,7 +52,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 			$x = "SELECT * FROM `species`";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('species_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
@@ -64,11 +64,11 @@ use Illuminate\Support\Facades\Auth;
         <?php
             $x = "SELECT * FROM `cutgroups` WHERE id != 93";
             $y = prepareExecuteQuery($x);
-            
+
             $i=0;
             while($row = mysqli_fetch_array($y)){
-                
-                
+
+
                 $thisid = $row['species_id'];
                 $y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
                 $species = mysqli_fetch_array($y2);
@@ -82,7 +82,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 			$x = "SELECT * FROM `brands` where `name` IS NOT NULL AND `name` <> '' ORDER BY `name`";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 			}
@@ -94,7 +94,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 			$x = "SELECT * FROM `supplier` where `disabled` = 0 AND `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
@@ -103,7 +103,7 @@ use Illuminate\Support\Facades\Auth;
         <?php
 			$x = "SELECT * FROM `supplier` where `disabled` = 1 AND `name` IS NOT NULL AND `name` <> '' order by `name` ASC";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('supplier_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
@@ -114,7 +114,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 			$x = "SELECT * FROM `nationality` ORDER BY `name`";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 			}
@@ -125,7 +125,7 @@ use Illuminate\Support\Facades\Auth;
         <?php
 			$x = "SELECT * FROM `temperature`";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option class="alltemperature temperature<?php echo $row['id']; ?>" value="<?php echo $row['id']; ?>" <?php if(request()->input('cooling_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
 			}
@@ -134,7 +134,7 @@ use Illuminate\Support\Facades\Auth;
 
     <select name="user_id" id="user_id" style="width:152px;height:40px;">
         <option value="" disabled selected>Select salespeople..</option>
-        <option value="0">All sales team</option>   
+        <option value="0">All sales team</option>
 		<?php
 			$users = User::orderBy("name")->get();
             $disabledUsers = [];
@@ -161,7 +161,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php
 			$x = "SELECT * FROM `customers` where `disabled` = 0 order by businessname ASC";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($row = mysqli_fetch_array($y)){
 			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
 			}
@@ -170,7 +170,28 @@ use Illuminate\Support\Facades\Auth;
         <?php
 			$x = "SELECT * FROM `customers` where `disabled` = 1 order by businessname ASC";
 			$y = prepareExecuteQuery($x);
-			
+
+			while($row = mysqli_fetch_array($y)){
+			?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
+			}
+		?>
+	</select>
+    <select name="site_id" id="site_id" style="width:182px;height:40px;">
+        <option value="" disabled selected>Select site..</option>
+        <option value="0">All sites</option>
+		<?php
+			$x = "SELECT * FROM `site` where `disabled` = 0 order by `name` ASC";
+			$y = prepareExecuteQuery($x);
+
+			while($row = mysqli_fetch_array($y)){
+			?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			}
+		?>
+        <option value="" disabled>Disabled Sites</option>
+        <?php
+			$x = "SELECT * FROM `site` where `disabled` = 1 order by `name` ASC";
+			$y = prepareExecuteQuery($x);
+
 			while($row = mysqli_fetch_array($y)){
 			?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('customer_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['businessname']; ?></option><?php
 			}
@@ -190,7 +211,7 @@ use Illuminate\Support\Facades\Auth;
     <input class="datepicker" name="date_end" id="date_end" placeholder="END DATE" value="<?php echo $uk_date_end; ?>" style="height:34px;width:100px;">
     <input type="button" name="search" id="search" value="Search" style="height: 39px;width: 80px;" onclick="loadData(true)">
     </form>
- 	
+
 	<div style="width:100%" id="loadResults" class="resultsContainer">
         <div id="loadingContainer"><center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center></div>
 		<div style="max-width:100%" id="loadResults2"/>
@@ -204,14 +225,14 @@ use Illuminate\Support\Facades\Auth;
 </style>
 
 <div class="clearfix"></div>
- 
+
 <script type="text/javascript">
 		$('#loadingContainer').hide();
     $.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
     var req = null;
-    function loadData(reset){    
+    function loadData(reset){
         if (req){
             req.abort();
             req = null;
@@ -232,7 +253,10 @@ use Illuminate\Support\Facades\Auth;
         var supplier_id = $('#supplier_id').val();
         var date_start = $('#date_start').val();
         var date_end = $('#date_end').val();
+        var site_id = $('#site_id').val();
+
 		var width = $('#loadResults').width();
+
 		$("#loadResults2").css({
 			"maxWidth": width
 		  });
@@ -256,19 +280,20 @@ use Illuminate\Support\Facades\Auth;
 				brand_id: brand_id,
 				nationality_id: nationality_id,
 				supplier_id: supplier_id,
+                site_id: site_id,
 				width: width
 			},
 			success: function(data, status){
 				req = null;
 				$("#search").prop('value', 'Search');
 				$('#loadingContainer').hide();
-				$('#loadResults2').html(data);     
+				$('#loadResults2').html(data);
 			},
 			error: function(data, status){
 				req = null;
 				$("#search").prop('value', 'ERROR!!!');
 				$('#loadingContainer').hide();
-			}	 
+			}
 		});
         $("#search").prop('value', 'Abort');
     }
@@ -293,7 +318,7 @@ use Illuminate\Support\Facades\Auth;
             $('#cutgroup_id option.allsoption').wrap('<span/>');
             $('#cutgroup_id option.s' + val).unwrap();
         });
-		
+
     });
 
 

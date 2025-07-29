@@ -13,12 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('supplemental_details', function (Blueprint $table) {
+        try
+        {Schema::connection("tandc_live")->create('supplemental_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger("pickersheet_id")->index();
             $table->text("reference");
             $table->timestamps();
-        });
+        });}
+        catch(\Exception $e){}
     }
 
     /**
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('supplimental_details');
+        Schema::connection("tandc_live")->dropIfExists('supplimental_details');
     }
 };

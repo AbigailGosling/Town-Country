@@ -31,13 +31,11 @@ class SendSupplierReturn extends Command
      */
     public function handle()
     {
-        Log::debug("1");
         $user = User::where('id',57)->first();
         Auth::login($user);
         $request = Request::create(route('legacy',['path'=>'legacy/ajax/generatePDFsupplierreturn.php']),'GET',['id' => $this->argument('id')]);
         $response = app()->handle($request);
         Auth::logout();
-        Log::debug("2");
         return Command::SUCCESS;
     }
 }

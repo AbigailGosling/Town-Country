@@ -90,7 +90,12 @@ protected $connection = 'tandc_live';
 	{
 		return $this->belongsTo(Cut::class,"cut_id","id");
 	}
-    public function weights():HasMany{
+    public function pallet():BelongsTo
+    {
+        return $this->belongsTo(Pallet::class,"pallet_id","id");
+    }
+    public function weights():HasMany
+    {
         return $this->hasMany(Weight::class,"product_id","id");
     }
 }

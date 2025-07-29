@@ -100,7 +100,7 @@ while ($row = mysqli_fetch_assoc($res))
         {
             productExport($lastProductIDs,$lastProductEntry,$lastProductFound);
         }
-        if ($row['type'] == "credit_override" || $row['type'] == "delivery_override" )
+        if ($row['type'] == "customer_saleday_control" || $row['type'] == "credit_enabled" || $row['type'] == "credit_override" || $row['type'] == "delivery_day" || $row['type'] == "delivery_override" )
         {
             $customer = Customer::find($row['entity_id']);
             echo "<tr><td title='$row[id]'>$row[type]</td><td>$customer->businessname</td><td>$row[name]</td><td>$row[body]</td><td>".$date->format('d/m/Y H:i:s')."</td></tr>";

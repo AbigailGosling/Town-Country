@@ -361,6 +361,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $overallCost = $overallCost + ($totalWeightOfProduct * $currentCost);
         ?>
         <tr <?php if(isset($product2_dateranges[0])) echo $bgCol; ?> class="searchAccordTitle <?php if($locked){ echo 'locked'; } ?>">
+            <?php echo "<!-- ".$product2['productid']." -->"; ?>
             <td colspan="1">
             <?php if ($showEditIntake) {?>
             <a class="intakeLink" id="<?php echo $intake_id ?>" href="intake.php?id=<?php echo $intake_id; ?>&ref=salesconfirmationsheet" style="color:#000;text-decoration:underline;">

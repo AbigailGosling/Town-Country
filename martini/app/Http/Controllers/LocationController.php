@@ -101,7 +101,6 @@ class LocationController extends Controller
             'site_id' => ['required', 'int'],
         ]);
         $input = $request->all();
-        Log::debug($input);
         $location->name = $input['name'];
         $location->site_id = Site::find($input['site_id'])->id;
         $location->disabled = array_key_exists("disabled", $input);

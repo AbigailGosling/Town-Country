@@ -69,7 +69,6 @@ $s = (int)(microtime(true));
     $result_location = loggedQuery("SELECT GROUP_CONCAT(DISTINCT `pallet`.`storage_location`) as `loc` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id` = `pallet`.`id` WHERE `product`.`id` IN (".$result_product.") LIMIT 1");
     $location = mysqli_fetch_assoc($result_location)['loc'];
     $location = Location::whereIn("id",explode(",",$location))->pluck("site_id")->toArray();
-    Log::debug(json_encode($location));
     $location = Site::whereIn("id",$location)->first()->name;
 ?>
 <div id="top">

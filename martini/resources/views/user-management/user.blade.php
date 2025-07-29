@@ -39,9 +39,14 @@
                     <x-input-error :messages="$errors->get('email')" class="mt-2"/>
                 </div>
 
+                <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
+                    <input type="checkbox" id="override_saledate_check" name="override_saledate_check" />
+                    <div style="width: 1em;"></div>
+                    <x-input-label for="override_saledate_check" value="Override Next Day and Reservation Control"/>
+                </div>
 
                 @can('admin', Auth::user())
-                    <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
+                    <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
                         <input type="checkbox" id="disabled" name="disabled"
                                @if ($user->disabled) checked @endif />
                         <div style="width: 1em;" @if ($user->id == Auth::id()) disabled @endif></div>
