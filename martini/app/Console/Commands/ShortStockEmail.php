@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Console\Commands;
-require_once("legacy/scripts/SLabsEmailer.php");
+require_once "D:\wwwroot\martini\legacy\scripts\SLabsEmailer.php";
 use App\Exports\ShortStockExport;
 use App\Models\Permission;
 use App\Models\User;
@@ -38,7 +38,6 @@ class ShortStockEmail extends Command
             return !$user->hasPermissionClarified(Permission::find(1));
         });
         $u =$users->pluck("email")->toArray();
-        $u[] = "andrew.gosling@tang.solutions";
         SLabsEmailer::send_email(-1,SLabsEmailerType::ShortStock,$u,"Short Dated Stock","Please see attached",Storage::disk("public")->path(""),$f,null,true);
         return Command::SUCCESS;
     }
