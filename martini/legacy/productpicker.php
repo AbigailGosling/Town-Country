@@ -807,6 +807,9 @@ function cancelSale()
         var now = new Date();
         var tomorrow = new Date();
         var tenDays = new Date();
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(23,59,59,0);
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(23,59,59,0);
         tenDays.setDate(tenDays.getDate() + 10);
@@ -815,6 +818,14 @@ function cancelSale()
         todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
 
         if (!bipassNDandTenD){
+            if (deldate < yesterday)
+            {
+               $('#warning').css('background', "#ff6666");
+               $('#warning').css('border', "2px solid #ff0000");
+               $('#warning').css('display', "inline-block");
+               $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell in the past</td>");
+               return false;
+            }
             if (now > todaysCutoff && deldate < tomorrow)
             {
                 $('#warning').css('background', "#ff6666");
