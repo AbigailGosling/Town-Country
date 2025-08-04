@@ -11,7 +11,7 @@ $timeStamp = microtime(true);
 $cutgroup_id = request()->input('cutgroup_id');
 $species_id = request()->input('species');
 $temperatureID = request()->input('temperatureID');
-$pallet_id = request()->input('palletID');
+$initial_pallet_id = $pallet_id = request()->input('palletID');
 $intake_id = request()->input('intakeID');
 $brand =  request()->input('brandID');
 $nationality =  request()->input('nationalityID');
@@ -66,7 +66,6 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     </thead>
 <?php
 	require(__DIR__.'/../functions.php');
-    $initial_pallet_id = $pallet_id;
 
     $ARRAY_CUTS = array();
 
@@ -192,16 +191,31 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         }
 
 
-        $productsX2 = "SELECT * , product.id productid
-        FROM `product`
-        INNER JOIN `pallet`
-        ON product.pallet_id=pallet.id
-        WHERE pallet.intake_id = ?
-        && product.cut_id = ?
-		&& product.nationality_id = ?
-        AND pallet.storage_location IN ($locs)
-        ORDER BY product.cut_id DESC";
-        $productsY2 = prepareExecuteQuery($productsX2,'iss',[$intake_id,$cut_id,$nationality_id]);
+        if ($initial_pallet_id != null && $initial_pallet_id != "")
+        {
+            $productsX2 = "SELECT * , product.id productid FROM `product`
+            INNER JOIN `pallet`
+            ON product.pallet_id=pallet.id
+            WHERE pallet.id = ?
+            && product.cut_id = ?
+            && product.nationality_id = ?
+            AND pallet.storage_location IN ($locs)
+            ORDER BY product.cut_id DESC";
+            $pX2d = [$initial_pallet_id,$cut_id,$nationality_id];
+        }
+        else
+        {
+            $productsX2 = "SELECT * , product.id productid FROM `product`
+            INNER JOIN `pallet`
+            ON product.pallet_id=pallet.id
+            WHERE pallet.intake_id = ?
+            && product.cut_id = ?
+            && product.nationality_id = ?
+            AND pallet.storage_location IN ($locs)
+            ORDER BY product.cut_id DESC";
+            $pX2d = [$intake_id,$cut_id,$nationality_id];
+        }
+        $productsY2 = loggedQuery($productsX2,'iss',$pX2d);
         $products2Count = mysqli_num_rows($productsY2);
 
 
