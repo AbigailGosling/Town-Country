@@ -84,8 +84,8 @@
     $colNames[] = "`site_id`=?";
 	$colValue[] = (request()->input('site_id')!=null && request()->input('site_id') != "")?request()->input('site_id'):"1";
 
-    $colNames[] = "`check_saledate`";
-	$colValue[] = request()->input('check_saledate');
+    // $colNames[] = "`check_saledate`=?";
+	// $colValue[] = request()->input('check_saledate');
 
 	for ($u=1;$u<10;$u++)
 	{
