@@ -84,8 +84,11 @@
     $colNames[] = "`site_id`=?";
 	$colValue[] = (request()->input('site_id')!=null && request()->input('site_id') != "")?request()->input('site_id'):"1";
 
-    // $colNames[] = "`check_saledate`=?";
-	// $colValue[] = request()->input('check_saledate');
+    //$colNames[] = "`check_saledate`=?";
+	//$colValue[] = request()->input('check_saledate');
+
+    $colNames[] = "`is_petfood_customer`=?";
+	$colValue[] = (request()->input('is_petfood_customer')!=null && request()->input('is_petfood_customer') != "")?request()->input('is_petfood_customer'):"0";
 
 	for ($u=1;$u<10;$u++)
 	{

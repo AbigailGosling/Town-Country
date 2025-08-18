@@ -21,6 +21,7 @@ $s = (int)(microtime(true));
 	$customer_id = $pickSheetRow['customer_id'];
     if ($pickSheetRow['is_return_to_supplier']==0)
     {
+        $isCustomer = true;
         $x2 = "SELECT * FROM `customers` WHERE id=?";
         $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
         $customerRow = $y2->fetch_assoc();
@@ -41,6 +42,7 @@ $s = (int)(microtime(true));
     }
     else
     {
+        $isCustomer = false;
         $x2 = "SELECT * FROM `supplier` WHERE id=?";
         $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
         $customerRow = $y2->fetch_assoc();
@@ -258,10 +260,14 @@ $s = (int)(microtime(true));
 		</table>
 		<?php } ?>
  	</form>
-	<br/><br/>
+     <br/>
 	<?php
-		} ?>
-
+		} if ($isCustomer && $customerRow['is_petfood_customer'] == 1) { ?>
+        <div style="text-align:center;background:#ffc266;border:2px solid #ff9900;">
+        <h4>FEED HYGIENE NUMBER- GB486R1812 PET FOOD NOT FOR HUMAN CONSUMPTION USE AS A PET FOOD ONLY. KEEP APART FROM FOOD. WASH HANDS AND CLEAN TOOLS, UTENSILS AND SURFACES AFTER HANDLING THIS PRODUCT.</h4>
+        </div>
+    <?php } ?>
+    <br/>
 	<table width="100%" border="0">
 		<tr class="productsHeading">
 			<th align="left">Intake ID</th>

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Console\Commands;
-require_once "D:\wwwroot\martini\legacy\scripts\SLabsEmailer.php";
+require_once env("APP_ROOT_DIRECTORY")."\legacy\scripts\SLabsEmailer.php";
 use App\Exports\ShortStockExport;
 use App\Models\Permission;
 use App\Models\User;

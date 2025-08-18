@@ -15,6 +15,5 @@
 
     $mail_from_address = 'noreply-accountinfo@townandcountrymeats.co.uk';
 
-    $artisanLocation = 'D:\\wwwroot\\martini\\artisan';
-    //$artisanLocation = 'C:\\inetpub\\wwwroot\\martini\\artisan';
+    $artisanLocation = env("APP_ROOT_DIRECTORY")."\artisan";
 ?>
