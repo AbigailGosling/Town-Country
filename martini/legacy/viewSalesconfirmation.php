@@ -132,7 +132,14 @@ use Illuminate\Support\Facades\Auth;
     <div class="row custom-warning-box" id="warning" style="width: 100%; padding-top:0px; padding-bottom:0px;  padding: left right 15px; display:none"></div>
 </div>
 </form>
-
+<?php
+	if ($customer['is_petfood_customer'] == 1) { ?>
+        <div style="text-align:center;background:#ffc266;border:2px solid #ff9900;">
+        <div style="text-align:center;background:#ffc266;border:2px solid #ff9900;">
+        <h4>FEED HYGIENE NUMBER- GB486R1812 PET FOOD NOT FOR HUMAN CONSUMPTION USE AS A PET FOOD ONLY. KEEP APART FROM FOOD. WASH HANDS AND CLEAN TOOLS, UTENSILS AND SURFACES AFTER HANDLING THIS PRODUCT.</h4>
+        </div>
+        </div>
+<?php } ?>
 <div class="rightPanel">
 	<table width="100%" class="basketTable">
 		<tr align="left" style="background:#e6931894;height:30px;color:#FFF;">
