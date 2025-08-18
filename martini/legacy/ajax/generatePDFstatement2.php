@@ -1,10 +1,11 @@
 <?php
 //This PHP Script is responsible for generating a PDF Statement and sends it to the invoice address at Town&Country!
-
 require_once(__DIR__.'/../functions.php');
+require_once(__DIR__.'/../config.php');
 require_once(__DIR__.'/../scripts/PDFRenderer.php');
 require_once(__DIR__.'/../scripts/SLabsEmailer.php');
 
+use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\PDFRenderer;
 //This function renders a PDF document from a string using mPDF
@@ -41,6 +42,7 @@ function renderPDF($customerID){
 	return SLabsEmailer::send_email($customerID,"STATEMENT",$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
 
 }
+$artisanLocation ='D:\\wwwroot\\martini\\artisan';
 $customerQueryResult = prepareExecuteQuery("SELECT customer_id FROM `mail_queue` LIMIT 1");
 if (mysqli_num_rows($customerQueryResult) > 0)
 {
