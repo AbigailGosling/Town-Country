@@ -35,9 +35,9 @@ use Illuminate\Support\Facades\Auth;
 	<?php
 	if($name != ''){
 
-		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `businessname` LIKE ? || `id` = ? AND ID IN ($trimmer)",'ss',['%'.$name.'%',$name]);
+		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE (`businessname` LIKE ?  || `id` = ?) AND `id` IN ($trimmer)",'ss',['%'.$name.'%',$name]);
 	}else{
-		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0 AND ID IN ($trimmer)");
+		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0 AND `id` IN ($trimmer)");
 	}
 	$workingSet = [];
 	while($customer = mysqli_fetch_assoc($customerQueryResult)){
