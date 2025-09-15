@@ -2,9 +2,14 @@
 
 use App\Http\Controllers\ActiveHolidayCoverController;
 use App\Http\Controllers\CustomerOverridesController;
+use App\Http\Controllers\CutController;
+use App\Http\Controllers\CutGroupController;
 use App\Http\Controllers\CutGroupNationalityDateController;
 use App\Http\Controllers\DropdownController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\HealthMarkController;
+use App\Http\Controllers\InboundContainerApprovalController;
+use App\Http\Controllers\InboundContainerController;
 use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
@@ -14,6 +19,8 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
+use App\Models\ContainerProduct;
+use App\Models\InboundContainer;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -86,7 +93,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
     Route::post('/intake_report', [IntakeReportController::class, 'show'])->name('intake_report.show');
 
-
     Route::get('health_marks/search', [HealthMarkController::class, 'search'])->name('health_marks.search');
     Route::resource('health_marks', 'App\Http\Controllers\HealthMarkController');
 
@@ -100,6 +106,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
+
+    Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
+    Route::resource('containers', 'App\Http\Controllers\InboundContainerController');
+    Route::get('/containers/{container}/product/create', [InboundContainerController::class, 'createProduct'])->name('container-product.create');
+    Route::post('/containers/{container}/product/store', [InboundContainerController::class, 'storeProduct'])->name('container-product.store');
+    Route::get('/containers/{container}/product/{product}/edit', [InboundContainerController::class, 'editProduct'])->name('container-product.edit');
+    Route::put('/containers/{container}/product/{product}', [InboundContainerController::class, 'updateProduct'])->name('container-product.update');
+    Route::get('/containers/{container}/approvals/create', [InboundContainerApprovalController::class, 'create'])->name('inbound-approvals.create');
+    Route::post('/containers/{container}/approvals', [InboundContainerApprovalController::class, 'store'])->name('inbound-approvals.store');
+    Route::get('/containers/{container}/arrived', [InboundContainerController::class, 'arrive'])->name('containers.arrive');
+
+    Route::get('/cutgroups/{speciesId}', [CutGroupController::class, 'getCutGroups']);
+    Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);
+
+    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+
 });
 Route::get('/menu.php', function () {
     return redirect('/legacy/menu.php');

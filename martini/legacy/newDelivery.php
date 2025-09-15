@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\InboundContainer;
 use App\Models\Site;
 
 	include('functions.php');
@@ -8,14 +9,14 @@ use App\Models\Site;
 
 	// $intake_id = request()->input('id');
 
+    $isContainer = (request()->has("container"));
+    if ($isContainer)$container = InboundContainer::findOrFail(request()->input("container"));
 
 	// $intake = getIntake($id);
 
 	// $supplier = getSupplier($intake['supplier_id']);
 
 	$purchase = getPurchase(request()->input('purchaseid'));
-
-
 	$supplierid = $purchase['supplier_id'];
 	$supplier = getSupplier($supplierid);
 ?>
@@ -41,11 +42,12 @@ use App\Models\Site;
 </div>
 <main class="int">
 	<div id="product">
-		<div id="product_heading">New Delivery</div>
+		<div id="product_heading"><?php echo (!$isContainer)?"New Delivery":" Details for Container: ".$container->internal_number ?></div>
 		<div id="product_options">
 			<a href="javascript:;" onclick="saveDelivery(event)">Save Delivery</a>
 		</div>
 		<form method="GET" id="mainForm" action="scripts/newDelivery.php">
+        <?php if($isContainer){ ?><input type="text" name="container" value="<?php echo $container->id;?>" style="display:none;"><?php } ?>
 		<input type="text" name="purchase_id" value="<?php if($purchase['id'] != ''){ echo $purchase['id']; }else{ echo '#'; } ?>" style="display:none;">
 		<table>
 			<tbody>
@@ -82,7 +84,7 @@ use App\Models\Site;
 				<tr>
 				<td>
 					<label>Delivery Note Number</label>
-					<input type="text" name="delivery_note_number" id="delivery_note_number">
+					<input type="text" name="delivery_note_number" id="delivery_note_number" value="<?php if ($isContainer) echo $container->internal_number; ?>">
 				</td>
                 <td>
 					<label>Depot</label>

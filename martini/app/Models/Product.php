@@ -6,6 +6,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -90,12 +91,27 @@ protected $connection = 'tandc_live';
 	{
 		return $this->belongsTo(Cut::class,"cut_id","id");
 	}
+    private Cut $_cut;
+    public function getCut():Cut|null
+    {
+        return $this->_cut ??= Cut::find($this->cut_id);
+    }
+
     public function pallet():BelongsTo
     {
         return $this->belongsTo(Pallet::class,"pallet_id","id");
     }
+    private Pallet $_pallet;
+    public function getPallet():Pallet|null
+    {
+        return $this->_pallet ??= Pallet::find($this->pallet_id);
+    }
     public function weights():HasMany
     {
         return $this->hasMany(Weight::class,"product_id","id");
+    }
+    public function getWeights():Collection
+    {
+        return Weight::where("product_id",$this->id);
     }
 }

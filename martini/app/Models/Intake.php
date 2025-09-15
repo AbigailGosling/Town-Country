@@ -77,7 +77,8 @@ class Intake extends Model
 		'import_num',
 		'health_id',
 		'internal_num',
-		'packaging_notes'
+		'packaging_notes',
+        'container_id'
 	];
     public function pallets():HasMany{
         return $this->hasMany(Pallet::class,"intake_id","id");
