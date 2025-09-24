@@ -109,13 +109,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
     Route::resource('containers', 'App\Http\Controllers\InboundContainerController');
+
     Route::get('/containers/{container}/product/create', [InboundContainerController::class, 'createProduct'])->name('container-product.create');
     Route::post('/containers/{container}/product/store', [InboundContainerController::class, 'storeProduct'])->name('container-product.store');
-    Route::get('/containers/{container}/product/{product}/edit', [InboundContainerController::class, 'editProduct'])->name('container-product.edit');
-    Route::put('/containers/{container}/product/{product}', [InboundContainerController::class, 'updateProduct'])->name('container-product.update');
+    Route::get('/containers/{container}/arrived', [InboundContainerController::class, 'arrive'])->name('containers.arrive');
+    Route::get('/containers/{container}/product/{containerProduct}/edit', [InboundContainerController::class, 'editProduct'])->name('container-product.edit');
+    Route::put('/containers/{container}/product/{containerProduct}', [InboundContainerController::class, 'updateProduct'])->name('container-product.update');
     Route::get('/containers/{container}/approvals/create', [InboundContainerApprovalController::class, 'create'])->name('inbound-approvals.create');
     Route::post('/containers/{container}/approvals', [InboundContainerApprovalController::class, 'store'])->name('inbound-approvals.store');
-    Route::get('/containers/{container}/arrived', [InboundContainerController::class, 'arrive'])->name('containers.arrive');
+    Route::post('/containers/{container}/approvals/{approval}/destroy', [InboundContainerApprovalController::class, 'destroy'])->name('inbound-approvals.destroy');
 
     Route::get('/cutgroups/{speciesId}', [CutGroupController::class, 'getCutGroups']);
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);

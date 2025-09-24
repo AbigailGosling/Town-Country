@@ -81,7 +81,22 @@ Breadcrumbs::for('containers.index', function(BreadcrumbTrail $trail){
     $trail->push('Home', route('dashboard'));
     $trail->push('Containers');
 });
+Breadcrumbs::for('containers.create', function(BreadcrumbTrail $trail){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push('New');
+});
+Breadcrumbs::for('containers.show', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number);
+});
 Breadcrumbs::for('containers.edit', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number);
+});
+Breadcrumbs::for('containers.update', function(BreadcrumbTrail $trail, InboundContainer $container){
     $trail->push('Home', route('dashboard'));
     $trail->push('Containers', route('containers.index'));
     $trail->push($container->internal_number);

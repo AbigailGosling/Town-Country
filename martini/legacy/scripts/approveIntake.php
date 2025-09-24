@@ -4,6 +4,7 @@ use App\Models\Customer;
 use App\Models\InboundContainer;
 use App\Models\Intake;
 use App\Models\Reservation;
+use App\Models\ReservationProduct;
 use App\Models\Site;
 use App\Models\User;
 use Carbon\Carbon;
@@ -16,7 +17,8 @@ $intake = Intake::find(request()->input('intake_id'));
 if (isset($intake->container_id)) {
     $container = InboundContainer::find($intake->container_id);
     $products = $container->getProducts()->pluck("product_id")->toArray();
-    $reservations = Reservation::whereIn("product_id",$products)->get();
+    $reservationProducts = ReservationProduct::whereIn("product_id",$products)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
+    $reservation = Reservation::whereIn("id",$reservationProducts);
     $today = date('Y-m-d');
     $forCustomer = [];
     foreach ($reservations as $reservation) {
@@ -41,7 +43,7 @@ if (isset($intake->container_id)) {
         foreach ($cUserArray as $user_from_id => $basket)
         {
             $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,?,?,?,?)";
-            $y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$delDate->format("d/m/Y"),"Reservation from Container: ".$container->internal_number,Carbon::now()->format("Y-d-m H:i:s"),$reservation->address_id,"Reservation from Container: ".$container->internal_number,null],true);
+            $y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,Carbon::now()->format("Y-d-m H:i:s"),$reservation->address_id,$reservation->picksheet_note,null],true);
             $pickersheet_id = $y;
 
             if ((int)$pickersheet_id !== $pickersheet_id)
@@ -54,19 +56,21 @@ if (isset($intake->container_id)) {
 
             foreach ($basket as $reservation) {
 
-                $product_id = $reservation->product_id;
-                $quantity = $reservation->target_count;
+                foreach (ReservationProduct::where("reservation_id",$reservation->id) as $resProduct)
+                {
+                    $product_id = $resProduct->product_id;
+                    $quantity = $resProduct->target_count;
+                    $target_weight = $resProduct->price;
 
 
-                $target_weight = $reservation->price;
-
-
-                $price = null;
-                $price_type = null;
-                for($i=0;$i<$quantity;$i++){
-                    $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-                    $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+                    $price = null;
+                    $price_type = null;
+                    for($i=0;$i<$quantity;$i++){
+                        $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
+                        $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+                    }
                 }
+
             }
             pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
         }

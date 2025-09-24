@@ -80,7 +80,11 @@
                             </x-data-table-column>
                             <x-data-table-column>{{$approval->comments}}
                             </x-data-table-column>
-                            <x-data-table-column>{{ $approval->created_at->format('Y-m-d H:i') }}</x-data-table-column>
+                            <x-data-table-column>{{ $approval->created_at->format('Y-m-d H:i') }}
+                                <a href="{{route('inbound-approvals.destroy',['approval'=>$approval,'container'=>$inboundcontainer])}}">
+                                    <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6" href=""><i class="fas fa-trash text-red-100"></i></button>
+                                </a>
+                            </x-data-table-column>
                         </tr>
                         @endforeach
                     </slot>

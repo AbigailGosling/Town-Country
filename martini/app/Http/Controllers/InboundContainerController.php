@@ -45,8 +45,19 @@ class InboundContainerController extends Controller
      */
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'internal_number' => 'required|string',
+            'origin_port'     => 'required|string',
+            'eta'             => 'required|date|after:today',
+        ]);
 
-        return $this->update($request,new InboundContainer());
+        $container = new InboundContainer();
+        $container->internal_number = $request->input("internal_number");
+        $container->origin_port = $request->input("origin_port");
+        $container->arrived = $request->input("arrived",false);
+        $container->eta = $request->input("eta");
+        $container->save();
+        return $this->show($container);
     }
 
     /**
@@ -80,12 +91,17 @@ class InboundContainerController extends Controller
      */
     public function update(Request $request, InboundContainer $container)
     {
-        $isNew = $container->exists;
-        $container->internal_number = $request->input("internal_number","")??"";
-        $container->origin_port = $request->input("origin_port","")??"";
-        $container->arrived = $request->input("arrived",false);
-        $container->eta = $request->input("eta");
+        $validated = $request->validate([
+            'internal_number' => 'required|string',
+            'origin_port'     => 'required|string',
+            'eta'             => 'required|date',
+        ]);
+        $container->internal_number = $request->input("internal_number",$container->internal_number)??"";
+        $container->origin_port = $request->input("origin_port",$container->origin_port)??"";
+        $container->arrived = $request->input("arrived",$container->arrived);
+        $container->eta = $request->input("eta",$container->eta);
         $container->save();
+        return $this->show($container);
     }
 
     /**
@@ -147,7 +163,16 @@ class InboundContainerController extends Controller
      */
     public function showProduct(ContainerProduct $containerProduct)
     {
-        return view("container.product",['container'=>InboundContainer::find($containerProduct->id),'containerProduct'=>$containerProduct,'isNew'=>false]);
+        return view("container.product",
+        [
+            'container'=>InboundContainer::find($containerProduct->container_id),
+            'containerProduct'=>$containerProduct,
+            'brands'=>Brand::all(),
+            'species'=>Species::all(),
+            'nationalities'=>Nationality::all(),
+            'cuts'=>Cut::where('disabled',false)->get(),
+            'isNew'=>false
+        ]);
     }
 
     /**
@@ -156,7 +181,7 @@ class InboundContainerController extends Controller
      * @param  \App\Models\ContainerProduct  $containerProduct
      * @return \Illuminate\Http\Response
      */
-    public function editProduct(ContainerProduct $containerProduct)
+    public function editProduct(InboundContainer $container, ContainerProduct $containerProduct)
     {
         return $this->showProduct($containerProduct);
     }

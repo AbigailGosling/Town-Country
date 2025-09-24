@@ -51,4 +51,11 @@ class InboundContainerApprovalController extends Controller
             ->route('inbound-approvals.create', $container)
             ->with('success', 'Approval created successfully.');
     }
+    public function destroy(InboundContainerApproval $approval, InboundContainer $container)
+    {
+        $approval->delete();
+        redirect()
+            ->route('inbound-approvals.create', $container)
+            ->with('success', 'Approval deleted successfully.');
+    }
 }

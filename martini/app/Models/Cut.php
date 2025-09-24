@@ -49,7 +49,7 @@ protected $connection = 'tandc_live';
     private CutGroup $_cutGroup;
     public function getCutGroup():CutGroup
     {
-        return $this->_cutGroup ??= CutGroup::findOrNull($this->cutgroup_id);
+        return $this->_cutGroup ??= CutGroup::find($this->cutgroup_id);
     }
     public function species():BelongsTo
     {
@@ -58,6 +58,6 @@ protected $connection = 'tandc_live';
     private Species $_species;
     public function getSpecies():Species
     {
-        return $this->_species ??= Species::findOrNull($this->species_id);
+        return $this->_species ??= Species::find($this->species_id);
     }
 }

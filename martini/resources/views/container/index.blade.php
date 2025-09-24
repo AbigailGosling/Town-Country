@@ -7,7 +7,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-4 pl-4">
         <div>
-            <x-form-button title="{{ 'Create Container' }}" iconClass="fa-box" background="green"
+            <x-form-button title="{{ 'Create Container' }}" iconClass="fa-ship" background="green"
                 route="containers.create">
             </x-form-button>
         </div>

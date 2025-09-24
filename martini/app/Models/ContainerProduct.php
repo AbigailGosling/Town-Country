@@ -20,6 +20,10 @@ class ContainerProduct extends Model
         'container_id',
         'product_id',
     ];
+    protected $casts = [
+		'container_id' => 'int',
+		'product_id' => 'int',
+    ];
     public function container():BelongsTo
     {
         return $this->belongsTo(InboundContainer::class, 'container_id');
@@ -27,7 +31,7 @@ class ContainerProduct extends Model
     private $_container;
     public function getContainer():InboundContainer|null
     {
-        return $this->_container ??= $this->container()->first();
+        return $this->_container ??= InboundContainer::find($this->container_id);
     }
     public function product():BelongsTo
     {

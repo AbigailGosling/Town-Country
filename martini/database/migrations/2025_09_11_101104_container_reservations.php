@@ -16,9 +16,11 @@ return new class extends Migration
         Schema::connection('tandc_live')->create('reservation', function (Blueprint $table) {
             $table->id();
             $table->integer("user_id");
+            $table->integer("customer_id");
             $table->integer("address_id");
             $table->string("picksheet_note");
             $table->string("order_reference_number");
+            $table->boolean("processed")->default(false);
             $table->timestamps();
         });
     }

@@ -19,7 +19,9 @@
 use App\Models\CutGroupNationalityDate;
 use App\Models\InboundContainer;
 use App\Models\Location;
+use App\Models\Product;
 use App\Models\Reservation;
+use App\Models\ReservationProduct;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -90,7 +92,7 @@ use Illuminate\Support\Facades\Auth;
         foreach ($containers as $container) {
             foreach ($container->getProducts() as $containerProduct){
                 //dd(Reservation::where("product_id",$containerProduct->product_id)->get());
-                $alreadyReserved = Reservation::where("product_id",$containerProduct->product_id)->get()->sum("target_count");
+                $alreadyReserved = ReservationProduct::where("product_id",$containerProduct->product_id)->get()->sum("target_count");
                 $productsX2 = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product`
                 JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
                 LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
@@ -190,12 +192,9 @@ use Illuminate\Support\Facades\Auth;
                                 echo $this_row_weight*$productsRow2['quantity']  . 'kg';
                             }
                             ?></td>
-                            <td></td>
-                            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
+                            <td><?php echo "£".number_format(Product::find($containerProduct->product_id)->price,2); ?></td>
                             <td>
-                            <?php if(stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")==false && $locked != true){ ?>
                                 <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
-                            <?php } ?>
                             </td>
                         </tr>
                         <?php

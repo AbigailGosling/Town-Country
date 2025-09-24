@@ -39,6 +39,10 @@ use App\Models\User;
                     <a href="containerreservation.php">Inbound Stock</a>
                     <?php
                     }
+                    if ($page['file'] =="salesconfirmationList.php") { ?>
+                        <a href="reservationList.php">Reservations</a>
+                    <?php
+                    }
 				}
 
 				?></div>

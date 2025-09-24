@@ -14,7 +14,7 @@
     <div class="py-12">
 
         @if ($isNew == false)
-            <form method="POST" action="{{ route('container-product.update', ['container'=>$containerProduct->getContainer(),'product'=>$containerProduct]) }}">
+            <form method="POST" action="{{ route('container-product.update', ['container'=>$containerProduct->getContainer(),'containerProduct'=>$containerProduct]) }}">
             @method("PUT")
         @else
             <form method="POST" action="{{ route('container-product.store',$container) }}">
@@ -80,9 +80,9 @@
                         <x-input-label for="unit" :value="__('Unit')" />
                         <select id="unit" class="block mt-1 w-full" name="unit" required>
                             <option disabled="disabled" selected value="">Select Unit</option>
-                            <option {{("PPC"==old('unit', $containerProduct->unit)) ? "selected":"";}} value="PPC">PPC</option>
-                            <option {{("P"==old('unit', $containerProduct->unit)) ? "selected":"";}} value="PPC">G/T</option>
-                            <option {{("C"==old('unit', $containerProduct->unit)) ? "selected":"";}} value="PPC">Cases</option>
+                            <option {{("PPC"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">PPC</option>
+                            <option {{("P"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">G/T</option>
+                            <option {{("C"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">Cases</option>
                         </select>
                         <x-input-error :messages="$errors->get('unit')" class="mt-2" />
                     </div>
@@ -91,7 +91,7 @@
                     <div>
                         <x-input-label for="qty" :value="__('Quantity')" />
                         <x-text-input id="qty" class="block mt-1 w-full" type="number" step="1"
-                            name="qty" value="{{ old('qty', $containerProduct->qty) }}" required />
+                            name="qty" value="{{ old('qty', $containerProduct->getProduct()?->quantity) }}" required />
                         <x-input-error :messages="$errors->get('qty')" class="mt-2" />
                     </div>
 
@@ -99,7 +99,7 @@
                     <div>
                         <x-input-label for="akg" :value="__('Average Weight')" />
                         <x-text-input id="akg" class="block mt-1 w-full" type="number" step="0.001"
-                            name="akg" value="{{ old('akg', $containerProduct->akg) }}" required />
+                            name="akg" value="{{ old('akg', $containerProduct->getProduct()?->akg) }}" required />
                         <x-input-error :messages="$errors->get('akg')" class="mt-2" />
                     </div>
 
@@ -115,9 +115,9 @@
                 <!-- Action Buttons -->
                 <x-slot name="buttons">
                     @if ($isNew == true)
-                    <x-form-button title="Add Product" background="green" iconClass="fa-save" :submit="true" />
+                    <x-form-button id="save" title="Add Product" background="green" iconClass="fa-save" :submit="true" />
                     @else
-                    <x-form-button title="Update Product" background="green" iconClass="fa-save" :submit="true" />
+                    <x-form-button id="save" title="Update Product" background="green" iconClass="fa-save" :submit="true" />
                     @endif
 
                 </x-slot>
@@ -133,8 +133,15 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#species').on('change', function() {
-            let speciesId = $(this).val();
+        $('#species').on('change', loadCutGroups);
+        $('#cutgroup').on('change', loadCuts);
+        if (1 == <?php echo ($containerProduct->exists)?"1":"0"; ?>)
+        {
+            loadCutGroups();
+        }
+    });
+    function loadCutGroups() {
+        let speciesId = $('#species').val();
 
             resetSelect($('#cutgroup'), 'Select Cut');
             resetSelect($('#cut'), '');
@@ -150,6 +157,9 @@
                         $.each(cuts, function(index, cut) {
                             if (cut.id == {{$containerProduct->getProduct()?->getCut()->cutgroup_id ?? "0"}}){
                                 $('#cutgroup').append( $('<option>', { value: cut.id, text: cut.name, selected:true }));
+                                setTimeout(() => {
+                                    loadCuts();
+                                }, 1);
                             }
                             else{
                                 $('#cutgroup').append( $('<option>',  { value: cut.id, text: cut.name }));
@@ -161,36 +171,35 @@
                     console.error('AJAX error:', status, error);
                 }
             });
-        });
-        $('#cutgroup').on('change', function() {
-            let cutGroupId = $(this).val();
+    }
+    function loadCuts() {
+        let cutGroupId = $('#cutgroup').val();
 
-            resetSelect($('#cut'), 'Select Specific Cut');
+        resetSelect($('#cut'), 'Select Specific Cut');
 
-            if (!cutGroupId) return;
+        if (!cutGroupId) return;
 
-            $.ajax({
-                url: '/cuts/' + cutGroupId,
-                type: 'GET',
-                dataType: 'json',
-                success: function(cuts) {
-                    if (cuts.length) {
-                        $.each(cuts, function(index, cut) {
-                            if (cut.id == {{$containerProduct->getProduct()?->cut_id?? "0"}}){
-                                $('#cut').append( $('<option>', { value: cut.id, text: cut.name, selected:true }));
-                            }
-                            else{
-                                $('#cut').append( $('<option>',  { value: cut.id, text: cut.name }));
-                            }
-                        });
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX error:', status, error);
+        $.ajax({
+            url: '/cuts/' + cutGroupId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(cuts) {
+                if (cuts.length) {
+                    $.each(cuts, function(index, cut) {
+                        if (cut.id == {{$containerProduct->getProduct()?->cut_id?? "0"}}){
+                            $('#cut').append( $('<option>', { value: cut.id, text: cut.name, selected:true }));
+                        }
+                        else{
+                            $('#cut').append( $('<option>',  { value: cut.id, text: cut.name }));
+                        }
+                    });
                 }
-            });
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error:', status, error);
+            }
         });
-    });
+    }
     function resetSelect($select, placeholder) {
         $select.empty().append(
             $('<option>', {

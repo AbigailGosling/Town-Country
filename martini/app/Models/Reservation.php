@@ -16,16 +16,20 @@ class Reservation extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_id',
         'address_id',
         'picksheet_note',
-        'order_reference_number'
+        'order_reference_number',
+        'processed'
     ];
 
     protected $casts = [
         'user_id'                => 'integer',
         'address_id'             => 'integer',
+        'customer_id'            => 'integer',
         'picksheet_note'         => 'string',
         'order_reference_number' => 'string',
+        'processed'              => 'boolean',
     ];
     public function reservation_product():HasMany
     {

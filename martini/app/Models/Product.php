@@ -114,4 +114,14 @@ protected $connection = 'tandc_live';
     {
         return Weight::where("product_id",$this->id);
     }
+    public function brand():BelongsTo
+	{
+		return $this->belongsTo(Cut::class,"brand_id","id");
+	}
+    private Brand $_brand;
+    public function getBrand():Brand|null
+    {
+        return $this->_brand ??= Brand::find($this->brand_id);
+    }
+
 }
