@@ -31,11 +31,11 @@ class ShortStockExport implements FromCollection
 
     function __construct()
     {
-        $this->cuts = Cut::all();
-        $this->cutgroups = CutGroup::all();
-        $this->species = Species::all();
-        $this->nationalities = Nationality::all();
-        $this->brands = Brand::all();
+        $this->cuts = Cut::all()->keyBy('id');
+        $this->cutgroups = CutGroup::all()->keyBy('id');
+        $this->species = Species::all()->keyBy('id');
+        $this->nationalities = Nationality::all()->keyBy('id');
+        $this->brands = Brand::all()->keyBy('id');
     }
     private Collection $t;
     /**
@@ -96,10 +96,10 @@ class ShortStockExport implements FromCollection
         if ($range_from->isAfter($target_date) && $range_to->isAfter($target_date)) return null;
         $shortestDate = ($range_from->isBefore($range_to))?$range_from:$range_to;
 
-        $cut =$this->cuts->firstWhere("id",$product->cut_id);
+        $cut = $this->cuts[$product->cut_id]??null;
         if ($cut == null) return null;
-        $s = $this->species->firstWhere("id",$cut->species_id);
-        if ($s == null || $s->id == 14 || $s->id == 11 || $s->id == 12)return null;
+        $s = $this->species[$cut->species_id]??null;
+        if ($s == null || $s->id == 14 || $s->id == 11 || $s->id == 12) return null;
         $pallet = Pallet::find($product->pallet_id);
         $r['Intake']=$pallet->intake_id;
         $r['Pallet']=$product->pallet_id;
@@ -115,18 +115,18 @@ class ShortStockExport implements FromCollection
             if ($w>=1)
             {
                 $kg = (double)$kg + (double)$w;
-                $count++;
             }
+            $count++;
         }
         $r['kg']=$this->floorDec($kg,3);
-        $r['Cases']=$count - PickerItem::where([["product_id",$product->id],["deleted",false],['status',0]])->count();
+        $r['Cases']=$count - PickerItem::where([["product_id",$product->id],["deleted",0],['status','0']])->get()->count();
         if ($r['Cases'] < 1 && $product->unit != 'PPC') return null;
-        if ($product->unit == 'PPC') $r['kg']=$r['Cases'];
+        if ($product->unit == 'PPC') $r['kg']=$thisweights->count();
         if ($r['kg'] < 1 || $r['Cases'] < 1) return null;
         $r['Species']=$s->name;
-        $r['Product Name']=$this->cutgroups->firstWhere("id",$cut->cutgroup_id)->name." ".$cut->name;
-        $r['Nationality']=$this->nationalities->firstWhere("id",$product->nationality_id)->name;
-        $r['Brand']=$this->brands->firstWhere("id",$product->brand_id)->name;
+        $r['Product Name']=$this->cutgroups[(int)$cut->cutgroup_id]->name." ".$cut->name;
+        $r['Nationality']=$this->nationalities[$product->nationality_id]->name;
+        $r['Brand']=$this->brands[$product->brand_id]->name;
         $r['Date From']=($product->range_extension != null || $product->range_extension != "")?"EXTENDED":$product->range_from;
         $r['Date To']=$product->range_to;
         $r['Cost']="£".$product->cost;

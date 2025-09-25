@@ -56,7 +56,7 @@ foreach ($items as $item){
                                                   VALUES (-1, $cutid, -1, -1, -1, 1, NULL, NULL, NULL, 'C', NULL, NULL, NULL, '0','0', NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, ?)",'i',[$amount],true);
     //Weight Row
     for ($i=0;$i<$amount;$i++){
-        $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, 1, 1, 1, 1, 1, 1, '0', '0')",'',[],true);
+        $weight_id = $weights[] = prepareExecuteQuery("INSERT INTO `tandc_live`.`weights` (`product_id`, `status_id`, `weight_gross`, `weight_tear`, `pallet_tare`, `tare_per_carton`, `number_of_cartons`, `original_gross`, `tampered`, `grosstare`) VALUES ($product_id, 1, $weight, $weight, 1, 1, 1, 1, '0', '0')",'',[],true);
 
         $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
         if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'',$weight]);
