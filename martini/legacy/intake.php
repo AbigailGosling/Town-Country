@@ -923,7 +923,7 @@ use Illuminate\Support\Facades\Auth;
  	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
 	 <a href="printAllPallets.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print all pallets</a>
 
-	<center id="hidePalletBtnContainer"><br/><br/><br/><Br/><Br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
+	<center id="hidePalletBtnContainer"><br/><br/><br/><br/><br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
 	<div id="ajaxContent">
 
 	</div>
@@ -984,7 +984,10 @@ use Illuminate\Support\Facades\Auth;
 			}
 });
 	});
-
+    function qc_hold(pallet_id){
+        var c = ($('#qc_hold'+pallet_id).is(":checked"))?1:0;
+        $.post( "ajax/toggleQCHold.php",{pallet_id:pallet_id,set_to:c});
+    }
 	function editWeight(intake_id, pallet_id, product_id, weight_id){
 		console.log('intake_id ' + intake_id);
 		console.log('pallet_id ' + pallet_id);

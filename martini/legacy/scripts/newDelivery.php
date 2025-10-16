@@ -39,6 +39,8 @@ use App\Models\Pallet;
             $product->save();
 
         }
+        $container->arrived = true;
+        $container->save();
     }
 ?>
 <script>

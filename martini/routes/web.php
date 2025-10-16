@@ -117,7 +117,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/containers/{container}/product/{containerProduct}', [InboundContainerController::class, 'updateProduct'])->name('container-product.update');
     Route::get('/containers/{container}/approvals/create', [InboundContainerApprovalController::class, 'create'])->name('inbound-approvals.create');
     Route::post('/containers/{container}/approvals', [InboundContainerApprovalController::class, 'store'])->name('inbound-approvals.store');
-    Route::post('/containers/{container}/approvals/{approval}/destroy', [InboundContainerApprovalController::class, 'destroy'])->name('inbound-approvals.destroy');
+    Route::get('/containers/{container}/approvals/{approval}/destroy', [InboundContainerApprovalController::class, 'destroy'])->name('inbound-approvals.destroy');
 
     Route::get('/cutgroups/{speciesId}', [CutGroupController::class, 'getCutGroups']);
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);

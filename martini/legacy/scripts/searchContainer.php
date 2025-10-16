@@ -16,15 +16,10 @@
     <tbody>
 <?php
 
-use App\Models\CutGroupNationalityDate;
 use App\Models\InboundContainer;
 use App\Models\Location;
 use App\Models\Product;
-use App\Models\Reservation;
 use App\Models\ReservationProduct;
-use App\Models\Site;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
     ini_set('memory_limit','32M');
 	require(__DIR__.'/../functions.php');
@@ -79,19 +74,11 @@ use Illuminate\Support\Facades\Auth;
         if ($nationality_id != '' && $nationality_id != null && $nationality_id != 'null'){
             array_push($whereArray, "product.nationality_id = ". $nationality_id ."");
         }
-        if ($site_id != '' && $site_id != null && $site_id != 'null'){
-            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
-        }
-        else
-        {
-            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
-        }
 
         $whereString = implode(' && ',$whereArray);
-        $containers = InboundContainer::where([["admin_approved",true],["arrived",false]])->orderBy('eta')->get();
+        $containers = InboundContainer::where([["admin_approved",true],["arrived",false]])->orderBy('eta')->with('containerProducts')->get();
         foreach ($containers as $container) {
-            foreach ($container->getProducts() as $containerProduct){
-                //dd(Reservation::where("product_id",$containerProduct->product_id)->get());
+            foreach ($container->containerProducts as $containerProduct){
                 $alreadyReserved = ReservationProduct::where("product_id",$containerProduct->product_id)->get()->sum("target_count");
                 $productsX2 = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product`
                 JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
@@ -111,9 +98,6 @@ use Illuminate\Support\Facades\Auth;
                                 $class = request()->input('class');
                             }
                             $temp_id = $productsRow2['cooling_id'];
-                            $smallestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_from'];
-                            $largestDate = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?$productsRow2['range_extension']:$productsRow2['range_to'];
-                            $largestDate2 = ($productsRow2['range_extension']!= null && $productsRow2['range_extension']!= '')?"EXTENSION":$productsRow2['range_to'];
                             $pallet_id = $productsRow2['pallet_id'];
                             $product_id = $productsRow2['productid'];
                             $pallet_comments = $productsRow2['productcomments'];
@@ -129,42 +113,8 @@ use Illuminate\Support\Facades\Auth;
                             }
                             $this_row_weight = $productsRow2['akg'];
 
-                            $state = 0;
-                            if($ubbb != 2 && $temp_id == 1){
-                                $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
-                                $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
-                                if ($toDate2 < $toDate) $toDate = $toDate2;
-                                $cutResult= CutGroupNationalityDate::lookupFromProductID($productsRow2['productid']);
-                                $bgCol = "";
-                                $now = time();
-                                if (isset($cutResult['warning']) && $cutResult['warning'] != "")
-                                {
-                                    $pastWarning1 = $toDate - ($cutResult['warning'] * 86400);
-                                    if ($pastWarning1 <= $now)
-                                    {
-                                        $bgCol = 'style="background-color:#FFBF00"';
-                                        $state = 1;
-                                    }
-                                }
-                                if (isset($cutResult['danger']) && $cutResult['danger'] != "")
-                                {
-                                    $pastWarning2 = $toDate - ($cutResult['danger'] * 86400);
-                                    if ($pastWarning2 <= $now)
-                                    {
-                                        $bgCol = 'style="background-color:red"';
-                                        $state = 2;
-                                    }
-                                }
-                                $pastWarning3 = $toDate;
-                                if ($pastWarning3 <= $now)
-                                {
-                                    $bgCol = 'style="background-color:darkred"';
-                                    $state = 2;
-                                }
-                            }
-                            if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
-                            ?>
-                            <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
+                        ?>
+                        <tr class="subrow <?php echo $class; ?>">
                             <td colspan="1">
                             <?php echo $container->internal_number;?>
                             </td>

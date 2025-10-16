@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ContainerProduct;
 use App\Models\Customer;
 use App\Models\InboundContainer;
 use App\Models\Location;
@@ -106,4 +107,16 @@ Breadcrumbs::for('inbound-approvals.create', function(BreadcrumbTrail $trail, In
     $trail->push('Containers', route('containers.index'));
     $trail->push($container->internal_number,route('containers.edit',$container->id));
     $trail->push("Documents and Approval");
+});
+Breadcrumbs::for('container-product.create', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number,route('containers.edit',$container->id));
+    $trail->push("Add Product");
+});
+Breadcrumbs::for('container-product.edit', function(BreadcrumbTrail $trail, InboundContainer $container, ContainerProduct $product){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number,route('containers.edit',$container->id));
+    $trail->push("Product ID: ".$product->id);
 });

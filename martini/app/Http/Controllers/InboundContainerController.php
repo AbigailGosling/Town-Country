@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\ContainerProduct;
 use App\Models\Cut;
-use App\Models\CutGroup;
 use App\Models\InboundContainer;
-use App\Models\Intake;
 use App\Models\Nationality;
 use App\Models\Product;
 use App\Models\Species;
@@ -23,7 +21,19 @@ class InboundContainerController extends Controller
     private static $defaultPaginate = 200;
     public function index()
     {
-        $containers = InboundContainer::query()->paginate($this::$defaultPaginate);
+        $containers = InboundContainer::query()->orderByDesc("id")->paginate($this::$defaultPaginate);
+        return view("container.index",["containers"=>$containers]);
+    }
+
+    /**
+     * GET method to search users in the system from the Users Index page
+     * @param Request $request
+     * @return View
+     */
+    public function search(Request $request)
+    {
+        $searchTerm = $request->get('search');
+        $containers = InboundContainer::where('internal_number','LIKE','%'.$searchTerm.'%')->orWhere('origin_port','LIKE','%'.$searchTerm.'%')->orderByDesc("id")->paginate($this::$defaultPaginate);
         return view("container.index",["containers"=>$containers]);
     }
 
@@ -49,12 +59,14 @@ class InboundContainerController extends Controller
             'internal_number' => 'required|string',
             'origin_port'     => 'required|string',
             'eta'             => 'required|date|after:today',
+            'vessel'          => 'sometimes|string'
         ]);
 
         $container = new InboundContainer();
         $container->internal_number = $request->input("internal_number");
         $container->origin_port = $request->input("origin_port");
         $container->arrived = $request->input("arrived",false);
+        $container->vessel = $request->input("vessel","");
         $container->eta = $request->input("eta");
         $container->save();
         return $this->show($container);
@@ -95,11 +107,13 @@ class InboundContainerController extends Controller
             'internal_number' => 'required|string',
             'origin_port'     => 'required|string',
             'eta'             => 'required|date',
+            'vessel'          => 'sometimes|string'
         ]);
         $container->internal_number = $request->input("internal_number",$container->internal_number)??"";
         $container->origin_port = $request->input("origin_port",$container->origin_port)??"";
         $container->arrived = $request->input("arrived",$container->arrived);
         $container->eta = $request->input("eta",$container->eta);
+        $container->vessel = $request->input("vessel","");
         $container->save();
         return $this->show($container);
     }

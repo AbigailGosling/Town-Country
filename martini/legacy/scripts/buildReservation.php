@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
 
-	$customer_id = request()->input('customer_id');
-
 	$orderReferenceNumber = request('orderReferenceNumber');
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
@@ -48,7 +46,8 @@ use Illuminate\Support\Facades\Auth;
             'user_id' => Auth::id(),
             'address_id'=>$addressid,
             'picksheet_note'=>$picksheet_note,
-            'order_reference_number']);
+            'order_reference_number'=>$orderReferenceNumber,
+            'customer_id'=>$customer_id]);
 
         loggedDataChange("reservation_note",$pickersheet_id,$picksheet_note);
 		loggedDataChange("reservation_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
