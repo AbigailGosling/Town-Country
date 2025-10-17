@@ -32,6 +32,7 @@ use App\Models\Pallet;
             $pallet = new Pallet();
             $pallet->intake_id = $intake_id;
             $pallet->storage_location = Location::where("site_id",$site_id)->get()[0]->id;
+            $pallet->qc_hold = false;
             $pallet->save();
 
             $product= $containerProduct->getProduct();
