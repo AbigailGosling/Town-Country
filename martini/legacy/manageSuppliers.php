@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\User;
+
 	include('functions.php');
 ?>
 <!doctype html>
@@ -98,8 +101,9 @@
 					<select name="user_id" style="height:29px;">
 						<option value="0" disabled selected>Select a salesman</option>
 						<?php
-							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users");
+							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users WHERE `is_hidden` = 0");
 							while($user = mysqli_fetch_array($usersResult)){
+                                if (User::find($user['id'])->disabled == true) continue;
 						?>
 						<option value="<?php echo $user['id']; ?>" <?php if($data['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
 						<?php } ?>

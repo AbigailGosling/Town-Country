@@ -125,6 +125,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if ($nationality != '' && $nationality != null && $nationality != 'null'){
         array_push($whereArray, "product.nationality_id = ". $nationality ."");
     }
+    if ($temperatureID != '' && $temperatureID != null && $temperatureID != 'null'){
+        array_push($whereArray, "product.cooling_id = ". $temperatureID ."");
+    }
     if ($site_id != '' && $site_id != null && $site_id != 'null'){
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
     }
@@ -215,7 +218,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             ORDER BY product.cut_id DESC";
             $pX2d = [$intake_id,$cut_id,$nationality_id];
         }
-        $productsY2 = loggedQuery($productsX2,'iss',$pX2d);
+        $productsY2 = prepareExecuteQuery($productsX2,'iss',$pX2d);
         $products2Count = mysqli_num_rows($productsY2);
 
 

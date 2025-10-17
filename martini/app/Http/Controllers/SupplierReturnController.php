@@ -26,7 +26,7 @@ class SupplierReturnController extends Controller
     {
         $items = new Collection();
         $searchTerm = $request->input("search","");
-        $supReturnQ = SupplierReturn::groupBy("supplier_id")->orderBy("updated_at")->orderByDesc("id");
+        $supReturnQ = SupplierReturn::selectRaw("ANY_VALUE(id) AS `id`,ANY_VALUE(supplier_id) AS `supplier_id`, MAX(`updated_at`) AS `updated_at`")->groupBy("supplier_id")->orderBy("updated_at")->orderByDesc("id");
         if ($searchTerm!="")
         {
             $supList = Supplier::where("name","LIKE","%$searchTerm%")->pluck('id')->toArray();
@@ -78,7 +78,7 @@ class SupplierReturnController extends Controller
             $line->outstanding = 0;
             $line->value = 0;
             $line->paid = 0;
-            $returnProducts = PickerItem::groupBy('product_id')->selectRaw("*, count(product_id) as `count`")->where("pickersheet_id",$pick->id)->get();
+            $returnProducts = PickerItem::selectRaw("ANY_VALUE(`price`) AS `price`, ANY_VALUE(`product_id`) AS `product_id`, count(`product_id`) as `count`")->where("pickersheet_id",$pick->id)->groupBy('product_id')->get();
             $quickWeightLookup = explode(",",implode(",",PalletsOut::where("pickersheet_id",$pick->id)->pluck("weight_ids")->toArray()));
             foreach ($returnProducts as $returnProduct)
             {

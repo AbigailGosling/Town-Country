@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class StockMovement
+ * Class StockMovementRule
  *
  * @property int $id
  * @property int $origin
@@ -15,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @package App\Models
  */
-class StockMovement extends Model
+class StockMovementRule extends Model
 {
     use HasFactory;
     protected $connection = 'tandc_live';
-	protected $table = 'stock_movements';
+	protected $table = 'stock_movement_rules';
     public $timestamps = true;
     protected $fillable = [
 		'origin',

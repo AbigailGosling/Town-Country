@@ -5,25 +5,31 @@ use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
 
-	$term = request()->input('searchterm');
+	$term = request()->input('searchterm',"");
     $usermodel = User::find(Auth::id());
-    $x = "SELECT GROUP_CONCAT(`id`) as `ids` FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
-    $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
+    if ($term != ""){
+        $x = "SELECT GROUP_CONCAT(`id`) as `ids` FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?";
+        $y = prepareExecuteQuery($x,'ss',['%'.$term.'%','%'.$term.'%']);
 
-    $customerids = '';
+        $customerids = '';
 
-    while($row = mysqli_fetch_array($y)){
-        $rowid = $row['ids'];
-        if ($rowid!= null && $rowid!="")$customerids .= " OR `customer_id` IN ($rowid)";
+        while($row = mysqli_fetch_array($y)){
+            $rowid = $row['ids'];
+            if ($rowid!= null && $rowid!="")$customerids .= " OR `customer_id` IN ($rowid)";
+        }
+
+        $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && (id = ? OR id LIKE ?";
+        if ($customerids!="") $x.= $customerids;
+        $x.= ") ORDER BY `id` DESC";
+
+        $y = prepareExecuteQuery($x,'ss',[$term,'%'.$term.'%']);
     }
+    else{
+        $x = "SELECT * FROM `pickerSheets` WHERE completed='1'";
 
-    $x = "SELECT * FROM `pickerSheets` WHERE completed='1' && (id = ? OR id LIKE ?";
-    if ($customerids!="") $x.= $customerids;
-    $x.= ") ORDER BY `id` DESC";
-
-	$y = prepareExecuteQuery($x,'ss',[$term,'%'.$term.'%']);
+        $y = prepareExecuteQuery($x);
+    }
     $count = mysqli_num_rows($y);
-
 	if($count == 0){
 		?><h2 style="color:#fff;font-size:12px;">No delivery notes found</h2><?php
 	}else{
@@ -49,7 +55,7 @@ use Illuminate\Support\Facades\Auth;
 
             $x2 = "SELECT * FROM `customers` WHERE id ='$customer_id'";
             $y2 = prepareExecuteQuery($x2);
-            $row2 = mysqli_fetch_array($y2);
+            $row2 = mysqli_fetch_assoc($y2);
 
             ?>
             <tr class="pages page<?php echo $num_of_pages; ?>"><td align="center" class="pos">

@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Site;
-use App\Models\StockMovement;
+use App\Models\StockMovementRule;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -28,7 +28,7 @@ return new class extends Migration
         {
             if (Site::find($item[0])!=null && Site::find($item[1]))
             {
-                $sm =new StockMovement(["origin"=>$item[0],
+                $sm =new StockMovementRule(["origin"=>$item[0],
                     "destination"=>$item[1],
                     "days"=>$item[2]]
                 );

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActiveHolidayCoverController;
+use App\Http\Controllers\BulkPermissionController;
 use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\CutController;
 use App\Http\Controllers\CutGroupController;
@@ -16,7 +17,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShortStockController;
 use App\Http\Controllers\SiteController;
-use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockMovementRuleController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Models\ContainerProduct;
@@ -64,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
     Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
+    Route::get('bulkpermissions', [BulkPermissionController::class, 'view'])->name('bulkpermission.view');
+    Route::put('bulkpermissions/save', [BulkPermissionController::class, 'save'])->name('bulkpermission.save');
 
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
 
@@ -99,10 +102,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('supplierreturnstatements', [SupplierReturnController::class, 'index'])->name('supplierreturnstatements.index');
     Route::get('supplierreturnstatements/{supplier}', [SupplierReturnController::class, 'show'])->name('supplierreturnstatements.show');
 
-    Route::get('/sites/{site}/movement/create', [StockMovementController::class, 'create'])->name('stockmovements.create');
-    Route::get('/sites/movement/{stockmovement}/edit', [StockMovementController::class, 'show'])->name('stockmovements.edit');
-    Route::post('/sites/movement/store', [StockMovementController::class, 'store'])->name('stockmovements.store');
-    Route::put('/sites/movement/{stockmovement}', [StockMovementController::class, 'update'])->name('stockmovements.update');
+    Route::get('/sites/{site}/movement/create', [StockMovementRuleController::class, 'create'])->name('stockmovements.create');
+    Route::get('/sites/movement/{stockmovementrule}/edit', [StockMovementRuleController::class, 'show'])->name('stockmovements.edit');
+    Route::post('/sites/movement/store', [StockMovementRuleController::class, 'store'])->name('stockmovements.store');
+    Route::put('/sites/movement/{stockmovementrule}', [StockMovementRuleController::class, 'update'])->name('stockmovements.update');
 
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');

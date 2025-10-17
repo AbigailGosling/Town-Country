@@ -85,7 +85,7 @@
                         <div class="grid-cols-2">
                             <div class="grid grid-cols-1">
                                 <div>
-                                    <a href="{{route('stockmovements.edit', ['stockmovement'=>$movement->id,])}}">
+                                    <a href="{{route('stockmovements.edit', ['stockmovementrule'=>$movement->id,])}}">
                                         <button type="button" class="rounded bg-green-500 hover:bg-green-700 w-6 h-6" href=""><i class="fas fa-edit text-green-100"></i></button>
                                     </a>
                                 </div>

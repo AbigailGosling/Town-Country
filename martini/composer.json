@@ -8,6 +8,7 @@
         "php": "^8.0.2",
         "chrome-php/chrome": "^1.11",
         "diglactic/laravel-breadcrumbs": "^8.0",
+        "doctrine/dbal": "~4.2",
         "guzzlehttp/guzzle": "^7.2",
         "jenssegers/agent": "^2.6",
         "laravel/framework": "^9.19",
@@ -17,6 +18,7 @@
         "mpdf/mpdf": "8.1.6",
         "psr/log": "^3.0.0",
         "reliese/laravel": "^1.1",
+        "shuchkin/simplexlsxgen": "^1.4",
         "socketlabs/email-delivery": "^1.4"
     },
     "require-dev": {

@@ -51,6 +51,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'disabled',
+        'is_hidden'
     ];
 
     /**
@@ -74,7 +76,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'disabled' => 'bool'
+        'disabled' => 'bool',
+        'is_hidden' => 'bool'
     ];
 
     public function permissions()

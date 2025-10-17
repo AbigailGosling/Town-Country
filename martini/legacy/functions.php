@@ -668,7 +668,7 @@ use Ramsey\Uuid\Type\Decimal;
 		        $y = prepareExecuteQuery($x,'iii',[$cutID,$palletID,$nationalityID]);
                 $numOfPallets += $y->num_rows;
 
-                $x1 = "SELECT * FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id && pickerItems.deleted !=1 && pickerItems.status = '0' && product.pallet_id = ? && product.cut_id = ?";
+                $x1 = "SELECT * FROM `pickerItems` INNER JOIN `product` ON pickerItems.product_id=product.id WHERE && pickerItems.deleted !=1 && pickerItems.status = '0' && product.pallet_id = ? && product.cut_id = ?";
                 $y1 = prepareExecuteQuery($x1,'ii',[$palletID,$cutID]);
                 $numInPicking += $y1->num_rows;
             }

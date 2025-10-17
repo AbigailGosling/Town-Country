@@ -13,7 +13,7 @@
         <form method="POST" action="{{route('stockmovements.store')}}">
         {{ method_field('POST') }}
     @else
-        <form method="POST" action="{{route('stockmovements.update', ['stockmovement'=>$stockmovement])}}">
+        <form method="POST" action="{{route('stockmovements.update', ['stockmovementrule'=>$stockmovementrule])}}">
         {{ method_field('PUT') }}
     @endif
     @csrf
@@ -47,13 +47,13 @@
                     <x-input-label for="days" :value="__('Days of Lead time')"/>
 
                     <x-text-input id="days" class="block mt-1 w-full" type="text" name="days"
-                                  :value="old('days', $stockmovement->days)"
+                                  :value="old('days', $stockmovementrule->days)"
                                   required/>
 
                     <x-input-error :messages="$errors->get('days')" class="mt-2"/>
                 </div>
                 <div class="mt-4" for="mirror" style="display: flex; padding-bottom: 1em;">
-                    <input type="checkbox" id="mirror" name="mirror" @if($stockmovement->isMirrored()) checked @endif/>
+                    <input type="checkbox" id="mirror" name="mirror" @if($stockmovementrule->isMirrored()) checked @endif/>
                     <div style="width: 1em;" disabled></div>
                     <x-input-label for="mirror" value="Mirror Direction"/>
                 </div>

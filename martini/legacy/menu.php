@@ -73,13 +73,16 @@ use App\Models\User;
 						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 					}else if($page['file'] == 'exportStockPDF.php'){
 						?><a onclick="exportstockPDF(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
-					}else{
+                    }else{
                         if ($page['file'] == "../supplierreturnstatements/") continue;
 						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                         if ($userModel->hasPermission("supplierreturnstatements") && $page['file'] == "manageSuppliers.php") {
                             ?>
                             <a href="../supplierreturnstatements/"><span class="small">Supplier</span> Return Statements</a>
                             <?php
+                        }
+                        if ($page['file'] == '../users') {
+                            ?><a href="../bulkpermissions/"><span class="small">Bulk</span> Permission Management</a><?php
                         }
 					}
 				}

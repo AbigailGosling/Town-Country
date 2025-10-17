@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Site;
-use App\Models\StockMovement;
+use App\Models\StockMovementRule;
 use Illuminate\Http\Request;
 
 class SiteController extends Controller
@@ -72,7 +72,7 @@ class SiteController extends Controller
             ($showDisabled) ?
             $site->locations()->orderBy("name")->get() :
             $site->locations()->orderBy("name")->where("disabled",false)->get(),
-            'movements' => StockMovement::where("origin",$site->id)->get(),
+            'movements' => StockMovementRule::where("origin",$site->id)->get(),
             'isNew' => false]);
     }
 

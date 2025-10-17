@@ -1,13 +1,16 @@
 <?php
 
+use App\Models\User;
+
 	require(__DIR__.'/../functions.php');
 
 	$name = request()->input('searchterm');
-	
-	$cutX = "SELECT * FROM `users`";
+
+	$cutX = "SELECT * FROM `users` WHERE `is_hidden` = 0";
 	$cutY = prepareExecuteQuery($cutX);
-	
+
 	while($cutRow = mysqli_fetch_array($cutY)){
+        if (User::find($cutRow['id'])->disabled == true) continue;
 	?>
 	<a href="javascript:;" class="intakeCutDropdown" onclick="setCut('<?php echo $cutRow['id']; ?>','<?php echo $cutRow['name']; ?>')"><?php echo $cutRow['name']; ?></a>
 	<?php

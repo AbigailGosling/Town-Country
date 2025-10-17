@@ -93,7 +93,7 @@ use Illuminate\Support\Facades\Auth;
 			<label>Salesman</label><br/>
  		 	<select id="" class="form-control" name="user_from_id">
 				<?php
-					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `is_hidden` = 0");
 
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($picksheet['user_from_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
