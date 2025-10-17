@@ -54,7 +54,7 @@ use App\Models\User;
 			<label>Operator</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
-					$_users = User::where(['disabled'=>0])->orderBy('name')->get();
+					$_users = User::where([['disabled',0],['hidden',false]])->orderBy('name')->get();
 
 					foreach ($_users as $_user) {
 						if (!$_user->hasPermission(Permission::find(1))) continue;

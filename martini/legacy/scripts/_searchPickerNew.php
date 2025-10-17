@@ -2,6 +2,7 @@
 
 use App\Models\CutGroupNationalityDate;
 use App\Models\Location;
+use App\Models\Pallet;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -64,7 +65,7 @@ use Illuminate\Support\Facades\Auth;
         $products2Count = mysqli_num_rows($productsY2);
         ####
         $totalW = 0;
-
+        $pallet = Pallet::find($pallet_id);
         $relatedWeights = [];
 
         foreach($weights as $weight){
@@ -95,7 +96,7 @@ use Illuminate\Support\Facades\Auth;
 			while($productsRow2 = mysqli_fetch_assoc($productsY2)){
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
-                    if (stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")!=false || $locked){
+                    if (stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")!=false || $locked || $pallet->qc_hold){
                         $class = request()->input('class') . " searchAccordTitle locked";
                     }
                     else {
@@ -164,7 +165,7 @@ use Illuminate\Support\Facades\Auth;
                     ?>
                     <tr <?php if(isset($smallestDate)) echo $bgCol; ?>class="subrow <?php echo $class; ?>">
                     <td colspan="1">
-                    <?php if(stripos(Location::find($productsRow2['storage_location'])->name,"coldstore")!=false || $locked){ ?>
+                    <?php if(stripos(Location::find($productsRow2['storage_location'])->name,"coldstore")!=false || $locked || $pallet->qc_hold){ ?>
                         <i class="fa fa-lock"></i>
                     <?php } ?>
                         <?php echo $numInPicking; ?>
@@ -255,7 +256,7 @@ use Illuminate\Support\Facades\Auth;
                     <td></td>
                     <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
                     <td>
-                    <?php if(stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")==false && $locked != true){ ?>
+                    <?php if(stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")==false && $locked != true && $pallet->qc_hold != true){ ?>
                         <a href="javascript:;" class="plusButton" onclick="checkStockAvailabile('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                     <?php } ?>
                     </td>

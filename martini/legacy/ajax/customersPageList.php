@@ -3,15 +3,16 @@
 	require(__DIR__.'/../functions.php');
 
 	$name = request()->input('searchterm');
-	
+    $showDisabled = (request()->input('showDisabled',0)==1);
+
 	if($name != '' && strlen($name) > 1){
-	
+
 		?>
 		<div class="cutsContainer">
 		<?php
-		
-		$customerQueryResult = fuzzyCustomerSearch($name,true);
-		
+
+		$customerQueryResult = fuzzyCustomerSearch($name,true,$showDisabled);
+
 		while($customer = mysqli_fetch_array($customerQueryResult)){
 
 			$customer_id = $customer['id'];
@@ -37,14 +38,14 @@
 		<?php
 		}
 		?></div><?php
-		
+
 	}else{
 		?>
 		<div class="cutsContainer">
 		<?php
-		
+
 		$customerQueryResult = prepareExecuteQuery("SELECT * FROM `customers`");
-		
+
 		while($customer = mysqli_fetch_array($customerQueryResult)){
 
 			$customer_id = $customer['id'];
