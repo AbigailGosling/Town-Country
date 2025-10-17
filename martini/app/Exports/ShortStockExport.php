@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\CutGroup;
+use App\Models\Intake;
 use App\Models\Nationality;
 use App\Models\Pallet;
 use App\Models\PickerItem;
@@ -15,16 +16,13 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Str;
 
 class ShortStockExport implements FromCollection
 {
     private Collection $cuts;
-    private Collection $cutgroups;
+    //private Collection $cutgroups;
     private Collection $species;
     private Collection $nationalities;
     private Collection $brands;
@@ -32,18 +30,18 @@ class ShortStockExport implements FromCollection
     function __construct()
     {
         $this->cuts = Cut::all()->keyBy('id');
-        $this->cutgroups = CutGroup::all()->keyBy('id');
+        //$this->cutgroups = CutGroup::all()->keyBy('id');
         $this->species = Species::all()->keyBy('id');
         $this->nationalities = Nationality::all()->keyBy('id');
         $this->brands = Brand::all()->keyBy('id');
     }
-    private Collection $t;
+    private Collection $_collection;
     /**
     * @return \Illuminate\Support\Collection
     */
     public function collection()
     {
-        if (!isset($this->t))
+        if (!isset($this->_collection))
         {
             $m=[];
             $target_date = Carbon::now()->setDay(+10)->startOfDay()->format("d/m/Y");
@@ -58,9 +56,9 @@ class ShortStockExport implements FromCollection
             }
             $dateTS = array_column($m,"d");
             array_multisort($dateTS,SORT_ASC,$m);
-            $this->t = new Collection($m);
+            $this->_collection = new Collection($m);
         }
-        return $this->t;
+        return $this->_collection;
     }
     public function download() {
         return Excel::download($this,Carbon::now().".xlsx");
@@ -80,7 +78,7 @@ class ShortStockExport implements FromCollection
             $temp[$key] = $key;
         }
         $c->prepend($temp);
-        $this->t = $c;
+        $this->_collection = $c;
     }
     private function process(Product $product,Carbon $target_date)
     {
@@ -102,6 +100,7 @@ class ShortStockExport implements FromCollection
         if ($s == null || $s->id == 14 || $s->id == 11 || $s->id == 12) return null;
         $pallet = Pallet::find($product->pallet_id);
         $r['Intake']=$pallet->intake_id;
+        $r['Date']=Intake::find($pallet->intake_id)->date_received->format("d/m/Y");
         $r['Pallet']=$product->pallet_id;
         $kg = (double)0;
         $count = 0;
@@ -124,13 +123,13 @@ class ShortStockExport implements FromCollection
         if ($product->unit == 'PPC') $r['kg']=$thisweights->count();
         if ($r['kg'] < 1 || $r['Cases'] < 1) return null;
         $r['Species']=$s->name;
-        $r['Product Name']=$this->cutgroups[(int)$cut->cutgroup_id]->name." ".$cut->name;
+        $r['Product Name']=$cut->name;//$this->cutgroups[(int)$cut->cutgroup_id]->name." ".
         $r['Nationality']=$this->nationalities[$product->nationality_id]->name;
         $r['Brand']=$this->brands[$product->brand_id]->name;
         $r['Date From']=($product->range_extension != null || $product->range_extension != "")?"EXTENDED":$product->range_from;
         $r['Date To']=$product->range_to;
         $r['Cost']="£".$product->cost;
-        $r['QC HOLD']=($shortestDate->timestamp<$now)?"QC HOLD":"";
+        $r['QC HOLD']=($shortestDate->timestamp<$now||$pallet->qc_hold)?"QC HOLD":"";
         $r['d']=$shortestDate->timestamp;
         return $r;
     }

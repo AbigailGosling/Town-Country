@@ -218,6 +218,10 @@ $s = (int)(microtime(true));
 					<label>Document</label><br/>
 					<input type="file" name="dfile">
 				</td>
+                <td style="padding-left:10px;">
+					<label>POD?</label><br/>
+					<input type="checkbox" name="pod">
+				</td>
 				<td><br/>
 					<input type="button" onclick="mainForm()" value ="Submit"></input>
 				</td>
@@ -234,6 +238,7 @@ $s = (int)(microtime(true));
 			<tr class="productsHeading">
 				<th align="left">Message</th>
 				<th align="left">User</th>
+                <th align="right">POD?</th>
 				<th align="right">Action</th>
 			</tr>
 			<?php
@@ -249,7 +254,8 @@ $s = (int)(microtime(true));
 							}
 						?>
 					</td>
-					<td><?php echo getUsername($internalDoc['user_id']); ?></td>
+                    <td><?php echo getUsername($internalDoc['user_id']); ?></td>
+                    <td><?php echo ($internalDoc['pod'])?"YES":""; ?></td>
 					<td align="right">
 						<a href="?id=<?php echo $pickersheet_id; ?>&deleteInternalDocument=<?php echo $internalDoc['id']; ?>">Delete</a>
 					</td>

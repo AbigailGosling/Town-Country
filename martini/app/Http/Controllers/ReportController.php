@@ -97,7 +97,7 @@ class ReportController extends Controller
             "suppliers"=>Supplier::all(),
             "nationalities"=>Nationality::all(),
             "tempuratures"=>Temperature::all(),
-            "users"=>User::all(),
+            "users"=>User::where([["disabled",false],['is_hidden',false]])->get(),
             "customers"=>Customer::all(),
             'health_marks'=>HealthMark::all(),
             "report"=>$report,
@@ -127,7 +127,7 @@ class ReportController extends Controller
     {
         $result = new Collection();
 
-        foreach (User::where("disabled",false)->orderBy("name")->get() as $user)
+        foreach (User::where([["disabled",false],['is_hidden',false]])->orderBy("name")->get() as $user)
         {
             foreach (Customer::where("disabled",false)->where("default_salesman_id",$user->id)->orderBy("businessname")->get() as $customer)
             {

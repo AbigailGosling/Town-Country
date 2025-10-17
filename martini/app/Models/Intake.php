@@ -50,6 +50,7 @@ class Intake extends Model
 		'approved' => 'bool',
 		'approved_by' => 'int',
 		'approved_date' => 'datetime',
+        'date_received' => 'datetime:Y-m-d H:n:s',
 		'health_id' => 'int'
 	];
     protected $dates = [

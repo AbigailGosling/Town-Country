@@ -286,7 +286,6 @@ class IntakeReportController extends Controller
     }
     private function guessTheOriginal(Product $newproduct):Product
     {
-        $x = $newproduct;
         $potentialProds = Product::where("pallet_id",$newproduct->original_pallet_id)->get();
         if (count($potentialProds) == 1) return $potentialProds->first();
 

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Site;
-use App\Models\StockMovement;
+use App\Models\StockMovementRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class StockMovementController extends Controller
+class StockMovementRuleController extends Controller
 {
     /**
      * Show the form for creating a new resource.
@@ -16,7 +16,7 @@ class StockMovementController extends Controller
      */
     public function create(Request $request,Site $site)
     {
-        return $this->show($request,new StockMovement(["origin"=>$site->id]),true);
+        return $this->show($request,new StockMovementRule(["origin"=>$site->id]),true);
     }
 
     /**
@@ -33,14 +33,14 @@ class StockMovementController extends Controller
             'days' => ['required', 'integer','min:0'],
         ]);
         $input = $request->all();
-        $stockmovement = new StockMovement;
-        $stockmovement->origin = $input['origin'];
-        $stockmovement->destination = $input['destination'];
-        $stockmovement->days = $input['days'];
-        $stockmovement->save();
+        $stockmovementrule = new StockMovementRule;
+        $stockmovementrule->origin = $input['origin'];
+        $stockmovementrule->destination = $input['destination'];
+        $stockmovementrule->days = $input['days'];
+        $stockmovementrule->save();
         if (isset($input['mirror']) && $input['mirror'] == "on")
         {
-            $stockmovement2 = new StockMovement;
+            $stockmovement2 = new StockMovementRule;
             $stockmovement2->origin = $input['destination'];
             $stockmovement2->destination = $input['origin'];
             $stockmovement2->days = $input['days'];
@@ -52,53 +52,53 @@ class StockMovementController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\StockMovement  $stockmovement
+     * @param  \App\Models\StockMovementRule  $stockmovementrule
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request,StockMovement $stockmovement, bool $isNew = false)
+    public function show(Request $request,StockMovementRule $stockmovementrule, bool $isNew = false)
     {
-        $existingMovements = StockMovement::where("origin",$stockmovement->origin)->get()->pluck("destination")->toArray();
-        $sites = Site::where("id","<>",$stockmovement->origin)->get();
+        $existingMovements = StockMovementRule::where("origin",$stockmovementrule->origin)->get()->pluck("destination")->toArray();
+        $sites = Site::where("id","<>",$stockmovementrule->origin)->get();
         $cleanedSites = new Collection();
         foreach ($sites as $site)
         {
-            if ($site->id == $stockmovement->destination || !in_array($site->id,$existingMovements))
+            if ($site->id == $stockmovementrule->destination || !in_array($site->id,$existingMovements))
             {
                 $cleanedSites[] = $site;
             }
         }
-        if (!$isNew) $sites[] = Site::find($stockmovement->destination);
-        return view('stockmovements.edit',
+        if (!$isNew) $sites[] = Site::find($stockmovementrule->destination);
+        return view('stock-movements-rules.edit',
         [
-            'stockmovement' => $stockmovement,
-            'isMirrored' => $stockmovement->isMirrored(),
-            'origin'=>Site::find($stockmovement->origin),
-            'destination'=>Site::findOrNew($stockmovement->destination),
+            'stockmovementrule' => $stockmovementrule,
+            'isMirrored' => $stockmovementrule->isMirrored(),
+            'origin'=>Site::find($stockmovementrule->origin),
+            'destination'=>Site::findOrNew($stockmovementrule->destination),
             'sites'=>$cleanedSites,
             'isNew' => $isNew,
-            'existingDestinations' => StockMovement::where("origin",$stockmovement->origin)->get()->pluck("destination"),
+            'existingDestinations' => StockMovementRule::where("origin",$stockmovementrule->origin)->get()->pluck("destination"),
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\StockMovement  $stockmovement
+     * @param  \App\Models\StockMovementRule  $stockmovementrule
      * @return \Illuminate\Http\Response
      */
-    public function edit(Request $request,StockMovement $stockmovement)
+    public function edit(Request $request,StockMovementRule $stockmovementrule)
     {
-        return $this->show($request,$stockmovement);
+        return $this->show($request,$stockmovementrule);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\StockMovement  $stockmovement
+     * @param  \App\Models\StockMovementRule  $stockmovementrule
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, StockMovement $stockmovement)
+    public function update(Request $request, StockMovementRule $stockmovementrule)
     {
         $request->validate([
             'origin' => ['required','exists:tandc_live.site,id'],
@@ -106,13 +106,13 @@ class StockMovementController extends Controller
             'days' => ['required', 'integer','min:0'],
         ]);
         $input = $request->all();
-        $stockmovement->origin = $input['origin'];
-        $stockmovement->destination = $input['destination'];
-        $stockmovement->days = $input['days'];
-        $stockmovement->save();
+        $stockmovementrule->origin = $input['origin'];
+        $stockmovementrule->destination = $input['destination'];
+        $stockmovementrule->days = $input['days'];
+        $stockmovementrule->save();
         if (isset($input['mirror']) && $input['mirror'] == "on")
         {
-            $stockmovement2 = StockMovement::where([["origin",$input['destination']],["destination",$input['origin']]])->firstOrNew();
+            $stockmovement2 = StockMovementRule::where([["origin",$input['destination']],["destination",$input['origin']]])->firstOrNew();
             $stockmovement2->origin = $input['destination'];
             $stockmovement2->destination = $input['origin'];
             $stockmovement2->days = $input['days'];
@@ -124,10 +124,10 @@ class StockMovementController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\StockMovement  $stockmovement
+     * @param  \App\Models\StockMovementRule  $stockmovementrule
      * @return \Illuminate\Http\Response
      */
-    public function destroy(StockMovement $stockmovement)
+    public function destroy(StockMovementRule $stockmovementrule)
     {
         //
     }

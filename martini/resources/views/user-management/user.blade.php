@@ -44,7 +44,12 @@
                     <div style="width: 1em;"></div>
                     <x-input-label for="override_saledate_check" value="Override Next Day and Reservation Control"/>
                 </div>
-
+                <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
+                    <input type="checkbox" id="hidden" name="hidden"
+                           @if ($user->is_hidden) checked @endif />
+                    <div style="width: 1em;"></div>
+                    <x-input-label for="hidden" value="User Hidden"/>
+                </div>
                 @can('admin', Auth::user())
                     <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
                         <input type="checkbox" id="disabled" name="disabled"

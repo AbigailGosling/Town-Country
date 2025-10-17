@@ -4,26 +4,26 @@
 	if ($adv == false) include_once('includes/frontHeader.php');
 	else require_once('functions.php');
 
-	
+
 	$picksheet_id = request()->input('id');
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id='$picksheet_id'";
 	$y = prepareExecuteQuery($x) or die(mysqli_error($mysqli));
 	$picksheet = mysqli_fetch_array($y);
-	
-	
-	
+
+
+
 	$customer_id = $picksheet['customer_id'];
 	$x1 = "SELECT * FROM `customers` WHERE id='$customer_id'";
 	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($mysqli));
 	$customer = mysqli_fetch_array($y1);
-	
+
 	$addressNumber = $row['address'.$picksheet['addressid'].'_number'];
-	
+
 	$address = $customer['address'.$picksheet['addressid'].'_1'];
 	if($customer['address'.$picksheet['addressid'].'_2']){ $address .= ',&#13;'; }
 	$address .= $customer['address'.$picksheet['addressid'].'_2'];
-	
+
 	if($customer['address'.$picksheet['addressid'].'_3']){ $address .= ',&#13;'; }
 	$address .= $customer['address'.$picksheet['addressid'].'_3'];
 
@@ -74,9 +74,9 @@
 			<label>Delivery Date</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="estimated_delivery_date" name="estimated_delivery_date" placeholder="">
 		</div>
-	  
+
 	</div>
-	
+
 	<div class="row" id="address"></div>
 
 	<?php if($picksheet['user_from_id'] != ''){ ?>
@@ -85,7 +85,7 @@
 			<label>Salesman</label><br/>
  		 	<select id="" class="form-control" name="user_from_id">
 				<?php
-					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND  `is_hidden` = 0");
 
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($picksheet['user_from_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -95,9 +95,9 @@
 		</div>
 		<div class="col"></div>
 	</div>
-	
+
 	<?php } ?>
-	
+
 	<div class="row printhide">
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
@@ -105,7 +105,7 @@
 		</div>
 		<div class="col"></div>
 	</div>
-	
+
 	<div class="row">
 		<div class="col">
 			<label>	Order Reference Number</label><br/>
@@ -136,33 +136,33 @@
 		</tr>
 		<?php
 			$query = "SELECT * FROM `product` WHERE ";
-		
+
 			$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id='$picksheet_id'";
 			$y = prepareExecuteQuery($x);
-			
+
 			while($item = mysqli_fetch_array($y)){
 				$query .= " id = '".$item['product_id'] ."' ||";
 			}
-			
+
 			$query = substr($query, 0, -3);
 
 		?>
-		
-		
+
+
 		<?php
  			$yproduct = prepareExecuteQuery($query);
-			
+
 			while($product = mysqli_fetch_array($yproduct)){
 			?>
 			<tr class="productsRow">
 					<?php
-						
+
 						$thispalletid = $product['pallet_id'];
-						
+
 						$palletx = "SELECT * FROM `pallet` WHERE id ='$thispalletid'";
 						$pallety = prepareExecuteQuery($palletx);
 						$pallet = mysqli_fetch_array($pallety);
-						
+
 					?>
 					<td align="left"><span class="intakeid"><?php echo $pallet['intake_id']; ?></span></td>
 					<td align="left"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
@@ -183,9 +183,9 @@
 					</td>
 					<td align="left">
 						<b class="unit">
-						 
+
 						<?php
-							
+
 							if($product['unit'] == 'C'){
 								$unit = 'p/KG';
 							}else if($product['unit'] == 'PPC'){
@@ -197,7 +197,7 @@
 							}else{
 								$unit = 'p/KG';
 							}
-							
+
 							echo $unit;
 						?>
 						</b>
@@ -209,52 +209,52 @@
 						?>
 					</td>
  					</tr>
-			
+
 			<?php
 			}
 		?>
-		
+
  	</table>
-	
+
 	<div style="float:right;">
 		<br/><br/>
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
   	</div>
 </div>
- 
+
 
 
 <div class="clearfix"></div>
-<?php 
+<?php
 	if(request()->input('msg') != ''){
 	?>
 	<script type="text/javascript">
 		alert('<?php echo request()->input('msg');?>');
 	</script>
-	<?php	
+	<?php
 	}
 ?>
 <script type="text/javascript">
 	$('#customer').attr('disabled', 'disabled');
- 
+
 	$( "#estimated_delivery_date" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 	});
 	setCustomerDetails(<?php echo $customer_id; ?>,<?php echo $picksheet['addressid']; ?>, 'true');
-	
+
 	setTimeout(() => {
 		$('#customer').val('<?php echo $customer['businessname']; ?>');
 		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
-		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');	
+		$('#estimated_delivery_date').val('<?php echo $picksheet['estimated_delivery_date']; ?>');
 		renderCompleted = true;
 	}, 500);
-	
+
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
 
-	 	
+
 		var xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
@@ -264,7 +264,7 @@
 		xhttp.open("POST", "/ajax/getCustomerDropdown.php", true);
 		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 		xhttp.send("searchterm=" + val);
-	
+
 	});
 	var renderCompleted = false;
 	function setCustomerDetails(customer_id, addressid, empty='false'){
@@ -273,21 +273,21 @@
 			$('#address').html(data);
 			$('.rating').fadeIn();
 		});
-		
+
 	}
 
 	function addToList(id){
-		
+
 		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
 			$('.basketTable').append(data);
 		});
-		
+
 	}
-	
+
 	function removeFromList(id, pallet_id, product_id){
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
-		
+
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
@@ -306,7 +306,7 @@
 <style type="text/css">
 	.rightPanel{
 		width:calc(100% - 103px);
-	
+
 		float:left;
 		padding:50px;
 		position:relative;
@@ -320,42 +320,42 @@
 		border:1px solid #f4f4f4;
 		position:relative;
 	}
-	
+
 	.leftPanel{
 		background:#f2f2f2;
 	}
-	
+
 	.clearfix{
 		clear:both;
 	}
-	
+
 	.inputbox-button{
 		width:323px;
 		height:34px;
 		margin-bottom:10px;
 	}
-	
+
 	.inputbox{
 		width:300px;
 		height:34px;
 		padding-left:18px;
- 
+
 	}
-	
+
 	.createCustomerContainer{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-	
+
 	.weightTotal{
 		font-weight:700;
 		position:absolute;
 		top:50px;
 		right:30px;
 	}
-	
+
 	.resultsContainer{
 		width: calc(100% - 40px);
 		min-height: 400px;
@@ -374,7 +374,7 @@ function mainForm(){
 }
 function mainFormSucess(){
 	location.reload();
-}	
+}
 	function printStuff(){
 		window.print();
 	}
@@ -390,7 +390,7 @@ function mainFormSucess(){
 		alert("Sent");
 	}
 	function getRenderResp(data, status){
-        
+
 	}
 	function renderComplete(){
 		return renderCompleted;
