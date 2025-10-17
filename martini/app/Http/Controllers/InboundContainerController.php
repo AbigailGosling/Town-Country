@@ -103,6 +103,7 @@ class InboundContainerController extends Controller
      */
     public function update(Request $request, InboundContainer $container)
     {
+        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("failure","Cannot Update a Container that has arrived");
         $validated = $request->validate([
             'internal_number' => 'required|string',
             'origin_port'     => 'required|string',
@@ -209,6 +210,7 @@ class InboundContainerController extends Controller
      */
     public function updateProduct(Request $request, InboundContainer $container, ContainerProduct $containerProduct)
     {
+        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("failure","Cannot Update a Container that has arrived");
         $validated = $request->validate([
             'nationality' => 'required|integer',
             'brand'       => 'required|integer',

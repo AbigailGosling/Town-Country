@@ -77,7 +77,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
 
                 foreach ($basket as $reservation) {
 
-                    foreach (ReservationProduct::where("reservation_id",$reservation->id) as $resProduct)
+                    foreach (ReservationProduct::where("reservation_id",$reservation->id)->get() as $resProduct)
                     {
                         $product_id = $resProduct->product_id;
                         $quantity = $resProduct->target_count;

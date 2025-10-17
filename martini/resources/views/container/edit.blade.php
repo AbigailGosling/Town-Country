@@ -75,6 +75,7 @@
             </x-form>
         </form>
         @if ($isNew == false)
+        @if ($container->arrived == false)
         <div><a href="{{route('container-product.create',$container)}}">
             <div class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 flex rounded-md" style="width:150px;height:40px;float:right;margin-right:25px;margin-top:10px;">
                 <div class="m-auto" style="vertical-align: center !important">
@@ -85,6 +86,7 @@
             </div>
         </a>
         </div>
+        @endif
         <x-data-table>
             <x-slot:headers>
                 <x-data-table-header>Product</x-data-table-header>

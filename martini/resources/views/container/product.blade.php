@@ -114,12 +114,13 @@
 
                 <!-- Action Buttons -->
                 <x-slot name="buttons">
+                    @if ($container->arrived == false)
                     @if ($isNew == true)
                     <x-form-button id="save" title="Add Product" background="green" iconClass="fa-save" :submit="true" />
                     @else
                     <x-form-button id="save" title="Update Product" background="green" iconClass="fa-save" :submit="true" />
                     @endif
-
+                    @endif
                 </x-slot>
             </x-form>
         </form>
