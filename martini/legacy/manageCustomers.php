@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Site;
+use App\Models\User;
 
 	include('functions.php');
 	define('DEL_SUNDAY',     1);
@@ -256,7 +257,10 @@ use App\Models\Site;
 					<td>
 						<select id="sales_person" name="default_salesman_id">
 							<?php
-								$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `disabled` = 0 AND `is_hidden` = 0");
+                            $newUsers = User::where([["disabled",false],["is_hidden",false]]);
+                            if (request()->input('id') != '') $newUsers= $newUsers->orWhere("id",$data['default_salesman_id']);
+                            $newUsers = $newUsers->get()->pluck("id")->toArray();
+								$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `id` IN (".implode(",",$newUsers).")");
 
 								while ($_user = mysqli_fetch_array($_users)) {
 									?><option value="<?php echo $_user['id']; ?>" <?php if($data['default_salesman_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php

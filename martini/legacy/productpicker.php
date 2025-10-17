@@ -2,9 +2,19 @@
 
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 	include('includes/frontHeader.php');
+    Log::error(Auth::id(),[$_SERVER['HTTP_USER_AGENT']]);
 ?>
+<script>
+    console.log = function(...args) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://townandcountrystock.co.uk/legacy/test.php", true);
+        xhr.send(JSON.stringify(args));
+}
+</script>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>
@@ -143,7 +153,7 @@ use App\Models\User;
                     <select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select site..</option>
 					<?php
-						$x = "SELECT * FROM `site`";
+						$x = "SELECT * FROM `site` WHERE `disabled` = 0";
 						$y = prepareExecuteQuery($x);
 
 						while($row = mysqli_fetch_array($y)){
@@ -831,14 +841,14 @@ function cancelSale()
         todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
 
         if (!bipassNDandTenD){
-            if (deldate < yesterday)
+            /*if (deldate < yesterday)
             {
                $('#warning').css('background', "#ff6666");
                $('#warning').css('border', "2px solid #ff0000");
                $('#warning').css('display', "inline-block");
                $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell in the past</td>");
                return false;
-            }
+            }*/
             if (now > todaysCutoff && deldate < tomorrow)
             {
                 $('#warning').css('background', "#ff6666");
@@ -958,14 +968,14 @@ function cancelSale()
 				$('#loadResults').html(data);
 
 			});
-            // $('#siteID').prop('selectedIndex',0);
-			// $('#SearchBrand').prop('selectedIndex',0);
-			// $('#SearchNationality').prop('selectedIndex',0);
-			// $('#SearchSpecies').prop('selectedIndex',0);
-			// $('#SearchCutgroups').prop('selectedIndex',0);
-			// $('#SearchTime').prop('selectedIndex',0);
-			// $('#IntakeID').val('');
-			// $('#PalletID').val('');
+            $('#siteID').prop('selectedIndex',0);
+			$('#SearchBrand').prop('selectedIndex',0);
+			$('#SearchNationality').prop('selectedIndex',0);
+			$('#SearchSpecies').prop('selectedIndex',0);
+			$('#SearchCutgroups').prop('selectedIndex',0);
+			$('#SearchTime').prop('selectedIndex',0);
+			$('#IntakeID').val('');
+			$('#PalletID').val('');
 
 			$('.allsoption').hide();
 		}else{
