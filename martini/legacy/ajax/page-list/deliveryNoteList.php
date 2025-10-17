@@ -5,13 +5,11 @@ use App\Models\Location;
 use App\Models\PickersheetDocument;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
     require(__DIR__.'/../../functions.php');
 
     $toSkip = request()->input('toSkip',0);
     $term = $mysqli->real_escape_string(request()->input('searchterm',""));
-    Log::error($term);
     $dateToSearch = request()->input('datePicker');
     if ($dateToSearch != null) {
         $dateToSearch = Carbon::createFromFormat("D M d Y H:i:s e+",$dateToSearch);
@@ -29,11 +27,7 @@ use Illuminate\Support\Facades\Log;
         $customersToSearch = fuzzyCustomerSearch($term)->fetch_all(MYSQLI_ASSOC);
         $customersToSearch = array_column($customersToSearch,"id");
         if (is_numeric($term)){
-            Log::error("isnum");
             $tryPick = " AND (`id` = '".$term."' OR `id` LIKE '%".$term."%')";
-        }
-        else {
-            Log::error("isnotnumber");
         }
     }
     else {
@@ -41,7 +35,7 @@ use Illuminate\Support\Facades\Log;
     }
 
 
-    $queryResult = loggedQuery("SELECT * FROM `pickerSheets` WHERE (`completed`='1' AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
+    $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (`completed`='1' AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
     $queryResult = $queryResult->fetch_all(MYSQLI_ASSOC);
     $count = count($queryResult);
     $pickIDs = array_column($queryResult,"id");
