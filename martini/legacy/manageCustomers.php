@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Site;
+use App\Models\User;
 
 	include('functions.php');
 	define('DEL_SUNDAY',     1);
@@ -256,7 +257,10 @@ use App\Models\Site;
 					<td>
 						<select id="sales_person" name="default_salesman_id">
 							<?php
-								$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
+                            $newUsers = User::where([["disabled",false],["is_hidden",false]]);
+                            if (request()->input('id') != '') $newUsers= $newUsers->orWhere("id",$data['default_salesman_id']);
+                            $newUsers = $newUsers->get()->pluck("id")->toArray();
+								$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `id` IN (".implode(",",$newUsers).")");
 
 								while ($_user = mysqli_fetch_array($_users)) {
 									?><option value="<?php echo $_user['id']; ?>" <?php if($data['default_salesman_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -290,7 +294,7 @@ use App\Models\Site;
 					<td class="label"><label>Credit Checking</label></td>
 					<td>
 						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-
+                        <input type="hidden" id="credit_enabled_hidden" name="credit_enabled_hidden" value="<?php echo $data['credit_rating']?1:0; ?>">
 					</td>
 				</tr>
 				<tr height=""><td colspan="2"></td></tr>
@@ -311,14 +315,15 @@ use App\Models\Site;
 					<td class="label"><label>Override Credit Check</label></td>
 					<td>
 						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-					</td>
+                        <input type="hidden" id="override_hidden" name="override_hidden" value="<?php echo $data['override']?1:0; ?>">
+                    </td>
 				</tr>
 				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Price Markup/Markdown</label></td>
 					<td>
 						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-
+                        <input type="hidden" id="markup_enabled_hidden" name="markup_enabled_hidden" value="<?php echo $data['markup_enabled']?1:0; ?>">
 					</td>
 				</tr>
 				<tr height=""><td colspan="2"></td></tr>
@@ -355,7 +360,8 @@ use App\Models\Site;
 					<td class="label"><label>Delivery Date Checks</label></td>
 					<td>
 						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id;?>)" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-					</td>
+                        <input type="hidden" id="delivery_day_checking_hidden" name="delivery_day_checking_hidden" value="<?php echo $data['delivery_day_checking']?1:0; ?>">
+                    </td>
 				</tr>
 				<tr>
 					<td class="label"><label>Monday</label></td>
@@ -390,14 +396,16 @@ use App\Models\Site;
 					<td class="label"><label>Delivery Date Overide</label></td>
 					<td>
 						<a href="javascript:;" id="delivery_day_override" onclick="delDayOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-					</td>
+                        <input type="hidden" id="delivery_day_override_hidden" name="delivery_day_override_hidden" value="<?php echo $data['delivery_day_override']?1:0; ?>">
+                    </td>
 				</tr>
 
                 <tr>
 					<td class="label"><label>Next Day and Long Reservation Controls</label></td>
 					<td>
 						<a href="javascript:;" id="check_saledate" onclick="checkSaleDate(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['check_saledate'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['check_saledate'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-					</td>
+                        <input type="hidden" id="check_saledate_hidden" name="check_saledate_hidden" value="<?php echo $data['check_saledate']?1:0; ?>">
+                    </td>
 				</tr>
 			</table>
 		</div>
@@ -555,7 +563,7 @@ function mainForm2(){
 		}
 		var val = $('#instantSearch').val();
 
-		$.post('ajax/customersPageList.php',{'searchterm':val},function(data,status) {
+		$.post('ajax/customersPageList.php',{'searchterm':val,'showDisabled':<?php echo ($showDisabled == 1)?1:0; ?>},function(data,status) {
 			if (status == "success") {
 
 				$('#cutAjax').html(data);
@@ -604,11 +612,13 @@ function mainForm2(){
 	 function creditChecking(ele, id){
 		var q = $('#credit_enabled');
 		if (q.text() != "Disabled") {
+            $("#credit_enabled_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Credit Checking Disabled!"]);
 		}
 		else {
+            $("#credit_enabled_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Credit Checking Enabled!"]);
@@ -620,11 +630,13 @@ function mainForm2(){
 	function markupEnabled(ele, id){
 		var q = $('#markup_enabled');
 		if (q.text() != "Disabled") {
+            $("#markup_enabled_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Price Markup Disabled!"]);
 		}
 		else {
+            $("#markup_enabled_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Price Markup Enabled!"]);
@@ -637,11 +649,13 @@ function mainForm2(){
 	function delDayEnabled(ele, id){
 		var q = $('#delivery_day_checking');
 		if (q.text() != "Disabled") {
+            $("delivery_day_checking_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Delivery Day Checking Disabled!"]);
 		}
 		else {
+            $("delivery_day_checking_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Delivery Day Checking Enabled!"]);
@@ -660,11 +674,13 @@ function mainForm2(){
 	function delDayOverride(ele, id){
 		var q = $('#delivery_day_override');
 		if (q.text() != "Disabled") {
+            $("delivery_day_override_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Delivery Day Override Disabled!"]);
 		}
 		else {
+            $("delivery_day_override_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Delivery Day Override Enabled!"]);
@@ -683,11 +699,13 @@ function mainForm2(){
     function checkSaleDate(ele, id){
 		var q = $('#check_saledate');
 		if (q.text() != "Disabled") {
+            $("check_saledate_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Next Day and Long Reservation Controls Disabled!"]);
 		}
 		else {
+            $("check_saledate_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Next Day and Long Reservation Controls Enabled!"]);

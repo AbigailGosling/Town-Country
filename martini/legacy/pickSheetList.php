@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Location;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,6 +36,20 @@ use Illuminate\Support\Facades\Auth;
     <h1 class="int">Your Pick Sheets</h1>
     <br/><br/>
 	<div id="menu_wrasp" style="width:95%;">
+    <div align="right" class="datesearchcontainer">
+			<label>Location</label>
+			<select id="location" style="width:100px;height:32px;padding-left:10px;" >
+                <option selected disabled>Select Location</option>
+				<?php
+					foreach(Site::with("locations")->get() as $site){
+                        if ($site->locations->where("disabled",false)->count() == 0) continue; ?>
+					<option disabled><?php echo $site->abbreviation; ?></option>
+                    <?php
+                        foreach($site->locations->sortBy("name",SORT_NATURAL)->where("disabled",false) as $location){ ?>
+                            <option value="<?php echo $location->id; ?>" <?php echo (request()->input("location",-1)==$location->id)?"selected":""; ?>><?php echo $location->name; ?></option>
+                    <?php } ?>
+				<?php } ?>
+            </select>
  		<?php
 
 			session_start();session_write_close();
@@ -64,13 +79,15 @@ use Illuminate\Support\Facades\Auth;
                     $product_ids = implode(',', $product_ids);
                     $result_fresh = prepareExecuteQuery("SELECT id FROM `product` WHERE id IN ($product_ids) && cooling_id='1' LIMIT 1");
                     $count_fresh = mysqli_num_rows($result_fresh);
+                    $location_fresh = null;
+                    $location_frozen = null;
                     if ($count_fresh>0)
                     {
                         $result_location_fresh= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (1) LIMIT 1");
                         $location_fresh = mysqli_fetch_assoc($result_location_fresh);
                         $location_fresh = $location_fresh["loc"];
+                        if (request()->has("location") && $location_fresh!=request()->input("location")) continue;
                     }
-
                     // 2 is frozen
                     // 3 is fresh/frozen
 
@@ -82,6 +99,7 @@ use Illuminate\Support\Facades\Auth;
                         $result_location_frozen= prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT pallet.storage_location) as loc FROM `product` INNER JOIN pallet ON product.pallet_id = pallet.id WHERE product.id IN ($product_ids) && product.cooling_id IN (2,3) LIMIT 1");
                         $location_frozen = mysqli_fetch_assoc($result_location_frozen);
                         $location_frozen = $location_frozen["loc"];
+                        if (request()->has("location") && $location_frozen!=request()->input("location")) continue;
                     }
                 }
                 else
@@ -112,15 +130,14 @@ use Illuminate\Support\Facades\Auth;
                     $row2 = mysqli_fetch_assoc($y2);
                 }
 
-                if($count_fresh == 1 && $row['completed_fresh'] == '0')
+                if($count_fresh == 1 && $row['completed_fresh'] == '0' && $location_fresh != null)
                 {
                     rowprinter(false,$row,$row2,$date,explode(",",$location_fresh),$isSupplierReturn);
                 }
-                if($count_frozen == 1 && $row['completed_frozen'] == '0')
+                else if($count_frozen == 1 && $row['completed_frozen'] == '0' && $count_frozen != null)
                 {
                     rowprinter(true,$row,$row2,$date,explode(",",$location_frozen),$isSupplierReturn);
                 }
-
 			}
             function rowprinter($isFrozen,$row,$row2,$date,$locs,$isSupplierReturn)
             {
@@ -189,6 +206,28 @@ use Illuminate\Support\Facades\Auth;
     function results(){
         location.reload();
     }
+    $(document).ready(function(){
+        $('#location').on('change',doSearch);
+    });
+    function doSearch(){
+            var location = $('#location').find(":selected").val()??"";
+            window.location.href = "pickSheetList.php?location="+encodeURIComponent(location);
+            // var request = $.ajax({
+            //     headers:{'X-CSRF-TOKEN': "<?php //echo csrf_token();?>"},
+            //     type: "POST",
+            //     url: "piskSheetList.php",
+            //     data: {
+            //         location:   location,
+            //     },
+            //     dataType: "html"
+            // });
+            // request.done(function(data) {
+            //     $('#intakeAjax').html(data);
+            // });
+            // request.fail(function(jqXHR, textStatus) {
+            //     // alert( "Request failed: " + textStatus );
+            // });
+		}
 </script>
 </body>
 </html>

@@ -200,6 +200,7 @@ class UserController extends Controller
         $user->name = $input['name'];
         $user->email = $input['email'];
         $user->disabled = array_key_exists("disabled", $input);
+        $user->is_hidden = array_key_exists("hidden", $input);
         $user->override_saledate_check = array_key_exists("override_saledate_check", $input);
 
         if (isset($input['perms']) && is_array($input['perms']) && count($input['perms']) > 0) {

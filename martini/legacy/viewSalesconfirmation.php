@@ -93,7 +93,10 @@ use Illuminate\Support\Facades\Auth;
 			<label>Salesman</label><br/>
  		 	<select id="" class="form-control" name="user_from_id">
 				<?php
-					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
+                $newUsers = User::where([["disabled",false],["is_hidden",false]]);
+                            $newUsers= $newUsers->orWhere("id",$picksheet['user_from_id']);
+                            $newUsers = $newUsers->get()->pluck("id")->toArray();
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `id` IN (".implode(",",$newUsers).")");
 
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($picksheet['user_from_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
@@ -393,15 +396,15 @@ use Illuminate\Support\Facades\Auth;
         var todaysCutoff = new Date();
         todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
 
-        if (deldate < now)
+        /*if (deldate < now)
         {
             $('#sendfake').attr('disabled', true);
 			$('#warning').css('background', "#ff6666");
 			$('#warning').css('border', "2px solid #ff0000");
 			$('#warning').css('display', "inline-block");
-			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot Delivery date in the past</td>");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot set Delivery date in the past</td>");
             return false;
-        }
+        }*/
         if (now > todaysCutoff && deldate < tomorrow)
         {
             $('#sendfake').attr('disabled', true);

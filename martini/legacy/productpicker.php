@@ -2,9 +2,19 @@
 
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 	include('includes/frontHeader.php');
+    Log::error(Auth::id(),[$_SERVER['HTTP_USER_AGENT']]);
 ?>
+<script>
+    console.log = function(...args) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "https://townandcountrystock.co.uk/legacy/test.php", true);
+        xhr.send(JSON.stringify(args));
+}
+</script>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>
@@ -54,7 +64,7 @@ use App\Models\User;
 			<label> Salesperson</label><br />
 			<select id="sales_person" name="sales_person" class="form-control">
 				<?php
-					$_users = User::where(['disabled'=>0])->orderBy('name')->get();
+					$_users = User::where([['disabled',false],['is_hidden',false]])->orderBy('name')->get();
 
 					foreach ($_users as $_user) {
 						if (!$_user->hasPermission(Permission::find(1))) continue;
@@ -143,7 +153,7 @@ use App\Models\User;
                     <select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select site..</option>
 					<?php
-						$x = "SELECT * FROM `site`";
+						$x = "SELECT * FROM `site` WHERE `disabled` = 0";
 						$y = prepareExecuteQuery($x);
 
 						while($row = mysqli_fetch_array($y)){
@@ -173,6 +183,19 @@ use App\Models\User;
 
 							while($row = mysqli_fetch_array($y)){
 							?><option value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+							}
+						?>
+					</select>
+				</td>
+                <td style="width:20%">
+					<select id="temperatureID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+						<option value="" disabled selected>Select Tempurature..</option>
+						<?php
+							$x = "SELECT * FROM `temperature` ORDER BY `temperature`";
+							$y = prepareExecuteQuery($x);
+
+							while($row = mysqli_fetch_array($y)){
+							?><option value="<?php echo $row['id']; ?>"><?php echo $row['temperature']; ?></option><?php
 							}
 						?>
 					</select>
@@ -818,14 +841,14 @@ function cancelSale()
         todaysCutoff.setHours(targetCutoff.split(":")[0],targetCutoff.split(":")[1],0,0);
 
         if (!bipassNDandTenD){
-            if (deldate < yesterday)
+            /*if (deldate < yesterday)
             {
                $('#warning').css('background', "#ff6666");
                $('#warning').css('border', "2px solid #ff0000");
                $('#warning').css('display', "inline-block");
                $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell in the past</td>");
                return false;
-            }
+            }*/
             if (now > todaysCutoff && deldate < tomorrow)
             {
                 $('#warning').css('background', "#ff6666");
