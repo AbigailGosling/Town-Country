@@ -33,15 +33,6 @@ use Illuminate\Support\Facades\Auth;
     }
 
     $totalW = 0;
-
-
-        if($ubbb == 0){
-            $ubtext = 'UB';
-        }else if($ubbb == 1){
-            $ubtext = 'BB';
-        }else{
-            $ubtext = 'N/A';
-        }
         if ($site_id != '' && $site_id != null && $site_id != 'null'){
             $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
         }
@@ -94,6 +85,14 @@ use Illuminate\Support\Facades\Auth;
         }
  		if($products2Count > 0){
 			while($productsRow2 = mysqli_fetch_assoc($productsY2)){
+                $ubbb = $productsRow2['ubbb'];
+                if($ubbb == 0){
+                    $ubtext = 'UB';
+                }else if($ubbb == 1){
+                    $ubtext = 'BB';
+                }else{
+                    $ubtext = 'N/A';
+                }
                 $numOfWeights = numWeightsAvailableFromProductID($productsRow2['productid']);
                 if($numOfWeights > 0){
                     if (stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")!=false || $locked || $pallet->qc_hold){
