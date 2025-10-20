@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -61,11 +62,12 @@ class ShortStockExport implements FromCollection
         return $this->_collection;
     }
     public function download() {
-        return Excel::download($this,Carbon::now().".xlsx");
+        return Excel::download($this,Carbon::now()->format('d-M-Y').".xlsx");
     }
     public function file() {
         $this->addHeader();
-        $r = Carbon::now()->format('d-M-Y').".xlsx";//Storage::path("app/".Carbon::now().".xlsx");
+        $r = Carbon::now()->format('d-M-Y').".xlsx";
+        Excel::store($this,$r,"public");
         return $r;
     }
     private function addHeader(){

@@ -101,9 +101,10 @@ use App\Models\User;
 					<select name="user_id" style="height:29px;">
 						<option value="0" disabled selected>Select a salesman</option>
 						<?php
-							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users WHERE `is_hidden` = 0");
+							$usersResult = prepareExecuteQuery("SELECT id,`name` FROM users");
 							while($user = mysqli_fetch_array($usersResult)){
-                                if (User::find($user['id'])->disabled == true) continue;
+                                $um =User::find($user['id']);
+                                if ($data['user_id'] != $user['id'] && ($um->disabled == true || $um->is_hidden == true)) continue;
 						?>
 						<option value="<?php echo $user['id']; ?>" <?php if($data['user_id'] == $user['id']){ echo 'selected'; } ?>><?php echo $user['name']; ?></option>
 						<?php } ?>
