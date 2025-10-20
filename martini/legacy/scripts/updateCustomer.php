@@ -93,7 +93,7 @@
     $colNames[] = "`credit_enabled`=?";
 	$colValue[] = request()->input('credit_enabled_hidden');
 
-    $colNames[] = "`override=?`";
+    $colNames[] = "`override`=?";
 	$colValue[] = request()->input('override_hidden');
 
     $colNames[] = "`markup_enabled`=?";

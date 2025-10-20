@@ -17,15 +17,15 @@
     {
         $customers[$customer['id']] = $customer;
     }
-    
-    $sql = "SELECT invoice_payments.*,pickerSheets.customer_id FROM invoice_payments INNER JOIN pickerSheets ON invoice_payments.invoice_id = pickerSheets.id WHERE invoice_payments.created_at > NOW() - INTERVAL 3 MONTH ORDER BY invoice_payments.id DESC";
+
+    $sql = "SELECT invoice_payments.*,pickerSheets.customer_id FROM invoice_payments INNER JOIN pickerSheets ON invoice_payments.invoice_id = pickerSheets.id WHERE invoice_payments.created_at > NOW() - INTERVAL 6 MONTH ORDER BY invoice_payments.id DESC";
     $invoice_payments = mysqli_fetch_all(prepareExecuteQuery($sql),MYSQLI_ASSOC);
 
     foreach($invoice_payments as $payment)
     {
         $isNeg = false;
         if ($payment['payment_method'] == "CREDIT_NOTE") $payment['amount'] = creditNoteTotal($payment['id']);
-        if ($payment['amount'] < 0) 
+        if ($payment['amount'] < 0)
         {
             $payment['amount'] = $payment['amount'] * -1;
             $isNeg = true;
@@ -33,7 +33,7 @@
         $payment['customer_businessname'] = $customers[$payment['customer_id']]['businessname'];
         $payment['user_name'] = $users[$payment['payment_recorded_by']]['name'];
 ?>
-<tr class="" role="row">  
+<tr class="" role="row">
         <td><?php echo $payment['invoice_id']; ?></td>
         <td><?php echo $payment['customer_businessname']; ?></td>
         <td><?php echo $payment['payment_method']; ?></td>
