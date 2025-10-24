@@ -66,8 +66,8 @@
 	$colNames[] = "`default_salesman_id`";
 	$colValue[] = request()->input('default_salesman_id');
 
-    $colNames[] = "`check_saledate`";
-	$colValue[] = request()->input('check_saledate',true);
+    //$colNames[] = "`check_saledate`";
+	//$colValue[] = request()->input('check_saledate',true);
 
 	$colNames[] = "`due_warning`";
 	$colValue[] = (request()->input('due_warning')!=null && request()->input('due_warning') != "")?request()->input('due_warning'):"0";
