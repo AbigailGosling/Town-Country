@@ -10,13 +10,13 @@ ini_set('memory_limit', '1G');
 $timeStamp = microtime(true);
 $cutgroup_id = request()->input('cutgroup_id');
 $species_id = request()->input('species');
-$temperatureID = request()->input('temperatureID');
+$temperatureID = request()->input('temperatureID',null);
 $initial_pallet_id = $pallet_id = request()->input('palletID');
 $intake_id = request()->input('intakeID');
 $brand =  request()->input('brandID');
 $nationality =  request()->input('nationalityID');
-$customer_id =  request()->input('customerID');
-$site_id =request()->input('siteID');
+$customer_id =  request()->input('customerID') ??request()->input('supplierID');
+$site_id =request()->input('siteID',null);
 $timeSensitivityStatus = (int)request()->input('time',0);
 if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
@@ -125,7 +125,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if ($nationality != '' && $nationality != null && $nationality != 'null'){
         array_push($whereArray, "product.nationality_id = ". $nationality ."");
     }
-    if ($temperatureID != '' && $temperatureID != null && $temperatureID != 'null'){
+    if ($temperatureID != '' && $temperatureID != null && $temperatureID != 'null' && $temperatureID != 'undefined'){
         array_push($whereArray, "product.cooling_id = ". $temperatureID ."");
     }
     if ($site_id != '' && $site_id != null && $site_id != 'null'){
@@ -145,7 +145,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
     WHERE $whereString";
 
-    $productsY = prepareExecuteQuery($productsX);
+    $productsY = loggedQuery($productsX);
 
     $totalW = 0;
 

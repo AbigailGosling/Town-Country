@@ -89,7 +89,7 @@ class ActiveHolidayCoverController extends Controller
     {
         return view(
             'holiday-cover.edit', [
-                'users' => User::where([['disabled',false],['hidden',false]])->get(['id','name']),
+                'users' => User::where([['disabled',false],['is_hidden',false]])->get(['id','name']),
                 'isNew' => false,
                 'hc' => $holiday,
             ]
