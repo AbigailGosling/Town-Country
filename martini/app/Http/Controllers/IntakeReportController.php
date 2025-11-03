@@ -44,7 +44,15 @@ class IntakeReportController extends Controller
                     return Redirect::back()->withErrors("Intake $intake_id does not Exist");
                 }
                 $pallets = Pallet::where("intake_id",$intake->id)->get();
+                if ($pallets->count() < 1)
+                {
+                    return Redirect::back()->withErrors("Intake $intake_id has no pallets");
+                }
                 $products = Product::whereIn("pallet_id",$pallets->pluck("id")->toArray())->get();
+                if ($pallets->count() < 1)
+                {
+                    return Redirect::back()->withErrors("Intake $intake_id has no products");
+                }
                 if (!($products->first()->original_intake_id == null || $products->first()->original_intake_id == ""))
                     $intake_id = $products->first()->original_intake_id;
             }
@@ -100,8 +108,8 @@ class IntakeReportController extends Controller
                     }
                 }
                 if ($internalCount==0)continue;
-                $customer = Customer::find($sale->customer_id);
-                $user = User::find($customer->default_salesman_id);
+                $customer = ($sale->is_return_to_supplier == false)?Customer::find($sale->customer_id):Supplier::find($sale->customer_id);
+                $user = User::find(($sale->is_return_to_supplier == false)?$customer->default_salesman_id:$sale->user_from_id);
                 $salePickItems = $pickItems->whereIn("pickersheet_id",$sale->id);
                 foreach ($salePickItems as $pickItem)
                 {
@@ -115,7 +123,7 @@ class IntakeReportController extends Controller
                     $out->salesperson = $user->name;
                     $out->date = $sale->date_completed;
                     $out->invoice_id = $sale->id;
-                    $out->customer = $customer->businessname;
+                    $out->customer = ($sale->is_return_to_supplier == false)?$customer->businessname:$customer->name;
                     $out->pallet_id = $product->pallet_id;
                     $out->product_name = Species::find($cut->species_id)->name ." ".$cut->name;
                     $out->nationality_name = $nationalities->find($product->nationality_id)->name;
@@ -153,6 +161,7 @@ class IntakeReportController extends Controller
                 $paymentsForSale = $credits->where("invoice_id",$sale->id)->pluck("id")->toArray();
                 foreach ($creditNotes->whereIn("payment_id",$paymentsForSale) as $creditNote)
                 {
+                    if ($creditNote->product_id == null || $creditNote->product_id == 0) continue;
                     $payment = $credits->find($creditNote->payment_id);
                     $newproduct = $returnProducts->find($creditNote->product_id);
                     $orgproduct = $this->guessTheOriginal($newproduct);
