@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Cut
- * 
+ *
  * @property int $id
  * @property string|null $species_id
  * @property string|null $name
@@ -45,5 +45,19 @@ protected $connection = 'tandc_live';
 	public function cutgroup(): BelongsTo
     {
         return $this->belongsTo(CutGroup::class, 'cutgroup_id', 'id');
+    }
+    private CutGroup $_cutGroup;
+    public function getCutGroup():CutGroup
+    {
+        return $this->_cutGroup ??= CutGroup::find($this->cutgroup_id);
+    }
+    public function species():BelongsTo
+    {
+        return $this->belongsTo(Species::class,"species_id","id");
+    }
+    private Species $_species;
+    public function getSpecies():Species
+    {
+        return $this->_species ??= Species::find($this->species_id);
     }
 }

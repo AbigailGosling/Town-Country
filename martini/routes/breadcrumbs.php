@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\ContainerProduct;
 use App\Models\Customer;
+use App\Models\InboundContainer;
 use App\Models\Location;
 use App\Models\Site;
 use Diglactic\Breadcrumbs\Breadcrumbs;
@@ -74,4 +76,47 @@ Breadcrumbs::for('locations.edit', function(BreadcrumbTrail $trail, Site $site, 
     $trail->push('Sites', route('sites.index'));
     $trail->push($site->name,route('sites.edit',$site->id));
     $trail->push($user->name);
+});
+
+Breadcrumbs::for('containers.index', function(BreadcrumbTrail $trail){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers');
+});
+Breadcrumbs::for('containers.create', function(BreadcrumbTrail $trail){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push('New');
+});
+Breadcrumbs::for('containers.show', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number);
+});
+Breadcrumbs::for('containers.edit', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number);
+});
+Breadcrumbs::for('containers.update', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number);
+});
+Breadcrumbs::for('inbound-approvals.create', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number,route('containers.edit',$container->id));
+    $trail->push("Documents and Approval");
+});
+Breadcrumbs::for('container-product.create', function(BreadcrumbTrail $trail, InboundContainer $container){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number,route('containers.edit',$container->id));
+    $trail->push("Add Product");
+});
+Breadcrumbs::for('container-product.edit', function(BreadcrumbTrail $trail, InboundContainer $container, ContainerProduct $product){
+    $trail->push('Home', route('dashboard'));
+    $trail->push('Containers', route('containers.index'));
+    $trail->push($container->internal_number,route('containers.edit',$container->id));
+    $trail->push("Product ID: ".$product->id);
 });
