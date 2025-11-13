@@ -58,7 +58,8 @@ use App\Models\InboundContainer;
 	$pallet = prepareExecuteQuery($pallet,'i',[$pallet_id]);
 	$pallet = mysqli_fetch_assoc($pallet);
 
-	$siteid = prepareExecuteQuery("SELECT site_id FROM `location` WHERE id = ".$pallet['storage_location'])->fetch_assoc()['site_id'];
+	if (NULL != $pallet)$siteid = prepareExecuteQuery("SELECT site_id FROM `location` WHERE id = ".$pallet['storage_location'])->fetch_assoc()['site_id'];
+    else $siteid = 1;
 	$site = prepareExecuteQuery("SELECT * FROM `site` WHERE id = ".$siteid)->fetch_assoc();
 ?>
 <tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>">

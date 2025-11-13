@@ -5,6 +5,7 @@ use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\ReservationProduct;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 	$picksheet_note = request()->input('picksheet_note');
     $customer_id = request()->input('customer_id');
 	$addressid = request()->input('addressid');
+    $eta = Carbon::createFromFormat('d/m/Y', request()->input('eta'));
 
 	$today = date('Y-m-d');
 
@@ -47,7 +49,8 @@ use Illuminate\Support\Facades\Auth;
             'address_id'=>$addressid,
             'picksheet_note'=>$picksheet_note,
             'order_reference_number'=>$orderReferenceNumber,
-            'customer_id'=>$customer_id]);
+            'customer_id'=>$customer_id,
+            'eta'=>$eta]);
 
         loggedDataChange("reservation_note",$pickersheet_id,$picksheet_note);
 		loggedDataChange("reservation_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);

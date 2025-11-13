@@ -5,38 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+/**
+ * Class InboundContainer
+ *
+ * @property int $id
+ * @property string $internal_number
+ * @property string $origin_port
+ * @property \Illuminate\Support\Carbon $eta
+ * @property bool $admin_approved
+ * @property bool $arrived
+ * @property string|null $vessel
+ * @property int $temperature_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class InboundContainer extends Model
 {
     use HasFactory;
-
-    // Table name (optional if it matches the plural of the model name)
     protected $table = 'inbound_container';
 	protected $connection = 'tandc_live';
-    // Primary key
-    protected $primaryKey = 'id';
-
-    // Auto-incrementing key type
-    protected $keyType = 'int';
-    public $incrementing = true;
-
-    // Timestamps (created_at & updated_at are present, so this can stay true)
     public $timestamps = true;
-
-    // Mass assignable attributes
     protected $fillable = [
         'internal_number',
         'origin_port',
         'eta',
+        'admin_approved',
+        'arrived',
+        'vessel',
+        'temperature_id',
     ];
-
-    // Date casting
     protected $casts = [
         'eta' => 'date',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'admin_approved' => 'boolean',
+        'arrived' => 'boolean',
+        'temperature_id' => 'integer',
     ];
-    // Relationships (optional, if you have Container and Product models)
     public function containerProducts()
     {
         return $this->hasMany(ContainerProduct::class, 'container_id','id');

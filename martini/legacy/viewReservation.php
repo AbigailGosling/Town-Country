@@ -3,6 +3,7 @@
 use App\Models\ContainerProduct;
 use App\Models\InboundContainer;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 	$adv = request()->has("adv");
@@ -72,6 +73,10 @@ use Illuminate\Support\Facades\Auth;
 			<label>Customer</label><br/>
 			<input class="form-control" type="text" id="customer" class="inputbox" required>
 			<div id="customer_search_results" style="position:relative;z-index:99999;"></div>
+		</div>
+        <div class="col">
+			<label>ETA</label><br/>
+			<input class="form-control" type="text" class="inputbox" id="eta" name="eta" placeholder="" onkeydown="return false;">
 		</div>
 
 	</div>
@@ -226,8 +231,7 @@ use Illuminate\Support\Facades\Auth;
 <script type="text/javascript">
 	$('#customer').attr('disabled', 'disabled');
 	<?php if (User::find(Auth::id())->hasPermission("change_sale_details")) {?>
-	$( "#estimated_delivery_date" ).datepicker({
-            onSelect: ddChanged,
+	$( "#eta" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 	});
 	<?php } ?>
@@ -236,7 +240,7 @@ use Illuminate\Support\Facades\Auth;
 	setTimeout(() => {
 		$('#customer').val('<?php echo $customer['businessname']; ?>');
 		$('#contactnumber').val('<?php echo $customer['contactnumber']; ?>');
-		$('#estimated_delivery_date').val('<?php echo $reservation['estimated_delivery_date']; ?>');
+		$('#eta').val('<?php echo Carbon::createFromFormat("Y-m-d",$reservation['eta'])->format("d/m/Y"); ?>');
 		renderCompleted = true;
 	}, 500);
 
@@ -275,68 +279,7 @@ use Illuminate\Support\Facades\Auth;
 	}
     var delCheckingOn		= <?php echo ($customer['delivery_day_checking'] == 1 && $customer['delivery_day_override'] == 0)?"true":"false"; ?>;
 	var delDays				= <?php echo ($customer['delivery_days']>0)?$customer['delivery_days']:0; ?>;
-    function ddChanged(dateText){
-		var dateObj = $('#estimated_delivery_date').datepicker('getDate');
-		if (dateObj != null && delCheckingOn){
-			var daySelected = dateObj.getDay();
-			var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
-			var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
-			var weekdayInt = weekdayLookup[daySelected];
-		}
-		if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
-		{
-			day = weekday[daySelected];
-			$('#sendfake').attr('disabled', true);
-			$('#searcher').attr('disabled', true);
-			$('#warning').css('background', "#ff6666");
-			$('#warning').css('border', "2px solid #ff0000");
-			$('#warning').css('display', "inline-block");
-			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
-			return;
-		}
 
-        var ubs = $('#ubDate');
-        var temps = $('#temp_id');
-        if (ubs.length == 0 || dateText == null || dateText == "") return;
-        var date = dateObj.getTime();
-        $('#sendfake').prop('disabled',false);
-        var beyondBB = false;
-        for(var x = 0; x < ubs.length; x++){
-            var ub = ubs[x];
-            var temp = temps[x];
-            if (customerID == "420") break;
-            if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
-            {
-                continue;
-            }
-            var ubd = parseDMY(ub.innerHTML).getTime();
-            if (ubd < date)
-            {
-                $(ub).css('background', "#ff6666");
-                beyondBB = true;
-            }
-            else
-            {
-                $(ub).css('background', "#ffffff");
-            }
-        }
-        if (beyondBB)
-        {
-            $('#sendfake').prop('disabled',true);
-            $('#warning').css('background', "#ff6666");
-            $('#warning').css('border', "2px solid #ff0000");
-            $('#warning').css('display', "inline-block");
-            $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>An item in this sale will expire before delivery</td>");
-        }
-        else
-        {
-            if (!checkNextDayCutoff(siteid)) return;
-            $('#warning').css('display', "none");
-            $('#sendfake').attr('disabled', false);
-            $('#searcher').attr('disabled', false);
-        }
-
-	}
     const siteid = '<?php
     $loc = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id=?",'i',[$thispalletid])->fetch_assoc()['storage_location'];
         echo prepareExecuteQuery("SELECT * FROM `location` WHERE id=?",'i',[$loc])->fetch_assoc()['site_id'];?>';
@@ -353,7 +296,7 @@ use Illuminate\Support\Facades\Auth;
             }
         }
         if (targetCutoff == undefined) return true;
-        var deldate = $('#estimated_delivery_date').datepicker('getDate');
+        var deldate = $('#eta').datepicker('getDate');
         var now = new Date();
         var tomorrow = new Date();
         var tenDays = new Date();
@@ -487,7 +430,7 @@ use Illuminate\Support\Facades\Auth;
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
 	function mainForm(){
-		if ($('#estimated_delivery_date').val() == "") {
+		if ($('#eta').val() == "") {
 			alert("Delivery Date cannot be empty");
 			return;
 		}

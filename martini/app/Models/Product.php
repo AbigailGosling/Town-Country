@@ -85,7 +85,8 @@ protected $connection = 'tandc_live';
 		'akg',
 		'quantity',
 		'health_id',
-		'kill_date'
+		'kill_date',
+        'old_akg',
 	];
 	public function cut():BelongsTo
 	{

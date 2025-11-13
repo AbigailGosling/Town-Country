@@ -20,7 +20,8 @@ class Reservation extends Model
         'address_id',
         'picksheet_note',
         'order_reference_number',
-        'processed'
+        'processed',
+        'eta'
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class Reservation extends Model
         'picksheet_note'         => 'string',
         'order_reference_number' => 'string',
         'processed'              => 'boolean',
+        'eta'                    => 'date',
     ];
     public function reservation_product():HasMany
     {

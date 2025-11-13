@@ -36,10 +36,9 @@ use App\Models\User;
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     if ($page['file'] =="productpicker.php") { ?>
                     <a href="../shortstock">Short Dated Stock</a>
-                    <a href="containerreservation.php">Inbound Stock</a>
                     <?php
                     }
-                    if ($page['file'] =="salesconfirmationList.php") { ?>
+                    if ($page['file'] =="containerreservation.php") { ?>
                         <a href="reservationList.php">Reservations</a>
                     <?php
                     }

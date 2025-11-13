@@ -1,3 +1,12 @@
+<?php
+use App\Models\User;
+use App\Models\InboundContainer;
+use App\Models\Location;
+use App\Models\Product;
+use App\Models\ReservationProduct;
+use Illuminate\Support\Facades\Auth;
+
+?>
 <table width="100%" class="slim searchRContent"   style="display:table;">
     <thead>
         <tr class="searchRContent__head">
@@ -6,20 +15,18 @@
 	        <th class="searchRContent__unit">Units</th>
 	        <th class="searchRContent__product">Product</th>
 	        <th>Nationality</th>
+            <th>Comments</th>
 	        <th>Brand</th>
 	        <th class="searchRContent__date-range">ETA</th>
 	        <th>Expected KG</th>
 	        <th>Cost</th>
+            <th>RRP</th>
 	        <th class="searchRContent__plus"></th>
         </tr>
     </thead>
     <tbody>
 <?php
 
-use App\Models\InboundContainer;
-use App\Models\Location;
-use App\Models\Product;
-use App\Models\ReservationProduct;
 
     ini_set('memory_limit','32M');
 	require(__DIR__.'/../functions.php');
@@ -31,6 +38,7 @@ use App\Models\ReservationProduct;
     $nationality_id =  request()->input('nationalityID');
     $customer_id =  request()->input('customerID');
     $timeSensitivityStatus = (int)request()->input('time',0);
+    $internal_num = request()->input('internal_num',"");
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     $totalW = 0;
@@ -76,7 +84,9 @@ use App\Models\ReservationProduct;
         }
 
         $whereString = implode(' && ',$whereArray);
-        $containers = InboundContainer::where([["admin_approved",true],["arrived",false]])->orderBy('eta')->with('containerProducts')->get();
+        $cqb = InboundContainer::where([["admin_approved",true],["arrived",false]]);
+        if ($internal_num != "") $cqb = $cqb->where("internal_number","LIKE","%".$internal_num."%");
+        $containers = $cqb->orderBy('eta')->with('containerProducts')->get();
         foreach ($containers as $container) {
             foreach ($container->containerProducts as $containerProduct){
                 $alreadyReserved = ReservationProduct::where("product_id",$containerProduct->product_id)->get()->sum("target_count");
@@ -112,6 +122,7 @@ use App\Models\ReservationProduct;
                                 }
                             }
                             $this_row_weight = $productsRow2['akg'];
+                            if ($productsRow2['quantity'] - $alreadyReserved == 0) continue;
 
                         ?>
                         <tr class="subrow <?php echo $class; ?>">
@@ -128,6 +139,13 @@ use App\Models\ReservationProduct;
                             </td>
                             <td class="bold" colspan="1"><?php echo getCut($productsRow2['cut_id']); ?></td>
                             <td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
+                            <td colspan="1">
+                                <form method="post">
+                                    <textarea name="pallet-comment" palletid="<?php echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment"><?php echo $pallet_comments; ?></textarea>
+                                    <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
+                                    <i class="fa fa-save" onclick="saveDeepComment(<?php echo $productsRow2['pallet_id']; ?>,<?php echo $productsRow2['productid']; ?>)"></i>
+                                </form>
+                            </td>
                             <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
                             <td><?php echo $container->eta->format("d/m/Y"); ?></td>
 
@@ -141,8 +159,10 @@ use App\Models\ReservationProduct;
                             }else{
                                 echo $this_row_weight*$productsRow2['quantity']  . 'kg';
                             }
+                            $prodMod = Product::find($containerProduct->product_id);
                             ?></td>
-                            <td><?php echo "£".number_format(Product::find($containerProduct->product_id)->price,2); ?></td>
+                            <td><?php echo "£" . number_format($prodMod->cost, 2, '.', ''); ?></td>
+                            <td><?php echo '£' . number_format($containerProduct->rrp, 2, '.', ''); ?></td>
                             <td>
                                 <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                             </td>

@@ -52,6 +52,18 @@
                             name="eta" value="{{ old('eta', ($container->eta)?$container->eta->format('Y-m-d'):"") }}" required />
                         <x-input-error :messages="$errors->get('eta')" class="mt-2" />
                     </div>
+                     <!-- Brand -->
+                     <div>
+                        <x-input-label for="temperature_id" :value="__('Temperatures')" />
+                        <select id="temperature_id" class="block mt-1 w-full" name="temperature_id" required>
+                            <option disabled="disabled" selected value="">Select Temperature</option>
+                            @foreach ($temperatures as $temperature)
+                            <option {{($temperature->id==old('temperature_id', $container->temperature_id)) ? "selected":"";}} value="{{$temperature->id}}" {{{($isNew==false&&$container->temperature_id > 0)?'disabled="disabled"':''}}}>{{$temperature->temperature}}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('temperature_id')" class="mt-2" />
+                    </div>
+
                 </x-form-section>
 
                 <!-- Action Buttons -->

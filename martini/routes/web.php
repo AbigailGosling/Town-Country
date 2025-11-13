@@ -20,6 +20,7 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserCustomerController;
 use App\Models\ContainerProduct;
 use App\Models\InboundContainer;
 use App\Models\User;
@@ -65,6 +66,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
     Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
+
+    Route::get('usercustomer',[UserCustomerController::class,'index'])->name('usercustomer.index');
+    Route::get('/usercustomer/download', [UserCustomerController::class, 'download'])->name('usercustomer.download');
+
     Route::get('bulkpermissions', [BulkPermissionController::class, 'view'])->name('bulkpermission.view');
     Route::put('bulkpermissions/save', [BulkPermissionController::class, 'save'])->name('bulkpermission.save');
 
@@ -111,6 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
+    Route::get('containers/{existingContainer}/clone-container', [InboundContainerController::class, 'cloneContainer'])->name('containers.clone-container');
     Route::resource('containers', 'App\Http\Controllers\InboundContainerController');
 
     Route::get('/containers/{container}/product/create', [InboundContainerController::class, 'createProduct'])->name('container-product.create');

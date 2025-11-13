@@ -7,10 +7,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Customer
- * 
+ *
  * @property int $id
  * @property string|null $businessname
  * @property string|null $tradingas
@@ -220,4 +221,10 @@ class Customer extends Model
 		'delivery_days',
 		'sage_no'
 	];
+    public function user():BelongsTo{
+        return $this->belongsTo(OldUser::class,"default_salesman_id","id");
+    }
+    public function site():BelongsTo{
+        return $this->belongsTo(Site::class,"site_id","id");
+    }
 }

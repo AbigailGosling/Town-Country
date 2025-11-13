@@ -4,11 +4,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
-	
+
 	$term = request()->input('searchterm');
 	$showDeleted = (request()->has("showDeleted") && request()->input('showDeleted') == 1)?"":"`deleted` = 0 AND";
 	if($term != ''){
-		
+
 		$SUPPLIER_CUSTOMER_IDS = array(0);
 
 		// Check for search matching suppliers
@@ -26,23 +26,23 @@ use Illuminate\Support\Facades\Auth;
 		$intakeIDs = array(0);
 		while($pallet = mysqli_fetch_array($palletQuery)){ array_push($intakeIDs, $pallet['intake_id']); }
 		$intakeIDs = implode(',', $intakeIDs);
-		
+
 		if (validateDate($term)) { # search term is a DATE
 			$date = str_replace('/', '-', $term);
 			$termDate = date('Y-m-d', strtotime($date));
-			
-			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted date_received LIKE ? ORDER BY date_received DESC, id DESC",'s',['%'.$termDate.'%']); 
+
+			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted `date_received` LIKE ? ORDER BY `date_received` DESC, `id` DESC",'s',['%'.$termDate.'%']);
 		}else{
-			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted id=? OR vehicle_reg LIKE ? OR  id LIKE ? OR  delivery_note_number LIKE ? OR ((supplier_id <> '') && supplier_id IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY date_received DESC, id DESC"
-		,'ssss',[$term,'$term%','$term%','$term%']);
+			$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted id=? OR `import_num` LIKE ? OR `internal_num` LIKE ? OR `vehicle_reg` LIKE ? OR `id` LIKE ? OR `delivery_note_number` LIKE ? OR ((`supplier_id` <> '') && `supplier_id` IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY `date_received` DESC, `id` DESC"
+		,'ssssss',[$term,$term.'%',$term.'%',$term.'%',$term.'%',$term.'%']);
 		}
 
         $countResults = mysqli_num_rows($searchResults);
-	
+
         if($countResults == 0){
             ?><h2 style="color:#fff;font-size:12px;">No intakes found</h2><?php
         }else{
-            
+
             while($intake = mysqli_fetch_array($searchResults)){
                 $date_received = date('d/m/Y', strtotime($intake['date_received']));
             ?>
@@ -51,7 +51,7 @@ use Illuminate\Support\Facades\Auth;
                         <table width="100%" border="0">
 						<tr>
 							<?php
-								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
+								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);
 							?>
 							<td width="30%" align="left">
 								ID: I-<?php echo $intake['id'];?></td>
@@ -84,7 +84,7 @@ use Illuminate\Support\Facades\Auth;
 						</tr>
                         </table>
                     </a>
-                    
+
                     <a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
                 </td></tr>
             <?php
@@ -92,7 +92,7 @@ use Illuminate\Support\Facades\Auth;
         }
 	}else{ ?>
 		<?php
-		
+
 		$searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted returned ='0' ORDER BY date_received DESC");
 		while($intake = mysqli_fetch_array($searchResults)){
 		    $date_received = date('d/m/Y', strtotime($intake['date_received']));
@@ -116,7 +116,7 @@ use Illuminate\Support\Facades\Auth;
 									echo supplierName($intake['supplier_id']);
 								}
 
-								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);    
+								$productCountNotCosted = productCountOnIntakeNotCosted($intake['id']);
 								if($productCountNotCosted == 0){
 								?><i class="fa fa-check" aria-hidden="true" style="margin-left:10px;"></i><?php
 								}
@@ -127,7 +127,7 @@ use Illuminate\Support\Facades\Auth;
 						</tr>
 					</table>
 				</a>
-				
+
 				<a href="javascript:;" onclick="deleteRow('<?php echo $intake['id'];?>')" id="delete_intake"><i class="fa fa-times" aria-hidden="true"></i></a>
 			</td></tr>
 		<?php

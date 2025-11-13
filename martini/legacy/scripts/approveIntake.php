@@ -15,7 +15,38 @@ use Illuminate\Support\Facades\Auth;
 require(__DIR__.'/../functions.php');
 
 $user = User::find(Auth::id());
-$intake = Intake::find(request()->input('intake_id'));
+$intake = Intake::with("pallets")->with("products")->find(request()->input('intake_id'));
+if ($intake->pallets->count() == 0)
+{?>
+<script>
+	window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=1';
+</script> <?php exit;
+}
+/**
+* @var Pallet $pallet
+*/
+foreach ($intake->pallets as $pallet)
+{
+    if ($pallet->products->count() == 0)
+    {?>
+    <script>
+        window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=2';
+    </script><?php exit;
+    }
+    /**
+    * @var Product $product
+    */
+    foreach ($pallet->products as $product)
+    {
+        if ($product->ubbb != 2 && ($product->range_from =="" || $product->range_from ==null || $product->range_to =="" || $product->range_to ==null))
+        {
+        ?>
+            <script>
+                window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=3';
+            </script><?php exit;
+        }
+    }
+}
 if ($user->hasPermission("approve_intake") && $intake->approved == false)
 {
     if (isset($intake->container_id)) {
@@ -81,10 +112,10 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                     {
                         $product_id = $resProduct->product_id;
                         $quantity = $resProduct->target_count;
-                        $target_weight = $resProduct->price;
+                        $target_weight = 0;
 
 
-                        $price = null;
+                        $price = $resProduct->price;
                         $price_type = null;
                         for($i=0;$i<$quantity;$i++){
                             $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";

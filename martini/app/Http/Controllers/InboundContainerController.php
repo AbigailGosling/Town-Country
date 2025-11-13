@@ -9,6 +9,7 @@ use App\Models\InboundContainer;
 use App\Models\Nationality;
 use App\Models\Product;
 use App\Models\Species;
+use App\Models\Temperature;
 use Illuminate\Http\Request;
 
 class InboundContainerController extends Controller
@@ -44,7 +45,7 @@ class InboundContainerController extends Controller
      */
     public function create()
     {
-        return view("container.edit",['container'=>new InboundContainer(),'isNew'=>true]);
+        return view("container.edit",['container'=>new InboundContainer,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>true]);
     }
 
     /**
@@ -59,7 +60,8 @@ class InboundContainerController extends Controller
             'internal_number' => 'required|string',
             'origin_port'     => 'required|string',
             'eta'             => 'required|date|after:today',
-            'vessel'          => 'sometimes|string'
+            'vessel'          => 'sometimes|string',
+            'temperature_id'  => 'required|int|in:1,2'
         ]);
 
         $container = new InboundContainer();
@@ -68,6 +70,7 @@ class InboundContainerController extends Controller
         $container->arrived = $request->input("arrived",false);
         $container->vessel = $request->input("vessel","");
         $container->eta = $request->input("eta");
+        $container->temperature_id = $request->input("temperature_id");
         $container->save();
         return $this->show($container);
     }
@@ -80,7 +83,7 @@ class InboundContainerController extends Controller
      */
     public function show(InboundContainer $container)
     {
-        return view("container.edit",['container'=>$container,'isNew'=>false]);
+        return view("container.edit",['container'=>$container,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false]);
     }
 
     /**
@@ -103,18 +106,20 @@ class InboundContainerController extends Controller
      */
     public function update(Request $request, InboundContainer $container)
     {
-        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("failure","Cannot Update a Container that has arrived");
+        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("error","Cannot Update a Container that has arrived");
         $validated = $request->validate([
             'internal_number' => 'required|string',
             'origin_port'     => 'required|string',
             'eta'             => 'required|date',
-            'vessel'          => 'sometimes|string'
+            'vessel'          => 'sometimes|string',
+            'temperature_id'  => 'sometimes|int|in:1,2'
         ]);
         $container->internal_number = $request->input("internal_number",$container->internal_number)??"";
         $container->origin_port = $request->input("origin_port",$container->origin_port)??"";
         $container->arrived = $request->input("arrived",$container->arrived);
         $container->eta = $request->input("eta",$container->eta);
-        $container->vessel = $request->input("vessel","");
+        $container->vessel = $request->input("vessel",$container->vessel);
+        $container->temperature_id = $request->input("temperature_id",$container->temperature_id);
         $container->save();
         return $this->show($container);
     }
@@ -139,6 +144,33 @@ class InboundContainerController extends Controller
     public function destroy(InboundContainer $container)
     {
         //
+    }
+
+    /**
+     * Clone the specified resource from storage.
+     *
+     * @param  \App\Models\InboundContainer  $existingContainer
+     * @return \Illuminate\Http\Response
+     */
+    public function cloneContainer(InboundContainer $existingContainer)
+    {
+        $newContainer = $existingContainer->replicate();
+        $newContainer->arrived = $newContainer->admin_approved = false;
+        $newContainer->save();
+
+        foreach (ContainerProduct::where("container_id",$existingContainer->id)->get() as $existingContainerProduct)
+        {
+            $existingProduct = Product::find($existingContainerProduct->product_id);
+            $newProduct =  $existingProduct->replicate();
+            $newProduct->pallet_id      = -2;
+            $newProduct->akg ??= $newProduct->old_akg;
+            $newProduct->save();
+            $newContainerProduct = $existingContainerProduct->replicate();
+            $newContainerProduct->product_id = $newProduct->id;
+            $newContainerProduct->container_id = $newContainer->id;
+            $newContainerProduct->save();
+        }
+        return redirect()->route('containers.edit',[$newContainer])->with("message","Container Duplicated");
     }
 
      /**
@@ -210,15 +242,16 @@ class InboundContainerController extends Controller
      */
     public function updateProduct(Request $request, InboundContainer $container, ContainerProduct $containerProduct)
     {
-        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("failure","Cannot Update a Container that has arrived");
+        if ($container->arrived == true) return redirect()->route('containers.edit',[$container])->with("error","Cannot Update a Container that has arrived");
         $validated = $request->validate([
             'nationality' => 'required|integer',
             'brand'       => 'required|integer',
             'cut'         => 'required|integer',
-            'unit'         => 'required|string|max:50',
+            'unit'        => 'required|string|max:3',
             'qty'         => 'required|integer',
             'akg'         => 'required|numeric',
             'rrp'         => 'required|numeric',
+            'cost'         => 'required|numeric',
         ]);
         $product = (!$containerProduct->exists)?new Product():Product::find($containerProduct->product_id);
         $product->pallet_id      = -2;
@@ -228,11 +261,12 @@ class InboundContainerController extends Controller
         $product->unit           = $validated['unit'];
         $product->quantity       = $validated['qty'];
         $product->akg            = $validated['akg'];
-        $product->price          = $validated['rrp'];
+        $product->cost           = $validated['cost'];
         $product->save();
 
         $containerProduct->container_id = $container->id;
         $containerProduct->product_id = $product->id;
+        $containerProduct->rrp = $validated['rrp'];
         $containerProduct->save();
         return redirect()->route('containers.show',[$containerProduct->container_id]);
     }

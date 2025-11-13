@@ -84,7 +84,7 @@ use App\Models\Site;
 				<tr>
 				<td>
 					<label>Delivery Note Number</label>
-					<input type="text" name="delivery_note_number" id="delivery_note_number" value="<?php if ($isContainer) echo $container->internal_number; ?>">
+					<input type="text" name="delivery_note_number" id="delivery_note_number" value="">
 				</td>
                 <td>
 					<label>Depot</label>
@@ -122,6 +122,14 @@ use App\Models\Site;
 					</select>
 				</td>
 				</tr>
+                <tr>
+				<td>
+					<label>T&C Number</label>
+					<input type="text" name="internal_number" id="internal_number" value="<?php if ($isContainer) echo $container->internal_number; ?>">
+				</td>
+				<td></td>
+
+				</tr>
 			</tbody>
 		</table>
 		</form>
@@ -139,6 +147,7 @@ use App\Models\Site;
 		var vehicle_temperature = $('#vehicle_temperature').val();
 		var product_temperature = $('#product_temperature').val();
 		var delivery_note_number = $('#delivery_note_number').val();
+        var internal_number = $('#internal_number').val();
 		var security_id = $('#security_id').val();
 
 		var good = 1;

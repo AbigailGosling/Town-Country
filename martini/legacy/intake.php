@@ -1238,16 +1238,13 @@ use Illuminate\Support\Facades\Auth;
 			$('.palletnotepopup').fadeOut();
 		});
 
-		<?php if(request()->input('pallet_id')){ ?>
+		<?php if(request()->has('pallet_id')||request()->has('error')){ ?>
 			$('.palletnotepopup').fadeIn();
 		<?php } ?>
 	});
 </script>
-<div class="palletnotepopup">Pallet <span class="palletidpopup"><?php echo request()->input('pallet_id'); ?></span> Noted <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
-
-
 <?php
-	if(request()->input('palletupdated')){
+	if(request()->has('palletupdated')){
 	?>
 		<script>
 			$(document).ready(function(){
@@ -1258,6 +1255,39 @@ use Illuminate\Support\Facades\Auth;
 			});
 		</script>
 		<div class="palletnotepopup">Pallet <?php echo request()->input('palletupdated'); ?> Updated <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
+	<?php
+	}
+?>
+<?php
+	if(request()->has('error')){
+        switch (request()->input('error'))
+        {
+            case 1:
+                {
+                    $errorMessage = "Cannot Approve: No Pallets";
+                    break;
+                }
+            case 2:
+                {
+                    $errorMessage = "Cannot Approve: Pallets have no Products";
+                    break;
+                }
+            case 3:
+                {
+                    $errorMessage = "Cannot Approve: Products are missing information";
+                    break;
+                }
+        }
+	?>
+		<script>
+			$(document).ready(function(){
+				$('#closePalletPopup').click(function(){
+					$('.palletnotepopup').fadeOut();
+
+				});
+			});
+		</script>
+		<div class="palletnotepopup"><?php echo $errorMessage; ?> <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
 	<?php
 	}
 ?>

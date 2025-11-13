@@ -9,6 +9,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * Class Intake
@@ -83,5 +84,11 @@ class Intake extends Model
 	];
     public function pallets():HasMany{
         return $this->hasMany(Pallet::class,"intake_id","id");
+    }
+    public function products():HasManyThrough{
+        return $this->hasManyThrough(
+            Product::class, Pallet::class,
+            'intake_id', 'pallet_id', 'id'
+        );
     }
 }
