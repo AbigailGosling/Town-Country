@@ -7,10 +7,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class User
- * 
+ *
  * @property int $id
  * @property string|null $name
  * @property string|null $email
@@ -49,4 +51,10 @@ class OldUser extends Model
 		'view_intake_prices',
 		'allow_override_salesman'
 	];
+    public function customers():HasMany{
+        return $this->hasMany(Customer::class,"default_salesman_id","id");
+    }
+    public function auth_user():BelongsTo{
+        return $this->BelongsTo(User::class,"id","id");
+    }
 }

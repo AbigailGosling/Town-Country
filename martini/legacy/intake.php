@@ -923,7 +923,7 @@ use Illuminate\Support\Facades\Auth;
  	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
 	 <a href="printAllPallets.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print all pallets</a>
 
-	<center id="hidePalletBtnContainer"><br/><br/><br/><Br/><Br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
+	<center id="hidePalletBtnContainer"><br/><br/><br/><br/><br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
 	<div id="ajaxContent">
 
 	</div>
@@ -984,7 +984,10 @@ use Illuminate\Support\Facades\Auth;
 			}
 });
 	});
-
+    function qc_hold(pallet_id){
+        var c = ($('#qc_hold'+pallet_id).is(":checked"))?1:0;
+        $.post( "ajax/toggleQCHold.php",{pallet_id:pallet_id,set_to:c});
+    }
 	function editWeight(intake_id, pallet_id, product_id, weight_id){
 		console.log('intake_id ' + intake_id);
 		console.log('pallet_id ' + pallet_id);
@@ -1235,16 +1238,13 @@ use Illuminate\Support\Facades\Auth;
 			$('.palletnotepopup').fadeOut();
 		});
 
-		<?php if(request()->input('pallet_id')){ ?>
+		<?php if(request()->has('pallet_id')||request()->has('error')){ ?>
 			$('.palletnotepopup').fadeIn();
 		<?php } ?>
 	});
 </script>
-<div class="palletnotepopup">Pallet <span class="palletidpopup"><?php echo request()->input('pallet_id'); ?></span> Noted <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
-
-
 <?php
-	if(request()->input('palletupdated')){
+	if(request()->has('palletupdated')){
 	?>
 		<script>
 			$(document).ready(function(){
@@ -1255,6 +1255,39 @@ use Illuminate\Support\Facades\Auth;
 			});
 		</script>
 		<div class="palletnotepopup">Pallet <?php echo request()->input('palletupdated'); ?> Updated <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
+	<?php
+	}
+?>
+<?php
+	if(request()->has('error')){
+        switch (request()->input('error'))
+        {
+            case 1:
+                {
+                    $errorMessage = "Cannot Approve: No Pallets";
+                    break;
+                }
+            case 2:
+                {
+                    $errorMessage = "Cannot Approve: Pallets have no Products";
+                    break;
+                }
+            case 3:
+                {
+                    $errorMessage = "Cannot Approve: Products are missing information";
+                    break;
+                }
+        }
+	?>
+		<script>
+			$(document).ready(function(){
+				$('#closePalletPopup').click(function(){
+					$('.palletnotepopup').fadeOut();
+
+				});
+			});
+		</script>
+		<div class="palletnotepopup"><?php echo $errorMessage; ?> <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
 	<?php
 	}
 ?>

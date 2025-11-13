@@ -1,5 +1,5 @@
 <div class="bg-gray-200 shadow-sm sm:rounded-lg ml-6 mr-6">
-    <table class="border-collapse table-auto w-full text-sm mt-4">
+    <table class="border-collapse table-auto w-full text-sm mt-4" {{($fixed)?"table-layout:fixed":""}}>
         @if(isset($headers))
         <thead style="position: sticky; top: 0;">
         <tr>

@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::connection('tandc_live')->create('reservation', function (Blueprint $table) {
+            $table->id();
+            $table->integer("user_id");
+            $table->integer("customer_id");
+            $table->integer("address_id");
+            $table->string("picksheet_note");
+            $table->string("order_reference_number");
+            $table->boolean("processed")->default(false);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::connection('tandc_live')->dropIfExists('reservation');
+    }
+};

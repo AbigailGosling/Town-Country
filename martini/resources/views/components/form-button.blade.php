@@ -3,8 +3,8 @@
 <?php endif; ?>
 <?php
     $onclick = '';
-    if ($submit) $onclick = '$(this).closest(`form`).submit()';
-    else if ($title == "Export" || $title == "Loading...") $onclick = 'ExportData()';
+    if ($submit) $onclick = '$(this).closest(`form`).submit();$(this).css({"pointer-events": "none"});';
+    else if ($title == "Export" || $title == "Loading...") $onclick = 'ExportData();$(this).css({"pointer-events": "none"});';
 
     $disabled = '';
     if ($disable) $disabled = "pointer-events:none;";

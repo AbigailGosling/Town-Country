@@ -80,4 +80,7 @@ class Site extends Model
         }
         return $output;
     }
+    public function customers():HasMany{
+        return $this->hasMany(Customer::class,"site_id","id");
+    }
 }

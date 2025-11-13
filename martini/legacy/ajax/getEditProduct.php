@@ -238,7 +238,18 @@ use App\Models\Site;
 		<input value="Update Product" onclick="updatePallet();" type="button">
  	</div>
 </form>
-
+<h1 class="int"></h1>
+<h1 class="int">Split To New Pallet</h1>
+<form method="POST" id="splitPalletForm" action="<?php echo $domain; ?>scripts/splitPallet.php">
+    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+    <input type="number" id="cases_to_split" name="cases_to_split" value="1" step="1">
+    <input type="text" style="display:none;" value="<?php echo $intake_id; ?>" name="intake_id">
+    <input type="text" style="display:none;" value="<?php echo $pallet_id; ?>" name="pallet_id">
+    <input type="text" style="display:none;" value="<?php echo $product_id; ?>" name="product_id">
+    <div class="btnContainer">
+		<input value="Split" type="submit">
+ 	</div>
+</form>
 <form method="POST" action="<?php echo $domain; ?>scripts/markWeightAsSold.php" id="markWeightForm">
 	<input type="hidden" name="weightid" id="weightToMark">
 	<input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
