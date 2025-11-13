@@ -54,6 +54,7 @@
                     </x-data-table-column>
                     <td class="border-b dark:border-slate-600 p-2 pr-8">
                         <div class="grid grid-cols-2 gap-2">
+                            <x-table-action-button route="containers.clone-container" type="clone" :id="$container->id" />
                             <x-table-action-button route="containers.edit" :id="$container->id" />
                         </div>
                     </td>

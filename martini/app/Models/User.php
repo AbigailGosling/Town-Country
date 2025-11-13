@@ -18,6 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Class User
@@ -148,5 +149,8 @@ class User extends Authenticatable
             if (session()->has('superAdminElevated')) $internaltest = session()->get('superAdminElevated');
             session()->put('superAdminElevated',!$internaltest);
         }
+    }
+    public function internal_user():HasOne{
+        return $this->hasOne(OldUser::class,"id","id");
     }
 }
