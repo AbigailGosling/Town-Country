@@ -81,8 +81,8 @@
                         <select id="unit" class="block mt-1 w-full" name="unit" required>
                             <option disabled="disabled" selected value="">Select Unit</option>
                             <option {{("PPC"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">PPC</option>
-                            <option {{("P"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">G/T</option>
-                            <option {{("C"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="PPC">Cases</option>
+                            <option {{("P"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="P">G/T</option>
+                            <option {{("C"==old('unit', $containerProduct->getProduct()?->unit)) ? "selected":"";}} value="C">Cases</option>
                         </select>
                         <x-input-error :messages="$errors->get('unit')" class="mt-2" />
                     </div>
@@ -107,8 +107,16 @@
                     <div>
                         <x-input-label for="rrp" :value="__('RRP')" />
                         <x-text-input id="rrp" class="block mt-1 w-full" type="number" step="0.001"
-                            name="rrp" value="{{ old('rrp', $containerProduct->getProduct()?->price) }}" required />
-                        <x-input-error :messages="$errors->get('akg')" class="mt-2" />
+                            name="rrp" value="{{ old('rrp', $containerProduct->rrp) }}" required />
+                        <x-input-error :messages="$errors->get('rrp')" class="mt-2" />
+                    </div>
+
+                    <!-- Cost -->
+                    <div>
+                        <x-input-label for="cost" :value="__('Cost')" />
+                        <x-text-input id="cost" class="block mt-1 w-full" type="number" step="0.001"
+                            name="cost" value="{{ old('cost', $containerProduct->getProduct()?->cost) }}" required />
+                        <x-input-error :messages="$errors->get('cost')" class="mt-2" />
                     </div>
                 </x-form-section>
 
