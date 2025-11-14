@@ -22,7 +22,7 @@ return new class extends Migration
         $newPerm->label = $newPerm->description = "Inbound Stock";
         $oldPerm->column = $newPerm->group = 1;
         $oldPerm->file = $newPerm->file = "containerreservation.php";
-        $newPerm->name = "inbound_stock";
+        $newPerm->name = "containerreservation.php";
         $newPerm->save();
         $oldPerm->id = $newPerm->id;
         $oldPerm->save();
@@ -35,7 +35,7 @@ return new class extends Migration
      */
     public function down()
     {
-        $newPerm = Permission::where("name","inbound_stock")->first();
+        $newPerm = Permission::where("name","containerreservation.php")->first();
         $oldPerm = PagePermission::find($newPerm->id);
         foreach (User::all() as $user){
             $user->unassignPermission($newPerm);
