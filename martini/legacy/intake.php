@@ -1243,6 +1243,9 @@ use Illuminate\Support\Facades\Auth;
 		<?php } ?>
 	});
 </script>
+<div class="palletnotepopup">Pallet <span class="palletidpopup"><?php echo request()->input('pallet_id'); ?></span> Noted <a href="javascript:;" class="close" id="closePalletPopup">X</a></div>
+
+
 <?php
 	if(request()->has('palletupdated')){
 	?>
