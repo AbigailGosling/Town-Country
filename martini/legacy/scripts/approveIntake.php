@@ -11,6 +11,7 @@ use App\Models\Site;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 require(__DIR__.'/../functions.php');
 
@@ -58,6 +59,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
         foreach ($products as $containerProduct)
         {
             $prod = Product::find($containerProduct->product_id);
+            if ($prod == null) continue;
             $pallet=Pallet::find($prod->pallet_id);
             $pallet->user_id = Auth::id();
             $pallet->save();
@@ -66,13 +68,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
         $reservationProducts = ReservationProduct::whereIn("product_id",$products)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
         $reservations = Reservation::whereIn("id",$reservationProducts)->get();
         $today = date('Y-m-d');
-        $forCustomer = [];
-        foreach ($reservations as $reservation) {
-            if (!array_key_exists($reservation->customer_id,$forCustomer)) $forCustomer[$reservation->customer_id]=[];
-            if (!array_key_exists($reservation->user_id,$forCustomer[$reservation->customer_id])) $forCustomer[$reservation->customer_id][$reservation->user_id]=[];
-            $forCustomer[$reservation->customer_id][$reservation->user_id][]=$reservation;
-        }
-        foreach ($forCustomer as $customer_id => $cUserArray)
+        foreach ($reservations as $reservation)
         {
             $customer = Customer::find($customer_id);
             $site = Site::find($customer->site_id);
@@ -92,40 +88,33 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                 $delDate->addDay();
                 $weekdayInt = $weekdayLookup[$delDate->dayOfWeek];
             }
-            foreach ($cUserArray as $user_from_id => $basket)
+            $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,NOW(),?,?,?)";
+            $y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$reservation->user_id,$customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,$reservation->address_id,$reservation->picksheet_note,null],true);
+            $pickersheet_id = $y;
+
+            if ((int)$pickersheet_id !== $pickersheet_id)
             {
-                $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,NOW(),?,?,?)";
-                $y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$user_from_id,$customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,$reservation->address_id,$reservation->picksheet_note,null],true);
-                $pickersheet_id = $y;
-
-                if ((int)$pickersheet_id !== $pickersheet_id)
-                {
-                    abort(500);
-                    die();
-                }
-                loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
-                loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
-
-                foreach ($basket as $reservation) {
-
-                    foreach (ReservationProduct::where("reservation_id",$reservation->id)->get() as $resProduct)
-                    {
-                        $product_id = $resProduct->product_id;
-                        $quantity = $resProduct->target_count;
-                        $target_weight = 0;
-
-
-                        $price = $resProduct->price;
-                        $price_type = null;
-                        for($i=0;$i<$quantity;$i++){
-                            $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-                            $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
-                        }
-                    }
-
-                }
-                pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
+                abort(500);
+                die();
             }
+            loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
+            loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
+
+            foreach (ReservationProduct::where("reservation_id",$reservation->id)->get() as $resProduct)
+            {
+                $product_id = $resProduct->product_id;
+                $quantity = $resProduct->target_count;
+                $target_weight = 0;
+
+
+                $price = $resProduct->price;
+                $price_type = null;
+                for($i=0;$i<$quantity;$i++){
+                    $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
+                    $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+                }
+            }
+            pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
         }
 
     }
