@@ -242,7 +242,7 @@ use App\Models\Site;
 <h1 class="int">Split To New Pallet</h1>
 <form method="POST" id="splitPalletForm" action="<?php echo $domain; ?>scripts/splitPallet.php">
     <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
-    <input type="number" id="cases_to_split" name="cases_to_split" value="1" step="1">
+    <input type="number" id="cases_to_split" name="cases_to_split" min="1" max="<?php echo $i;?>" value="<?php echo floor($i/2);?>" step="1" onkeyup="enforceMinMax(this)">
     <input type="text" style="display:none;" value="<?php echo $intake_id; ?>" name="intake_id">
     <input type="text" style="display:none;" value="<?php echo $pallet_id; ?>" name="pallet_id">
     <input type="text" style="display:none;" value="<?php echo $product_id; ?>" name="product_id">
@@ -258,6 +258,16 @@ use App\Models\Site;
 
 
 <script type="text/javascript">
+    function enforceMinMax(el) {
+  if (el.value != "") {
+    if (parseInt(el.value) < parseInt(el.min)) {
+      el.value = el.min;
+    }
+    if (parseInt(el.value) > parseInt(el.max)) {
+      el.value = el.max;
+    }
+  }
+}
 	$.ajaxSetup({
 		headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" }
 	});
