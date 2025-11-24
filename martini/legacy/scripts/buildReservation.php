@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\Location;
 use App\Models\Pallet;
 use App\Models\Product;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
     $customer_id = request()->input('customer_id');
+    $customer = Customer::find($customer_id);
 	$addressid = request()->input('addressid');
     $eta = Carbon::createFromFormat('d/m/Y', request()->input('eta'));
 
@@ -45,15 +47,15 @@ use Illuminate\Support\Facades\Auth;
 	foreach ($baskets as $basket) {
 
         $reservation = Reservation::create([
-            'user_id' => Auth::id(),
+            'user_id' => $customer->default_salesman_id,
             'address_id'=>$addressid,
             'picksheet_note'=>$picksheet_note,
             'order_reference_number'=>$orderReferenceNumber,
             'customer_id'=>$customer_id,
             'eta'=>$eta]);
 
-        loggedDataChange("reservation_note",$pickersheet_id,$picksheet_note);
-		loggedDataChange("reservation_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
+        loggedDataChange("reservation_note",$reservation->id,$picksheet_note);
+		loggedDataChange("reservation_orderReferenceNumber",$reservation->id,$orderReferenceNumber);
 
 		foreach ($basket as $item) {
 
@@ -80,7 +82,7 @@ use Illuminate\Support\Facades\Auth;
                 ]
             );
 		}
-        pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_reservation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
+        pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_reservation '.$reservation->id.' >NUL 2>NUL"', 'r'));
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
