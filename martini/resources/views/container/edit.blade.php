@@ -1,21 +1,30 @@
+<?php
+$isNew ??= false;
+$isDelete ??= false;
+?>
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            @if ($isNew == false)
-                {{ __('Edit Inbound Container: ') . $container->internal_number }}
-            @else
+            @if ($isNew == true)
                 {{ __('Create Inbound Container')}}
+            @elseif ($isDelete == true)
+                {{ __('Delete Container: ') . $container->internal_number . __('?') }}
+            @else
+                {{ __('Edit Inbound Container: ') . $container->internal_number }}
             @endif
         </h2>
     </x-slot>
 
     <div class="py-12">
 
-        @if ($isNew == false)
+        @if ($isNew == true)
+            <form method="POST" action="{{ route('containers.store') }}">
+        @elseif ($isDelete == true)
+            <form method="POST" action="{{ route('containers.delete', $container) }}">
+            @method("delete")
+        @else
             <form method="POST" action="{{ route('containers.update', $container) }}">
             @method("PUT")
-        @else
-            <form method="POST" action="{{ route('containers.store') }}">
         @endif
             @csrf
             <x-form>
@@ -70,6 +79,8 @@
                 <x-slot name="buttons">
                     @if ($isNew == true)
                     <x-form-button title="Create New Container" background="green" iconClass="fa-ship" :submit="true" />
+                    @elseif ($isDelete == true)
+                    <x-form-button title="Confirm Delete" background="red" iconClass="fa-trash" :submit="true" />
                     @else
                     <x-form-button title="Update Container" background="green" iconClass="fa-ship" :submit="true" />
                         @if ($container->admin_approved == true)
@@ -86,7 +97,7 @@
                 </x-slot>
             </x-form>
         </form>
-        @if ($isNew == false)
+        @if ($isNew == false && $isDelete == false)
         @if ($container->arrived == false)
         <div><a href="{{route('container-product.create',$container)}}">
             <div class="cursor-pointer bg-gradient-to-r from-green-500 to-green-600 flex rounded-md" style="width:150px;height:40px;float:right;margin-right:25px;margin-top:10px;">
@@ -107,14 +118,17 @@
                 <x-data-table-header width="50">Actions</x-data-table-header>
             </x-slot:headers>
             <slot>
-                @foreach ($container->containerProducts()->get() as $cp)
+                @foreach ($containerProducts as $cp)
                 <tr>
                     <x-data-table-column>{{ $cp->getProduct()?->getCut()->name }}</x-data-table-column>
                     <x-data-table-column>{{ $cp->getProduct()?->quantity }}</x-data-table-column>
                     <x-data-table-column>{{ $cp->getProduct()?->quantity * $cp->getProduct()?->akg }}</x-data-table-column>
-                    <x-data-table-column>
-                        <x-table-action-button route="container-product.edit" :id="['containerProduct'=>$cp,'container'=>$container]">Edit</x-table-action-button>
-                    </x-data-table-column>
+                    <td class="border-b dark:border-slate-600 p-2 pr-8">
+                        <div class="grid grid-cols-3 gap-2">
+                            <x-table-action-button route="container-product.edit" :id="['containerProduct'=>$cp,'container'=>$container]">Edit</x-table-action-button>
+                            <x-table-action-button route="container-product.predelete" type="delete" :id="['containerProduct'=>$cp,'container'=>$container]"></x-table-action-button>
+                        </div>
+                    </td>
                 </tr>
                 @endforeach
             </slot>

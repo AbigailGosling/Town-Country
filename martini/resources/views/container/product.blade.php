@@ -1,9 +1,15 @@
+<?php
+$isNew ??= false;
+$isDelete ??= false;
+?>
 <x-app-layout>
     <x-slot name="header">
 
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            @if ($isNew)
+            @if ($isNew==true)
             {{ __('Add Product')}}
+            @elseif($isDelete==true)
+            {{ __('Delete Product: ') . $containerProduct->getProduct()?->getCut()->getSpecies()->name . __(' : ') . $containerProduct->getProduct()?->getCut()->name }}
             @else
             {{ __('Edit Product: ') . $containerProduct->getProduct()?->getCut()->getSpecies()->name . __(' : ') . $containerProduct->getProduct()?->getCut()->name }}
             @endif
@@ -13,11 +19,14 @@
 
     <div class="py-12">
 
-        @if ($isNew == false)
+        @if ($isNew == true)
+            <form method="POST" action="{{ route('container-product.store',$container) }}">
+        @elseif($isDelete == true)
+            <form method="POST" action="{{ route('container-product.delete',['container'=>$containerProduct->getContainer(),'containerProduct'=>$containerProduct]) }}">
+                @method("delete")
+        @else
             <form method="POST" action="{{ route('container-product.update', ['container'=>$containerProduct->getContainer(),'containerProduct'=>$containerProduct]) }}">
             @method("PUT")
-        @else
-            <form method="POST" action="{{ route('container-product.store',$container) }}">
         @endif
             @csrf
             <x-form>
@@ -125,6 +134,8 @@
                     @if ($container->arrived == false)
                     @if ($isNew == true)
                     <x-form-button id="save" title="Add Product" background="green" iconClass="fa-save" :submit="true" />
+                    @elseif ($isDelete == true)
+                    <x-form-button id="save" title="Delete Product" background="red" iconClass="fa-trash" :submit="true" />
                     @else
                     <x-form-button id="save" title="Update Product" background="green" iconClass="fa-save" :submit="true" />
                     @endif

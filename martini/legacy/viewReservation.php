@@ -149,7 +149,7 @@ use Illuminate\Support\Facades\Auth;
 		</tr>
 		<?php
 
-			$x = "SELECT * FROM `reservation_product` WHERE reservation_id=?";
+			$x = "SELECT * FROM `reservation_product` WHERE `reservation_id`=? AND `deleted` = 0";
 			$y = prepareExecuteQuery($x,'i',[$reservation_id]);
 			$vars = array();
 			while($item = mysqli_fetch_array($y)){
@@ -158,13 +158,12 @@ use Illuminate\Support\Facades\Auth;
  			    $yproduct = prepareExecuteQuery($query,'i',[$item['product_id']]);
 
                 while($product = mysqli_fetch_array($yproduct)){
+                    $containerProduct = ContainerProduct::where([["product_id",$product['id']],["deleted",false]])->first();
+                    if ($containerProduct == null) continue;
+                    $container = InboundContainer::find($containerProduct->container_id);
+                    $containerLabel = $container->internal_number;
                 ?>
                 <tr class="productsRow">
-                    <?php
-                        $containerProduct = ContainerProduct::where("product_id",$product['id'])->first();
-                        $container = InboundContainer::find($containerProduct->container_id);
-                        $containerLabel = $container->internal_number;
-                    ?>
                         <td align="left"><span class="intakeid"><?php echo $containerLabel; ?></span></td>
                         <td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); echo getCut($product['cut_id']);  ?></b></td>
                         <td align="left"><span class="chilled"><?php echo getNationality($product['nationality_id']); ?></span></td>

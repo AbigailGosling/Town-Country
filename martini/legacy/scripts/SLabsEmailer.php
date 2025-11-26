@@ -141,6 +141,8 @@ abstract class SLabsEmailerType
     const Retraction= 'RETRACTION';
     const SuppReturn= 'SUPPLIER_RETURN';
     const ShortStock= 'SHORT_STOCK_NOTICE';
+    const Reservatin= 'RESERVATION';
+    const ShortPick = 'SHORT_PICK';
 }
 abstract class SLabsEmailerStatus
 {

@@ -172,6 +172,7 @@ $serverRoot = request()->server("SERVER_NAME");
                     <?php echo $supplier['postcode']; ?><br/>
                     Supplier ID: <?php echo str_pad($supplier['id'], 4, '0', STR_PAD_LEFT); ?><br/>
                     <?php echo $supplier['email']; ?><br/>
+                    <?php echo $supplier['contact_name']; ?> : <?php echo $supplier['contact_number']; ?><br/>
 				</p>
 			</div>
 		</div>

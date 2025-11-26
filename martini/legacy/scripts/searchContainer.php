@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Auth;
     $customer_id =  request()->input('customerID');
     $timeSensitivityStatus = (int)request()->input('time',0);
     $internal_num = request()->input('internal_num',"");
+    $temperatureID = request()->input('temperatureID',"");
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     $totalW = 0;
@@ -84,12 +85,14 @@ use Illuminate\Support\Facades\Auth;
         }
 
         $whereString = implode(' && ',$whereArray);
-        $cqb = InboundContainer::where([["admin_approved",true],["arrived",false]]);
+        $cqb = InboundContainer::where([["admin_approved",true],["arrived",false],["deleted",false]]);
         if ($internal_num != "") $cqb = $cqb->where("internal_number","LIKE","%".$internal_num."%");
+        if ($temperatureID != "") $cqb = $cqb->where("temperature_id",$temperatureID);
         $containers = $cqb->orderBy('eta')->with('containerProducts')->get();
         foreach ($containers as $container) {
             foreach ($container->containerProducts as $containerProduct){
-                $alreadyReserved = ReservationProduct::where("product_id",$containerProduct->product_id)->get()->sum("target_count");
+                if ($containerProduct->deleted == true)continue;
+                $alreadyReserved = ReservationProduct::where([["product_id",$containerProduct->product_id],["deleted",false]])->get()->sum("target_count");
                 $productsX2 = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product`
                 JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
                 LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`

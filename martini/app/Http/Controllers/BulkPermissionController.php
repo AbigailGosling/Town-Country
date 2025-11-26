@@ -30,6 +30,27 @@ class BulkPermissionController extends Controller
             'user-management.bulk', [
                 'users'         => $this->baseQuery()->paginate($this::$defaultPaginate),
                 'permissions'   => Permission::where("name","<>","superadmin")->get(),
+                'search_term'   => ''
+            ]
+        );
+    }
+    /**
+     * GET method to search users in the system from the Users Index page
+     * @param Request $request
+     * @return View
+     */
+    public function search(Request $request)
+    {
+        $searchTerm = $request->get('search');
+        return view(
+            'user-management.bulk', [
+                'users' => User::where('name', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                        ->withCount('permissions')
+                        ->paginate($this::$defaultPaginate)
+                        ->appends(request()->query()),
+                'permissions'   => Permission::where("name","<>","superadmin")->get(),
+                'search_term' => $searchTerm
             ]
         );
     }

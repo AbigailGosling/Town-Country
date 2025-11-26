@@ -161,6 +161,19 @@ use App\Models\User;
 						?>
 					</select>
 				</td>
+                <td style="width:20%">
+					<select id="temperatureID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+						<option value="" disabled selected>Select Tempurature..</option>
+						<?php
+							$x = "SELECT * FROM `temperature` ORDER BY `temperature`";
+							$y = prepareExecuteQuery($x);
+
+							while($row = mysqli_fetch_array($y)){
+							?><option value="<?php echo $row['id']; ?>"><?php echo $row['temperature']; ?></option><?php
+							}
+						?>
+					</select>
+				</td>
                 <td><input type="text" name="internal_number" id="internal_number" placeholder="Internal Number" style="height: 33px;padding-left: 10px; border-radius: 0;"></td>
 				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;" disabled></td>
 			</tr>
@@ -612,6 +625,7 @@ function cancelSale()
 			$('#SearchSpecies').prop('selectedIndex',0);
 			$('#SearchCutgroups').prop('selectedIndex',0);
 			$('#SearchTime').prop('selectedIndex',0);
+            $('#temperatureID').prop('selectedIndex',0);
 			$('#IntakeID').val('');
 			$('#PalletID').val('');
             $('#internal_number').val('');
@@ -648,7 +662,7 @@ function cancelSale()
 			url: "ajax/getCustomerDropdown.php",
 			data: {
 				searchterm: val,
-				salescreen: "y"
+				salescreen: "r"
 			},
 			dataType: "html"
 		});

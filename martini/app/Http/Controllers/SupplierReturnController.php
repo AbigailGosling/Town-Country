@@ -12,7 +12,6 @@ use App\Models\SupplierReturn;
 use App\Models\Weight;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use stdClass;
 
 class SupplierReturnController extends Controller
@@ -29,9 +28,15 @@ class SupplierReturnController extends Controller
         $supReturnQ = SupplierReturn::selectRaw("ANY_VALUE(id) AS `id`,ANY_VALUE(supplier_id) AS `supplier_id`, MAX(`updated_at`) AS `updated_at`")->groupBy("supplier_id")->orderBy("updated_at")->orderByDesc("id");
         if ($searchTerm!="")
         {
-            $supList = Supplier::where("name","LIKE","%$searchTerm%")->pluck('id')->toArray();
-            $supReturnQ->whereIn("supplier_id",$supList);
+            $supList = Supplier::where("name","LIKE","%$searchTerm%")->where('is_hidden',false)->pluck('id')->toArray();
+
         }
+        else
+        {
+            $supList = Supplier::where('is_hidden',false)->pluck('id')->toArray();
+        }
+
+        $supReturnQ->whereIn("supplier_id",$supList);
         foreach($supReturnQ->get() as $supplierR)
         {
             $item = $this->sumSupplier(Supplier::find($supplierR->supplier_id));

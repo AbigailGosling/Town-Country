@@ -163,6 +163,10 @@ use App\Models\User;
 					<td><textarea type="text" style="resize: none; width: 169px; height: 47px;" class="input" name="customer_email"><?php echo $data['customer_email']; ?></textarea></td>
 				</tr>
                 <tr>
+					<td class="label"><label>Allow Reservation</label></td>
+					<td><input type="checkbox" name="can_reserve" value="1" <?php echo ($data['can_reserve'] == 1)?"checked":""; ?>></td>
+				</tr>
+                <tr>
 					<td class="label"><label>Petfood Customer</label></td>
 					<td><input type="checkbox" name="is_petfood_customer" value="1" <?php echo ($data['is_petfood_customer'] == 1)?"checked":""; ?>></td>
 				</tr>

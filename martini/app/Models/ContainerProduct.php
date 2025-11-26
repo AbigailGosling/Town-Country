@@ -11,7 +11,7 @@ class ContainerProduct extends Model
     use HasFactory;
 
     protected $connection = 'tandc_live';
-    protected $table = 'container_products';
+    protected $table = 'container_product';
     protected $primaryKey = 'id';
     protected $keyType = 'int';
     public $incrementing = true;

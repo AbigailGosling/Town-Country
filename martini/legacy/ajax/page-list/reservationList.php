@@ -12,6 +12,7 @@ use InternalScripts\SLabsEmailerStatus;
 	if($searchterm != ''){
         # Check if any customer names match the search input
         $customerIDs = [];
+        $resProdIDs=[];
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE businessname LIKE ? || REPLACE(businessname, ' ', '') LIKE ?"
             ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
         while($customer = mysqli_fetch_array($customerResult)){
@@ -23,22 +24,40 @@ use InternalScripts\SLabsEmailerStatus;
         while($customer = mysqli_fetch_array($customerResult)){
             array_push($customerIDs, $customer['id']);
         }
-        $x = "SELECT * FROM `reservation` WHERE id = ? || id LIKE ?";
+        $containerResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS `ids` FROM `inbound_container` WHERE `internal_number` LIKE ? || REPLACE(`internal_number`, ' ', '') LIKE ?"
+            ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
+        $containerIDs = mysqli_fetch_assoc($containerResult)['ids'];
+        if (count(explode(",",$containerIDs))>0)
+        {
+            $prodResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`product_id`) AS `ids` FROM `container_product` WHERE `container_id` IN ($containerIDs)");
+            $prodIDs = mysqli_fetch_assoc($prodResult)['ids'];
+            if (count(explode(",",$prodIDs))>0)
+            {
+                $resResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`reservation_id`) AS `ids` FROM `reservation_product` WHERE `product_id` IN ($prodIDs)");
+                $resProdIDs = explode(",",mysqli_fetch_assoc($resResult)['ids']);
+            }
+        }
+
+        $x = "SELECT * FROM `reservation` WHERE (id = ? || id LIKE ?";
 
         if(count($customerIDs) > 0){
             $customerIDs = implode(',', $customerIDs);
             $x .= " || customer_id IN ($customerIDs)";
         }
-        $x .= " ORDER BY date DESC";
-        $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
+        if(count($resProdIDs) > 0){
+            $resProdIDs = implode(',', $resProdIDs);
+            $x .= " || `id` IN ($resProdIDs)";
+        }
+        $x .= ") AND `deleted` = 0 ORDER BY `id` DESC";
+        $queryResult = loggedQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
     }else{
-        $queryResult = prepareExecuteQuery("SELECT * FROM `reservation` ORDER BY `id` DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+        $queryResult = prepareExecuteQuery("SELECT * FROM `reservation` where `deleted` = 0 ORDER BY `id` DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
     }
     $count = mysqli_num_rows($queryResult);
 
     $newSkipCount = ($toSkip + $count);
 
-    $totalRowsQueryResult = prepareExecuteQuery("SELECT count(id) as count FROM `reservation`");
+    $totalRowsQueryResult = prepareExecuteQuery("SELECT count(id) as count FROM `reservation` where `deleted` = 0");
     $totalRowsData = mysqli_fetch_array($totalRowsQueryResult);
     $totalRowsInDatabase = $totalRowsData['count'];
 
@@ -62,13 +81,17 @@ use InternalScripts\SLabsEmailerStatus;
 
                                 if($picksheet['deleted'] == 1 && $picksheet['completed'] == 0){
                                     echo "(VOID)";
-                                    if($picksheet['deleted_by_user_id'] != ''){
-                                        echo " - " . getUsername($picksheet['deleted_by_user_id']);
-                                    }
                                 }
                             ?>
                         </td>
-                        <td width="25%" align="right"> Created <?php echo $date_purchased; ?></td>
+                        <td width="25%" align="right"> Created <?php echo $date_purchased; ?>
+                        <?php
+                        if ($picksheet['processed'] == 0) {
+                        ?>
+                        <div class="actions">
+                            <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $picksheet['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        </div></td>
+                        <?php } ?>
                     </tr>
                 </table>
             </a>
@@ -103,4 +126,10 @@ use InternalScripts\SLabsEmailerStatus;
 <script>
     $('#toSkipCount').val(<?php echo $newSkipCount; ?>);
     $('#totalRowsCount').val(<?php echo $totalRowsInDatabase; ?>);
+    function doDelete(id){
+        $.post("ajax/deleteReservation.php", {'id':id}, results);
+    }
+    function results(){
+        location.reload();
+    }
 </script>
