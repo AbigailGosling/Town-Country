@@ -43,7 +43,7 @@ class CheckShortPick extends Command
         Log::debug("",[$pick->pickerItems->where("deleted",0)->count(),count($weightIDs)]);
         if ($pick->pickerItems->where("deleted",0)->count() > count($weightIDs))
         {
-            $u = [User::find(Customer::find($pick->customer_id)->default_salesman_id)->email];
+            $u = [User::find(Customer::find($pick->customer_id)->default_salesman_id)->actual_email];
             SLabsEmailer::send_email($pick->customer_id,SLabsEmailerType::ShortPick,$u,"Sale ".$pick->id." Short Picked","Sale ".$pick->id." has completed pick, however ".$pick->pickerItems->where("deleted",0)->count() - count($weightIDs)." items were not picked.",'','',null,true);
         }
         return Command::SUCCESS;

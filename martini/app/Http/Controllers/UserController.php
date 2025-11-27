@@ -95,6 +95,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'actual_email' => ['sometimes', 'string', 'email', 'max:255'],
         ]);
 
         $user = User::create([
@@ -157,7 +158,8 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'actual_email' => ['sometimes', 'string', 'email', 'max:255'],
             'password' => ['sometimes','string', 'nullable'],
             'new_password' => ['sometimes','string', 'nullable', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
@@ -199,6 +201,7 @@ class UserController extends Controller
 
         $user->name = $input['name'];
         $user->email = $input['email'];
+        $user->actual_email = $input['actual_email'] ?? "";
         $user->disabled = array_key_exists("disabled", $input);
         $user->is_hidden = array_key_exists("hidden", $input);
         $user->override_saledate_check = array_key_exists("override_saledate_check", $input);

@@ -37,7 +37,7 @@ class ShortStockEmail extends Command
         $users = User::where("disabled",0)->get()->reject(function (User $user){
             return !$user->hasPermissionClarified(Permission::find(1));
         });
-        $u =$users->pluck("email")->toArray();
+        $u =$users->pluck("actual_email")->toArray();
         SLabsEmailer::send_email(-1,SLabsEmailerType::ShortStock,$u,"Short Dated Stock","Please see attached",Storage::disk("public")->path(""),$f,null,true);
         return Command::SUCCESS;
     }
