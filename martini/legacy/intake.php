@@ -448,7 +448,7 @@ use Illuminate\Support\Facades\Auth;
  				<th style="background:#3faddd;">Total Weight</th>
 				<?php if ($intake['approved']==1) {?>
  				<th style="background:#3faddd;">Cost</th>
-				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
+				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;">Actual Cost</th><?php } ?>
 				<?php } ?>
 			</tr>
 			<?php
@@ -593,14 +593,14 @@ use Illuminate\Support\Facades\Auth;
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
 						<?php } ?>
-						<input type="text" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
+						<input type="text" style="width: 90px;" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
 					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
 					<td style="width: 1px;">
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-						<input style="width: 90px; font-size: 8px" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
+						<input style="width: 90px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
 					<?php } ?>
 					<?php } ?>

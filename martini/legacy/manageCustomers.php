@@ -653,13 +653,13 @@ function mainForm2(){
 	function delDayEnabled(ele, id){
 		var q = $('#delivery_day_checking');
 		if (q.text() != "Disabled") {
-            $("delivery_day_checking_hidden").val("0");
+            $("#delivery_day_checking_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Delivery Day Checking Disabled!"]);
 		}
 		else {
-            $("delivery_day_checking_hidden").val("1");
+            $("#delivery_day_checking_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Delivery Day Checking Enabled!"]);
