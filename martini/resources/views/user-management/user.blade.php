@@ -29,16 +29,24 @@
 
                     <x-input-error :messages="$errors->get('name')" class="mt-2"/>
                 </div>
-                <!-- Email Field -->
+                <!-- Login Email Field -->
                 <div>
-                    <x-input-label for="email" :value="__('Email')"/>
+                    <x-input-label for="email" :value="__('Login Email')"/>
 
                     <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
                                   :value="old('email', $user->email)" required/>
 
                     <x-input-error :messages="$errors->get('email')" class="mt-2"/>
                 </div>
+                <!-- Login Email Field -->
+                <div>
+                    <x-input-label for="actual_email" :value="__('Notification Email')"/>
 
+                    <x-text-input id="actual_email" class="block mt-1 w-full" type="actual_email" name="actual_email"
+                                :value="old('actual_email', $user->actual_email)" required/>
+
+                    <x-input-error :messages="$errors->get('actual_email')" class="mt-2"/>
+                </div>
                 <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="override_saledate_check" name="override_saledate_check" />
                     <div style="width: 1em;"></div>
