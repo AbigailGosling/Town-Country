@@ -39,7 +39,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pickerNotifications');
+        Schema::connection('tandc_live')->dropIfExists('pickerNotifications');
         $newPerm = Permission::where("name","viewcosts")->first();
         foreach (User::all() as $user)
         {

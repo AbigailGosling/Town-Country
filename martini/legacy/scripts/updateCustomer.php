@@ -55,6 +55,9 @@
 	$colNames[] = '`flaguplimit`=?';
 	$colValue[] = request()->input('flaguplimit');
 
+    $colNames[] = '`can_reserve`=?';
+	$colValue[] = request()->has('can_reserve')?1:0;
+
 	$current_outstanding = request()->input('current_outstanding');
 	$payment_received = request()->input('payment_received');
 	$colNames[] = '`current_outstanding`=?';

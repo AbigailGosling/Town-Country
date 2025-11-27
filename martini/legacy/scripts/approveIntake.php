@@ -114,6 +114,8 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                     $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
                 }
             }
+            $reservation->processed = true;
+            $reservation->save();
             pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
         }
 

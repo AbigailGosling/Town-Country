@@ -66,6 +66,9 @@
 	$colNames[] = "`default_salesman_id`";
 	$colValue[] = request()->input('default_salesman_id');
 
+    $colNames[] = "`can_reserve`";
+	$colValue[] =  request()->has('can_reserve')?1:0;
+
     //$colNames[] = "`check_saledate`";
 	//$colValue[] = request()->input('check_saledate',true);
 

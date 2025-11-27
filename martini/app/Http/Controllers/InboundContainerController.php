@@ -8,6 +8,8 @@ use App\Models\Cut;
 use App\Models\InboundContainer;
 use App\Models\Nationality;
 use App\Models\Product;
+use App\Models\Reservation;
+use App\Models\ReservationProduct;
 use App\Models\Species;
 use App\Models\Temperature;
 use Illuminate\Http\Request;
@@ -22,7 +24,7 @@ class InboundContainerController extends Controller
     private static $defaultPaginate = 200;
     public function index()
     {
-        $containers = InboundContainer::query()->orderByDesc("id")->paginate($this::$defaultPaginate);
+        $containers = InboundContainer::where('deleted',false)->orderByDesc("id")->paginate($this::$defaultPaginate);
         return view("container.index",["containers"=>$containers]);
     }
 
@@ -83,7 +85,7 @@ class InboundContainerController extends Controller
      */
     public function show(InboundContainer $container)
     {
-        return view("container.edit",['container'=>$container,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false]);
+        return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false]);
     }
 
     /**
@@ -132,18 +134,36 @@ class InboundContainerController extends Controller
      */
     public function arrive(InboundContainer $container)
     {
-        if (!$container->arrived) return redirect()->route("legacy",["path"=>'legacy/newDelivery.php',"container"=>$container->id]);
+        if (!$container->admin_approved) return redirect()->route('containers.edit',[$container])->with("error","Container Must be Admin Aprroved First!");
+        else if (!$container->arrived) return redirect()->route("legacy",["path"=>'legacy/newDelivery.php',"container"=>$container->id]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Prepare to remove the specified resource from storage.
      *
      * @param  \App\Models\InboundContainer  $container
      * @return \Illuminate\Http\Response
      */
-    public function destroy(InboundContainer $container)
+    public function preDelete(InboundContainer $container)
     {
-        //
+        return view("container.edit",['container'=>$container,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isDelete'=>true]);
+    }
+
+    /**
+     * Confirm to remove the specified resource from storage.
+     *
+     * @param  \App\Models\InboundContainer  $container
+     * @return \Illuminate\Http\Response
+     */
+    public function confirmDelete(InboundContainer $container)
+    {
+       $container->deleted = true;
+       foreach (ContainerProduct::where("container_id",$container->id)->get() as $containerProduct)
+       {
+            $this->processContainerProductDelete($containerProduct);
+       }
+       $container->save();
+       return redirect()->route('containers.index',[$container])->with("message", $container->internal_number." Deleted!");
     }
 
     /**
@@ -158,7 +178,7 @@ class InboundContainerController extends Controller
         $newContainer->arrived = $newContainer->admin_approved = false;
         $newContainer->save();
 
-        foreach (ContainerProduct::where("container_id",$existingContainer->id)->get() as $existingContainerProduct)
+        foreach (ContainerProduct::where([["container_id",$existingContainer->id],["deleted",false]])->get() as $existingContainerProduct)
         {
             $existingProduct = Product::find($existingContainerProduct->product_id);
             $newProduct =  $existingProduct->replicate();
@@ -269,5 +289,61 @@ class InboundContainerController extends Controller
         $containerProduct->rrp = $validated['rrp'];
         $containerProduct->save();
         return redirect()->route('containers.show',[$containerProduct->container_id]);
+    }
+    /**
+     * Prepare to remove the specified resource from storage.
+     *
+     * @param  \App\Models\ContainerProduct  $containerProduct
+     * @return \Illuminate\Http\Response
+     */
+    public function preDeleteProduct(InboundContainer $container, ContainerProduct $containerProduct)
+    {
+        return view("container.product",
+        [
+            'container'=>InboundContainer::find($containerProduct->container_id),
+            'containerProduct'=>$containerProduct,
+            'brands'=>Brand::all(),
+            'species'=>Species::all(),
+            'nationalities'=>Nationality::all(),
+            'cuts'=>Cut::where('disabled',false)->get(),
+            'isDelete'=>true
+        ]);
+    }
+
+    /**
+     * Confirm to remove the specified resource from storage.
+     *
+     * @param  \App\Models\ContainerProduct  $containerProduct
+     * @return \Illuminate\Http\Response
+     */
+    public function confirmDeleteProduct(InboundContainer $container, ContainerProduct $containerProduct)
+    {
+        $this->processContainerProductDelete($containerProduct);
+        return redirect()->route('containers.edit',[$container])->with("message", "Product Deleted!");
+    }
+    private function processContainerProductDelete(ContainerProduct $containerProduct)
+    {
+        $containerProduct->deleted = true;
+        $reservationsToCheck = [];
+        foreach (ReservationProduct::where("product_id",$containerProduct->product_id)->get() as $reservationProduct)
+        {
+            $reservationProduct->deleted = true;
+            if (!in_array($reservationProduct->reservation_id, $reservationsToCheck)) $reservationProduct[] = $reservationProduct->reservation_id;
+            $reservationProduct->save();
+        }
+        $reservationsToCheck = array_unique($reservationsToCheck);
+        foreach ($reservationsToCheck as $id)
+        {
+            if (ReservationProduct::where([["reservation_id",$id],["deleted",false]])->get()->count()==0)
+            {
+                $r = Reservation::find($id);
+                if ($r)
+                {
+                    $r->deleted = true;
+                    $r->save();
+                }
+            }
+        }
+        $containerProduct->save();
     }
 }

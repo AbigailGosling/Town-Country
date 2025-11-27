@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class SupplierReturn
- * 
+ *
  * @property int $id
  * @property int $user_id
  * @property int $supplier_id
@@ -28,7 +28,7 @@ class SupplierReturn extends Model
 {
 	protected $connection = 'tandc_live';
 	protected $table = 'supplier_returns';
-
+    public $timestamps = true;
 	protected $casts = [
 		'user_id' => 'int',
 		'supplier_id' => 'int',
@@ -44,4 +44,8 @@ class SupplierReturn extends Model
 		'comments',
 		'deleted'
 	];
+    public function attachments()
+    {
+        return $this->hasMany(SupplierReturnAttachment::class, 'return_id');
+    }
 }

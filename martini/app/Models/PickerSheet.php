@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class PickerSheet
@@ -93,4 +94,12 @@ protected $connection = 'tandc_live';
 		'isSupplementalCredit',
 		'is_return_to_supplier'
 	];
+    public function palletsOut():HasMany
+    {
+        return $this->hasMany(PalletsOut::class,"pickersheet_id","id");
+    }
+    public function pickerItems():HasMany
+    {
+        return $this->hasMany(PickerItem::class,"pickersheet_id","id");
+    }
 }

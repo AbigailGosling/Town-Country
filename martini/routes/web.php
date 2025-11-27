@@ -18,6 +18,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShortStockController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
+use App\Http\Controllers\SupplierReturnAttachmentController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCustomerController;
@@ -71,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/usercustomer/download', [UserCustomerController::class, 'download'])->name('usercustomer.download');
 
     Route::get('bulkpermissions', [BulkPermissionController::class, 'view'])->name('bulkpermission.view');
+    Route::get('bulkpermissions/search', [BulkPermissionController::class, 'search'])->name('bulkpermission.search');
     Route::put('bulkpermissions/save', [BulkPermissionController::class, 'save'])->name('bulkpermission.save');
 
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
@@ -118,12 +120,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
     Route::get('containers/{existingContainer}/clone-container', [InboundContainerController::class, 'cloneContainer'])->name('containers.clone-container');
     Route::resource('containers', 'App\Http\Controllers\InboundContainerController');
+    Route::get('/containers/{container}/predelete', [InboundContainerController::class, 'preDelete'])->name('containers.predelete');
+    Route::delete('/containers/{container}/delete', [InboundContainerController::class, 'confirmDelete'])->name('containers.delete');
 
     Route::get('/containers/{container}/product/create', [InboundContainerController::class, 'createProduct'])->name('container-product.create');
     Route::post('/containers/{container}/product/store', [InboundContainerController::class, 'storeProduct'])->name('container-product.store');
     Route::get('/containers/{container}/arrived', [InboundContainerController::class, 'arrive'])->name('containers.arrive');
     Route::get('/containers/{container}/product/{containerProduct}/edit', [InboundContainerController::class, 'editProduct'])->name('container-product.edit');
     Route::put('/containers/{container}/product/{containerProduct}', [InboundContainerController::class, 'updateProduct'])->name('container-product.update');
+    Route::get('/containers/{container}/product/{containerProduct}/predelete', [InboundContainerController::class, 'preDeleteProduct'])->name('container-product.predelete');
+    Route::delete('/containers/{container}/product/{containerProduct}/delete', [InboundContainerController::class, 'confirmDeleteProduct'])->name('container-product.delete');
     Route::get('/containers/{container}/approvals/create', [InboundContainerApprovalController::class, 'create'])->name('inbound-approvals.create');
     Route::post('/containers/{container}/approvals', [InboundContainerApprovalController::class, 'store'])->name('inbound-approvals.store');
     Route::get('/containers/{container}/approvals/{approval}/destroy', [InboundContainerApprovalController::class, 'destroy'])->name('inbound-approvals.destroy');
@@ -132,6 +138,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);
 
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+
+    Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");
+    Route::put('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");
+    Route::delete('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'destroy'])->name("supplier-return-attachment.destroy");
 
 });
 Route::get('/menu.php', function () {

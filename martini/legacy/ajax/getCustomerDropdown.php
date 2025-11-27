@@ -1,12 +1,13 @@
 <?php
 
 	require(__DIR__.'/../functions.php');
-	
+
 	$user_id = $_SESSION['USER'];
 
 	$name = request()->input('searchterm');
-	$isSaleScreen = request()->has('salescreen');
-	$y = fuzzyCustomerSearch($name,true,false,$isSaleScreen);
+	$isSaleScreen = (request()->has('salescreen'));
+    $isReservationScreen = (request()->has('salescreen') && request()->input('salescreen')=="r");
+	$y = fuzzyCustomerSearch($name,true,false,$isSaleScreen,$isReservationScreen);
 	$count = mysqli_num_rows($y);
 	?> <script>var customerIDs =  [];</script> <?php
 	if($count > 0){

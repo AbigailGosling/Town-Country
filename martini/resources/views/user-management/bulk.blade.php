@@ -4,14 +4,20 @@
             {{ __('Users') }}
         </h2>
     </x-slot>
+    <form method="get" action="{{route('bulkpermission.search')}}">
+        <x-search search_term="{{$search_term ? $search_term : ''}}">
+        </x-search>
+</form>
+<div></div>
+    <div></div>
     <form method="POST" action="{{ route('bulkpermission.save',['page'=>app('request')->input('page')])}}" enctype="multipart/form-data">
     @method("PUT")
     @csrf
     <div class="grid grid-cols-1 md:grid-cols-4 pl-4">
         <div><x-form-button title="{{ 'Save Changes' }}" iconClass="fa-pencil" background="green" :submit="true">
     </x-form-button></div>
-    <div></div>
-    <div></div>
+
+
     </div>
     <x-data-table>
         <x-slot:headers>

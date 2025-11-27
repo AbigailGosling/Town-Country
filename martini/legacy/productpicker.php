@@ -594,7 +594,7 @@ function cancelSale()
 		if (customerID == null) checkUBDates(dateText);
 		else
 		{
-			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false', function(data){
+			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false'+'&address_id=' + addressID, function(data){
 				getCustomResult = data;
 				setCustomerCreditFeedback(data);
 			});
@@ -675,11 +675,11 @@ function cancelSale()
 		}
 	});
 	var getCustomResult;
-	var addressID;
+	var addressID=1;
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
-
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
+        addressID=1;
+		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty+'&address_id=' + addressID, function( data ) {
 			getCustomResult = data;
 			setCustomerCreditFeedback(data);
 		});
@@ -1029,7 +1029,7 @@ function cancelSale()
 	function changeAddress(customer_id, address_id){
 
 		$('#addressid').val(address_id);
-
+        addressID=address_id
 		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');

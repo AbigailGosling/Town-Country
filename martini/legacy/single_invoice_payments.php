@@ -1,4 +1,9 @@
 <?php
+
+use App\Models\SupplierReturn;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
 include('includes/frontHeader.php');
 
 $invoiceID = request()->input('invoice_id');
@@ -117,7 +122,7 @@ if (!empty($paymentID)) {
     </table>
 </div>
 
-<div class="container container--pt">
+<div class="container">
     <div style="background:#f2f2f2;padding:10px;">
     <?php if (request()->has("return")) {?>
         <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return</h2>
@@ -252,7 +257,56 @@ if (!empty($paymentID)) {
     ?>
 </table>
 </div>
-<br/>
+<?php if (request()->has("return")) {
+$supplierReturn = SupplierReturn::with("attachments","attachments.file","attachments.user")->where("pick_id",$invoiceID)->first();
+?>
+    <div class="row">
+        <div class="col">
+            <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return Notes</h2>
+        </div>
+    </div>
+    <form id="comment_entry" method="POST" action="<?php echo route("supplier-return-attachment.store");?>">
+        <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+        <input type="hidden" name="_method" value="POST">
+        <input id="user_id" name="user_id" type="hidden" value="<?php echo Auth::id(); ?>"/>
+        <input id="return_id" name="return_id" type="hidden" value="<?php echo $supplierReturn->id; ?>"/>
+        <table class="table table-bordered table-striped" width="100%">
+            <thead>
+                <tr>
+                    <th align="left">User</th>
+                    <th align="left">Date</th>
+                    <th align="left">Comments</th>
+                    <th align="left">File</th>
+                    <th align="left"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                    foreach ($supplierReturn->attachments as $sra)
+                    {
+                        ?>
+                        <tr>
+                            <td><?php echo $sra->user->name; ?></td>
+                            <td><?php echo $sra->created_at; ?></td>
+                            <td><?php echo $sra->comments; ?></td>
+                            <td><a href="<?php if ($sra->file)echo route("files.download",[$sra->file->id])?>"><?php echo $sra->file->original_name; ?></a></td>
+                            <td><input type="button" value="Delete" onclick="mainForm4('<?php echo route('supplier-return-attachment.destroy',[$sra]) ?>')"/></td>
+                        </tr>
+                        <?php
+                    }
+                ?>
+                <tr>
+                    <td><?php echo User::find(Auth::id())->name; ?></td>
+                    <td></td>
+                    <td><input id="comments" name="comments" type="text" form="comment_entry"></td>
+                    <td><input id="file" name="file" type="file" form="comment_entry"></td>
+                    <td><input type="button" value="Submit" onclick="mainForm3()"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+<?php }?>
+    <br/>
 
     <div class="row">
         <div class="col">
@@ -543,10 +597,22 @@ if (!empty($paymentID)) {
 function mainFormSucess(){
 	location.reload();
 }
+function mainForm3(){
+    $('#comment_submit').val("PLEASE WAIT...");
+    $('#comment_submit').prop('disabled', true);
+	$('#comment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
 function mainForm2(){
     $('#payment_submit').val("PLEASE WAIT...");
     $('#payment_submit').prop('disabled', true);
 	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+}
+function mainForm4(route){
+    const data = {
+        _method: 'DELETE',
+        _token: '<?php echo csrf_token() ?>'
+    }
+    $.post(route, data, mainFormSucess);
 }
     $(document).ready(function() {
         $('#payment_entry').submit(function() {

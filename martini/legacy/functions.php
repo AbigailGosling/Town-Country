@@ -1249,13 +1249,13 @@ use Ramsey\Uuid\Type\Decimal;
 
 		if($purchase_id != '#'){
 			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id,site_id,internal_num)
-			VALUES (?,?,?,?,?,?,?,?,?,?)";
+			VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id, $site_id,$internal_number];
 			$varSt= str_repeat('s',count($vars));
 		}else{
-			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,site_id)
-			VALUES (?,?,?,?,?,?,?,?,?)";
-			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id, $site_id];
+			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,site_id,internal_num)
+			VALUES (?,?,?,?,?,?,?,?,?,?)";
+			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id, $site_id,$internal_number];
 			$varSt= str_repeat('s',count($vars));
 		}
 
@@ -1832,7 +1832,7 @@ use Ramsey\Uuid\Type\Decimal;
 		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
 		return ($final == -0 ? 0 : $final);
 	}
-	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false,$isSaleScreen=false)
+	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false,$isSaleScreen=false,$isReservationScreen=false)
 	{
 		global $mysqli;
 		$thisUser = User::find(Auth::id());
@@ -1843,6 +1843,9 @@ use Ramsey\Uuid\Type\Decimal;
 		$users = implode(",",$users);
 		if ($thisUser->hasPermission("restrictedaccess")){
 			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString = "(`default_salesman_id` IN ($users) OR `id` IN (728)) AND";
+		}
+        if ($isReservationScreen==true){
+			$restrictionString = "`can_reserve` = 1 AND";
 		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(
@@ -1898,13 +1901,13 @@ use Ramsey\Uuid\Type\Decimal;
 	}
 	function loggedDataChange($type,$entity_id,$body){
 		if (!$body) $body = "";
-		$check = prepareExecuteQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
+		$check = loggedQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
 		if ((!$check && $body != "") || ($check['body'] != $body))
 		{
 			Log::debug(new \Exception(),[$type,$entity_id,$body]);
 			$userid = $_SESSION['USER'];
 			$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";
-			prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
+			loggedQuery($x,'siis',[$type,$userid,$entity_id,$body]);
 		}
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
