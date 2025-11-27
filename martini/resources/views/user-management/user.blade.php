@@ -38,11 +38,11 @@
 
                     <x-input-error :messages="$errors->get('email')" class="mt-2"/>
                 </div>
-                <!-- Login Email Field -->
+                <!-- Notification Email Field -->
                 <div>
                     <x-input-label for="actual_email" :value="__('Notification Email')"/>
 
-                    <x-text-input id="actual_email" class="block mt-1 w-full" type="actual_email" name="actual_email"
+                    <x-text-input id="actual_email" class="block mt-1 w-full" type="email" name="actual_email"
                                 :value="old('actual_email', $user->actual_email)" required/>
 
                     <x-input-error :messages="$errors->get('actual_email')" class="mt-2"/>
