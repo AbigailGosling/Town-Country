@@ -37,5 +37,8 @@ return new class extends Migration
         Schema::connection('tandc_live')->table('supplier', function (Blueprint $table) {
             $table->dropColumn("is_hidden");
         });
+        Schema::connection('tandc_live')->table('supplier_returns', function (Blueprint $table) {
+            $table->dropColumn("agreed_payment_date");
+        });
     }
 };

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 	include('includes/frontHeader.php');
-    Log::error(Auth::id(),[$_SERVER['HTTP_USER_AGENT']]);
 ?>
 <script>
     console.log = function(...args) {
@@ -973,7 +972,8 @@ function cancelSale()
 			$('#SearchNationality').prop('selectedIndex',0);
 			$('#SearchSpecies').prop('selectedIndex',0);
 			$('#SearchCutgroups').prop('selectedIndex',0);
-			$('#SearchTime').prop('selectedIndex',0);
+			$('#temperatureID').prop('selectedIndex',0);
+            $('#SearchTime').prop('selectedIndex',0);
 			$('#IntakeID').val('');
 			$('#PalletID').val('');
 
