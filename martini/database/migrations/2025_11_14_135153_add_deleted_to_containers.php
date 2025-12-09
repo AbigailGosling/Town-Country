@@ -48,6 +48,7 @@ return new class extends Migration
             $table->dropColumn("deleted");
             $table->dropColumn("sent");
             $table->dropColumn("processed");
+
         });
         Schema::connection('tandc_live')->table('reservation_product', function (Blueprint $table) {
             $table->dropColumn("deleted");

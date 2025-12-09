@@ -29,11 +29,10 @@ if ($intake->pallets->count() == 0)
 foreach ($intake->pallets as $pallet)
 {
     if ($pallet->products->count() == 0)
-    {?>
-    <script>
-        window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=2';
-    </script><?php exit;
+    {
+        $pallet->delete();
     }
+
     /**
     * @var Product $product
     */
@@ -89,7 +88,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                 $weekdayInt = $weekdayLookup[$delDate->dayOfWeek];
             }
             $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,NOW(),?,?,?)";
-            $y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$reservation->user_id,$customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,$reservation->address_id,$reservation->picksheet_note,null],true);
+            $y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$reservation->user_id,$reservation->customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,$reservation->address_id,$reservation->picksheet_note,null],true);
             $pickersheet_id = $y;
 
             if ((int)$pickersheet_id !== $pickersheet_id)

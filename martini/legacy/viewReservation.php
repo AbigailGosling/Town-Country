@@ -89,7 +89,7 @@ use Illuminate\Support\Facades\Auth;
 			<label>Salesman</label><br/>
  		 	<select id="" class="form-control" name="user_id">
 				<?php
-					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages) AND `is_hidden` = 0");
+					$_users = prepareExecuteQuery("SELECT * FROM `users` where 1 in (pages)");
 
 					while ($_user = mysqli_fetch_array($_users)) {
 						?><option value="<?php echo $_user['id']; ?>" <?php if($reservation['user_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php

@@ -33,8 +33,7 @@ use Illuminate\Support\Facades\Auth;
     else {
         $customersToSearch = $usermodel->listViewableCustomers();
     }
-
-
+    if (count($customersToSearch)==0)return;
     $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (`completed`='1' AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
     $queryResult = $queryResult->fetch_all(MYSQLI_ASSOC);
     $count = count($queryResult);
