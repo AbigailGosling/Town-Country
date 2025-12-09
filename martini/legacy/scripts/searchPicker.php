@@ -351,7 +351,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         }
         if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
         if($product2_quantity != 0) $quantityTotal = $product2_quantity;
-        else  $quantityTotal = countNumProductsForCutOnPalletArrays($product2_palletids, [$product2_cutids[0]], $nationality_id);
+        else  $quantityTotal = countNumProductsForCutOnPalletArrays(array_unique($product2_palletids), [$product2_cutids[0]], $nationality_id);
 
         if($quantityTotal < 1){continue;}
         ###
