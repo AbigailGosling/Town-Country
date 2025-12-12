@@ -49,6 +49,7 @@ use Illuminate\Support\Facades\Auth;
         && product.cut_id = ?
 		&& product.nationality_id= ?
         AND pallet.storage_location IN ($locs)
+        AND pallet.is_hidden = 0
         && ".$palletFilter."
         ORDER BY product.cut_id DESC";
 

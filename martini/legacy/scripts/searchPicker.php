@@ -104,7 +104,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
         array_push($whereArray, "pallet.id = '". $pallet_id ."'");
     }
-
+    array_push($whereArray, "`pallet`.`is_hidden` = 0");
     if($intake_id != ''){ # if this is posted then theyve entered a intake id
         $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup
         $ids = implode(',', $ARRAY_PALLET_IDS);
@@ -145,24 +145,27 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
     WHERE $whereString";
 
-    $productsY = loggedQuery($productsX);
+    $productsY = prepareExecuteQuery($productsX);
 
     $totalW = 0;
 
     $products2 = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     $products = [];
     $knownCombo = [];
-    foreach ($products2 as $productRow)
-    {
-        $alasCombo = $productRow['intake_id'] . "-" . $productRow['cut_id'] . "-" . $productRow['nationality_id'];
-        if (!array_key_exists($alasCombo,$knownCombo))
+    $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
+    Log::debug("huh",[$productsX,$products2]);
+    if (count($products2) > 0 && count($intakeIDsToCheck) > 0)
+        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".min($intakeIDsToCheck)." AND ".max($intakeIDsToCheck))->fetch_all(MYSQLI_ASSOC),"id");
+        foreach ($products2 as $productRow)
         {
-            $isDeleted = prepareExecuteQuery("SELECT `deleted` from `intake` WHERE id = ?",'i',[$productRow['intake_id']])->fetch_assoc()['deleted'];
-            if ($isDeleted == 1) continue;
-            $knownCombo[$alasCombo] = $alasCombo;
-            $products[] = $productRow;
+            if (!in_array($productRow['intake_id'],$intakeIDsToCheck)) continue;
+            $alasCombo = $productRow['intake_id'] . "-" . $productRow['cut_id'] . "-" . $productRow['nationality_id'];
+            if (!array_key_exists($alasCombo,$knownCombo))
+            {
+                $knownCombo[$alasCombo] = $alasCombo;
+                $products[] = $productRow;
+            }
         }
-    }
     usort($products, function ($item1,$item2){
         return $item2['cut_id'] <=> $item1['cut_id'];
     });
@@ -203,6 +206,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             && product.cut_id = ?
             && product.nationality_id = ?
             AND pallet.storage_location IN ($locs)
+            AND pallet.is_hidden = 0
             ORDER BY product.cut_id DESC";
             $pX2d = [$initial_pallet_id,$cut_id,$nationality_id];
         }
@@ -215,6 +219,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             && product.cut_id = ?
             && product.nationality_id = ?
             AND pallet.storage_location IN ($locs)
+            AND pallet.is_hidden = 0
             ORDER BY product.cut_id DESC";
             $pX2d = [$intake_id,$cut_id,$nationality_id];
         }
@@ -356,7 +361,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         if($quantityTotal < 1){continue;}
         ###
 
-        $totalW += weightSoldFromProductID($productsRow['productid']);
+        $totalW += $this_row_weight;
         $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
 

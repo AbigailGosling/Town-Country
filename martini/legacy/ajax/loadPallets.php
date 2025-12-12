@@ -31,6 +31,7 @@
                             <b>(created by: <?php echo getUsername($pallet['user_id']); ?>)</b>
                         <?php } ?>
                         <label><input type='checkbox' id="qc_hold<?php echo $pallet["id"]; ?>" onclick='qc_hold(<?php echo $pallet["id"]; ?> );' <?php if ($pallet['qc_hold']==1) echo "checked=checked" ?>>QC HOLD?</label>
+                        <label><input type='checkbox' id="is_hidden<?php echo $pallet["id"]; ?>" onclick='is_hidden(<?php echo $pallet["id"]; ?> );' <?php if ($pallet['is_hidden']==1) echo "checked=checked" ?>>HIDDEN</label>
                         </div>
 					</div>
 					<div class="buttonsContainer">

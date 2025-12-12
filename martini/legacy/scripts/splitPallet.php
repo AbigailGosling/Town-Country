@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ContainerProduct;
 use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\ReservationProduct;
@@ -21,7 +22,11 @@ $newProduct = $existingProduct->replicate();
 $newProduct->pallet_id = $newPallet->id;
 $newProduct->save();
 
-for ($i = $existingProduct->weights->count()-$cases_to_split;$i<$existingProduct->weights->count();$i++)
+$containerProduct = ContainerProduct::where("product_id",$existingProduct->id)->first()->replicate();
+$containerProduct->product_id = $newProduct->id;
+$containerProduct->save();
+
+for ($i = 0;$i<$cases_to_split;$i++)
 {
     /** @var Weight $weight */
     $weight = $existingProduct->weights[$i];
@@ -31,26 +36,34 @@ for ($i = $existingProduct->weights->count()-$cases_to_split;$i<$existingProduct
 $existingProduct = Product::with("weights")->find($product_id);
 $newProduct = Product::with("weights")->find($newProduct->id);
 $reservationsSum = ReservationProduct::where("product_id",$existingProduct->id)->sum("target_count");
-while ($reservationsSum > $existingProduct->weights->count())
+$allocated = 0;
+if ($reservationsSum > $existingProduct->weights->count())
 {
-    $rp = ReservationProduct::where("product_id",$existingProduct->id)->orderBy("target_count","desc")->first();
-    Log::debug("1",[$rp]);
-    if ($rp->target_count > $newProduct->weights->count())
+    foreach (ReservationProduct::where("product_id",$existingProduct->id)->orderBy("target_count","desc")->get() as $rp)
     {
-        $newRP = $rp->replicate();
-        $newRP->product_id = $newProduct->id;
-        $newRP->target_count = $newProduct->weights->count();
-        $newRP->save();
-        $rp->target_count = $rp->target_count-$newProduct->weights->count();
-        Log::debug("2a",[$rp,$newRP]);
+        if ($rp->target_count > $existingProduct->weights->count() - $allocated)
+        {
+            if ($rp->target_count <= $newProduct->weights->count())
+            {
+                $rp->product_id = $newProduct->id;
+            }
+            else
+            {
+                $newRP = $rp->replicate();
+                $newRP->product_id = $newProduct->id;
+                $newRP->target_count = $newProduct->weights->count();
+                $newRP->save();
+                $rp->target_count = $rp->target_count-$newProduct->weights->count();
+                if ($rp->target_count == 0)$rp->deleted = 1;
+                $allocated = $allocated + $rp->target_count;
+            }
+            $rp->save();
+        }
+        else
+        {
+            $allocated = $allocated + $rp->target_count;
+        }
     }
-    else
-    {
-        $rp->product_id = $newProduct->id;
-        Log::debug("2b",[$rp]);
-    }
-    $reservationsSum = $reservationsSum - $rp->target_count;
-    $rp->save();
 }
 ?>
 <script>
