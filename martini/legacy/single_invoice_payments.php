@@ -520,7 +520,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
     $('#payment_method').change(function(){
         var payment_type = $(this).val();
 
-        if(payment_type == 'CREDIT_NOTE'){
+        if(payment_type == 'CREDIT_NOTE' && 1 == <?php echo (request()->has("return"))?0:1 ?>){
             $('.products_container').fadeIn();
             $('#amountContainer').hide();
 

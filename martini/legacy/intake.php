@@ -120,7 +120,28 @@ use Illuminate\Support\Facades\Auth;
 <main class="int">
 
 	<a href="javascript:;" onclick="window.history.back();" class="backbtn">< Back</a>
-
+    <?php
+        if ($intake['deleted']==1)
+        {?>
+            <div style="visibility:visible;
+            left:20%;
+            pointer-events: none;
+            position:absolute;
+            z-index:100;
+            background:none;
+            display:block;
+            height:100%;
+            width:115%;">
+            <p style="opacity: 0.5; display: block; height: 100%;
+            color:red;
+            text-align:center; text-justify: inter-word;
+            font-size:60px; font-weight: bold;
+            transform:rotate(-60deg);
+            -webkit-transform:rotate(-60deg);"><br><br>
+            THIS INTAKE HAS BEEN DELETED</p>
+	</div>
+        <?php
+        }?>
 	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
 		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 		<select name="state">
@@ -987,6 +1008,10 @@ use Illuminate\Support\Facades\Auth;
     function qc_hold(pallet_id){
         var c = ($('#qc_hold'+pallet_id).is(":checked"))?1:0;
         $.post( "ajax/toggleQCHold.php",{pallet_id:pallet_id,set_to:c});
+    }
+    function is_hidden(pallet_id){
+        var c = ($('#is_hidden'+pallet_id).is(":checked"))?1:0;
+        $.post( "ajax/togglePalletHidden.php",{pallet_id:pallet_id,set_to:c});
     }
 	function editWeight(intake_id, pallet_id, product_id, weight_id){
 		console.log('intake_id ' + intake_id);
