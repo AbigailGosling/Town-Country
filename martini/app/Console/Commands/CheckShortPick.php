@@ -85,8 +85,9 @@ class CheckShortPick extends Command
                 $missing .= "</tr>";
             }
             $missing .= "</tbody></table>";
-            $u = [User::find(Customer::find($pick->customer_id)->default_salesman_id)->actual_email];
-            SLabsEmailer::send_email($pick->customer_id,SLabsEmailerType::ShortPick,$u,"Sale ".$pick->id." Short Picked","<html>Sale ".$pick->id." has completed pick, however ".$pick->pickerItems->where("deleted",0)->count() - count($weightIDs)." items were not picked.<br/><br/>".$missing."</html>",'','',$pick->id,true);
+            $cust = Customer::find($pick->customer_id);
+            $u = [User::find($cust->default_salesman_id)->actual_email];
+            SLabsEmailer::send_email($pick->customer_id,SLabsEmailerType::ShortPick,$u,"Sale ".$pick->id." Short Picked","<html>Customer: ".$cust->businessname."<br/>Sale ".$pick->id." has completed pick, however ".$pick->pickerItems->where("deleted",0)->count() - count($weightIDs)." items were not picked.<br/><br/>".$missing."</html>",'','',$pick->id,true);
         }
         return Command::SUCCESS;
     }
