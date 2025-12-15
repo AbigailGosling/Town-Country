@@ -9,7 +9,7 @@ class UserCustomerController extends Controller
 {
     public function index()
     {
-        return view('reports.usercustomer', ['data' => (new UserCustomerExport)->builder()->paginate(10000)]);
+        return view('reports.usercustomer', ['data' => (new UserCustomerExport)->collection()]);
     }
     public function download()
     {
