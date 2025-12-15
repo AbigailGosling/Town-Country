@@ -10,7 +10,7 @@ $export = [];
     </div>
             <x-data-table>
                 <x-slot:headers>
-                    @foreach ($data[0]->toArray() as $key=>$value)
+                    @foreach ($data[0] as $key=>$value)
                     @if ($key != "user" && $key != "site")
                         <x-data-table-header>{{$key}}</x-data-table-header>
                     @endif
@@ -20,7 +20,7 @@ $export = [];
                     @foreach($data as $item)
                     <tr>
                     <?php $row = []; ?>
-                    @foreach ($item->toArray() as $key=>$value)
+                    @foreach ($item as $key=>$value)
                     @if ($key != "user" && $key != "site")
                         <x-data-table-column>{{$value}}</x-data-table-column>
                         <?php $row[$key] = $value; ?>
@@ -32,7 +32,6 @@ $export = [];
                 </slot>
             </x-data-table>
         <br>
-        {{ $data->links() }}
 </x-app-layout>
 <?php
 use Carbon\Carbon;
