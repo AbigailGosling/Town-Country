@@ -441,7 +441,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php if ($intake['approved']==1) {?>
 			<td style="width:33%"><b style="color:green">Intake Approved</b></td><td align="center" style="width:33%"><?php echo ($intake['approved_by'] && $intake['approved_by']>-1)?User::find($intake['approved_by'])->name:"Unknown";?></td><td align="right" style="width:33%"><?php echo DateTime::createFromFormat('Y-m-d H:i:s',$intake['approved_date'])->format('d/m/Y H:i:s');?></td>
 		<?php } else {?>
-			<td><b style="color:red">Intake Not Yet Approved</b></td><?php if (User::find(Auth::id())->hasPermission("approve_intake")) {?><td style="width:50%" align="right"><form method="POST" action="scripts/approveIntake.php"><input type="hidden" name="_token" value="<?php echo csrf_token();?>"><input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>"><input type="submit" value="Approve Intake"></form></td><?php }?>
+			<td><b style="color:red">Intake Not Yet Approved</b></td><?php if (User::find(Auth::id())->hasPermission("approve_intake")) {?><td style="width:50%" align="right"><form id="approveIntake" name="approveIntake" method="POST" action="scripts/approveIntake.php"><input type="hidden" name="_token" value="<?php echo csrf_token();?>"><input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>"><input id="appButton" name="appButton" type="button" onclick="approvingIntake();" value="Approve Intake"></form></td><?php }?>
 		<?php } ?>
 		</tr>
 	</table>
@@ -1003,8 +1003,14 @@ use Illuminate\Support\Facades\Auth;
 			'afterprint': () => {
 				$('#printShow').hide();
 			}
-});
+        });
 	});
+<?php if ($intake['approved']==0) {?>
+    function approvingIntake(){
+        $("#appButton").attr("disabled", "disabled");
+        $('form#approveIntake').submit();
+    }
+<?php }?>
     function qc_hold(pallet_id){
         var c = ($('#qc_hold'+pallet_id).is(":checked"))?1:0;
         $.post( "ajax/toggleQCHold.php",{pallet_id:pallet_id,set_to:c});
