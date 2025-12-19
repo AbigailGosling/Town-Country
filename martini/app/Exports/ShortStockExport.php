@@ -45,8 +45,9 @@ class ShortStockExport implements FromCollection
         if (!isset($this->_collection))
         {
             $m=[];
+            $target_date = Carbon::now()->setDay(+10)->startOfDay()->format("d/m/Y");
             $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->cursor();
-            $target_date = Carbon::now()->addDays(+10)->startOfDay()->max(Carbon::createFromFormat('Y-m-d', '2026-01-07')->startOfDay());
+            $target_date = Carbon::now()->addDays(+10)->startOfDay();
             $products = Product::whereIn("id",$lazysearch->pluck("id"))->get();
             $r = null;
             foreach ($products as $p)
