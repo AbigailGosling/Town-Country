@@ -2,13 +2,16 @@
     require(__DIR__.'/../../functions.php');
     require(__DIR__.'/../../scripts/SLabsEmailer.php');
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use InternalScripts\SLabsEmailerStatus;
     $toSkip = request()->input('toSkip');
     $limit = 80;
     $searchterm = request()->input('searchterm');
+    /** @var User $usermodel */
 	$usermodel = User::find(Auth::id());
+    $canDelete = $usermodel->hasPermission(Permission::where("name","Can Delete Reservation")->first());
 	if($searchterm != ''){
         # Check if any customer names match the search input
         $customerIDs = [];
@@ -86,7 +89,7 @@ use InternalScripts\SLabsEmailerStatus;
                         </td>
                         <td width="25%" align="right"> Created <?php echo $date_purchased; ?>
                         <?php
-                        if ($picksheet['processed'] == 0) {
+                        if ($picksheet['processed'] == 0 && $canDelete) {
                         ?>
                         <div class="actions">
                             <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $picksheet['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
