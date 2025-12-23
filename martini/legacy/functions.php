@@ -1842,10 +1842,10 @@ use Ramsey\Uuid\Type\Decimal;
 		$users[] = $thisUser->id;
 		$users = implode(",",$users);
 		if ($thisUser->hasPermission("restrictedaccess")){
-			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString = "(`default_salesman_id` IN ($users) OR `id` IN (728)) AND";
+			if ((!$isSaleScreen) || !$thisUser->hasPermission("view_all_customers_at_sale"))$restrictionString .= "(`default_salesman_id` IN ($users) OR `id` IN (728)) AND ";
 		}
         if ($isReservationScreen==true){
-			$restrictionString = "`can_reserve` = 1 AND";
+			$restrictionString .= "`can_reserve` = 1 AND ";
 		}
 		$name = $mysqli->real_escape_string($name);
 		$tests = array(
@@ -1872,7 +1872,7 @@ use Ramsey\Uuid\Type\Decimal;
 			foreach ($queries as $query)
 			{
 				$x = sprintf($query,$test);
-				$y = prepareExecuteQuery($x);
+				$y = loggedQuery($x);
 				$count = mysqli_num_rows($y);
 				if ($count > 0 && $count < 20)
 				{

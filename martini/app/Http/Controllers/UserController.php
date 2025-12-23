@@ -95,7 +95,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'actual_email' => ['sometimes', 'string', 'email', 'max:255'],
+            'actual_email' => ['sometimes', 'string', 'email', 'max:255','nullable'],
         ]);
 
         $user = User::create([
@@ -159,7 +159,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'actual_email' => ['sometimes', 'string', 'email', 'max:255'],
+            'actual_email' => ['sometimes', 'string', 'email', 'max:255','nullable'],
             'password' => ['sometimes','string', 'nullable'],
             'new_password' => ['sometimes','string', 'nullable', Rules\Password::defaults()],
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
