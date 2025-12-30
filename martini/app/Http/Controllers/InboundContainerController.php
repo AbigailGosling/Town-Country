@@ -328,7 +328,7 @@ class InboundContainerController extends Controller
         foreach (ReservationProduct::where("product_id",$containerProduct->product_id)->get() as $reservationProduct)
         {
             $reservationProduct->deleted = true;
-            if (!in_array($reservationProduct->reservation_id, $reservationsToCheck)) $reservationProduct[] = $reservationProduct->reservation_id;
+            if (!in_array($reservationProduct->reservation_id, $reservationsToCheck)) $reservationsToCheck[] = $reservationProduct->reservation_id;
             $reservationProduct->save();
         }
         $reservationsToCheck = array_unique($reservationsToCheck);

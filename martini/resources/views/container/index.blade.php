@@ -32,7 +32,11 @@
         <slot>
             @foreach($containers as $container)
                 <tr>
+                    @if($container->deleted == true)
+                    <x-data-table-column>DELETED {{ $container->internal_number }}</x-data-table-column>
+                    @else
                     <x-data-table-column>{{ $container->internal_number }}</x-data-table-column>
+                    @endif
                     <x-data-table-column>{{ $container->origin_port }}</x-data-table-column>
                     <x-data-table-column>{{ $container->eta->format('d/m/Y') }}</x-data-table-column>
                     <x-data-table-column :show-on-mobile="false">
@@ -56,7 +60,9 @@
                         <div class="grid grid-cols-3 gap-2">
                             <x-table-action-button route="containers.edit" :id="$container->id" />
                             <x-table-action-button route="containers.clone-container" type="clone" :id="$container->id" />
+                                @if($container->deleted == false)
                             <x-table-action-button route="containers.predelete" type="delete" :id="$container->id" />
+                                @endif
                         </div>
                     </td>
                 </tr>
