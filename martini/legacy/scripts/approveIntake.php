@@ -11,7 +11,6 @@ use App\Models\Site;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 require(__DIR__.'/../functions.php');
 
@@ -73,8 +72,8 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
             $site = Site::find($customer->site_id);
             $siteCutOffHoursAndMinutes = explode(":",$site->cutoff);
             $sitesCutOffToday = Carbon::now()->hour($siteCutOffHoursAndMinutes[0])->minute($siteCutOffHoursAndMinutes[1])->second(0)->micro(0);
-            if (Carbon::now()->timestamp>$sitesCutOffToday->timestamp){
-                $delDate =  Carbon::now();
+            if ($reservation->eta->timestamp>$sitesCutOffToday->timestamp){
+                $delDate =  $reservation->eta;
             }
             else {
                 $delDate = $sitesCutOffToday->copy();

@@ -139,8 +139,10 @@ use App\Models\Site;
 <div id="btm"></div>
 <script>
 
-
+    var oneClickProtect = false;
 	function saveDelivery(event){
+        if (oneClickProtect == true) return;
+        oneClickProtect=true;
 		event.preventDefault();
 		var supplier_search = $('#supplier_search').val();
 		var date_received = $('#date_received').val();

@@ -31,7 +31,7 @@ class Reservation extends Model
         'picksheet_note'         => 'string',
         'order_reference_number' => 'string',
         'processed'              => 'boolean',
-        'eta'                    => 'date',
+        'eta'                    => 'datetime:Y-m-d',
     ];
     public function reservation_product():HasMany
     {
