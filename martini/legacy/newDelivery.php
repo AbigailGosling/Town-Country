@@ -142,7 +142,6 @@ use App\Models\Site;
     var oneClickProtect = false;
 	function saveDelivery(event){
         if (oneClickProtect == true) return;
-        oneClickProtect=true;
 		event.preventDefault();
 		var supplier_search = $('#supplier_search').val();
 		var date_received = $('#date_received').val();
@@ -216,6 +215,7 @@ use App\Models\Site;
 		$('#msgNotice').html(msg);
 
 		if(good == 1){
+            oneClickProtect=true;
 			$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 		}
 	}
