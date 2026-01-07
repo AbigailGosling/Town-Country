@@ -88,6 +88,7 @@ class SupplierReturnController extends Controller
             foreach ($returnProducts as $returnProduct)
             {
                 $internalProduct = Product::find($returnProduct->product_id);
+                if ( $internalProduct == null) continue;
                 if ($internalProduct->unit=="PPC")
                 {
                     $itemCost = $returnProduct->price * $returnProduct->count;

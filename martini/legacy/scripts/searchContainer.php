@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 	        <th class="searchRContent__unit">Units</th>
 	        <th class="searchRContent__product">Product</th>
 	        <th>Nationality</th>
-            <th>Comments</th>
+            <!--<th>Comments</th>-->
 	        <th>Brand</th>
 	        <th class="searchRContent__date-range">ETA</th>
 	        <th>Expected KG</th>
@@ -142,13 +142,13 @@ use Illuminate\Support\Facades\Auth;
                             </td>
                             <td class="bold" colspan="1"><?php echo getCut($productsRow2['cut_id']); ?></td>
                             <td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
-                            <td colspan="1">
+                            <!-- <td colspan="1">
                                 <form method="post">
-                                    <textarea name="pallet-comment" palletid="<?php echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment"><?php echo $pallet_comments; ?></textarea>
-                                    <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
-                                    <i class="fa fa-save" onclick="saveDeepComment(<?php echo $productsRow2['pallet_id']; ?>,<?php echo $productsRow2['productid']; ?>)"></i>
+                                    <textarea name="pallet-comment" palletid="<?php //echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment"><?php //echo $pallet_comments; ?></textarea>
+                                    <input type="text" name="pallet_id" class="pallet" value="<?php //echo $productsRow2['pallet_id']; ?>" style="display:none;">
+                                    <i class="fa fa-save" onclick="saveDeepComment(<?php //echo $productsRow2['pallet_id']; ?>,<?php //echo $productsRow2['productid']; ?>)"></i>
                                 </form>
-                            </td>
+                            </td> -->
                             <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
                             <td><?php echo $container->eta->format("d/m/Y"); ?></td>
 
