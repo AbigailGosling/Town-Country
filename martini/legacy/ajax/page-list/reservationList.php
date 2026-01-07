@@ -52,9 +52,10 @@ use InternalScripts\SLabsEmailerStatus;
             $x .= " || `id` IN ($resProdIDs)";
         }
         $x .= ") AND `deleted` = 0 ORDER BY `id` DESC";
-        $queryResult = loggedQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
+        $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);
     }else{
-        $queryResult = prepareExecuteQuery("SELECT * FROM `reservation` where `deleted` = 0 ORDER BY `id` DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
+        $customerIDs = implode(",",$usermodel->listViewableCustomers());
+        $queryResult = prepareExecuteQuery("SELECT * FROM `reservation` where `customer_id` IN ($customerIDs) AND `deleted` = 0 ORDER BY `id` DESC LIMIT ?,?",'ii',[$toSkip, $limit]);
     }
     $count = mysqli_num_rows($queryResult);
 

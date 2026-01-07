@@ -118,7 +118,7 @@ class User extends Authenticatable
         return in_array($customer_id,$this->listViewableCustomers());
     }
     private $_listViewableCustomers = null;
-    public function listViewableCustomers()
+    public function listViewableCustomers():array
     {
         if ($this->_listViewableCustomers === null)
         {
