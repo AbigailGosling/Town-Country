@@ -191,13 +191,18 @@ $serverRoot = request()->server("SERVER_NAME");
 		</div>
         </td>
         </tr>
+        <tr>
+            <td><h4><?php echo $supplier['name'];?> (ID: <?php echo $supplier['id'];?>)<br>
+            Statement of account as at: <?php echo date('d/m/Y @ H:i');?>
+            </h4></td>
+            <?php
+            $routeString = (request()->has("history"))?'supplier_return_statement.php?id='.$supplier['id']:'supplier_return_statement.php?id='.$supplier['id']."&history=1";
+            $routeLabel = (request()->has("history"))?"Show Outstanding":"Show History";
+            ?>
+            <td align="right"><a href="<?php echo $routeString;?>"><?php echo $routeLabel;?></a></td>
+        </tr>
         </table>
         </div>
-
-        <h4><?php echo $supplier['name'];?> (ID: <?php echo $supplier['id'];?>)<br>
-        Statement of account as at: <?php echo date('d/m/Y @ H:i');?>
-        </h4>
-
         <div class="loadingContainer" style="display: none;">
             <div class="loadericoncenter">
             <img src="img/loading.gif" alt="">
@@ -208,7 +213,7 @@ $serverRoot = request()->server("SERVER_NAME");
         <table id="soaTable" class="table" width="100%" style="font-size:10pt;">
             <thead>
                 <tr class="heading">
-                    <th align="left" >Return ID</th>
+                    <th align="left" ><?php echo (request()->has("history"))?"Paid Returns":"Return ID"?></th>
                     <th align="left" data-orderable="false" >Date</th>
                     <th align="right" >Value</th>
                     <th align="right" >Paid</th>
@@ -226,31 +231,13 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
     $internalValue = 0;
     $internalPaid = 0;
     $picksheet = $supplierPicksheets[$i];
-    $returnProducts = prepareExecuteQuery("SELECT *,COUNT(product_id) as `count` FROM `pickeritems` WHERE `pickersheet_id` = ".$picksheet['id']);
-    $quickWeightLookup = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `palletsout` WHERE `pickersheet_id` = ".$picksheet['id'])->fetch_assoc()['weight_ids'];
-    $quickWeightLookup = rtrim($quickWeightLookup,",");
-    if ($quickWeightLookup != "")
-    {
-        while($returnProduct= mysqli_fetch_assoc($returnProducts))
-        {
-            if ($returnProduct['unit']=="PPC")
-            {
-                $itemCost = $returnProduct["price"] * $returnProduct["count"];
-            }
-            else
-            {
-                $tear = prepareExecuteQuery("SELECT SUM(`weight_tear`) as `tear` FROM `weights` WHERE id IN (".$quickWeightLookup.") AND `product_id` = ".$returnProduct['product_id'])->fetch_assoc()['tear'];
-                $itemCost = $returnProduct["price"] * $tear;
-            }
-            $internalValue += $itemCost;
-        }
-    }
-
+    $internalValue = number_format((double)invoiceTotal($picksheet['id']), 2, '.', '');
     $internalPaid = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$picksheet['id'])->fetch_assoc()['amount'];
     if ($internalPaid==null)$internalPaid=0;
     $internalOutstanding = ($internalValue - $internalPaid);
+    if ((!request()->has("history") && $internalOutstanding == 0)||(request()->has("history") && $internalOutstanding > 0)) continue;
     $totalPaid += $internalPaid;
-    $totalValue += $itemCost;
+    $totalValue += $internalValue;
     $totalOutstanding += $internalOutstanding;
 ?>
     <tr class="<?php if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">

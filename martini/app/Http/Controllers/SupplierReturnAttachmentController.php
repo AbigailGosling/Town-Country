@@ -19,7 +19,6 @@ class SupplierReturnAttachmentController extends Controller
             'file'      => 'nullable|file',  // file upload
             'comments'  => 'nullable|string',
         ]);
-
         // Save file
         if ($request->hasFile('file')) {
 
@@ -27,7 +26,7 @@ class SupplierReturnAttachmentController extends Controller
 
             $data['file_id'] = $file->id;
         }
-
+        $data['product_collected'] = $request->exists('product_collected')?true:false;
         SupplierReturnAttachment::create($data)->save();
         return redirect()->back();
     }
