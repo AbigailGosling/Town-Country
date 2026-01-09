@@ -262,7 +262,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
 ?>
     <div class="row">
         <div class="col">
-            <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return Notes</h2>
+            <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return Notes</h2><?php ?>
         </div>
     </div>
     <form id="comment_entry" method="POST" action="<?php echo route("supplier-return-attachment.store");?>">
@@ -276,6 +276,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                     <th align="left">User</th>
                     <th align="left">Date</th>
                     <th align="left">Comments</th>
+                    <th align="left">Product Collected?</th>
                     <th align="left">File</th>
                     <th align="left"></th>
                 </tr>
@@ -289,8 +290,9 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                             <td><?php echo $sra->user->name; ?></td>
                             <td><?php echo $sra->created_at; ?></td>
                             <td><?php echo $sra->comments; ?></td>
+                            <td><?php echo ($sra->product_collected)?"Yes":"No"; ?></td>
                             <td><a href="<?php if ($sra->file)echo route("files.download",[$sra->file->id])?>"><?php echo $sra->file->original_name; ?></a></td>
-                            <td><input type="button" value="Delete" onclick="mainForm4('<?php echo route('supplier-return-attachment.destroy',[$sra]) ?>')"/></td>
+                            <td><!--<input type="button" value="Delete" onclick="mainForm4('php echo route('supplier-return-attachment.destroy',[$sra]) ?>')"/>--></td>
                         </tr>
                         <?php
                     }
@@ -298,9 +300,10 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                 <tr>
                     <td><?php echo User::find(Auth::id())->name; ?></td>
                     <td></td>
-                    <td><input id="comments" name="comments" type="text" form="comment_entry"></td>
-                    <td><input id="file" name="file" type="file" form="comment_entry"></td>
-                    <td><input type="button" value="Submit" onclick="mainForm3()"></td>
+                    <td><input id="comments" name="comments" type="text"></td>
+                    <td><input id="product_collected" name="product_collected" type="checkbox"></td>
+                    <td><input id="file" name="file" type="file"></td>
+                    <td><input id="comment_submit" name="comment_submit" type="button" value="Submit" onclick="mainForm3()"></td>
                 </tr>
             </tbody>
         </table>
@@ -329,7 +332,8 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                     <?php
                         $returnIntakeResult = prepareExecuteQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
                         $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
-                        foreach (PAYMENT_METHODS as $paymentMethod) {
+                        $paymentMethods = (request()->has("return"))?SUPPLIER_PAYMENT_METHODS:PAYMENT_METHODS;
+                        foreach ($paymentMethods as $paymentMethod) {
                         if ((!empty($selectedPaymentData)) && $selectedPaymentData['payment_method'] == $paymentMethod) {
                             echo '<option value="' . $paymentMethod . '" selected>' . $paymentMethod . '</option>';
                         } else {
@@ -520,7 +524,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
     $('#payment_method').change(function(){
         var payment_type = $(this).val();
 
-        if(payment_type == 'CREDIT_NOTE' && 1 == <?php echo (request()->has("return"))?0:1 ?>){
+        if(payment_type == 'CREDIT_NOTE'){
             $('.products_container').fadeIn();
             $('#amountContainer').hide();
 
@@ -600,12 +604,12 @@ function mainFormSucess(){
 function mainForm3(){
     $('#comment_submit').val("PLEASE WAIT...");
     $('#comment_submit').prop('disabled', true);
-	$('#comment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	$('#comment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess,error:function(){ $('#comment_entry').val("ERROR!")}});
 }
 function mainForm2(){
     $('#payment_submit').val("PLEASE WAIT...");
     $('#payment_submit').prop('disabled', true);
-	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	$('#payment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess,error:function(){ $('#payment_submit').val("ERROR!")}});
 }
 function mainForm4(route){
     const data = {

@@ -113,20 +113,22 @@ $isDelete ??= false;
         <x-data-table>
             <x-slot:headers>
                 <x-data-table-header>Product</x-data-table-header>
-                <x-data-table-header style="background-color: red;">Cases</x-data-table-header>
+                <x-data-table-header>Brand</x-data-table-header>
+                <x-data-table-header>Cases</x-data-table-header>
                 <x-data-table-header>Estimated KG</x-data-table-header>
                 <x-data-table-header width="50">Actions</x-data-table-header>
             </x-slot:headers>
             <slot>
-                @foreach ($containerProducts as $cp)
+                @foreach ($containerProducts as $containerProduct)
                 <tr>
-                    <x-data-table-column>{{ $cp->getProduct()?->getCut()->name }}</x-data-table-column>
-                    <x-data-table-column>{{ $cp->getProduct()?->quantity }}</x-data-table-column>
-                    <x-data-table-column>{{ $cp->getProduct()?->quantity * $cp->getProduct()?->akg }}</x-data-table-column>
+                    <x-data-table-column>{{ $containerProduct->getProduct()?->getCut()->name??"Unknown" }}</x-data-table-column>
+                    <x-data-table-column>{{ $brands[$containerProduct->getProduct()?->brand_id]->name??"Unknown" }}</x-data-table-column>
+                    <x-data-table-column>{{ $containerProduct->getProduct()?->quantity??"Unknown" }}</x-data-table-column>
+                    <x-data-table-column>{{ $containerProduct->getProduct()?->quantity * $containerProduct->getProduct()?->akg }}</x-data-table-column>
                     <td class="border-b dark:border-slate-600 p-2 pr-8">
                         <div class="grid grid-cols-3 gap-2">
-                            <x-table-action-button route="container-product.edit" :id="['containerProduct'=>$cp,'container'=>$container]">Edit</x-table-action-button>
-                            <x-table-action-button route="container-product.predelete" type="delete" :id="['containerProduct'=>$cp,'container'=>$container]"></x-table-action-button>
+                            <x-table-action-button route="container-product.edit" :id="['containerProduct'=>$containerProduct,'container'=>$container]">Edit</x-table-action-button>
+                            <x-table-action-button route="container-product.predelete" type="delete" :id="['containerProduct'=>$containerProduct,'container'=>$container]"></x-table-action-button>
                         </div>
                     </td>
                 </tr>

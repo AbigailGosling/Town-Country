@@ -25,6 +25,7 @@ class SupplierReturnAttachment extends Model
         'return_id',
         'file_id',
         'comments',
+        'product_collected',
     ];
 
     protected $casts = [
@@ -32,6 +33,7 @@ class SupplierReturnAttachment extends Model
         'return_id' => 'integer',
         'file_id'   => 'integer',
         'comments'  => 'string',
+        'product_collected'=>'boolean',
     ];
 
     public function user()
