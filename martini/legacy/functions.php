@@ -435,15 +435,19 @@ use Ramsey\Uuid\Type\Decimal;
 
 		return $weight;
 	}
-
+    global $_internalWeightFromProd;
+    $_internalWeightFromProd = [];
 	function weightSoldFromProductID($productID){
-		// ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
-		$x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = ?";
-		//$x = "SELECT * FROM `weights` WHERE product_id = $productID";
-		$y = prepareExecuteQuery($x,'i',[$productID]);
-
+        global $_internalWeightFromProd;
+		if (!array_key_exists($productID,$_internalWeightFromProd))
+        {
+            // ??: Assuming status_id 0 is available & 1 is sold, this checks for unsold instead of sold
+            $x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = ?";
+            //$x = "SELECT * FROM `weights` WHERE product_id = $productID";
+            $_internalWeightFromProd[$productID] = prepareExecuteQuery($x,'i',[$productID])->fetch_all(MYSQLI_ASSOC);
+        }
 		$weight = 0;
-		while($row = $y->fetch_assoc()){
+		foreach ($_internalWeightFromProd[$productID] as $row){
 			if($row['weight_tear'] == $row['weight_gross']){
 				(double)$w = (double)$row['weight_gross'];
 			}else{
@@ -476,13 +480,13 @@ use Ramsey\Uuid\Type\Decimal;
 
 	function weightsAvailableOnProduct($productID){
 		global $mysqli;
-
-		$x = "SELECT id FROM `weights` WHERE status_id != '1' && product_id = ?";
- 		$y = prepareExecuteQuery($x,'i',[$productID]);
-
-		$count = $y->num_rows;
-
-		return $count;
+        global $_internalWeightFromProd;
+		if (!array_key_exists($productID,$_internalWeightFromProd))
+        {
+            $x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id = ?";
+            $_internalWeightFromProd[$productID] = prepareExecuteQuery($x,'i',[$productID])->fetch_all(MYSQLI_ASSOC);
+        }
+		return count($_internalWeightFromProd[$productID]);
 
 
 	}
@@ -1911,6 +1915,7 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
+    CONST SUPPLIER_PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','SUPPLIER_CREDIT_NOTE'];
 	function getIntakeLastUpdated($id)	{
 		$lastUpdated = null;
 		$intake =prepareExecuteQuery("SELECT `created_at`,`updated_at` FROM `intake` WHERE `id` = ?",'i',[$id])->fetch_assoc();
