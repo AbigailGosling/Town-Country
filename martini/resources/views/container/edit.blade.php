@@ -67,7 +67,7 @@ $isDelete ??= false;
                         <select id="temperature_id" class="block mt-1 w-full" name="temperature_id" required>
                             <option disabled="disabled" selected value="">Select Temperature</option>
                             @foreach ($temperatures as $temperature)
-                            <option {{($temperature->id==old('temperature_id', $container->temperature_id)) ? "selected":"";}} value="{{$temperature->id}}" {{{($isNew==false&&$container->temperature_id > 0)?'disabled="disabled"':''}}}>{{$temperature->temperature}}</option>
+                            <option {{($temperature->id==old('temperature_id', $container->temperature_id)) ? "selected":"";}} value="{{$temperature->id}}">{{$temperature->temperature}}</option>
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('temperature_id')" class="mt-2" />
