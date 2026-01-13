@@ -16,6 +16,18 @@ require(__DIR__.'/../functions.php');
 
 $user = User::find(Auth::id());
 $intake = Intake::with("pallets")->with("products")->find(request()->input('intake_id'));
+if ($intake->approved == true)
+{?>
+    <script>
+        window.location = '../intake.php?id=<?php echo $intake->id; ?>';
+    </script> <?php exit;
+}
+if ($intake->approving_start != null)
+{?>
+    <script>
+        window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=0';
+    </script> <?php exit;
+}
 if ($intake->pallets->count() == 0)
 {?>
 <script>

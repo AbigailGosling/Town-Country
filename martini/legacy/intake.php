@@ -1296,6 +1296,11 @@ use Illuminate\Support\Facades\Auth;
 	if(request()->has('error')){
         switch (request()->input('error'))
         {
+            case 0:
+                {
+                    $errorMessage = "Cannot Approve: Intake Approval Already Started";
+                    break;
+                }
             case 1:
                 {
                     $errorMessage = "Cannot Approve: No Pallets";
