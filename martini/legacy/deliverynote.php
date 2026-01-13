@@ -2,7 +2,7 @@
 
 use App\Models\Location;
 use App\Models\Site;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 $e = new \Exception;
 $s = (int)(microtime(true));
@@ -198,6 +198,48 @@ $s = (int)(microtime(true));
 	</div>
 	<?php if($user['user_type'] == 'A'){ ?>
 	<br/>
+    <?php if ($pickSheetRow['deliverynote_printed']==0){?>
+    <form id="deliverynote_printed" class="printhide" method="POST" action="ajax/markPickAsPrinted.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
+		<input type="hidden" name="type" value="DELIVERY_NOTE">
+		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
+
+		<table>
+			<tr>
+				<td colspan="4" align="left">
+					<h3 style="margin:0;">Warehouse Printed?</h3>
+				</td>
+                <td style="padding-left:10px;">
+					<label>Confirm Print by Warehouse Supervisor?</label>
+				</td>
+                <td style="padding-left:10px;">
+					<input type="checkbox" name="pod">
+				</td>
+				<td>
+					<input type="button" onclick="deliverynote_printed()" value ="Submit"></input>
+				</td>
+			</tr>
+		</table>
+    </form>
+    <?php }else{?>
+    <form id="deliverynote_printned" class="printhide" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
+		<input type="hidden" name="type" value="DELIVERY_NOTE">
+		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
+
+		<table>
+			<tr>
+				<td colspan="4" align="left">
+					<h3 style="margin:0;">Warehouse Copy Printed</h3>
+				</td>
+                <td style="padding-left:10px;">
+					<label>by <?php echo User::find($pickSheetRow['deliverynote_printed_by'])?->name??"Unknown" ?></label>
+				</td>
+                <td style="padding-left:10px;">
+                <label>at <?php echo $pickSheetRow['deliverynote_printed_at']??"Unknown" ?></label>
+				</td>
+			</tr>
+		</table>
+    </form>
+    <?php }?>
 	<form id="mainForm" class="printhide" method="POST" action="scripts/addInternalDocument.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="DELIVERY_NOTE">
 		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
@@ -561,6 +603,10 @@ $s = (int)(microtime(true));
 	function togglePrices(){
 		$('.price').toggle('');
 	}
+    function deliverynote_printed()
+    {
+        $('#deliverynote_printed').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+    }
 	function mainForm(){
 		$('#mainForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 	}
@@ -734,20 +780,12 @@ $s = (int)(microtime(true));
 	}
 
 	function printStuff(){ // Print btn on menu
-
-		$.get("ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
-			hideItemsPrint();
-			window.print();
-		});
-
+        hideItemsPrint();
+        window.print();
 	}
 
 	function beforePrint(){ // CTRL + P
-
-		$.get("ajax/markPickAsPrinted.php?id=<?php echo request()->input('id'); ?>", function(data, status){
-			hideItemsPrint();
-		});
-
+		hideItemsPrint();
 	}
 
 	function printCompleted() {
