@@ -13,6 +13,8 @@ use App\Models\ReservationProduct;
 use App\Models\Species;
 use App\Models\Temperature;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class InboundContainerController extends Controller
 {
@@ -25,31 +27,7 @@ class InboundContainerController extends Controller
     public function index()
     {
         $containers = InboundContainer::where('deleted',false)->orderByDesc("id")->paginate($this::$defaultPaginate);
-        $brandLookup = [];
-        foreach ($containers as $container)
-        {
-            $containerProd = ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get()->pluck("product_id")->toArray();
-            switch (count($containerProd))
-            {
-                case 1:
-                    $p = Product::find($containerProd[0]);
-                    if ($p==null)
-                    {
-                        $brandLookup[$container->id] = "Unknown";
-                        break;
-                    }
-                    $brandLookup[$container->id] = Brand::find($p->brand_id)->name;
-                    break;
-                case 0:
-                    $brandLookup[$container->id] = "Unknown";
-                    break;
-                default:
-                    $brandLookup[$container->id] = "Mixed";
-                    break;
-
-            }
-        }
-        return view("container.index",["containers"=>$containers,"brandLookup"=>$brandLookup]);
+        return view("container.index",["containers"=>$containers,"brandLookup"=>$this->containerBrandLookup($containers)]);
     }
 
     /**
@@ -61,7 +39,7 @@ class InboundContainerController extends Controller
     {
         $searchTerm = $request->get('search');
         $containers = InboundContainer::where('internal_number','LIKE','%'.$searchTerm.'%')->orWhere('origin_port','LIKE','%'.$searchTerm.'%')->orderByDesc("id")->paginate($this::$defaultPaginate);
-        return view("container.index",["containers"=>$containers]);
+        return view("container.index",["containers"=>$containers,"brandLookup"=>$this->containerBrandLookup($containers)]);
     }
 
     /**
@@ -369,5 +347,34 @@ class InboundContainerController extends Controller
             }
         }
         $containerProduct->save();
+    }
+    private function containerBrandLookup(LengthAwarePaginator $containers):array
+    {
+        $brandLookup = [];
+        /** @var InboundContainer $container */
+        foreach ($containers as $container)
+        {
+            $containerProd = ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get()->pluck("product_id")->toArray();
+            switch (count($containerProd))
+            {
+                case 1:
+                    $p = Product::find($containerProd[0]);
+                    if ($p==null)
+                    {
+                        $brandLookup[$container->id] = "Unknown";
+                        break;
+                    }
+                    $brandLookup[$container->id] = Brand::find($p->brand_id)->name;
+                    break;
+                case 0:
+                    $brandLookup[$container->id] = "Unknown";
+                    break;
+                default:
+                    $brandLookup[$container->id] = "Mixed";
+                    break;
+
+            }
+        }
+        return $brandLookup;
     }
 }
