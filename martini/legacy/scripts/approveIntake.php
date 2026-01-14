@@ -28,6 +28,9 @@ if ($intake->approving_start != null)
         window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=0';
     </script> <?php exit;
 }
+$intake->approving_start = Carbon::now();
+$intake->approved_by = Auth::id();
+$intake->save();
 if ($intake->pallets->count() == 0)
 {?>
 <script>
