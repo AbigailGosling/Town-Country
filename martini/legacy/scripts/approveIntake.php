@@ -22,7 +22,7 @@ if ($intake->approved == true)
         window.location = '../intake.php?id=<?php echo $intake->id; ?>';
     </script> <?php exit;
 }
-if ($intake->approving_start != null)
+if ($intake->approving_start != null || $intake->approved != false)
 {?>
     <script>
         window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=0';
