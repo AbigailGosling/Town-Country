@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 	$customer_id = request()->input('id');
 	$address_id = request()->input('address_id');
-
+    $isContainerSearch = request()->has('container');
 	$x = "SELECT * FROM `customers` WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Auth;
 	showHigherWarning 	= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
 	delCheckingOn		= <?php echo ($row['delivery_day_checking'] == 1 && $row['delivery_day_override'] == 0)?"true":"false"; ?>;
 	delDays				= <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
-	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo $creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
+	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo ($isContainerSearch)?$creditCheck['messageReservation']:$creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
     bipassNDandTenD     = <?php echo ($user['override_saledate_check']>0||$row['check_saledate']==0)?"true":"false"; ?>;
 </script>
 <div class="col">

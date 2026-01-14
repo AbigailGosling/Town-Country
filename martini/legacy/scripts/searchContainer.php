@@ -4,6 +4,7 @@ use App\Models\InboundContainer;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\ReservationProduct;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 ?>
@@ -40,6 +41,18 @@ use Illuminate\Support\Facades\Auth;
     $timeSensitivityStatus = (int)request()->input('time',0);
     $internal_num = request()->input('internal_num',"");
     $temperatureID = request()->input('temperatureID',"");
+    $dateFrom = request()->input('dateFrom',null);
+    $dateTo = request()->input('dateTo',null);
+    if (null != $dateFrom || null != $dateTo)
+    {
+        if (null != $dateFrom) $dateFrom = Carbon::createFromFormat("d/m/Y",$dateFrom);
+        else $dateFrom = Carbon::now()->subCentury();
+        if (null != $dateTo) $dateTo = Carbon::createFromFormat("d/m/Y",$dateTo);
+        else $dateTo = Carbon::now()->addCentury();
+        $dateFrom = $dateFrom->startOfDay();
+        $dateTo = $dateTo->endOfDay();
+    }
+6
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     $totalW = 0;
@@ -86,6 +99,7 @@ use Illuminate\Support\Facades\Auth;
 
         $whereString = implode(' && ',$whereArray);
         $cqb = InboundContainer::where([["admin_approved",true],["arrived",false],["deleted",false]]);
+        if (null != $dateFrom && null != $dateTo) $cqb = $cqb->whereBetween("eta",[$dateFrom,$dateTo]);
         if ($internal_num != "") $cqb = $cqb->where("internal_number","LIKE","%".$internal_num."%");
         if ($temperatureID != "") $cqb = $cqb->where("temperature_id",$temperatureID);
         $containers = $cqb->orderBy('eta')->with('containerProducts')->get();

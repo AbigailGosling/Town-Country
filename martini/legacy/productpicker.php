@@ -161,6 +161,26 @@ use Illuminate\Support\Facades\Log;
 					?>
 					</select>
 				</td>
+                <td style="width:20%">
+                    <select id="locID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
+					<option value="" disabled selected>Select Sublocation..</option>
+                    <?php
+							$x = "SELECT * FROM `location` WHERE `disabled` = 0";
+							$y = prepareExecuteQuery($x);
+
+							$i=0;
+							while($row = mysqli_fetch_array($y)){
+
+
+								$thisid = $row['site_id'];
+								$y2 = prepareExecuteQuery("SELECT * FROM `site` WHERE id=?",'i',[$thisid]);
+								$species = mysqli_fetch_array($y2);
+								$rand = 'z' . rand(6000,12212);
+									?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption l<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
+								}
+						?>
+					</select>
+				</td>
 				<td style="width:20%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select Brand..</option>
 					<?php
@@ -940,11 +960,26 @@ function cancelSale()
 	// iOS fix - display:none doesn't work on select options
 	$('#SearchCutgroups option.allsoption').wrap('<span/>');
 
-    $('#SearchCutgroups').change(function(){
-        var id = $(this).val();
 
-        //doSearch();
+
+    $('#siteID').change(function(){
+
+        var thisval = $(this).val();
+        $('#locID option.allsoption').hide();
+        $('#locID option.l'+thisval).show();
+
+        // iOS fix - display:none doesn't work on select options
+        $('#locID option.allsoption').unwrap('span');
+        $('#locID option.allsoption').wrap('<span/>');
+        $('#locID option.l'+thisval).unwrap();
+
+        var id = $(this).val();
     });
+
+    // hide cuts on load
+    $('#locID option.allsoption').hide();
+    // iOS fix - display:none doesn't work on select options
+    $('#locID option.allsoption').wrap('<span/>');
 
 
 	function doSearch(){
@@ -959,15 +994,17 @@ function cancelSale()
  		var intakeID = $('#IntakeID').val();
  		var palletID = $('#PalletID').val();
         var siteID = $('#siteID').val();
-		 var customer_id = $('#customer_id').val();
+        var locID = $('#locID').val();
+        var customer_id = $('#customer_id').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 
-			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id +"&siteID="+siteID , function(data, status){
+			$.get("scripts/searchPicker.php?cutgroup_id=" + cutgroup_id + "&species=" + species +  "&temperatureID=" + temperatureID +  "&palletID=" + palletID + "&intakeID=" + intakeID + "&brandID=" + brand + "&nationalityID=" + nationality + "&time="+time + "&customerID="+customer_id +"&siteID="+siteID +"&locID="+locID , function(data, status){
 				$('#loadResults').html(data);
 
 			});
             $('#siteID').prop('selectedIndex',0);
+            $('#locID').prop('selectedIndex',0);
 			$('#SearchBrand').prop('selectedIndex',0);
 			$('#SearchNationality').prop('selectedIndex',0);
 			$('#SearchSpecies').prop('selectedIndex',0);

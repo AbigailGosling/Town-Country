@@ -52,6 +52,7 @@ class Intake extends Model
 		'approved_by' => 'int',
 		'approved_date' => 'datetime',
         'date_received' => 'datetime:Y-m-d H:n:s',
+        'approving_start' => 'datetime:Y-m-d H:n:s',
 		'health_id' => 'int'
 	];
     protected $dates = [
@@ -74,6 +75,7 @@ class Intake extends Model
 		'date_paid',
 		'deleted',
 		'approved',
+        'approving_start',
 		'approved_by',
 		'approved_date',
 		'import_num',
