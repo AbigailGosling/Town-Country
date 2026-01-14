@@ -19,6 +19,16 @@ use Illuminate\Support\Facades\Auth;
 	$addressid = request()->input('addressid');
     $eta = Carbon::createFromFormat('d/m/Y', request()->input('eta'));
 
+    $transaction_id = request()->input('transaction_id');
+    if ($transaction_id != null && $transaction_id != "")
+	{
+		$transactCheck = prepareExecuteQuery("SELECT * FROM `reservation` WHERE `transaction_id` = ?",'s',[$transaction_id]);
+		if ($transactCheck->num_rows > 0) {
+			throw new \Exception("duplicate transaction");
+			abort(500);
+			die();
+		}
+	}
 	$today = date('Y-m-d');
 
 	$baskets = [];
@@ -52,8 +62,9 @@ use Illuminate\Support\Facades\Auth;
             'picksheet_note'=>$picksheet_note,
             'order_reference_number'=>$orderReferenceNumber,
             'customer_id'=>$customer_id,
-            'eta'=>$eta]);
-
+            'eta'=>$eta,
+            'transaction_id'=>$transaction_id]);
+        $transaction_id = null;
         loggedDataChange("reservation_note",$reservation->id,$picksheet_note);
 		loggedDataChange("reservation_orderReferenceNumber",$reservation->id,$orderReferenceNumber);
 

@@ -175,6 +175,8 @@ use App\Models\User;
 					</select>
 				</td>
                 <td><input type="text" name="internal_number" id="internal_number" placeholder="Internal Number" style="height: 33px;padding-left: 10px; border-radius: 0;"></td>
+                <td><input style="height: 33px;padding-left: 10px; border-radius: 0;" type="text" id="dateFrom" name="dateFrom" onkeydown="return false;" placeholder="Date From"></td>
+                <td><input style="height: 33px;padding-left: 10px; border-radius: 0;" type="text" id="dateTo" name="dateTo" onkeydown="return false;" placeholder="Date To"></td>
 				<td><input type="button" id="searcher" onclick="doSearch()" value="Search" style="height: 39px;width: 80px;float:right;border:2px solid darknavy; border-radius: 0;" disabled></td>
 			</tr>
 		</table>
@@ -235,6 +237,12 @@ use App\Models\User;
 			}
 		})
         $( "#eta" ).datepicker({
+			dateFormat: 'dd/mm/yy'
+		});
+        $( "#dateFrom" ).datepicker({
+			dateFormat: 'dd/mm/yy'
+		});
+        $( "#dateTo" ).datepicker({
 			dateFormat: 'dd/mm/yy'
 		});
 
@@ -335,6 +343,7 @@ function finalSaleFailure()
 }
 function cancelSale()
 {
+
 	$('#sendfake').prop('disabled', false);
 }
     setTimeout(function(){
@@ -437,6 +446,7 @@ function cancelSale()
 			else if (showPriceCheck) {
 				modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale)
 			}
+
 			$('#sendfake').prop('disabled', false);
 
 		}
@@ -446,7 +456,7 @@ function cancelSale()
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
 
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty, function( data ) {
+		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty + '&container=1', function( data ) {
 			getCustomResult = data;
 			setCustomerCreditFeedback(data);
 		});
@@ -490,16 +500,10 @@ function cancelSale()
             $('#warning').css('background', "#90EE90");
             $('#warning').css('border', "2px solid #00FF00");
         }
-        $('#searcher').attr('disabled', !canContinue);
-        if (canContinue)
-        {
-            var allPass = (checkAllowedDay() && checkSites() && checkUBDates());
-            $('#sendfake').attr('disabled', !allPass);
-        }
-        else
-        {
-            $('#sendfake').attr('disabled', true);
-        }
+        $('#searcher').attr('disabled', false);
+
+        if (checkAllowedDay() && checkSites() && checkUBDates()) $('#sendfake').attr('disabled', false);
+        else $('#sendfake').attr('disabled', true);
     }
     function checkAllowedDay(){
         return true;
@@ -597,6 +601,8 @@ function cancelSale()
         var siteID = $('#siteID').val();
 		var customer_id = $('#customer_id').val();
         var internal_num =  $('#internal_number').val();
+        var dateFrom = $('#dateFrom').val();
+        var dateTo =  $('#dateTo').val();
 		if(species != '' || cutgroup_id != '' && intakeID != '' || palletID != ''){
 			$('#loadResults').html('<center><img src="/legacy/img/loading.gif" style="padding-top:170px;width:40px;text-align:center;"></center>');
 
@@ -613,7 +619,9 @@ function cancelSale()
                 time:time,
                 customerID:customer_id,
                 siteID:siteID,
-                internal_num:internal_num
+                internal_num:internal_num,
+                dateFrom:dateFrom,
+                dateTo:dateTo
             },
              function(data, status){
 				$('#loadResults').html(data);
@@ -683,7 +691,7 @@ function cancelSale()
 
 		$('#addressid').val(address_id);
 
-		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id + '&container=1', function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});
@@ -733,6 +741,7 @@ function cancelSale()
         });
         firstExecution = milliseconds
 
+        $('#sendfake').attr('disabled', false);
 
     }
 
