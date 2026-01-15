@@ -1876,7 +1876,7 @@ use Ramsey\Uuid\Type\Decimal;
 			foreach ($queries as $query)
 			{
 				$x = sprintf($query,$test);
-				$y = loggedQuery($x);
+				$y = prepareExecuteQuery($x);
 				$count = mysqli_num_rows($y);
 				if ($count > 0 && $count < 20)
 				{
