@@ -52,7 +52,6 @@ use Illuminate\Support\Facades\Auth;
         $dateFrom = $dateFrom->startOfDay();
         $dateTo = $dateTo->endOfDay();
     }
-6
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     $totalW = 0;
