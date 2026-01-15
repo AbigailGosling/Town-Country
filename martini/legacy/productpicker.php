@@ -7,13 +7,6 @@ use Illuminate\Support\Facades\Log;
 
 	include('includes/frontHeader.php');
 ?>
-<script>
-    console.log = function(...args) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "https://townandcountrystock.co.uk/legacy/test.php", true);
-        xhr.send(JSON.stringify(args));
-}
-</script>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>

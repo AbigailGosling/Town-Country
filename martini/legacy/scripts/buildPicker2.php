@@ -16,6 +16,7 @@ $user_from_id = request()->input('user');
 $addressid = request()->input('addressid',1);
 $transaction_id = request()->input('transaction_id');
 $isCredit = (request()->input('sup_type') == "credit");
+$isSupplier = request()->has('is_supplier');
 
 if ($transaction_id != null && $transaction_id != "")
 {
@@ -26,10 +27,18 @@ if ($transaction_id != null && $transaction_id != "")
         die();
     }
 }
-$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").")";
+$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit,is_return_to_supplier) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").",".(($isSupplier)?"1":"0").")";
 $y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 
 $pickersheet_id = $y;
+
+if ($isSupplier) {
+    $x = "INSERT INTO `supplier_returns` (user_id,supplier_id,pick_id,reference_number,comments) VALUES (?,?,?,?,?)";
+    $y = prepareExecuteQuery($x,'iiiss',[$user_from_id,$customer_id,$pickersheet_id,$orderReferenceNumber,$picksheet_note],true);
+
+    $return_id = $y;
+}
+
 if ((int)$pickersheet_id !== $pickersheet_id)
 {
     abort(500);
@@ -60,7 +69,13 @@ foreach ($items as $item){
 
         $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
         if (!$isCredit) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$cost,0,'',$weight]);
+        else if ($isSupplier) $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'',1]);
         else $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,0,0,'',$weight]);
+    }
+    if ($isSupplier)
+    {
+        $x = "INSERT into `supplier_return_items` (supplier_return_id,product_id,cases) VALUES (?,?,?)";
+        $y = prepareExecuteQuery($x,'iii',[$return_id,$product_id,$amount]);
     }
 }
 if (count($weights) == 0) die("N/A");

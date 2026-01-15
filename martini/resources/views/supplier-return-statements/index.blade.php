@@ -32,7 +32,7 @@
                 </x-slot:headers>
                 <slot>
                     @foreach($items as $item)
-                    @if($item->outstanding>0 || request()->has("history"))
+                    @if($item->outstanding!=0 || request()->has("history"))
                         <tr>
                             <x-data-table-column :show-on-mobile="false">{{$item->supplier->name}}</x-data-table-column>
                             @if (!request()->has("history"))
