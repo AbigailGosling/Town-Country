@@ -28,7 +28,13 @@ class UserCustomerExport implements FromCollection
 {
     function __construct()
     {
-
+        define('DEL_SUNDAY',     1);
+        define('DEL_SATURDAY',   2);
+        define('DEL_FRIDAY',     4);
+        define('DEL_THURSDAY',   8);
+        define('DEL_WEDNESDAY', 16);
+        define('DEL_TUESDAY',   32);
+        define('DEL_MONDAY',    64);
     }
     public function builder():Builder
     {
@@ -49,7 +55,24 @@ class UserCustomerExport implements FromCollection
                 $newRow = new stdClass();
                 foreach ($cust->getAttributes() as $key=>$value)
                 {
-                    $newRow->$key = $value;
+                    if ($key == "delivery_days")
+                    {
+                        $name = "monday";
+                        $newRow->$name =  ($value & DEL_MONDAY)?1:0;
+                        $name = "tuesday";
+                        $newRow->$name =  ($value & DEL_TUESDAY)?1:0;
+                        $name = "wednesday";
+                        $newRow->$name =  ($value & DEL_WEDNESDAY)?1:0;
+                        $name = "thursday";
+                        $newRow->$name =  ($value & DEL_THURSDAY)?1:0;
+                        $name = "friday";
+                        $newRow->$name =  ($value & DEL_FRIDAY)?1:0;
+                        $name = "saturday";
+                        $newRow->$name =  ($value & DEL_SATURDAY)?1:0;
+                        $name = "sunday";
+                        $newRow->$name =  ($value & DEL_SUNDAY)?1:0;
+                    }
+                    else $newRow->$key = $value;
                     if ($key == "tradingas")
                     {
                         $name = "salesman_username";
