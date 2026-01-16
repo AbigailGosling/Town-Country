@@ -78,7 +78,7 @@ $s = (int)(microtime(true));
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <?php
-	if ($creditCheck['overcredit'] && !$customerRow['allowPrint']) {
+	if (($creditCheck['overcredit'] || $creditCheck['printblock']) && !$customerRow['allowPrint']) {
 		$admin_email = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE document_id = ? AND `type` = ?",'is',[$pickersheet_id,SLabsEmailerType::CrdtAlert]);
 		if ($admin_email->num_rows == 0)
 		{

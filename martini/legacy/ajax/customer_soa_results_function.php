@@ -300,6 +300,7 @@ function precredit_check($customer_id)
             $returningObj['message'] = "Customer has invoice(s) long overdue, contact administration";
             $returningObj['messageReservation'] = "Customer has invoice(s) long overdue and reservation may may be blocked.";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
+            $returningObj['printblock'] = true;
         }
         else if ($outstanding > $custR['credit_rating'])
         {
@@ -308,6 +309,7 @@ function precredit_check($customer_id)
             $returningObj['messageReservation'] = "Customer is over credit limit and reservation may be blocked.";
             $returningObj['messageLong'] = "Customer is over credit limit, contact administration";
             $returningObj['overcredit'] = true;
+            $returningObj['printblock'] = true;
         }
         else if ($oldest != "" && $oldest < $beyondDate)
         {
@@ -316,6 +318,7 @@ function precredit_check($customer_id)
             $returningObj['message'] = "Customer has invoice(s) overdue, contact administration";
             $returningObj['messageReservation'] = "Customer has invoice(s) overdue and reservation may be blocked.";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
+            $returningObj['printblock'] = true;
         }
         else if ($oldest != "" && $oldest < $closeToOverdue)
         {
