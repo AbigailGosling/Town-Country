@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Auth;
 		$SUPPLIER_CUSTOMER_IDS = array(0);
 
 		// Check for search matching suppliers
-		$suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?",'ss',[$term.'%',$term]);
+		$suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?",'ss',['%'.$term.'%',$term]);
 		while($supplier = mysqli_fetch_array($suppliersResult)){ $SUPPLIER_CUSTOMER_IDS[]=$supplier['id']; }
 		$usermodel = User::find(Auth::id());
 		// Check for search matching customers
-		$customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',[$term.'%',$term]);
+		$customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',['%'.$term.'%',$term]);
 		while($customer = mysqli_fetch_array($customersResult)){ if (!$usermodel->canViewCustomer($customer['id'])) continue;$SUPPLIER_CUSTOMER_IDS[]=$customer['id']; }
 
 		$SUPPLIER_CUSTOMER_IDS = implode(',', $SUPPLIER_CUSTOMER_IDS);
