@@ -15,7 +15,7 @@
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script type="text/javascript" src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 </head>
@@ -35,9 +35,9 @@
 						onclick='window.location.href = window.location.href.split("?")[0] + "?showDeleted=" + <?php echo ($showDeleted == 1)?0:1; ?>'/>
 		<div class="datesearchcontainer">
 			<label>MONTH</label>
-			
+
 			<select id="month">
-				
+
 				<?php for($i=1;$i<13;$i++){
 
 					if(date("n") == $i) { ?>
@@ -48,26 +48,26 @@
 
 						<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
 
-				<?php 
+				<?php
 					}
-				} 
+				}
 				?>
 			</select>
-			 
+
 			<label>YEAR</label>
 			<select id="year">
 				<?php
 				$y = date('Y');
-				
+
 				for($i = 0; $i < 3; $i++){ ?>
 					<option value="<?php echo $y; ?>"><?php echo $y; ?></option>
 				<?php $y--; } ?>
 
 			</select>
-						
+
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
-			 
+
 		</table>
 		<div class="loadMoreBtn" onclick="loadRows()">Load More</div>
 	</div>
@@ -75,14 +75,14 @@
 <div id="btm"></div>
 	<script type="text/javascript">
 
-                
+
         function doSearch(){
-			
+
 			$('.loadMoreBtn').hide();
 
             console.log('doSearch..');
             var val = $('#instantSearch').val();
-            
+
 
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
@@ -94,7 +94,7 @@
             xhttp.open("POST", "ajax/intakePageList.php", true);
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-            xhttp.send("searchterm=" + val+"&showDeleted="+<?php echo $showDeleted; ?>);
+            xhttp.send("searchterm=" + encodeURIComponent(val)+"&showDeleted="+<?php echo $showDeleted; ?>);
         }
 
 		$(document).ready(function(){
@@ -107,37 +107,37 @@
 					doSearch();
 				}
 			});
-			
-			
+
+
 			$('#month').change(function(){
-				
+
 				month = $('#month').val();
 				year = $('#year').val();
-				
+
 				loadSearchDate(month, year);
-				
+
 			});
-			
+
 			$('#year').change(function(){
-				
+
 				month = $('#month').val();
 				year = $('#year').val();
-				
+
 				loadSearchDate(month, year);
-				
+
 			});
-			
+
 		});
-		
+
 		function loadRows(){
-			
+
 			var toSkip = $('#toSkipCount').val();
-			
+
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
 				$('#intakeAjax').append(this.responseText);
-				
+
 
 				setTimeout(() => {
 					var toSkip = parseInt($('#toSkipCount').val());
@@ -159,14 +159,14 @@
 		}
 
 		function loadSearchDate(month, year){
-			
+
 			$('.loadMoreBtn').hide();
 
 			$('#instantSearch').val('');
-			
+
 			console.log('month: ' + month);
 			console.log('year: ' + year);
-			
+
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -179,9 +179,9 @@
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 			xhttp.send("month=" + month + '&year=' + year);
 
-			
+
 		}
-		
+
 		function deleteRow(intake_id){
 			swal({
 				title: "Are you sure?",

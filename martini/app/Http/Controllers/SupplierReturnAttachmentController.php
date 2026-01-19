@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SupplierReturn;
 use App\Models\SupplierReturnAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,8 +28,10 @@ class SupplierReturnAttachmentController extends Controller
             $data['file_id'] = $file->id;
         }
         $data['product_collected'] = $request->exists('product_collected')?true:false;
-        SupplierReturnAttachment::create($data)->save();
-        return redirect()->back();
+        $sra =SupplierReturnAttachment::create($data);
+        $sra->save();
+        $supplierReturn = SupplierReturn::find($sra->return_id);
+        return route("legacy",["path"=>'legacy/single_invoice_payments.php',"invoice_id"=>$supplierReturn->pick_id,"customer_id"=>$supplierReturn->supplier_id,"return"=>"y"]);
     }
 
     /**
@@ -37,10 +40,10 @@ class SupplierReturnAttachmentController extends Controller
     public function update(Request $request, SupplierReturnAttachment $supplierReturnAttachment)
     {
         $data = $request->validate([
-            'user_id'   => 'sometimes|integer',
-            'return_id' => 'sometimes|integer',
-            'file'      => 'sometimes|file',
-            'comments'  => 'sometimes|nullable|string',
+            'user_id'   => 'required|integer',
+            'return_id' => 'required|integer',
+            'file'      => 'sometimes|nullable|file',
+            'comments'  => 'required|nullable|string',
         ]);
 
         // Replace file if provided
@@ -50,9 +53,9 @@ class SupplierReturnAttachmentController extends Controller
 
             $data['file_id'] = $file->id;
         }
-        dd($data);
         $supplierReturnAttachment->update($data);
-        return redirect()->back();
+        $supplierReturn = SupplierReturn::find($supplierReturnAttachment->return_id);
+        return route("legacy",["path"=>'legacy/single_invoice_payments.php',"invoice_id"=>$supplierReturn->pick_id,"customer_id"=>$supplierReturn->supplier_id,"return"=>"y"]);
     }
 
     /**

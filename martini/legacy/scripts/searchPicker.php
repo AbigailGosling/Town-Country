@@ -158,7 +158,6 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $products = [];
     $knownCombo = [];
     $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
-    //Log::debug("huh",[$productsX,$products2]);
     if (count($products2) > 0 && count($intakeIDsToCheck) > 0)
         $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".min($intakeIDsToCheck)." AND ".max($intakeIDsToCheck))->fetch_all(MYSQLI_ASSOC),"id");
         foreach ($products2 as $productRow)

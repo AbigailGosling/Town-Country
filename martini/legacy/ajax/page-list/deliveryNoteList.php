@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
     require(__DIR__.'/../../functions.php');
 
     $toSkip = request()->input('toSkip',0);
+    $showPrinted = request()->input('showPrinted',0);
     $term = $mysqli->real_escape_string(request()->input('searchterm',""));
     $dateToSearch = request()->input('datePicker');
     if ($dateToSearch != null) {
@@ -34,7 +35,8 @@ use Illuminate\Support\Facades\Auth;
         $customersToSearch = $usermodel->listViewableCustomers();
     }
     if (count($customersToSearch)==0)return;
-    $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (`completed`='1' AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
+    if ($showPrinted == 0)$queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (`completed` = '1' AND `deliverynote_printed` = 0 AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
+    else $queryResult = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE (`completed`='1' AND (`customer_id` IN (".implode(",",$customersToSearch).") AND `is_return_to_supplier` = 0) OR `is_return_to_supplier` = 1)$dateToSearchS$tryPick ORDER BY `id` DESC LIMIT $toSkip, $limit");
     $queryResult = $queryResult->fetch_all(MYSQLI_ASSOC);
     $count = count($queryResult);
     $pickIDs = array_column($queryResult,"id");

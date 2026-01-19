@@ -114,7 +114,6 @@ class IntakeReportController extends Controller
                 foreach ($salePickItems as $pickItem)
                 {
                     if (!array_key_exists($pickItem->product_id,$weightIDsForSale)){
-                        Log::error(json_encode([$pickItem->product_id,$weightIDsForSale]));
                         continue;
                     }
                     $out = new stdClass();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\SupplierReturn;
+use App\Models\SupplierReturnAttachment;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -265,11 +266,18 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
             <h2 style="font-size:22px;padding-bottom:10px;">Supplier Return Notes</h2><?php ?>
         </div>
     </div>
+    <?php if (request()->has("edit_comment")) {?>
+    <form id="comment_entry" method="POST" action="<?php echo route("supplier-return-attachment.update",[request()->input("edit_comment")]);?>">
+    <?php } else { ?>
     <form id="comment_entry" method="POST" action="<?php echo route("supplier-return-attachment.store");?>">
+    <?php } ?>
         <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
-        <input type="hidden" name="_method" value="POST">
+
         <input id="user_id" name="user_id" type="hidden" value="<?php echo Auth::id(); ?>"/>
         <input id="return_id" name="return_id" type="hidden" value="<?php echo $supplierReturn->id; ?>"/>
+        <?php if (request()->has("edit_comment")) {?>
+        <input id="comment_id" name="comment_id" type="hidden" value="<?php echo request()->input("edit_comment"); ?>"/>
+        <?php } ?>
         <table class="table table-bordered table-striped" width="100%">
             <thead>
                 <tr>
@@ -285,25 +293,42 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                 <?php
                     foreach ($supplierReturn->attachments as $sra)
                     {
+                        if (request()->has("edit_comment") && $sra->id == request()->input("edit_comment")) $savedSra = $sra;
                         ?>
                         <tr>
                             <td><?php echo $sra->user->name; ?></td>
-                            <td><?php echo $sra->created_at; ?></td>
+                            <td><?php echo $sra->updated_at??$sra->created_at; ?></td>
                             <td><?php echo $sra->comments; ?></td>
                             <td><?php echo ($sra->product_collected)?"Yes":"No"; ?></td>
                             <td><a href="<?php if ($sra->file)echo route("files.download",[$sra->file->id])?>"><?php echo $sra->file->original_name; ?></a></td>
-                            <td><!--<input type="button" value="Delete" onclick="mainForm4('php echo route('supplier-return-attachment.destroy',[$sra]) ?>')"/>--></td>
+                            <td>
+                                <a href="single_invoice_payments.php?return=y&customer_id=<?php echo $customerID;?>&invoice_id=<?php echo $invoiceID;?>&edit_comment=<?php echo $sra->id;?>">
+                                    Edit
+                                </a>
+                                <!--<input type="button" value="Delete" onclick="mainForm4('php echo route('supplier-return-attachment.destroy',[$sra]) ?>')"/>-->
+                            </td>
                         </tr>
                         <?php
                     }
                 ?>
                 <tr>
+                    <?php if (!request()->has("edit_comment")) { ?>
                     <td><?php echo User::find(Auth::id())->name; ?></td>
                     <td></td>
-                    <td><input id="comments" name="comments" type="text"></td>
+                    <td><textarea id="comments" name="comments" type="text"></textarea></td>
                     <td><input id="product_collected" name="product_collected" type="checkbox"></td>
                     <td><input id="file" name="file" type="file"></td>
                     <td><input id="comment_submit" name="comment_submit" type="button" value="Submit" onclick="mainForm3()"></td>
+                    <?php } else {
+                    ?>
+                    <td><?php echo $savedSra->user->name; ?></td>
+                    <td><?php echo $savedSra->updated_at??$savedSra->created_at; ?></td>
+                    <td><textarea id="comments" name="comments" type="text"><?php echo $savedSra->comments; ?></textarea></td>
+                    <td><input id="product_collected" name="product_collected" type="checkbox" disabled <?php ($savedSra->product_collected) ? "checked":""; ?> ></td>
+                    <td><a href="<?php if ($savedSra->file)echo route("files.download",[$savedSra->file->id])?>"><?php echo $savedSra->file->original_name; ?></a><br/>
+                        Replace Uploaded File: <br/><input id="file" name="file" type="file"></td>
+                    <td><input id="comment_submit" name="comment_submit" type="button" value="Save Changes" onclick="mainForm3()"></td>
+                    <?php } ?>
                 </tr>
             </tbody>
         </table>
@@ -512,6 +537,12 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
 
 <div class="clearfix"></div>
 <script type="text/javascript">
+    $(document).ready(function(){//comment_submit
+        console.log(1);
+        <?php if (request()->has("edit_comment")) {?>
+            setTimeout(function (){$(window).scrollTop($("#comment_submit").offset().top)},1);
+       <?php } ?>
+    });
 
     function deleteId(id){
         var ids = $('#delete_ids').val();
@@ -599,12 +630,15 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
 	$('#mainForm'+id).ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
 }
 function mainFormSucess(){
-	location.reload();
+    location.reload();
+}
+function commentFormSuccess(data){
+    window.location = data;
 }
 function mainForm3(){
     $('#comment_submit').val("PLEASE WAIT...");
     $('#comment_submit').prop('disabled', true);
-	$('#comment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess,error:function(){ $('#comment_entry').val("ERROR!")}});
+	$('#comment_entry').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:commentFormSuccess,error:function(){ $('#comment_entry').val("ERROR!")}});
 }
 function mainForm2(){
     $('#payment_submit').val("PLEASE WAIT...");
