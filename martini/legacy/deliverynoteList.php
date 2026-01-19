@@ -3,7 +3,11 @@
 use App\Models\Site;
 
 	include_once('functions.php');
-
+    $showPrinted = 0;
+	if (request()->input('showPrinted') !== null)
+	{
+		$showPrinted = request()->input('showPrinted');
+	}
 ?>
 <!doctype html>
 <html class="int">
@@ -47,6 +51,8 @@ use App\Models\Site;
                     <?php } ?>
 				<?php } ?>
             </select>
+            <td><input type="button" value="<?php echo ($showPrinted == 1)?"Hide":"Show"; ?> Printed" style="width:110px;height:30px;"
+						onclick='window.location.href = window.location.href.split("?")[0] + "?showPrinted=" + <?php echo ($showPrinted == 1)?0:1; ?>'/></td>
 		</div>
 		<table width="100%" border="0" cellpadding="0" cellspacing="0" id="intakeAjax">
 
@@ -101,7 +107,7 @@ $.ajaxSetup({
 		}
 		function loadRows(){
 			var toSkip = $('#toSkipCount').val();
-
+            var showPrinted = <?php echo $showPrinted;?>;
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -111,7 +117,7 @@ $.ajaxSetup({
 				setTimeout(() => {
 					var toSkip = parseInt($('#toSkipCount').val());
 					var totalRowsCount = parseInt($('#totalRowsCount').val());
-
+                    var showPrinted = <?php echo $showPrinted;?>;
 					if(toSkip >= totalRowsCount){
 						$('.loadMoreBtn').hide();
 					}else{
@@ -124,7 +130,7 @@ $.ajaxSetup({
 			xhttp.open("POST", "ajax/page-list/deliveryNoteList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
-			xhttp.send("toSkip=" + toSkip);
+			xhttp.send("toSkip=" + toSkip+"&showPrinted="+showPrinted);
 		}
     </script>
 </main>

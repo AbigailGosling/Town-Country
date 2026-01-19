@@ -72,6 +72,7 @@ $s = (int)(microtime(true));
     $location = mysqli_fetch_assoc($result_location)['loc'];
     $location = Location::whereIn("id",explode(",",$location))->pluck("site_id")->toArray();
     $location = Site::whereIn("id",$location)->first()->name;
+    $custLocation = Site::find($customerRow['site_id'])?->name ?? '';
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -164,7 +165,8 @@ $s = (int)(microtime(true));
 			</div>
 			<br/>
 			<div class="deliverydate">Delivery Date: <span class="date"><?php echo $pickSheetRow['estimated_delivery_date']; ?></span></div>
-            <div class="deliverydate">Depot: <span class="date"><?php echo $location; ?></span></div>
+            <div class="deliverydate">Picked At: <span class="date"><?php echo $location; ?></span></div>
+            <div class="deliverydate">Customer Served by: <span class="date"><?php echo $custLocation; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
 			<?php
 				$date = str_replace('/', '-', $pickSheetRow['date_completed']);

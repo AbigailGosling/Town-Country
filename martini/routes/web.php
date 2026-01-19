@@ -140,7 +140,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
 
     Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");
-    Route::put('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");
+    Route::post('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");
     Route::delete('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'destroy'])->name("supplier-return-attachment.destroy");
 
 });
