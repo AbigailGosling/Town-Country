@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CutGroupNationalityDate;
+use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -144,7 +145,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
     $whereString = implode(' && ',$whereArray);
 
-    $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
+    $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname,`cuts`.`species_id` as `species_id`, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
     INNER JOIN `weights` ON `product`.`id` = `weights`.`product_id`
     JOIN `cuts` ON `product`.`cut_id` = `cuts`.`id`
     LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
@@ -192,6 +193,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $local = $productsRow['local'];
         //$cut = getCut($productsRow['cut_id']);
         $cut = $productsRow['cutname'];
+        $showComments = Species::find($productsRow['species_id'])->show_comments;
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -433,8 +435,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             </td>
 			<td colspan="1">
 				<form method="post">
-					<textarea name="comments" class="overviewcomment" productid="<?php echo $productsRow['productid']; ?>"><?php echo $productsRow['weightnote']; ?></textarea>
-					<i class="fa fa-save" onclick="saveOverViewComment(<?php echo $productsRow['productid']; ?>)"></i>
+					<textarea name="comments" class="overviewcomment" productid="<?php echo $productsRow['productid']; ?>" <?php if($showComments == false) echo "disabled" ?>><?php echo $productsRow['weightnote']; ?></textarea>
+					<?php if ($showComments == true) { ?><i class="fa fa-save" onclick="saveOverViewComment(<?php echo $productsRow['productid']; ?>)"></i> <?php } ?>
 					<input type="text" name="pallet_id" class="pallet" value="<?php echo $pallet_id; ?>" style="display:none;">
 				</form>
 			</td>

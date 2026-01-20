@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Cut;
 use App\Models\Site;
+use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -536,8 +538,13 @@ use Illuminate\Support\Facades\Auth;
 
 				?>
 				<tr>
-					<td><?php echo getSpeciesFromCutID($row['cut_id']); ?></td>
-					<td><?php echo getCut($row['cut_id']);?></td>
+                    <?php
+                    $cut = Cut::find($row["cut_id"]);
+                    $species = Species::find($cut->species_id);
+                    $showComments = $species->show_comments;
+                    ?>
+					<td><?php echo $species->name; ?></td>
+					<td><?php echo $cut->name;?></td>
 					<td align="center"><?php
 							$cut_id = $row['cut_id'];
 							$xk = "SELECT id FROM `weights` WHERE weight_gross > 0 AND (" . $qAppend2 . ")";
@@ -572,7 +579,7 @@ use Illuminate\Support\Facades\Auth;
 						?>
 					</td>
 					<td>
-                    	<textarea name="weightnote[]" class="overviewcomment" style="border:1px solid #f2f2f2;"><?php echo $row['weightnote']; ?></textarea>
+                    	<textarea name="weightnote[]" class="overviewcomment" style="border:1px solid #f2f2f2;" <?php if ($showComments == false) echo "disabled";?> > <?php echo $row['weightnote']; ?></textarea>
 						<?php
 
 						?>
