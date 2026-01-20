@@ -45,7 +45,7 @@ if ((int)$pickersheet_id !== $pickersheet_id)
     die();
 }
 loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
-loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
+loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
 $items = request()->input('items');
 $weights = [];
 $totalCost = 0;

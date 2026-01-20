@@ -56,19 +56,22 @@ use Illuminate\Support\Facades\Auth;
 
     foreach($queryResult as $row){
 
-        $result_location = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `pallet`.`storage_location`) as `loc` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id` = `pallet`.`id` WHERE `product`.`id` IN (".$allProdsByPick[$row['id']].") LIMIT 1");
-        $location = mysqli_fetch_assoc($result_location)['loc'];
-        $locsQ = Location::whereIn("id",explode(",",$location))->get();
-        if ($targetLoc != "")
+        if (isset($allProdsByPick[$row['id']]))
         {
-            $locIDs = $locsQ->pluck("id")->toArray();
-            if (!in_array($targetLoc,$locIDs)) continue;
+            $result_location = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `pallet`.`storage_location`) as `loc` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id` = `pallet`.`id` WHERE `product`.`id` IN (".$allProdsByPick[$row['id']].") LIMIT 1");
+            $location = mysqli_fetch_assoc($result_location)['loc'];
+            $locsQ = Location::whereIn("id",explode(",",$location))->get();
+            if ($targetLoc != "")
+            {
+                $locIDs = $locsQ->pluck("id")->toArray();
+                if (!in_array($targetLoc,$locIDs)) continue;
+            }
+            $locs = $locsQ->pluck("name")->toArray();
+            if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
+            else if (count($locs) > 1) $loc = implode("<br/>",$locs);
+            else $loc = $locs[0];
         }
-        $locs = $locsQ->pluck("name")->toArray();
-        if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
-        else if (count($locs) > 1) $loc = implode("<br/>",$locs);
-        else $loc = $locs[0];
-
+        else $loc = "Unknown";
         $customer_id = $row['customer_id'];
 
         $date = $row['estimated_delivery_date'];
