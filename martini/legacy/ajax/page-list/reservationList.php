@@ -30,11 +30,11 @@ use InternalScripts\SLabsEmailerStatus;
         $containerResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS `ids` FROM `inbound_container` WHERE `internal_number` LIKE ? || REPLACE(`internal_number`, ' ', '') LIKE ?"
             ,'ss',['%'.$searchterm.'%','%'.$searchterm.'%']);
         $containerIDs = mysqli_fetch_assoc($containerResult)['ids'];
-        if (count(explode(",",$containerIDs))>0)
+        if (count(explode(",",$containerIDs))>0 && $containerIDs!="")
         {
             $prodResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`product_id`) AS `ids` FROM `container_product` WHERE `container_id` IN ($containerIDs)");
             $prodIDs = mysqli_fetch_assoc($prodResult)['ids'];
-            if (count(explode(",",$prodIDs))>0)
+            if (count(explode(",",$prodIDs))>0 && $prodIDs !="")
             {
                 $resResult = prepareExecuteQuery("SELECT GROUP_CONCAT(`reservation_id`) AS `ids` FROM `reservation_product` WHERE `product_id` IN ($prodIDs)");
                 $resProdIDs = explode(",",mysqli_fetch_assoc($resResult)['ids']);
@@ -45,11 +45,11 @@ use InternalScripts\SLabsEmailerStatus;
 
         if(count($customerIDs) > 0){
             $customerIDs = implode(',', $customerIDs);
-            $x .= " || customer_id IN ($customerIDs)";
+            if ($customerIDs != "")$x .= " || customer_id IN ($customerIDs)";
         }
         if(count($resProdIDs) > 0){
             $resProdIDs = implode(',', $resProdIDs);
-            $x .= " || `id` IN ($resProdIDs)";
+            if ($resProdIDs != "") $x .= " || `id` IN ($resProdIDs)";
         }
         $x .= ") AND `deleted` = 0 ORDER BY `id` DESC";
         $queryResult = prepareExecuteQuery($x,'ss',[$searchterm,'%'.$searchterm.'%']);

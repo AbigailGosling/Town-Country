@@ -230,11 +230,9 @@ function update_customer_outstanding_cache($customer_id,$cacheRow)
     if ($cacheRow2 == null)
     {
         $sql = "INSERT INTO customer_outstanding_cache (`customer_id`, `pickersheet_id`, `invoice_payment_id`, `oldest_unpaid_id`, `outstanding`,`pickersheet_sha2`,`payment_sha2`) VALUES (".$cacheRow['customer_id'].",".$cacheRow['pickersheet_id'].",'".$cacheRow['invoice_payment_id']."','".$cacheRow['oldest_unpaid_id']."','".(double)$cacheRow['outstanding']."','".$cacheRow['pickersheet_sha2']."','".$cacheRow['payment_sha2']."')";
+        $x = prepareExecuteQuery($sql);
     }
-    else
-    {
-        $sql = "UPDATE customer_outstanding_cache SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = '".$cacheRow['invoice_payment_id']."', `outstanding` = '".(double)$cacheRow['outstanding']."', `oldest_unpaid_id` = '".$cacheRow['oldest_unpaid_id']."', `pickersheet_sha2` = '".$cacheRow['pickersheet_sha2']."', `payment_sha2` = '".$cacheRow['payment_sha2']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
-    }
+    $sql = "UPDATE customer_outstanding_cache SET `pickersheet_id` = ".$cacheRow['pickersheet_id'].", `invoice_payment_id` = '".$cacheRow['invoice_payment_id']."', `outstanding` = '".(double)$cacheRow['outstanding']."', `oldest_unpaid_id` = '".$cacheRow['oldest_unpaid_id']."', `pickersheet_sha2` = '".$cacheRow['pickersheet_sha2']."', `payment_sha2` = '".$cacheRow['payment_sha2']."' WHERE `customer_outstanding_cache`.`customer_id` = ".$cacheRow['customer_id'];
     $x = prepareExecuteQuery($sql);
 }
 function precredit_check($customer_id)

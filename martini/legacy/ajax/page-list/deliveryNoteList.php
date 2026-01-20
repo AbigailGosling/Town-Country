@@ -47,11 +47,13 @@ use Illuminate\Support\Facades\Auth;
     $totalRowsData = mysqli_fetch_array($totalRowsQueryResult);
     $totalRowsInDatabase = $totalRowsData['count'];
 
-
-    $result_product = prepareExecuteQuery("SELECT `pickersheet_id`,GROUP_CONCAT(DISTINCT `product_id`) as `prod_ids` FROM `pickerItems` WHERE `pickersheet_id` IN (".implode(",",$pickIDs).") GROUP BY `pickersheet_id`");
-    $allProdsByPick = array();
-    while($row = mysqli_fetch_assoc($result_product)){
-        $allProdsByPick[$row['pickersheet_id']] = $row['prod_ids'];
+    if (count($pickIDs)>0)
+    {
+        $result_product = prepareExecuteQuery("SELECT `pickersheet_id`,GROUP_CONCAT(DISTINCT `product_id`) as `prod_ids` FROM `pickerItems` WHERE `pickersheet_id` IN (".implode(",",$pickIDs).") GROUP BY `pickersheet_id`");
+        $allProdsByPick = array();
+        while($row = mysqli_fetch_assoc($result_product)){
+            $allProdsByPick[$row['pickersheet_id']] = $row['prod_ids'];
+        }
     }
 
     foreach($queryResult as $row){
