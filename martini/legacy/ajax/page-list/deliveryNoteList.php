@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Auth;
         $dateToSearch = Carbon::createFromFormat("D M d Y H:i:s e+",$dateToSearch);
         $dateToSearchS = " AND `estimated_delivery_date` = '".$dateToSearch->format("d/m/Y")."'";
     } else $dateToSearchS = "";
-    $targetLoc = request()->input('location',"");
+    $targetLoc = explode(",",request()->input('location',""));
     $limit = 80;
 
     session_start();session_write_close();
@@ -61,10 +61,19 @@ use Illuminate\Support\Facades\Auth;
             $result_location = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `pallet`.`storage_location`) as `loc` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id` = `pallet`.`id` WHERE `product`.`id` IN (".$allProdsByPick[$row['id']].") LIMIT 1");
             $location = mysqli_fetch_assoc($result_location)['loc'];
             $locsQ = Location::whereIn("id",explode(",",$location))->get();
-            if ($targetLoc != "")
+            if (count($targetLoc)>0 && $targetLoc[0]!="")
             {
+                $found = false;
                 $locIDs = $locsQ->pluck("id")->toArray();
-                if (!in_array($targetLoc,$locIDs)) continue;
+                foreach ($locIDs as $locOnPick)
+                {
+                    if (in_array((string)$locOnPick,$targetLoc))
+                    {
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found == false) continue;
             }
             $locs = $locsQ->pluck("name")->toArray();
             if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
