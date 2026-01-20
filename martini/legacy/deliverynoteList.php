@@ -43,13 +43,19 @@ use App\Models\Site;
                 <option value="" selected disabled>Select Location</option>
 				<?php
 					foreach(Site::with("locations")->get() as $site){
-                        if ($site->locations->where("disabled",false)->count() == 0) continue; ?>
-					<option disabled><?php echo $site->abbreviation; ?></option>
+                        if ($site->locations->where("disabled",false)->count() == 0) continue;
+                        else if ($site->locations->where("disabled",false)->count() == 1)
+                        {?>
+                            <option value="<?php echo $site->locations[0]->id; ?>" <?php echo (request()->input("location",-1)==$site->locations[0]->id)?"selected":""; ?>><?php echo $site->abbreviation." ".$site->locations[0]->name; ?></option>
+                        <?php
+                        } else { ?>
+					<option value="<?php echo implode(",",$site->locations->where("disabled",false)->pluck("id")->toArray()); ?>"><?php echo $site->abbreviation . " ALL UNITS"; ?></option>
                     <?php
                         foreach($site->locations->sortBy("name",SORT_NATURAL)->where("disabled",false) as $location){ ?>
-                            <option value="<?php echo $location->id; ?>" <?php echo (request()->input("location",-1)==$location->id)?"selected":""; ?>><?php echo $location->name; ?></option>
-                    <?php } ?>
-				<?php } ?>
+                            <option value="<?php echo $location->id; ?>" <?php echo (request()->input("location",-1)==$location->id)?"selected":""; ?>><?php echo "    - ".$location->name; ?></option>
+                    <?php }
+                    }
+                }?>
             </select>
             <td><input type="button" value="<?php echo ($showPrinted == 1)?"Hide":"Show"; ?> Printed" style="width:110px;height:30px;"
 						onclick='window.location.href = window.location.href.split("?")[0] + "?showPrinted=" + <?php echo ($showPrinted == 1)?0:1; ?>'/></td>
@@ -82,6 +88,7 @@ $.ajaxSetup({
 			var searchterm = $('#instantSearch').val()??"";
             var datePicker = $('#datePicker').datepicker('getDate')??"";
             var location = $('#location').find(":selected").val()??"";
+            var showPrinted = <?php echo $showPrinted;?>;
             if (searchterm == "" && datePicker == "" && location == "")
             {
                 loadRows();
@@ -95,6 +102,7 @@ $.ajaxSetup({
                     searchterm: searchterm,
                     datePicker: datePicker,
                     location:   location,
+                    showPrinted:showPrinted,
                 },
                 dataType: "html"
             });
