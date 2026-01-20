@@ -11,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Species
- * 
+ *
  * @property int $id
  * @property string|null $name
+ * @property boolean $show_comments
  *
  * @package App\Models
  */
@@ -24,7 +25,8 @@ protected $connection = 'tandc_live';
 	public $timestamps = false;
 
 	protected $fillable = [
-		'name'
+		'name',
+        'show_comments',
 	];
 	public static function generateHTMLList(int $selected = null):string{
 		$output = "";

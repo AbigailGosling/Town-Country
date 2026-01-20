@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Cut;
 use App\Models\CutGroupNationalityDate;
 use App\Models\Location;
 use App\Models\Pallet;
 use App\Models\Site;
+use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 	$intake_id = request()->input('intake_id');
     $pallet_id = request()->input('pallet_id');
 	$cut_id = request()->input('cut_id');
+    $showComments = Species::find(Cut::find($cut_id)->species_id)->show_comments;
 	$class = request()->input('class');
 	$nationality_id = request()->input('nationality_id');
     $ubbb = request()->input('ubbb');
@@ -196,9 +199,9 @@ use Illuminate\Support\Facades\Auth;
                     <td colspan="1"><?php echo getNationality($productsRow2['nationality_id']);?></td>
                     <td colspan="1">
                         <form method="post">
-                            <textarea name="pallet-comment" palletid="<?php echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment"><?php echo $pallet_comments; ?></textarea>
+                            <textarea name="pallet-comment" palletid="<?php echo $productsRow2['pallet_id']."-".$productsRow2['productid']; ?>" class="overviewcomment" <?php if ($showComments == false) echo "disabled";?>><?php echo $pallet_comments; ?></textarea>
                             <input type="text" name="pallet_id" class="pallet" value="<?php echo $productsRow2['pallet_id']; ?>" style="display:none;">
-							<i class="fa fa-save" onclick="saveDeepComment(<?php echo $productsRow2['pallet_id']; ?>,<?php echo $productsRow2['productid']; ?>)"></i>
+							<?php if ($showComments == true) { ?><i class="fa fa-save" onclick="saveDeepComment(<?php echo $productsRow2['pallet_id']; ?>,<?php echo $productsRow2['productid']; ?>)"></i><?php } ?>
                         </form>
                     </td>
                     <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
