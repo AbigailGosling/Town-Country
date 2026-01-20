@@ -355,24 +355,23 @@ class InboundContainerController extends Controller
         foreach ($containers as $container)
         {
             $containerProd = ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get()->pluck("product_id")->toArray();
-            switch (count($containerProd))
+            if (count($containerProd)==0) $brandLookup[$container->id] = "Unknown";
+            else
             {
-                case 1:
-                    $p = Product::find($containerProd[0]);
-                    if ($p==null)
-                    {
+                $brands = array_unique(Product::whereIn("id",$containerProd)->get()->pluck("brand_id")->toArray());
+                switch (count($brands))
+                {
+                    case 1:
+                        $brandLookup[$container->id] = Brand::find($brands[0])->name;
+                        break;
+                    case 0:
                         $brandLookup[$container->id] = "Unknown";
                         break;
-                    }
-                    $brandLookup[$container->id] = Brand::find($p->brand_id)->name;
-                    break;
-                case 0:
-                    $brandLookup[$container->id] = "Unknown";
-                    break;
-                default:
-                    $brandLookup[$container->id] = "Mixed";
-                    break;
+                    default:
+                        $brandLookup[$container->id] = "Mixed";
+                        break;
 
+                }
             }
         }
         return $brandLookup;

@@ -131,7 +131,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     }
     if ($loc_id != '' && $loc_id != null && $loc_id != 'null')
     {
-        $locs = [$loc_id];
+        $locs = $loc_id;
     }
     elseif ($site_id != '' && $site_id != null && $site_id != 'null'){
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));

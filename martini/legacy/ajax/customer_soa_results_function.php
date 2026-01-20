@@ -318,7 +318,6 @@ function precredit_check($customer_id)
             $returningObj['message'] = "Customer has invoice(s) overdue, contact administration";
             $returningObj['messageReservation'] = "Customer has invoice(s) overdue and reservation may be blocked.";
             $returningObj['messageLong'] = "Invoice overdue: ".$returningObj['details']['pending']['id'];
-            $returningObj['printblock'] = true;
         }
         else if ($oldest != "" && $oldest < $closeToOverdue)
         {

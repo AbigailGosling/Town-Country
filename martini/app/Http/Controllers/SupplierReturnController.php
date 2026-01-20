@@ -103,11 +103,11 @@ class SupplierReturnController extends Controller
                     $itemCost = ReportHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $tear,3);
                 }
                 $line->value += $itemCost;
+                $line->items[] = [$internalProduct,$returnProduct,$quickWeightLookup];
             }
             $line->paid = ReportHelper::floorDec(InvoicePayment::where("invoice_id",$pick->id)->get()->sum("amount"),3);
             if ($line->paid==null)$line->paid=0;
             $line->outstanding = ReportHelper::floorDec($line->value - $line->paid,3);
-            $line->items[] = [$internalProduct,$returnProduct,$quickWeightLookup];
             $returnCol->add($line);
         }
         return $returnCol;
