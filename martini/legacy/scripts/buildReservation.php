@@ -10,8 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
-
-	$orderReferenceNumber = request('orderReferenceNumber');
+	$orderReferenceNumber = request()->input('orderReferenceNumber');
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
     $customer_id = request()->input('customer_id');
@@ -35,7 +34,7 @@ use Illuminate\Support\Facades\Auth;
 	$priceTypeSorted = [];
 	$price_types = request()->input('price_type');
     $location = Location::where("name","Unit 11")->first();
-	foreach (request('basketRow') as $key => $value) {
+	foreach (request()->input('basketRow') as $key => $value) {
 
 		$details = explode('-', $value);
 		$product_id = $details[0];
@@ -76,13 +75,13 @@ use Illuminate\Support\Facades\Auth;
 			$cut_id = $details[2];
 
 
-			$target_weight = (int) request('target_weight_' . $product_id);
+			$target_weight = (int) request()->input('target_weight_' . $product_id);
 
 			if(empty($target_weight)){ $target_weight = 0; }
 
 			if(!is_int($target_weight)){ $target_weight = 0; }
 
-			$price = request('price_' . $product_id);
+			$price = request()->input('price_' . $product_id);
 			$price_type = $priceTypeSorted[$product_id];
             ReservationProduct::create(
                 [
