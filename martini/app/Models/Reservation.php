@@ -21,7 +21,8 @@ class Reservation extends Model
         'picksheet_note',
         'order_reference_number',
         'processed',
-        'eta'
+        'eta',
+        'transaction_id'
     ];
 
     protected $casts = [
