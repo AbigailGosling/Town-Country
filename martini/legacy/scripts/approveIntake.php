@@ -78,8 +78,8 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
             $pallet->save();
         }
         $products = $products->pluck("product_id")->toArray();
-        $reservationProducts = ReservationProduct::whereIn("product_id",$products)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
-        $reservations = Reservation::whereIn("id",$reservationProducts)->get();
+        $reservationProducts = ReservationProduct::whereIn("product_id",$products)->where("deleted",0)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
+        $reservations = Reservation::whereIn("id",$reservationProducts)->where("deleted",0)->get();
         $today = date('Y-m-d');
         foreach ($reservations as $reservation)
         {
@@ -113,7 +113,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
             loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
             loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
 
-            foreach (ReservationProduct::where("reservation_id",$reservation->id)->get() as $resProduct)
+            foreach (ReservationProduct::where([["reservation_id",$reservation->id],["deleted",0]])->get() as $resProduct)
             {
                 $product_id = $resProduct->product_id;
                 $quantity = $resProduct->target_count;

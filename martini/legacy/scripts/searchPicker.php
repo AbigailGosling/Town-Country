@@ -160,7 +160,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $knownCombo = [];
     $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
     if (count($products2) > 0 && count($intakeIDsToCheck) > 0)
-        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".min($intakeIDsToCheck)." AND ".max($intakeIDsToCheck))->fetch_all(MYSQLI_ASSOC),"id");
+        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".min($intakeIDsToCheck)." AND ".max($intakeIDsToCheck)." AND approved = 1")->fetch_all(MYSQLI_ASSOC),"id");
         foreach ($products2 as $productRow)
         {
             if (!in_array($productRow['intake_id'],$intakeIDsToCheck)) continue;
