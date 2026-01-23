@@ -198,8 +198,7 @@ $s = (int)(microtime(true));
 			</div>
 		</div>
 	</div>
-	<?php if($user['user_type'] == 'A'){ ?>
-	<br/>
+    <br/>
     <?php if ($pickSheetRow['deliverynote_printed']==0){?>
     <form id="deliverynote_printed" class="printhide" method="POST" action="ajax/markPickAsPrinted.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="DELIVERY_NOTE">
@@ -242,6 +241,7 @@ $s = (int)(microtime(true));
 		</table>
     </form>
     <?php }?>
+	<?php if($user['user_type'] == 'A'){ ?>
 	<form id="mainForm" class="printhide" method="POST" action="scripts/addInternalDocument.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="DELIVERY_NOTE">
 		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
