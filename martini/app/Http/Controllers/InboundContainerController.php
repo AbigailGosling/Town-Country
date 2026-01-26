@@ -283,7 +283,7 @@ class InboundContainerController extends Controller
         $product->unit           = $validated['unit'];
         $product->quantity       = $validated['qty'];
         $product->akg            = $validated['akg'];
-        $product->cost           = $validated['cost'];
+        //$product->cost           = $validated['cost'];
         $product->save();
 
         $containerProduct->container_id = $container->id;
