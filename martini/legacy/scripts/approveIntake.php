@@ -81,14 +81,26 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
         $reservationProducts = ReservationProduct::whereIn("product_id",$products)->where("deleted",0)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
         $reservations = Reservation::whereIn("id",$reservationProducts)->where("deleted",0)->get();
         $today = date('Y-m-d');
+        /**
+         * @var Reservation $reservation
+         */
         foreach ($reservations as $reservation)
         {
-            $customer = Customer::find($customer_id);
+            $customer = Customer::find($reservation->customer_id);
             $site = Site::find($customer->site_id);
             $siteCutOffHoursAndMinutes = explode(":",$site->cutoff);
+            /**
+             * @var Carbon $targetDate
+             * @var Carbon $delDate
+             * @var Carbon $sitesCutOffToday
+             */
             $sitesCutOffToday = Carbon::now()->hour($siteCutOffHoursAndMinutes[0])->minute($siteCutOffHoursAndMinutes[1])->second(0)->micro(0);
-            if ($reservation->eta->timestamp>$sitesCutOffToday->timestamp){
-                $delDate =  $reservation->eta;
+            $targetDate = ($reservation->eta->greaterThan(Carbon::now()))?$reservation->eta:Carbon::now();
+            if ($targetDate->dayOfWeek == Carbon::FRIDAY || $targetDate->dayOfWeek == Carbon::SATURDAY || $targetDate->dayOfWeek == Carbon::SUNDAY){
+                $targetDate->next(Carbon::MONDAY);
+            }
+            if ($targetDate>$sitesCutOffToday->timestamp){
+                $delDate =  $targetDate->copy();
             }
             else {
                 $delDate = $sitesCutOffToday->copy();
@@ -127,6 +139,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                     $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
                 }
             }
+            $reservation->pickersheet_id = $pickersheet_id;
             $reservation->processed = true;
             $reservation->save();
             pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
