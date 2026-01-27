@@ -17,6 +17,11 @@ use App\Models\InboundContainer;
 	$y = prepareExecuteQuery($x,'i',[$product_id]);
 	$row = mysqli_fetch_array($y);
 
+    if ($container == true){
+        $containerP = ContainerProduct::where("product_id",$product_id)->first();
+        $containerInfo = InboundContainer::find($containerP->container_id);
+    }
+
 	$ubbb = $row['ubbb'];
 
 	if($ubbb == 0){
@@ -62,18 +67,17 @@ use App\Models\InboundContainer;
     else $siteid = 1;
 	$site = prepareExecuteQuery("SELECT * FROM `site` WHERE id = ".$siteid)->fetch_assoc();
 ?>
-<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>">
+<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>
+<?php if ($container == true){ echo " container".$containerP->container_id; } ?>"
+    >
 	<?php
         if ($container == false) { ?>
     <td><?php echo intakeIDfromPalletID($pallet_id); ?></td>
 	<td><?php echo $pallet_id; ?></td>
 	<td><?php echo $site['abbreviation']; ?></td>
-        <?php } else {
-            $containerP = ContainerProduct::where("product_id",$product_id)->first();
-            $containerInfo = InboundContainer::find($containerP->container_id);
-            ?>
+        <?php } else {?>
     <td><?php echo $containerInfo->internal_number; ?></td>
-            <?php }
+        <?php }
     ?>
 	<td><?php echo getSpecies(getSpeciesFromCut($cut_id)); ?> <?php echo getCut($cut_id); ?></td>
 	<td><?php echo getNationality($nationality_id); ?></td>

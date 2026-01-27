@@ -520,9 +520,9 @@ function cancelSale()
 			var classString = element.getAttribute("class");
 			if (classString != null) {
 				if (siteid == null) {
-					siteid = classString.split(" ")[2].replace("siteid","");
+					siteid = classString.split(" ")[3].replace("container","");
 				}
-				else if (siteid != classString.split(" ")[2].replace("siteid","")){
+				else if (siteid != classString.split(" ")[3].replace("container","")){
 					allPass = false;
 				}
 			}
@@ -531,8 +531,12 @@ function cancelSale()
 			$('#warning').css('background', "#ff6666");
 			$('#warning').css('border', "2px solid #ff0000");
 			$('#warning').css('display', "inline-block");
-			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell from multiple sites</td>");
+			$('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell from multiple containers</td>");
 		}
+        if (allPass)
+        {
+
+        }
 		return (allPass && checkNextDayCutoff(siteid));
 	}
     const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
