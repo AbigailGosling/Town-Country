@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\File;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,6 @@ class FileController extends Controller
         $files = File::latest()->paginate(20);
         return view('files.index', compact('files'));
     }
-
     /**
      * Show the form for uploading a new file.
      */
@@ -27,7 +27,6 @@ class FileController extends Controller
     {
         return view('files.create');
     }
-
     /**
      * Store a newly uploaded file.
      */
@@ -41,6 +40,10 @@ class FileController extends Controller
 
         return redirect()->route('files.index')
             ->with('success', 'File uploaded successfully!');
+    }
+    public static function PROCESS_REQUEST(Request $request,string $key):File
+    {
+        return static::PROCESS_ACTUAL_FILE($request->file($key));
     }
     public static function PROCESS_ACTUAL_FILE(UploadedFile $uploaded):File
     {
@@ -63,18 +66,30 @@ class FileController extends Controller
     {
         return view('files.show', compact('file'));
     }
-
     /**
-     * Serve the file back to the user with original filename.
+     * Serve the file back to the user with original filename as download.
      */
     public function download(File $file): StreamedResponse
     {
-        return Storage::disk('public')->download(
+        /** @var FilesystemAdapter $fs */
+        $fs = Storage::disk('public');
+        return $fs->download(
             'uploads/' . $file->uuid,
             $file->original_name
         );
     }
-
+    /**
+     * Display the file in a new tab (inline view).
+     */
+    public function view(File $file): StreamedResponse
+    {
+        /** @var FilesystemAdapter $fs */
+        $fs = Storage::disk('public');
+        return $fs->response(
+            'uploads/' . $file->uuid,
+            $file->original_name
+        );
+    }
     /**
      * Remove the file from storage & database.
      */
