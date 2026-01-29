@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);
 
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    Route::get('files/{file}/view', [FileController::class, 'view'])->name('files.view');
 
     Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");
     Route::post('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");
