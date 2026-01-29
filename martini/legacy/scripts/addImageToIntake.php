@@ -1,4 +1,7 @@
 <?php
+
+use App\Http\Controllers\FileController;
+
 	require(__DIR__.'/../functions.php');
 
 	$upload_dir=__DIR__.'/../docs/';
@@ -12,13 +15,13 @@
 		throw new \Exception("dfile not found: ".json_encode(request()->all()));
 		die();exit;
 	}
-	
+    $f = FileController::PROCESS_REQUEST(request(),'dfile');
 	$intakeID = request()->input('intakeid');
-	
 	$name = request()->input('name');
-	
-	$x = "INSERT INTO `intakeDocs` (`name`,`dfile`,`intakeid`) VALUES (?,?,?)";
-	$y = prepareExecuteQuery($x,'sss',[$name,$file_name,$intakeID]);
+    $type_id = request()->input('type_id');
+
+	$x = "INSERT INTO `intakeDocs` (`name`,`dfile`,`intakeid`,`type_id`,`file_id`,`new_file_system`) VALUES (?,?,?,?,?,?)";
+	$y = prepareExecuteQuery($x,'sssiii',[$name,$file_name,$intakeID,$type_id,$f->id,1]);
 ?>
 
 <script type="text/javascript">
