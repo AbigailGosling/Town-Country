@@ -79,7 +79,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
         }
         $products = $products->pluck("product_id")->toArray();
         $reservationProducts = ReservationProduct::whereIn("product_id",$products)->where("deleted",0)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
-        $reservations = Reservation::whereIn("id",$reservationProducts)->where("deleted",0)->get();
+        $reservations = Reservation::whereIn("id",$reservationProducts)->where([["deleted",0],["processed",0]])->get();
         $today = date('Y-m-d');
         /**
          * @var Reservation $reservation
