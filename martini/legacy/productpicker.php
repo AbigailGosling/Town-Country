@@ -869,6 +869,26 @@ function cancelSale()
                 $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for Next Day Delivery after "+targetCutoff+"  from this Site</td>");
                 return false;
             }
+            // Weekend delivery rule: Friday after 16:30 cannot deliver on Saturday or Sunday,
+            // unless the selected delivery date is after next Monday.
+            var fridayCutoff = new Date(now.getTime());
+            fridayCutoff.setHours(16, 30, 0, 0);
+
+            var nextMonday = new Date(now.getTime());
+            var daysUntilNextMonday = ((8 - nextMonday.getDay()) % 7) || 7; // 7 if today is Monday
+            nextMonday.setDate(nextMonday.getDate() + daysUntilNextMonday);
+            nextMonday.setHours(23, 59, 59, 999);
+
+            if (now.getDay() === 5 && now >= fridayCutoff &&
+                deldate <= nextMonday && // only block the immediate weekend
+                (deldate.getDay() === 6 || deldate.getDay() === 0)
+            ) {
+                $('#warning').css('background', "#ff6666");
+                $('#warning').css('border', "2px solid #ff0000");
+                $('#warning').css('display', "inline-block");
+                $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Cannot sell for weekend delivery after 16:30 on Friday</td>");
+                return false;
+            }
             if (deldate > tenDays)
             {
                 $('#warning').css('background', "#ff6666");
