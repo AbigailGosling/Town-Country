@@ -2,13 +2,13 @@
 	require(__DIR__.'/../functions.php');
 
 	ini_set('memory_limit', '1024M');
-	
+
 	require_once '../../vendor/autoload.php';
-	
-	
+
+
 	$perPage = 29;
  	$border = 0;
-	
+
 	$mpdf = new \Mpdf\Mpdf([
 		'tempDir' => __DIR__ . '/../docs',
         'mode' => 'utf-8',
@@ -22,119 +22,119 @@
         'margBuffer' => 0,
         'collapseBlockMargins' => true,
     ]);
-	
+
 	$pageArray = array();
-	
+
 	$pickersheet_id = request()->input('id');
-	
+
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
 	$pickSheetRow = mysqli_fetch_array($y);
-	
+
 	$customer_id = $pickSheetRow['customer_id'];
-	
+
 	$x2 = "SELECT * FROM `customers` WHERE id=?";
 	$y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-	
-	$customerRow = mysqli_fetch_array($y2); 
+
+	$customerRow = mysqli_fetch_array($y2);
 
 	$customer_id = $pickSheetRow['customer_id'];
 	$x = "SELECT * FROM `customers` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y);
-	
+
 	$date = str_replace('/', '-', $pickSheetRow['date_completed']);
 	$assemblydate = date('d/m/Y', strtotime($date));
-	
+
 	$date = DateTime::createFromFormat('d/m/Y', ''.$assemblydate);
-	
+
 	$paydayDelay = $customerRow['credit_terms'];
-	
+
 	$date->modify('+'. $paydayDelay .' day');
 	$payByDate = $date->format('d/m/Y');
-	
+
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
-	
+
 	$css ="
 		body{
 			font-family: 'Roboto', sans-serif;
 			margin:0px;
 		}
-		
+
 		table{
 			display:table;
 		}
-		
-		 
-		
+
+
+
 		tr.productsRow{
 			height:70px;
  		}
-		
+
 		td{ display:table-cell; }
 		.logo{
 			width: 330px;
 			padding-bottom: 10px;
 			display:block;
 		}
-		
+
 		.deliverybox{
 			padding: 5px;
 			background-color: #cacaca;
 			display:block;
 			width:200px;
 		}
-		
-		
+
+
 		.mainaddress{
 			display:block;
  		}
-		
+
 		.greybox{
 			border:1px solid #8c8c8c;
 			background-color:#cacaca;
 		}
-		
+
 		.assembed{
 			text-align: right;
 			font-size: 13px;
 			color: #8c8c8c;
 		}
-		
+
 		.greybox .invoiceno{
 			text-align: right;
 			font-size: 13px;
 			color: #8c8c8c;
 		}
-		
+
 		.deliveryaddresstd{
 			border:1px solid #8c8c8c;
 			background-color:#cacaca;
 		}
-		
+
 		.invoiceaddresstd{
 			border: 1px solid #8c8c8c;
 			padding:5px;
 		}
-		
+
 		.heading{
 			background-color:#fff7e8;
 		}
-		
+
 		td.bankdetails{
 			background-color:#fff7e8;
 		}
-		
+
 		td.bankdetailsLabel{
 			font-size: 10px;
 		}
-		
+
 		td.signbox{
 			background-color:#fff7e8;
 			font-family: 'Handlee', cursive !important;
 		}
-		
+
 		td.footertext{
 			text-align: center;
 			padding: 0;
@@ -142,13 +142,13 @@
 			font-size: 10px;
 			padding-bottom: 2px;
 		}
-		
+
 		td.picknotetd{
 			font-size: 14px;
 			text-decoration:none;
 			color:grey;
 		}
-		
+
 		td.brand{
 			font-size:8px;
 		}
@@ -156,29 +156,29 @@
 		td.species, td.cut{
 			font-size:10px;
 		}
-		
+
 		td.palletid{
 			font-size:10px;
 		}
-		
+
 		td.chilled{
 			font-size:10px;
 			padding-right:10px;
 		}
-		
+
 		td.quantity{
 			font-size:10px;
 		}
-		
+
 		td.unit{
 			font-size:10px;
 		}
-		
+
 		td.weight{
 			font-size:10px;
 		}
 	";
-	
+
 	$mpdf->WriteHTML($css,\Mpdf\HTMLParserMode::HEADER_CSS);
 	$header .= '
 	<table border="'.$border.'" width="100%">
@@ -201,7 +201,7 @@
 						</td>
 					</tr>
 				</table>
-				
+
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td class="greybox">
@@ -209,8 +209,8 @@
 						</td>
 					</tr>
 				</table>
-				
-				
+
+
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td class="greybox">
@@ -218,7 +218,7 @@
 						</td>
 					</tr>
 				</table>
-				
+
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td>
@@ -226,8 +226,8 @@
 						</td>
 					</tr>
 				</table>
-				 
-				 
+
+
  			</td>
 		</tr>
 		<tr>
@@ -242,7 +242,7 @@
 				</div>
 			</td>
 			<td align="right" width="90%">
-				
+
 				<table width="200" border="'.$border.'">
 					<tr>
 						<td align="right"><span>Delivery address</span></td>
@@ -260,13 +260,13 @@
 						</td>
 					</tr>
 				</table>
-				
- 				 
+
+
 			</td>
 		</tr>
-		
+
 		</table>';
-		
+
 		$pageHeader .= '<table width="100%"><tr>
 			<td colspan="2">
 				<table width="100%" border="'.$border.'">
@@ -283,7 +283,7 @@
 			}
 
 			$pageHeader .= '</tr>';
-					
+
 			$howManyRows = 0;
 			# sell price * weight
 			$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
@@ -296,7 +296,7 @@
 			while($outpallet = mysqli_fetch_array($outpalletResult)){
 				$weightids = explode(',', $outpallet['weight_ids']);
 				$queryBits = '';
-				$queryBits2 = ''; 
+				$queryBits2 = '';
 
 				foreach($weightids as $weightid){
 					$queryBits .= ' id = ' . $weightid . ' || ';
@@ -311,39 +311,39 @@
 
 				$kg = 0;
 				while($weight = mysqli_fetch_array($y)){
-					$queryBits2 .= ' id = ' . $weight['product_id'] . ' || '; 
-					
-					
+					$queryBits2 .= ' id = ' . $weight['product_id'] . ' || ';
+
+
 					if($weight['weight_tear'] == $weight['weight_gross']){
 						$w = (double)$weight['weight_gross'];
 					}else{
 						$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
 					}
-					
+
 					$kg = $kg + $w;
-				 
+
 				}
 				$queryBits2 = rtrim($queryBits2," || ");
-				
-				$x = "SELECT * FROM `product` WHERE $queryBits2 GROUP BY cut_id";
+
+				$x = "SELECT * FROM `product` WHERE $queryBits2";
 				$y = prepareExecuteQuery($x);
-				
+
 				$countProduct = mysqli_num_rows($y);
-				
+
 				while($product = mysqli_fetch_array($y)){
-					
+
 					// for($i=0;$i<$perPage; $i++){
-						 
-						
-						${"globalProductCount" . $product['id']} += $count;
+
+
+						//${"globalProductCount" . $product['id']} += $count;
 						$howManyRows++;
-						
+
 						$productID = $product['id'];
 						$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
 						$howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
 						$pickerItem = mysqli_fetch_array($howManyY);
 						$howMany = mysqli_num_rows($howManyY);
-						
+
 						if($product['unit'] == 'C'){
 							$unit = 'Cases';
 						}else if($product['unit'] == 'PPC'){
@@ -369,35 +369,35 @@
 							<b class="unit">'. $unit .'</b>
 						</td>
 						<td align="left" class="weight">
-						<b class="weight">';						
-							
+						<b class="weight">';
+
 							if($product['akg'] != ''){
 								$html .= $product['akg'] . ' kg';
 							}else{
-								
+
 									$qBit = '';
-									
+
 									$kg = 0;
 									$varsA = $weightids;
 									array_unshift($varsA,$productID);
 									$xxWeight = "SELECT * FROM `weights` WHERE product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),'?')).")";
 									$yyWeight = prepareExecuteQuery($xxWeight,str_repeat('i',count($varsA)),$varsA);
-									
+
 									while($weightRow = mysqli_fetch_array($yyWeight)){
-										
+
 										if($weightRow['weight_tear'] == $weightRow['weight_gross']){
 											$tw = (double)$weightRow['weight_gross'];
 										}else{
 											$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
 										}
-										
+
 										$kg = $kg + $tw;
-										
+
 										$kg = number_format($kg, 2, '.', '');
-										
+
 									}
-									 
-									
+
+
 									if($product['unit'] == 'PPC'){
 										$html .= $howMany . ' Cases';
 										$total_case_count += $howMany;
@@ -419,23 +419,23 @@
 											$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
 											$html .= '<td align="right" class="price">£' . number_format((double)$kg * $pickerItem['price'], 2, '.', '') . '</td>';
 									 	}
-								 } 
+								 }
 
 							$html .='</tr>';
 						}
-								 
-						
+
+
 						// if($countProduct < $perPage){
 							// $perPage = $countProduct;
 						// }
-						
+
 						// if($howManyRows >= $perPage){
 							// array_push($pageArray, $html);
 						// }
-						
+
 						// $emptyRows = $perPage - $howManyRows;
-						
- 						
+
+
   				}
 				  $html .= '<tr class="heading">
 				  <th align="left" colspan="5">Total:</th>
@@ -450,15 +450,15 @@
 				array_push($pageArray, $html);
 
 			}
-	
 
-	
+
+
 	$pageFooter .= '</table>
 				</td>
 			</tr>
 		</tr>
 		</table>';
-		
+
 	$footer = '<table width="100%">
 		<tr>
 			<td colspan="2" class="bankdetailsLabel">Bank Details</td>
@@ -486,7 +486,7 @@
 			</table>
 			</td>
 		</tr>
-		
+
 		<tr>
 			<td colspan="2">
 			<table width="100%" border="'.$border.'">
@@ -512,7 +512,7 @@
 				Print............................
 			</td>
 			</tr>
-			</table> 
+			</table>
 			</td>
 			</tr>
 			</table>
@@ -521,9 +521,9 @@
 	</table>
 	';
 	$mpdf->SetHTMLHeader($header);
-	
-	
- 	
+
+
+
  	foreach($pageArray as $page){
 		$mpdf->SetHTMLFooter($footer);
 		$mpdf->AddPage();
@@ -531,16 +531,16 @@
 		$mpdf->WriteHTML($page);
 		$mpdf->WriteHTML($pageFooter);
 	}
-	
-	
+
+
    	$mpdf->SetHTMLFooter($footer);
- 
- 
- 
+
+
+
  	$filename2 = 'Delivery_Note_'.$pickersheet_id.'.pdf';
 	$filename = '../PDF/' . $filename2;
-	
- 	
+
+
 	$mpdf->Output(__DIR__."/".$filename,'F');
 
 	echo $filename;

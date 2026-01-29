@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cut;
+use App\Models\DocType;
 use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
@@ -369,6 +370,12 @@ use Illuminate\Support\Facades\Auth;
 			<input type="text" name="name" required>
 			<br/><br/>
 
+            <label>Type</label><br/>
+            <select style="width:177px;height:21px;" name="type_id" id="type_id" required>
+            <option disabled selected>Select...</option>
+			<?php echo DocType::generateHTMLList($intake['type_id']); ?><br/>
+            </select><br/><br/>
+
 			<label>Image</label><br/>
 			<input type="file" name="dfile" style="border: 1px solid #cacaca;" required><br/>
 
@@ -386,13 +393,20 @@ use Illuminate\Support\Facades\Auth;
 			?><div style="padding: 15px;border: 1px solid grey;width:100%;margin-top:40px;">
 			<h2 style="font-size:20px;">Intake Documents</h2><?php
 			while($row = mysqli_fetch_array($y)){
+                if ($row['new_file_system']==0) {
 			?>
 			<a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $intake_id; ?>&docid=<?php echo $row['id']; ?>">
 				<i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
-			</a> &nbsp;&nbsp;&nbsp; <a href="./docs/<?php echo $row['dfile']; ?>" target="_blank"><?php echo $row['name']; ?></a><br/><br/>
+			</a> &nbsp;&nbsp;&nbsp; <a target="_blank" href="./docs/<?php echo $row['dfile']; ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
+			<?php
+                } else {
+            ?>
+            <a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $intake_id; ?>&docid=<?php echo $row['id']; ?>">
+                <i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
+            </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['file' => $row['file_id']]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
 			<?php
 			}
-
+            }
 			echo '</div>';
 		}
 	?>
