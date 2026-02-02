@@ -28,9 +28,6 @@ if ($intake->approving_start != null || $intake->approved != false)
         window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=0';
     </script> <?php exit;
 }
-$intake->approving_start = Carbon::now();
-$intake->approved_by = Auth::id();
-$intake->save();
 if ($intake->pallets->count() == 0)
 {?>
 <script>
@@ -63,6 +60,9 @@ foreach ($intake->pallets as $pallet)
 }
 if ($user->hasPermission("approve_intake") && $intake->approved == false)
 {
+    $intake->approving_start = Carbon::now();
+    $intake->approved_by = Auth::id();
+    $intake->save();
     if (isset($intake->container_id)) {
         $container = InboundContainer::find($intake->container_id);
         $products = $container->getProducts();
