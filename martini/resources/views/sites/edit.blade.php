@@ -47,6 +47,12 @@
 
                     <x-input-error :messages="$errors->get('cutoff')" class="mt-2"/>
                 </div>
+                <div class="mt-4" for="sale_blocked" style="display: flex; padding-bottom: 1em;">
+                    <input type="checkbox" id="sale_blocked" name="sale_blocked"
+                            @if ($site->sale_blocked) checked @endif />
+                    <div style="width: 1em;"></div>
+                    <x-input-label for="sale_blocked" value="Sale Blocked"/>
+                </div>
                 <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="disabled" name="disabled"
                             @if ($site->disabled) checked @endif />
