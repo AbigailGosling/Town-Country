@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\CutGroupNationalityDate;
+use App\Models\Location;
+use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -132,14 +134,28 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     }
     if ($loc_id != '' && $loc_id != null && $loc_id != 'null')
     {
+        $s = Site::find(Location::find($loc_id)->site_id);
+        if ($s->sale_blocked == true)
+        {
+            echo "<tr><td colspan='15' style='color:red;text-align:center;'>The site associated with this location is blocked for sales. Please contact an administrator.</td></tr>";
+            exit;
+        }
         $locs = $loc_id;
     }
     elseif ($site_id != '' && $site_id != null && $site_id != 'null'){
-        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+        $s = Site::find($site_id);
+        if ($s->sale_blocked == true)
+        {
+            echo "<tr><td colspan='15' style='color:red;text-align:center;'>The site associated with this location is blocked for sales. Please contact an administrator.</td></tr>";
+            exit;
+        }
+        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND `id` IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
     }
     else
     {
-        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+        $s = implode(",",Site::where([['disabled',false],['sale_blocked',false]])->get()->pluck('id')->toArray());
+
+        $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `id` IS NOT NULL AND `site_id` IN (".$s.")")->fetch_all(MYSQLI_ASSOC),"id"));
     }
     array_push($whereArray, "weights.status_id != 1");
 
