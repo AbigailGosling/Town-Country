@@ -145,7 +145,7 @@ use Illuminate\Support\Facades\Log;
                     <select id="siteID" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select site..</option>
 					<?php
-						$x = "SELECT * FROM `site` WHERE `disabled` = 0";
+						$x = "SELECT * FROM `site` WHERE `disabled` = 0 AND `sale_blocked` = 0";
 						$y = prepareExecuteQuery($x);
 
 						while($row = mysqli_fetch_array($y)){
