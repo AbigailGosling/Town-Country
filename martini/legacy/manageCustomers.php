@@ -2,6 +2,7 @@
 
 use App\Models\Site;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 	include('functions.php');
 	define('DEL_SUNDAY',     1);
@@ -294,11 +295,19 @@ use App\Models\User;
 	<div id="flexContainerTwo">
 		<div class="fullbox controls">
 			<table width="100%">
+                <tr>
+					<td class="label"><label>Override Credit Check</label></td>
+					<td align="right">
+						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="override_hidden" name="override_hidden" value="<?php echo $data['override']?1:0; ?>">
+                    </td>
+				</tr>
+				<tr height=""><td colspan="2"></td></tr>
 				<tr>
-					<td class="label"><label>Credit Checking</label></td>
-					<td>
-						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="credit_enabled_hidden" name="credit_enabled_hidden" value="<?php echo $data['credit_rating']?1:0; ?>">
+					<td class="label"><label>Price Markup/Markdown</label></td>
+					<td align="right">
+						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="markup_enabled_hidden" name="markup_enabled_hidden" value="<?php echo $data['markup_enabled']?1:0; ?>">
 					</td>
 				</tr>
 				<tr height=""><td colspan="2"></td></tr>
@@ -314,23 +323,6 @@ use App\Models\User;
 					<td class="label"><label>Current outstanding</label></td>
 					<td><input type="text" class="input" name="current_outstanding" value="<?php echo totalOutstandingForCustomer($data['id']);?>"></td>
 				</tr>
-				<tr height=""><td colspan="2"></td></tr>
-				<tr>
-					<td class="label"><label>Override Credit Check</label></td>
-					<td>
-						<a href="javascript:;" id="overrider" onclick="overrideSales(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="override_hidden" name="override_hidden" value="<?php echo $data['override']?1:0; ?>">
-                    </td>
-				</tr>
-				<tr height=""><td colspan="2"></td></tr>
-				<tr>
-					<td class="label"><label>Price Markup/Markdown</label></td>
-					<td>
-						<a href="javascript:;" id="markup_enabled" onclick="markupEnabled(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['markup_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['markup_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="markup_enabled_hidden" name="markup_enabled_hidden" value="<?php echo $data['markup_enabled']?1:0; ?>">
-					</td>
-				</tr>
-				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Markup/Markdown Amount</label></td>
 					<td><input type="number" class="input" id="markup_amount" name="markup_amount" value="<?php echo $data['markup_amount']; ?>"><label> %</label></td>
@@ -357,16 +349,24 @@ use App\Models\User;
 				</tr>-->
 			</table>
 		</div>
-
 		<div class="fullbox controls">
 			<table width="100%">
-				<tr>
-					<td class="label"><label>Delivery Date Checks</label></td>
-					<td>
-						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id;?>)" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="delivery_day_checking_hidden" name="delivery_day_checking_hidden" value="<?php echo $data['delivery_day_checking']?1:0; ?>">
+                <tr>
+					<td class="label"><label>Delivery Date Overide</label></td>
+					<td align="right">
+						<a href="javascript:;" id="delivery_day_override" onclick="delDayOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="delivery_day_override_hidden" name="delivery_day_override_hidden" value="<?php echo $data['delivery_day_override']?1:0; ?>">
                     </td>
 				</tr>
+                <tr height=""><td colspan="2"></td></tr>
+                <tr>
+					<td class="label"><label>Next Day and Long Reservation Controls</label></td>
+					<td align="right">
+						<a href="javascript:;" id="check_saledate" onclick="checkSaleDate(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['check_saledate'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['check_saledate'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="check_saledate_hidden" name="check_saledate_hidden" value="<?php echo $data['check_saledate']?1:0; ?>">
+                    </td>
+				</tr>
+                <tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Monday</label></td>
 					<td><input type="checkbox" id="del_monday" name="del_monday" value="1" <?php echo ($data['delivery_days'] & DEL_MONDAY)?"checked":""; ?>></td>
@@ -395,28 +395,35 @@ use App\Models\User;
 					<td class="label"><label>Sunday</label></td>
 					<td><input type="checkbox" id="del_sunday" name="del_sunday" value="1" <?php echo ($data['delivery_days'] & DEL_SUNDAY)?"checked":""; ?>></td>
 				</tr>
-
-				<tr>
-					<td class="label"><label>Delivery Date Overide</label></td>
-					<td>
-						<a href="javascript:;" id="delivery_day_override" onclick="delDayOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['delivery_day_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="delivery_day_override_hidden" name="delivery_day_override_hidden" value="<?php echo $data['delivery_day_override']?1:0; ?>">
-                    </td>
-				</tr>
-
-                <tr>
-					<td class="label"><label>Next Day and Long Reservation Controls</label></td>
-					<td>
-						<a href="javascript:;" id="check_saledate" onclick="checkSaleDate(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['check_saledate'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['check_saledate'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
-                        <input type="hidden" id="check_saledate_hidden" name="check_saledate_hidden" value="<?php echo $data['check_saledate']?1:0; ?>">
-                    </td>
-				</tr>
 			</table>
 		</div>
 	</div>
+<?php if (User::find(Auth::id())->hasPermission("control_credit_enabled")) { ?>
 	<div id="flexContainerTwo">
-
+        <div class="fullbox controls">
+            <table width="100%">
+                <tr>
+					<td class="label"><label>Credit Checking</label></td>
+					<td align="right">
+						<a href="javascript:;" id="credit_enabled" onclick="creditChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['credit_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['credit_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="credit_enabled_hidden" name="credit_enabled_hidden" value="<?php echo $data['credit_rating']?1:0; ?>">
+					</td>
+				</tr>
+            </table>
+        </div>
+        <div class="fullbox controls">
+            <table width="100%">
+                <tr>
+					<td class="label"><label>Delivery Date Checks</label></td>
+					<td align="right">
+						<a href="javascript:;" id="delivery_day_checking" onclick="delDayEnabled(this,<?php echo $id;?>)" class="override" style="background-color:<?php if($data['delivery_day_checking'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['delivery_day_checking'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="delivery_day_checking_hidden" name="delivery_day_checking_hidden" value="<?php echo $data['delivery_day_checking']?1:0; ?>">
+                    </td>
+				</tr>
+            </table>
+        </div>
     </div>
+<?php } ?>
     	<div id="flexContainerTwo">
 
 		<div class="fullbox controls">
