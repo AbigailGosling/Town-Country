@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Auth;
 
 	if(request()->input('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request()->input('productid');
-		$size = sizeof($productids);
+		$size = sizeof($productids ?? []);
 
 		$intakeid = request()->input('intakeid');
 
