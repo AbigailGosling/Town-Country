@@ -6,7 +6,6 @@ use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 $showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 ini_set('memory_limit', '1G');
@@ -48,11 +47,11 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $('.' + classs).toggle();
     }
 </script>
-<table width="100%" class="slim searchRContent"   style="display:table;">
+<table width="100%" class="slim searchRContent" style="display:table;">
     <thead>
         <tr class="searchRContent__head">
 	        <th class="searchRContent__id">Intake ID</th>
-	        <th class="searchRContent__location">Location</th>
+	        <th class="searchRContent__location" style="width: 86px;">Location</th>
 	        <th class="searchRContent__id">Plt ID</th>
             <th class="searchRContent__dropdown"></th>
 	        <th class="searchRContent__unit">Unit</th>
@@ -64,7 +63,10 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 	        <th class="searchRContent__date-range">Date Range</th>
 	        <th>Volume</th>
 	        <th>Cost</th>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
+            <th>1-10 C/S</th>
+            <th>10-35 C/S</th>
+            <th>35+ C/S</th>
+            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight:normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th>
         </tr>
     </thead>
@@ -77,6 +79,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $ARRAY_CUTS = cutsFromCutGroup($species_id, $cutgroup_id);
 
     $whereArray = [];
+    $varArray = [];
+    $varTypes = '';
 
     if($species_id != '' && $cutgroup_id != ''){ # if these two are posted then they've used the species and cutgroup dropdown
         // ??: and here #2
@@ -84,31 +88,25 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $ids = implode(',', $ARRAY_CUTS);
 
         if(count($ARRAY_CUTS) > 0){ # seems to still get here if i dont do this if??
-            array_push($whereArray, 'product.cut_id IN ('.$ids.')');
+            $whereArray[] = 'product.cut_id IN ('.$ids.')';
         }
 
     }else if(($species_id != 'null' && !empty($species_id)) && empty($cutgroup_id)){
-        array_push($whereArray, "cuts.species_id = ".$species_id);
+        $whereArray[]= "cuts.species_id = ?";
+        $varArray[] = $species_id;
+        $varTypes .= 'i';
     }
     else{
-        array_push($whereArray, "cuts.species_id NOT IN (11,12,14)");
+        $whereArray[] = "cuts.species_id NOT IN (11,12,14)";
     }
 
     if($pallet_id != ''){ # if this is posted then theyve entered a pallet id
 
-        /*$pallet_collection = getPalletCollection($pallet_id);
-
-        if(!empty($pallet_collection)){
-            $sold_pallet_count = checkForSoldPallets($pallet_collection);
-
-            if($sold_pallet_count != 0){
-                array_push($whereArray, "product.status='10'");
-            }
-        }*/
-
-        array_push($whereArray, "pallet.id = '". $pallet_id ."'");
+        $whereArray[] = "pallet.id = ?";
+        $varArray[] = $pallet_id;
+        $varTypes .= 'i';
     }
-    array_push($whereArray, "`pallet`.`is_hidden` = 0");
+    $whereArray[] = "`pallet`.`is_hidden` = 0";
     if($intake_id != ''){ # if this is posted then theyve entered a intake id
         $ARRAY_PALLET_IDS = palletIDsFromIntakeID($intake_id); # get array of all the cut_id's from the cutgroup
         $ids = implode(',', $ARRAY_PALLET_IDS);
@@ -121,16 +119,22 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         //     }
         // }
 
-        if ($ids != "")array_push($whereArray, 'pallet.id IN ('.$ids.')');
+        if ($ids != "")$whereArray[] = 'pallet.id IN ('.$ids.')';
     }
     if ($brand != '' && $brand != null && $brand != 'null'){
-        array_push($whereArray, "product.brand_id = ". $brand ."");
+        $whereArray[] = "product.brand_id = ?";
+        $varArray[] = $brand;
+        $varTypes .= 'i';
     }
     if ($nationality != '' && $nationality != null && $nationality != 'null'){
-        array_push($whereArray, "product.nationality_id = ". $nationality ."");
+        $whereArray[] = "product.nationality_id = ?";
+        $varArray[] = $nationality;
+        $varTypes .= 'i';
     }
     if ($temperatureID != '' && $temperatureID != null && $temperatureID != 'null' && $temperatureID != 'undefined'){
-        array_push($whereArray, "product.cooling_id = ". $temperatureID ."");
+        $whereArray[] = "product.cooling_id = ?";
+        $varArray[] = $temperatureID;
+        $varTypes .= 'i';
     }
     if ($loc_id != '' && $loc_id != null && $loc_id != 'null')
     {
@@ -157,9 +161,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `id` IS NOT NULL AND `site_id` IN (".$s.")")->fetch_all(MYSQLI_ASSOC),"id"));
     }
-    array_push($whereArray, "weights.status_id != 1");
+    $whereArray[] = "weights.status_id != 1";
 
-    $whereString = implode(' && ',$whereArray);
+    $whereString = implode(' AND ',$whereArray);
 
     $productsX = "SELECT SQL_NO_CACHE *, `product`.`comments` as productcomments, `product`.`id` as productid, `cuts`.`name` as cutname,`cuts`.`species_id` as `species_id`, `nationality`.`name` as `local` FROM `product` INNER JOIN `pallet` ON `product`.`pallet_id`=`pallet`.`id`
     INNER JOIN `weights` ON `product`.`id` = `weights`.`product_id`
@@ -167,7 +171,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     LEFT JOIN `nationality` ON `product`.`nationality_id` = `nationality`.`id`
     WHERE $whereString";
 
-    $productsY = prepareExecuteQuery($productsX);
+    $productsY = prepareExecuteQuery($productsX,$varTypes,$varArray);
 
     $totalW = 0;
 
@@ -495,7 +499,26 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                 }
 
  				?></td>
-			<td class="bold"><?php if($productsRow['cost']){ echo '£' . number_format((float)$productsRow['cost'], 2, '.', ''); } ?></td>
+            <td class="bold">
+                <?php if ($productsRow['cost']) {
+                    echo '£' . number_format((float)$productsRow['cost'], 2, '.', '');
+                } ?>
+            </td>
+            <td class="bold">
+                <?php if ($productsRow['rrp1'] != null && $productsRow['rrp1'] != '') {
+                    echo '£' . number_format((float)$productsRow['rrp1'], 2, '.', '');
+                } ?>
+            </td>
+            <td class="bold">
+                <?php if ($productsRow['rrp2'] != null && $productsRow['rrp2'] != '') {
+                    echo '£' . number_format((float)$productsRow['rrp2'], 2, '.', '');
+                } ?>
+            </td>
+            <td class="bold">
+                <?php if ($productsRow['rrp3'] != null && $productsRow['rrp3'] != '') {
+                    echo '£' . number_format((float)$productsRow['rrp3'], 2, '.', '');
+                } ?>
+            </td>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
             <td></td>
         </tr>

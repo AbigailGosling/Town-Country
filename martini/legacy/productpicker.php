@@ -1,18 +1,13 @@
 <?php
-
 use App\Models\Permission;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Str;
 	include('includes/frontHeader.php');
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
-
-
 <form id="pickerForm" method="POST" action="scripts/buildPicker.php" onkeydown="if(event.key == 'Enter'){ $('#sendfake').trigger('click'); return false; } else{ return event.key }" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <input type="hidden" name="addressid" id="addressid" value="1">
@@ -88,9 +83,10 @@ use Illuminate\Support\Facades\Log;
 			<th>Nationality</th>
 			<th>Brand</th>
 			<th>Use By</th>
-			<th>Volume <span style="display:none;">(num of cases)</span</th>
+			<th>Volume <span style="display:none;">(num of cases)</span></th>
 			<th>Weight</th>
 			<th>Sell Price</th>
+            <th>Guide Price</th>
 			<th>Value</th>
 		</tr>
 	</table>
@@ -100,7 +96,7 @@ use Illuminate\Support\Facades\Log;
 		<div class="totalprice" style="display:none;"></div>
 		<br/>
 		<input type="submit" value="Send" id="sendreal" class="inputbox-button" style="display:none">
-		<input type="hidden" value="<?php use Illuminate\Support\Str;echo Str::random(50);?>" id="transaction_id" name="transaction_id">
+		<input type="hidden" value="<?php echo Str::random(50);?>" id="transaction_id" name="transaction_id">
 		<input type="button" value="Completed" id="sendfake" class="inputbox-button" disabled>
 	</div>
 </div>
