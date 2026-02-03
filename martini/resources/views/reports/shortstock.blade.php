@@ -5,6 +5,7 @@
     <div></div>
     <div></div>
     </div>
+    @if ($data->count()>0)
             <x-data-table>
                 <x-slot:headers>
                     @foreach ($data[0] as $key=>$value)
@@ -25,6 +26,12 @@
                     @endforeach
                 </slot>
             </x-data-table>
+        @else
+        <x-data-table>
+            <x-slot:headers><x-data-table-header> </x-data-table-header></x-slot:headers>
+            <slot><tr><td><b>NO ITEMS TO SHOW</b></td></tr></slot>
+        </x-data-table>
+        @endif
         <br>
 </x-app-layout>
 <?php
