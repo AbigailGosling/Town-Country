@@ -256,7 +256,7 @@ use Illuminate\Support\Facades\Auth;
                         echo $this_row_weight . 'kg';
                     }
                     ?></td>
-                    <td></td>
+                    <td></td><td></td><td></td><td></td>
                     <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td></td><?php } ?>
                     <td>
                     <?php if(stripos(Location::find($productsRow2['storage_location'])->name, "coldstore")==false && $locked != true && $pallet->qc_hold != true){ ?>

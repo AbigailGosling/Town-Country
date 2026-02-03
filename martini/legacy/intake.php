@@ -42,14 +42,20 @@ use Illuminate\Support\Facades\Auth;
 			$product_id = "(" . $productids[$i] . ")";
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
 			$price = number_format((double)request()->input('price')[$i],3,".",",");
+            $rrp1 = number_format((double)request()->input('rrp1')[$i],3,".",",");
+            $rrp2 = number_format((double)request()->input('rrp2')[$i],3,".",",");
+            $rrp3 = number_format((double)request()->input('rrp3')[$i],3,".",",");
 			if ($cost == 0) $cost = null;
 			if ($price == 0) $price = null;
+            if ($rrp1 == 0) $rrp1 = null;
+            if ($rrp2 == 0) $rrp2 = null;
+            if ($rrp3 == 0) $rrp3 = null;
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != '' && $intake['approved']==1){
 				if (User::find(Auth::id())->hasPermission("viewcosts"))
 				{
-					$x = "UPDATE `product` SET cost=?, price=?, weightnote=? WHERE id IN $product_id";
- 					$y = prepareExecuteQuery($x,'sss',[$cost,$price,$weightnote]);
+					$x = "UPDATE `product` SET cost=?, price=?, rrp1=?, rrp2=?, rrp3=?, weightnote=? WHERE id IN $product_id";
+ 					$y = prepareExecuteQuery($x,'ssssss',[$cost,$price,$rrp1,$rrp2,$rrp3,$weightnote]);
 				}
 				else
 				{
@@ -475,7 +481,7 @@ use Illuminate\Support\Facades\Auth;
 	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
 		<table border="1" cellpadding="5" width="100%">
 			<tr>
-				<td colspan="8" align="center"><b>Overview</b></td>
+				<td colspan="11" align="center"><b>Overview</b></td>
 			</tr>
 			<tr>
 				<th style="background:#3faddd;">Species</th>
@@ -485,7 +491,12 @@ use Illuminate\Support\Facades\Auth;
  				<th style="background:#3faddd;">Total Weight</th>
 				<?php if ($intake['approved']==1) {?>
  				<th style="background:#3faddd;">Cost</th>
-				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="background:#3faddd;">Actual Cost</th><?php } ?>
+				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+                <th style="background:#3faddd;">Actual Cost</th>
+                <th style="background:#3faddd;">1-10</th>
+                <th style="background:#3faddd;">10-35</th>
+                <th style="background:#3faddd;">35+</th>
+                <?php } ?>
 				<?php } ?>
 			</tr>
 			<?php
@@ -644,6 +655,24 @@ use Illuminate\Support\Facades\Auth;
 						<?php } ?>
 						<input style="width: 90px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
+                    <td>
+                        <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
+							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
+						<?php } ?>
+                        <input style="width: 90px;" type="text" name="rrp1[]" value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
+                    </td>
+                    <td>
+                        <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
+							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
+						<?php } ?>
+                        <input style="width: 90px;" type="text" name="rrp2[]" value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
+                    </td>
+                    <td>
+                        <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
+							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
+						<?php } ?>
+                        <input style="width: 90px;" type="text" name="rrp3[]" value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
+                    </td>
 					<?php } ?>
 					<?php } ?>
 				</tr>
@@ -658,7 +687,7 @@ use Illuminate\Support\Facades\Auth;
 				<?php }?>
 				<td align="right"><?php echo number_format($totalWeight, 3, '.', ''); ?>kg</td>
 				<?php if ($intake['approved']==1) {?>
-				<td colspan="3" align="right"><input type="submit" value="Save & Update"></td>
+				<td colspan="5" align="right"><input type="submit" value="Save & Update"></td>
 				<?php }?>
 			</tr>
 		</table>

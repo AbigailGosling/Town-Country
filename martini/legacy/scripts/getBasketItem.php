@@ -87,7 +87,15 @@ use App\Models\InboundContainer;
 	<td>
 		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">
 	</td>
-	<td><input type="number" step="0.01" cost="<?php echo $rowProduct['cost']; ?>" class="price"   name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
+    <?php
+            $strict = "strict";
+            if ($rowProduct['rrp1']!= null && $rowProduct['rrp1'] != "" && $q < 11){ $cost = $rowProduct['rrp1'];}
+            else if ($rowProduct['rrp2']!= null && $rowProduct['rrp2'] != "" && $q >= 11 && $q < 35){ $cost = $rowProduct['rrp2'];}
+            else if ($rowProduct['rrp3']!= null && $rowProduct['rrp3'] != "" && $q >= 35){ $cost = $rowProduct['rrp3'];}
+            else { $cost = $rowProduct['cost']; $strict = "";}
+        ?>
+	<td><input type="number" step="0.01" cost="<?php echo $cost; ?>" <?php echo $strict; ?> class="price" name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
+    <td><?php echo "£".number_format($cost,2,'.',','); ?></td>
 	<td>
 
 	</td>

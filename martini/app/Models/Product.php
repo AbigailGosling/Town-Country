@@ -31,6 +31,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $pricetype
  * @property string|null $cost
  * @property string|null $price
+ * @property string|null $rrp1
+ * @property string|null $rrp2
+ * @property string|null $rrp3
  * @property string|null $box_id
  * @property string|null $weightnote
  * @property string|null $product_temp
@@ -39,6 +42,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $note_units
  * @property string|null $note_weight
  * @property string|null $akg
+ * @property string|null $old_akg
+ * @property int|null $health_id
+ * @property string|null $kill_date
  * @property int|null $quantity
  *
  * @property Cut|null $cut
@@ -87,6 +93,8 @@ protected $connection = 'tandc_live';
 		'health_id',
 		'kill_date',
         'old_akg',
+        'rrp1',
+        'rrp2'
 	];
 	public function cut():BelongsTo
 	{
