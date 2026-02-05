@@ -243,6 +243,7 @@ use Illuminate\Support\Str;
 	}
 ?>
 <script type="text/javascript">
+    var custStrictOverride = false;
 	var transactionAllowed = false;
 	var showWarning = false;
 	var showHigherWarning = false;
@@ -648,7 +649,7 @@ function cancelSale()
 		var priceEntered = true;
 		var pricedCorrectly = true;
 		var doneOnce = false;
-
+        var strict = false;
 		$('.price').each(function(index,element){
 			doneOnce = true;
  			var value = $(element).val();
@@ -665,6 +666,11 @@ function cancelSale()
 				$(element).css('border','1px solid red');
 				showPriceCheck = true;
 			}
+            var attr = $(element).attr('strict');
+            if (typeof attr !== 'undefined' && attr !== false) {
+                strict = true;
+            }
+
 		});
 
 		if(checkSites() && doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
@@ -676,7 +682,14 @@ function cancelSale()
 				alert('Please complete the missing fields');
 			}
 			else if (showPriceCheck) {
-				modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale)
+				if (!strict || custStrictOverride)
+                {
+                    modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale);
+                }
+                else
+                {
+                    modalDialog.showCancel("Pricing Error","Some items are priced below cost. Sale Cannot Proceed.","Review Prices",cancelSale);
+                }
 			}
 			$('#sendfake').prop('disabled', false);
 

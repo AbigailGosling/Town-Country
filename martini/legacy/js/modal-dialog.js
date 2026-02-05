@@ -88,7 +88,7 @@ $(document.body).prepend('\
             <span class="yes" id="msgYes"></span>\
         </div>\
     </div>');
-class ModalDialog 
+class ModalDialog
 {
     showMask()
     {
@@ -109,10 +109,23 @@ class ModalDialog
 
         $("#msgTitle").text(title);
         $("#msgText").text(body);
+        $("#msgYes").show();
         $("#msgYes").text(yesText);
         $("#msgNo").text(noText);
 
         $("#msgYes").click({callMe:yesFunc},this.callBack);
+        $("#msgNo").click({callMe:noFunc},this.callBack);
+    }
+    showCancel(title, body, noText, noFunc) {
+        $("#msg").show();
+        $("#msgBox").show();
+        $("#msgSpinner").hide();
+
+        $("#msgTitle").text(title);
+        $("#msgText").text(body);
+        $("#msgYes").hide();
+        $("#msgNo").text(noText);
+
         $("#msgNo").click({callMe:noFunc},this.callBack);
     }
     callBack(event)
