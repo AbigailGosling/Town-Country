@@ -1,6 +1,9 @@
 <?php
-	require(__DIR__.'/../functions.php');
 
+use App\Models\Customer;
+
+	require(__DIR__.'/../functions.php');
+ $c = Customer::find(request()->input('id'));
 	$colNames = array();
 	$colValue = array();
 
@@ -94,22 +97,22 @@
 	$colValue[] = (request()->input('is_petfood_customer')!=null && request()->input('is_petfood_customer') != "")?request()->input('is_petfood_customer'):"0";
 
     $colNames[] = "`credit_enabled`=?";
-	$colValue[] = request()->input('credit_enabled_hidden');
+	$colValue[] = request()->input('credit_enabled_hidden',$c->credit_enabled);
 
     $colNames[] = "`override`=?";
-	$colValue[] = request()->input('override_hidden');
+	$colValue[] = request()->input('override_hidden',$c->override);
 
     $colNames[] = "`markup_enabled`=?";
-	$colValue[] = request()->input('markup_enabled_hidden');
+	$colValue[] = request()->input('markup_enabled_hidden',$c->markup_enabled);
 
     $colNames[] = "`delivery_day_checking`=?";
-	$colValue[] = request()->input('delivery_day_checking_hidden');
+	$colValue[] = request()->input('delivery_day_checking_hidden',$c->delivery_day_checking);
 
     $colNames[] = "`delivery_day_override`=?";
-	$colValue[] = request()->input('delivery_day_override_hidden');
+	$colValue[] = request()->input('delivery_day_override_hidden',$c->delivery_day_override);
 
     $colNames[] = "`check_saledate`=?";
-	$colValue[] = request()->input('check_saledate_hidden');
+	$colValue[] = request()->input('check_saledate_hidden',$c->check_saledate);
 
 	for ($u=1;$u<10;$u++)
 	{
