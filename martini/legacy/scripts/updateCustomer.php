@@ -114,6 +114,9 @@ use App\Models\Customer;
     $colNames[] = "`check_saledate`=?";
 	$colValue[] = request()->input('check_saledate_hidden',$c->check_saledate);
 
+    $colNames[] = "`override_cost_check`=?";
+    $colValue[] = request()->input('override_cost_check_hidden',$c->override_cost_check);
+
 	for ($u=1;$u<10;$u++)
 	{
 		$colNames[] = "`address".$u."_1` = ?";

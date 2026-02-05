@@ -302,6 +302,14 @@ use Illuminate\Support\Facades\Auth;
                         <input type="hidden" id="override_hidden" name="override_hidden" value="<?php echo $data['override']?1:0; ?>">
                     </td>
 				</tr>
+                <tr height=""><td colspan="2"></td></tr>
+                <tr>
+					<td class="label"><label>Override Price Check</label></td>
+					<td align="right">
+						<a href="javascript:;" id="override_cost_check" onclick="overridePriceChecks(this,<?php echo $id; ?> )" class="override"style="background-color:<?php if($data['override_cost_check'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['override_cost_check'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="override_cost_check_hidden" name="override_cost_check_hidden" value="<?php echo $data['override_cost_check']?1:0; ?>">
+                    </td>
+				</tr>
 				<tr height=""><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Price Markup/Markdown</label></td>
@@ -617,6 +625,24 @@ function mainForm2(){
 			setTimeout(alert,10,["Override Enabled!"]);
 		}
 		$.post("ajax/overrideSales.php",{
+			id: id,
+		});
+ 	}
+    function overridePriceChecks(ele, id){
+		var q = $('#override_cost_check');
+		if (q.text() != "Disabled") {
+            $("#override_cost_check_hidden").val("0");
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["Override Disabled!"]);
+		}
+		else {
+            $("#override_cost_check_hidden").val("1");
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Override Enabled!"]);
+		}
+		$.post("ajax/overridePriceChecks.php",{
 			id: id,
 		});
  	}

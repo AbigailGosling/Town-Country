@@ -105,6 +105,9 @@
     $colNames[] = "`check_saledate`";
 	$colValue[] = request()->input('check_saledate_hidden',0);
 
+    $colNames[] = "`override_cost_check`";
+    $colValue[] = request()->input('override_cost_check_hidden',0);
+
 	for ($u=1;$u<10;$u++)
 	{
 		$colNames[] = '`address'.$u.'_1`';
