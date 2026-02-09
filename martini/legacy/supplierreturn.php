@@ -35,7 +35,10 @@ use App\Models\User;
 			<label>Supplier Return Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
-		<div class="col"></div>
+		<div class="col">
+			<label>Goods Out Notes</label><br/>
+			<textarea class="form-control" name="goods_out_note" style="height:85px;padding:10px;resize:none;"></textarea>
+		</div>
 	</div>
 
 	<div class="row">

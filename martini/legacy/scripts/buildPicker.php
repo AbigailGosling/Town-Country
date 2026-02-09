@@ -13,6 +13,7 @@ use App\Models\Product;
 	$orderReferenceNumber = request('orderReferenceNumber');
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
+    $goods_out_note = request()->input('goods_out_note');
 
 	//$user_from_id = $_SESSION['USER'];
 	$user_from_id = request()->input('sales_person');
@@ -68,8 +69,8 @@ use App\Models\Product;
 		}
 	}
 	foreach ($baskets as $basket) {
-		$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,?,?,?,?)";
-		$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
+		$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,goods_out_notes) VALUES (?,?,?,?,?,?,?,?,?,?)";
+		$y = prepareExecuteQuery($x,'iiisssssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id,$goods_out_note],true);
 		$transaction_id = null;
 		$pickersheet_id = $y;
 
