@@ -97,16 +97,16 @@ use App\Models\Customer;
 	$colValue[] = (request()->input('is_petfood_customer')!=null && request()->input('is_petfood_customer') != "")?request()->input('is_petfood_customer'):"0";
 
     $colNames[] = "`credit_enabled`=?";
-	$colValue[] = request()->input('credit_enabled_hidden',$c->credit_enabled);
+	$colValue[] = (request()->input('credit_enabled_hidden',$c->credit_enabled))?1:0;
 
     $colNames[] = "`override`=?";
 	$colValue[] = request()->input('override_hidden',$c->override);
 
     $colNames[] = "`markup_enabled`=?";
-	$colValue[] = request()->input('markup_enabled_hidden',$c->markup_enabled);
+	$colValue[] = (request()->input('markup_enabled_hidden',$c->markup_enabled))?1:0;
 
     $colNames[] = "`delivery_day_checking`=?";
-	$colValue[] = request()->input('delivery_day_checking_hidden',$c->delivery_day_checking);
+    $colValue[] = (request()->input('delivery_day_checking_hidden',$c->delivery_day_checking))?1:0;
 
     $colNames[] = "`delivery_day_override`=?";
 	$colValue[] = request()->input('delivery_day_override_hidden',$c->delivery_day_override);
