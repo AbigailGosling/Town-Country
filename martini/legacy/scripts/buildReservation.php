@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 	$orderReferenceNumber = request()->input('orderReferenceNumber');
 	$weightnote = request()->input('weightnote');
 	$picksheet_note = request()->input('picksheet_note');
-    $goods_out_note = request()->input('goods_out_note');
     $customer_id = request()->input('customer_id');
     $customer = Customer::find($customer_id);
 	$addressid = request()->input('addressid');
@@ -60,7 +59,6 @@ use Illuminate\Support\Facades\Auth;
             'user_id' => $customer->default_salesman_id,
             'address_id'=>$addressid,
             'picksheet_note'=>$picksheet_note,
-            'goods_out_note'=>$goods_out_note,
             'order_reference_number'=>$orderReferenceNumber,
             'customer_id'=>$customer_id,
             'eta'=>$eta,

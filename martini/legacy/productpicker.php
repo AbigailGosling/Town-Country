@@ -2,7 +2,7 @@
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Str;
-include('includes/frontHeader.php');
+	include('includes/frontHeader.php');
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -31,14 +31,6 @@ include('includes/frontHeader.php');
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
-		</div>
-		<div class="col"></div>
-	</div>
-
-    <div class="row">
-		<div class="col">
-			<label>Goods Out Notes</label><br/>
-			<textarea class="form-control" name="goods_out_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
 		<div class="col"></div>
 	</div>
@@ -678,6 +670,7 @@ function cancelSale()
             if (typeof attr !== 'undefined' && attr !== false) {
                 strict = true;
             }
+
 		});
 
 		if(checkSites() && doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){

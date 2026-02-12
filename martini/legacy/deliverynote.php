@@ -157,25 +157,6 @@ $s = (int)(microtime(true));
 			</div>
 		</div>
 
-        <div class="invoice">
-
-			<b style="font-size:10px;color:#8c8c8c;">Goods Out Notes</b>
-			<div class="invoicebox">
-				<p>
-					<?php
-                    echo $pickSheetRow['goods_out_notes'] .'<br/>';
-					echo '<br/>';
-					echo '<br/>';
-					echo '<br/>';
-					echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';?>
-				</p>
-				<span style="display:none;">Account No: 1123ml</span>
-			</div>
-		</div>
 
 		<div class="delivery">
 			<div class="deliverybox" style="border:0px;">
@@ -241,7 +222,7 @@ $s = (int)(microtime(true));
 		</table>
     </form>
     <?php }else{?>
-    <form id="deliverynote_printed" class="printhide" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
+    <form id="deliverynote_printned" class="printhide" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="DELIVERY_NOTE">
 		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">
 
