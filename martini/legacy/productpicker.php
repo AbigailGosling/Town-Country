@@ -296,7 +296,7 @@ use Illuminate\Support\Str;
 
 	function addToList(id){
 
-		$.get( "scripts/getBasketItem.php?id="+id, function( data ) {
+		$.get( "scripts/getBasketItem.php?id="+id+"&customer_id="+customerID, function( data ) {
 			$('.basketTable').append(data);
             setCustomerCreditFeedback();
 		});
