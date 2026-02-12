@@ -10,7 +10,6 @@ $estimated_delivery_date = request()->input('date');
 $orderReferenceNumber = request('orderReferenceNumber');
 $weightnote = request()->input('weightnote','');
 $picksheet_note = request()->input('picksheet_note');
-$goods_out_note = request()->input('goods_out_note');
 
 //$user_from_id = $_SESSION['USER'];
 $user_from_id = request()->input('user');
@@ -28,8 +27,8 @@ if ($transaction_id != null && $transaction_id != "")
         die();
     }
 }
-$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit,is_return_to_supplier,goods_out_notes) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").",".(($isSupplier)?"1":"0").",?)";
-$y = prepareExecuteQuery($x,'iiisssssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id,$goods_out_note],true);
+$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit,is_return_to_supplier) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").",".(($isSupplier)?"1":"0").")";
+$y = prepareExecuteQuery($x,'iiissssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id],true);
 
 $pickersheet_id = $y;
 

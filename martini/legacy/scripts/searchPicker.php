@@ -652,8 +652,15 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
         var howManyAfter = $('#quantity-' + product_id + '-' + pallet_id).children('option').length;
 
         $('#quantity-' + product_id + '-' + pallet_id).val($('#quantity-' + product_id + '-' + pallet_id + ' option:last').val());
-
-        $.get( "scripts/getBasketItem.php",{product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date}, function( data ) {
+        if (<?php echo request()->has('customerID') ? '1' : '0'; ?> == 1)
+        {
+            var postData1 = {product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date,customer_id:<?php echo $customer_id;?>};
+        }
+        else
+        {
+            var postData1 = {product_id:product_id, pallet_id:pallet_id,cut_id:cut_id,q:q,comment:comment,date:date};
+        }
+        $.get( "scripts/getBasketItem.php", postData1, function( data ) {
             $('.basketTable').append(data);
             setCustomerCreditFeedback();
         });
