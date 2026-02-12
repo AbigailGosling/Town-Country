@@ -192,6 +192,7 @@
 					<b>01902457924</b><br/>
 				</div>
 			</td>
+            <td width="50%"></td>
 			<td align="right" width="50%">
 			 	<table width="200" border="'.$border.'" style="padding-bottom:10px;">
 					<tr>
@@ -232,6 +233,7 @@
 		</tr>
 		<tr>
 			<td class="invoiceaddresstd" width="100px">
+            Invoice Address
 				<div class="invoiceaddress">
 					'. $customer['businessname'] .'<br/>
 					t/a'. $customer['tradingas'] .'<br/>
@@ -239,6 +241,18 @@
 					'. $customer['address1_2'].'<br/>
 					'. $customer['address1_3'].'<br/>
 					'. $customer['postcode_1'].'<br/>
+				</div>
+			</td>
+            <td class="invoiceaddresstd" width="100px">
+            Goods Out Notes
+				<div class="invoiceaddress">
+					'. $pickSheetRow['goods_out_notes'] .'<br/>
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+					<br/>
+                    <br/>
 				</div>
 			</td>
 			<td align="right" width="90%">
