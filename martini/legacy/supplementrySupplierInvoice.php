@@ -36,9 +36,12 @@ use App\Models\User;
 			<textarea class="form-control" id="picksheet_note" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
 		<div class="col">
-			<label>Goods Out Notes</label><br/>
-			<textarea class="form-control" id="goods_out_note" name="goods_out_note" style="height:85px;padding:10px;resize:none;"></textarea>
-		</div>
+			<label>Type</label><br/>
+			<select id="sup_type" name="sup_type" class="form-control">
+			<option value="invoice" selected>Credit</option>
+			<!--<option value="credit">Credit</option>-->
+			</select>
+        </div>
 	</div>
 
 	<div class="row">
@@ -46,13 +49,7 @@ use App\Models\User;
 			<label>	Reference</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="orderReferenceNumber" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
 		</div>
-		<div class="col">
-			<label>Type</label><br/>
-			<select id="sup_type" name="sup_type" class="form-control">
-			<option value="invoice" selected>Credit</option>
-			<!--<option value="credit">Credit</option>-->
-			</select>
-        </div>
+		<div class="col"></div>
 	</div>
 
 	<?php if($user['allow_override_salesman'] == 0){ ?>
