@@ -76,12 +76,12 @@ use App\Models\InboundContainer;
     else $siteid = 1;
 	$site = prepareExecuteQuery("SELECT * FROM `site` WHERE id = ".$siteid)->fetch_assoc();
 ?>
-<tr class="product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>
+<tr class="brPointer product<?php echo $product_id; ?> basketRow-<?php echo $pallet_id . $randID; ?> siteid<?php echo $siteid; ?>
 <?php if ($container == true){ echo " container".$containerP->container_id; } ?>"
     >
 	<?php
-        if ($container == false) { ?>
-    <td><?php echo intakeIDfromPalletID($pallet_id); ?></td>
+        if ($container == false) { $intakeID = intakeIDfromPalletID($pallet_id); ?>
+    <td><?php echo $intakeID; ?></td>
 	<td><?php echo $pallet_id; ?></td>
 	<td><?php echo $site['abbreviation']; ?></td>
         <?php } else {?>
@@ -92,7 +92,7 @@ use App\Models\InboundContainer;
 	<td><?php echo getNationality($nationality_id); ?></td>
 	<td><?php echo getBrand($brand_id); ?></td>
 	<td id="ubDate"><?php echo $smallestDate; ?></td>
-	<td><?php echo $q; ?></td>
+	<td name="volume"><?php echo $q; ?></td>
 	<td>
 		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">
 	</td>
@@ -100,14 +100,12 @@ use App\Models\InboundContainer;
             if ($overidePriceCheck == false)
             {
                 $strict = "strict";
-                if ($isGT == true || ($rowProduct['rrp3']!= null && $rowProduct['rrp3'] != "" && $q >= 35)){ $cost = $rowProduct['rrp3'];}
-                else if ($rowProduct['rrp2']!= null && $rowProduct['rrp2'] != "" && $q >= 11 && $q < 35){ $cost = $rowProduct['rrp2'];}
-                else if ($rowProduct['rrp1']!= null && $rowProduct['rrp1'] != "" && $q < 11){ $cost = $rowProduct['rrp1'];}
-                else { $cost = $rowProduct['cost']; $strict = "";}
-            } else { $strict = ""; $cost = $rowProduct['cost']; }
+            } else {
+                 $strict = "";
+            }
         ?>
-	<td><input type="number" step="0.01" cost="<?php echo $cost; ?>" <?php echo $strict; ?> class="price" name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
-    <td><?php if ($strict!=="") echo "£".number_format($cost,2,'.',','); ?></td>
+	<td><input type="number" step="0.01" <?php if ($isGT) echo 'isgt'; ?> metadata="<?php echo $intakeID."-".$nationality_id."-".$brand_id."-".$cut_id; ?>" cost="<?php echo $rowProduct['cost']; ?>" rrp1="<?php echo $rowProduct['rrp1'];?>" rrp2="<?php echo $rowProduct['rrp2'];?>" rrp3="<?php echo $rowProduct['rrp3'];?>" <?php echo $strict; ?> class="price" name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
+    <td id="rowPrice" name="rowPrice"><?php if ($strict!=="") echo "£".number_format($rowProduct['cost'],2,'.',','); ?></td>
 	<td>
 
 	</td>

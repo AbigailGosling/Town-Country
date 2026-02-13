@@ -126,7 +126,8 @@ class Customer extends Model
 		'markup_amount' => 'float',
 		'delivery_day_checking' => 'bool',
 		'delivery_day_override' => 'bool',
-		'delivery_days' => 'int'
+		'delivery_days' => 'int',
+        'override_cost_check' => 'bool',
 	];
 
 	protected $fillable = [
@@ -219,7 +220,8 @@ class Customer extends Model
 		'delivery_day_checking',
 		'delivery_day_override',
 		'delivery_days',
-		'sage_no'
+		'sage_no',
+        'override_cost_check',
 	];
     public function user():BelongsTo{
         return $this->belongsTo(OldUser::class,"default_salesman_id","id");
