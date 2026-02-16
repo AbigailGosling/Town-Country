@@ -662,6 +662,7 @@ function addToSheet(product_id, pallet_id, cut_id, theClass, date, event){
         }
         $.get( "scripts/getBasketItem.php", postData1, function( data ) {
             $('.basketTable').append(data);
+            updatePrices();
             setCustomerCreditFeedback();
         });
         firstExecution = milliseconds

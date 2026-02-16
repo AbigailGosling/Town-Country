@@ -2,7 +2,7 @@
 use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Support\Str;
-	include('includes/frontHeader.php');
+include('includes/frontHeader.php');
 ?>
 <div id="top">
 	<a href="menu.php" id="menu">MENU</a>
@@ -31,6 +31,14 @@ use Illuminate\Support\Str;
 		<div class="col">
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
+		</div>
+		<div class="col"></div>
+	</div>
+
+    <div class="row">
+		<div class="col">
+			<label>Goods Out Notes</label><br/>
+			<textarea class="form-control" name="goods_out_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
 		<div class="col"></div>
 	</div>
@@ -649,30 +657,74 @@ function cancelSale()
 		var priceEntered = true;
 		var pricedCorrectly = true;
 		var doneOnce = false;
-        var strict = false;
-		$('.price').each(function(index,element){
-			doneOnce = true;
- 			var value = $(element).val();
-			$(element).css('border-color', '#f2f2f2');
-			if(!(parseFloat(value) && value > 0)){
-				priceEntered = false;
-				$(element).css('border','1px solid red');
-			}
-			else if(parseFloat(value) < parseFloat($(element).attr('cost'))){
-				$(element).css('border','1px solid red');
-				showPriceCheck = true;
-			}
-			else if(parseFloat(value) >= (parseFloat($(element).attr('cost'))) * 2){
-				$(element).css('border','1px solid red');
-				showPriceCheck = true;
-			}
-            var attr = $(element).attr('strict');
+        var strictFailed = false;
+        var sorted = [];
+        $('tr.brPointer').each(function(index,element){
+            var priceInputTag = $(element).find('input[name^="price"]')[0];
+            var metadata = $(priceInputTag).attr("metadata");
+            var rowPrice = $(element).find('#rowPrice')[0];
+            if (!(metadata in sorted)) { sorted[metadata] = []; }
+            sorted[metadata].push({element:element, priceInputTag: priceInputTag, rowPrice: rowPrice});
+        });
+        for (var key in sorted) {
+            var strict = false;
+            var items = sorted[key];
+            var item = items[0];
+            var rrp1 = parseFloat($(item.priceInputTag).attr('rrp1'));
+            var rrp2 = parseFloat($(item.priceInputTag).attr('rrp2'));
+            var rrp3 = parseFloat($(item.priceInputTag).attr('rrp3'));
+            var cost = parseFloat($(item.priceInputTag).attr('cost'));
+            var count = 0;
+            var lowestPrice = null;
+            var attr = $(item.priceInputTag).attr('strict');
             if (typeof attr !== 'undefined' && attr !== false) {
                 strict = true;
+            };
+            var isGT = false;
+            var attr2 = $(item.priceInputTag).attr('isgt');
+            if (typeof attr2 !== 'undefined' && attr2 !== false) {
+                isGT = true;
+            };
+            items.forEach(function(item) {
+                $(item.element).css('border-color', '#f2f2f2');
+                count += $($(item.element).find('td[name="volume"]')[0]).html();
+                var tPrice = parseFloat($(item.priceInputTag).val());
+                if (lowestPrice == null || tPrice < lowestPrice) {
+                    lowestPrice = tPrice;
+                }
+            });
+            var targetCost;
+            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+                targetCost = rrp3;
             }
-
-		});
-
+            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+                targetCost = rrp2;
+            }
+            else if (rrp1!= null && rrp1 != "" && count < 11){
+                targetCost = rrp1;
+            }
+            else {
+                targetCost = cost;
+            }
+            doneOnce = true;
+            var showRed = false;
+            if(!(lowestPrice > 0)){
+				priceEntered = false;
+                showRed = true;
+                if (strict) { strictFailed = true; }
+            }
+			else if(lowestPrice < targetCost){
+				showPriceCheck = true;
+                showRed = true;
+                if (strict) { strictFailed = true; }
+			}
+			else if(lowestPrice >= targetCost * 2){
+				showPriceCheck = true;
+                showRed = true;
+                if (strict) { strictFailed = true; }
+			}
+            if (showRed) { items.forEach(function(item) { $(item.element).css('border','1px solid red'); }); }
+        }
 		if(checkSites() && doneOnce && customerEntered && dateEntered && priceEntered && UserSet && !showPriceCheck){
 			checkStock();
 			return false;
@@ -682,7 +734,7 @@ function cancelSale()
 				alert('Please complete the missing fields');
 			}
 			else if (showPriceCheck) {
-				if (!strict || custStrictOverride)
+				if (!strictFailed || custStrictOverride)
                 {
                     modalDialog.showDialog("Pricing Error","There is an issue with the pricing of some of your selections","Continue Sale","Review Prices",completeSale,cancelSale);
                 }
@@ -810,6 +862,51 @@ function cancelSale()
         }
         return true;
 	}
+    function updatePrices() {
+        var sorted = [];
+        $('tr.brPointer').each(function(index,element){
+            var priceInputTag = $(element).find('input[name^="price"]')[0];
+            var metadata = $(priceInputTag).attr("metadata");
+            var rowPrice = $(element).find('#rowPrice')[0];
+            if (!(metadata in sorted)) { sorted[metadata] = []; }
+            sorted[metadata].push({element:element, priceInputTag: priceInputTag, rowPrice: rowPrice});
+        });
+        for (var key in sorted) {
+            var items = sorted[key];
+            var item = items[0];
+            var rrp1 = parseFloat($(item.priceInputTag).attr('rrp1'));
+            var rrp2 = parseFloat($(item.priceInputTag).attr('rrp2'));
+            var rrp3 = parseFloat($(item.priceInputTag).attr('rrp3'));
+            var cost = parseFloat($(item.priceInputTag).attr('cost'));
+            var count = 0;
+
+            var isGT = false;
+            var attr2 = $(item.priceInputTag).attr('isgt');
+            if (typeof attr2 !== 'undefined' && attr2 !== false) {
+                isGT = true;
+            };
+            items.forEach(function(item) {
+                $(item.element).css('border-color', '#f2f2f2');
+                count += $($(item.element).find('td[name="volume"]')[0]).html();
+            });
+            var targetCost;
+            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+                targetCost = rrp3;
+            }
+            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+                targetCost = rrp2;
+            }
+            else if (rrp1!= null && rrp1 != "" && count < 11){
+                targetCost = rrp1;
+            }
+            else {
+                targetCost = cost;
+            }
+            var formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits:3 });
+            var formattedCost = formatter.format(targetCost);
+            items.forEach(function(item) { $(item.rowPrice).html(formattedCost); });
+        }
+    }
 	function checkSites(){
 		var allPass = true;
 		var siteid = null;
@@ -819,9 +916,9 @@ function cancelSale()
 			var classString = element.getAttribute("class");
 			if (classString != null) {
 				if (siteid == null) {
-					siteid = classString.split(" ")[2].replace("siteid","");
+					siteid = classString.split(" ")[3].replace("siteid","");
 				}
-				else if (siteid != classString.split(" ")[2].replace("siteid","")){
+				else if (siteid != classString.split(" ")[3].replace("siteid","")){
 					allPass = false;
 				}
 			}
