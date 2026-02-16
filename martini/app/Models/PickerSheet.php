@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $isSupplemental
  * @property bool $isSupplementalCredit
  * @property bool $is_return_to_supplier
+ * @property string|null $goods_out_notes
  *
  * @package App\Models
  */
@@ -60,6 +61,8 @@ protected $connection = 'tandc_live';
 		'admin_approved' => 'bool',
 		'isSupplemental' => 'bool',
 		'isSupplementalCredit' => 'bool',
+		'is_return_to_supplier' => 'bool',
+		'goods_out_notes' => 'string'
 	];
 
 	protected $dates = [
@@ -92,7 +95,8 @@ protected $connection = 'tandc_live';
 		'transaction_id',
 		'isSupplemental',
 		'isSupplementalCredit',
-		'is_return_to_supplier'
+		'is_return_to_supplier',
+		'goods_out_notes'
 	];
     public function palletsOut():HasMany
     {
