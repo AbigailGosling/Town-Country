@@ -242,7 +242,7 @@ use App\Models\Site;
 <h1 class="int">Split To New Pallet</h1>
 <form method="POST" id="splitPalletForm" action="<?php echo $domain; ?>scripts/splitPallet.php">
     <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
-    <input type="number" id="cases_to_split" name="cases_to_split" min="1" max="<?php echo $i;?>" value="<?php echo floor($i/2);?>" step="1" onkeyup="enforceMinMax(this)">
+    <input type="number" id="cases_to_split" name="cases_to_split" min="1" max="<?php echo $i;?>" value="<?php echo min(40,floor($i/2));?>" step="1" onkeyup="enforceMinMax(this)">
     <input type="text" style="display:none;" value="<?php echo $intake_id; ?>" name="intake_id">
     <input type="text" style="display:none;" value="<?php echo $pallet_id; ?>" name="pallet_id">
     <input type="text" style="display:none;" value="<?php echo $product_id; ?>" name="product_id">
