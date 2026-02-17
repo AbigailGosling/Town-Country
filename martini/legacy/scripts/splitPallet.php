@@ -33,35 +33,46 @@ for ($i = 0;$i<$cases_to_split;$i++)
     $weight->product_id = $newProduct->id;
     $weight->save();
 }
+
+// Reload both products with their weights after moving
 $existingProduct = Product::with("weights")->find($product_id);
 $newProduct = Product::with("weights")->find($newProduct->id);
-$reservationsSum = ReservationProduct::where("product_id",$existingProduct->id)->sum("target_count");
-$allocated = 0;
+$reservationsSum = ReservationProduct::where([["product_id",$existingProduct->id],["deleted",0]])->sum("target_count");
+$allocatedExisting = 0;
+$allocatedNew = 0;  // Track new pallet allocation separately
+
 if ($reservationsSum > $existingProduct->weights->count())
 {
-    foreach (ReservationProduct::where("product_id",$existingProduct->id)->orderBy("target_count","desc")->get() as $rp)
+    foreach (ReservationProduct::where([["product_id",$existingProduct->id],["deleted",0]])->orderBy("target_count","desc")->get() as $rp)
     {
-        if ($rp->target_count > $existingProduct->weights->count() - $allocated)
+        if ($rp->target_count > $existingProduct->weights->count() - $allocatedExisting)
         {
-            if ($rp->target_count <= $newProduct->weights->count())
+            $availableOnNew = $newProduct->weights->count() - $allocatedNew;
+
+            if ($rp->target_count <= $availableOnNew)
             {
+                // Move entire reservation to new product
                 $rp->product_id = $newProduct->id;
+                $allocatedNew += $rp->target_count;
             }
-            else
+            else if ($availableOnNew > 0)
             {
+                // Split the reservation between both products
                 $newRP = $rp->replicate();
                 $newRP->product_id = $newProduct->id;
-                $newRP->target_count = $newProduct->weights->count();
+                $newRP->target_count = $availableOnNew;
                 $newRP->save();
-                $rp->target_count = $rp->target_count-$newProduct->weights->count();
-                if ($rp->target_count == 0)$rp->deleted = 1;
-                $allocated = $allocated + $rp->target_count;
+
+                $rp->target_count = $rp->target_count - $availableOnNew;
+                if ($rp->target_count == 0) $rp->deleted = 1;
+
+                $allocatedNew += $availableOnNew;
             }
             $rp->save();
         }
         else
         {
-            $allocated = $allocated + $rp->target_count;
+            $allocatedExisting += $rp->target_count;
         }
     }
 }
