@@ -157,25 +157,26 @@ $s = (int)(microtime(true));
 			</div>
 		</div>
 
-        <div class="invoice">
+        <!-- <div class="invoice">
 
 			<b style="font-size:10px;color:#8c8c8c;">Goods Out Notes</b>
 			<div class="invoicebox">
 				<p>
 					<?php
-                    echo $pickSheetRow['goods_out_notes'] .'<br/>';
-					echo '<br/>';
-					echo '<br/>';
-					echo '<br/>';
-					echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';
-                    echo '<br/>';?>
+                    // echo $pickSheetRow['goods_out_notes'] .'<br/>';
+					// echo '<br/>';
+					// echo '<br/>';
+					// echo '<br/>';
+					// echo '<br/>';
+                    // echo '<br/>';
+                    // echo '<br/>';
+                    // echo '<br/>';
+                    // echo '<br/>';
+                    ?>
 				</p>
-				<span style="display:none;">Account No: 1123ml</span>
+				<span style="display:none;"></span>
 			</div>
-		</div>
+		</div> -->
 
 		<div class="delivery">
 			<div class="deliverybox" style="border:0px;">

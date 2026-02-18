@@ -64,7 +64,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 	        <th>Volume</th>
 	        <th>Cost</th>
             <th>1-10 C/S</th>
-            <th>10-35 C/S</th>
+            <th>11-35 C/S</th>
             <th>35+ C/S</th>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight:normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th>
