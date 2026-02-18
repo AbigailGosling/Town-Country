@@ -66,7 +66,13 @@ use Illuminate\Support\Facades\Auth;
 				{
 					loggedDataChange('product_note',$iProdID,$weightnote);
 					loggedDataChange('product_cost',$iProdID,$cost);
-					if (User::find(Auth::id())->hasPermission("viewcosts")) loggedDataChange('product_actual_cost',$iProdID,$price);
+					if (User::find(Auth::id())->hasPermission("viewcosts"))
+                    {
+                        loggedDataChange('product_actual_cost',$iProdID,$price);
+                        loggedDataChange('product_rrp1',$iProdID,$rrp1);
+                        loggedDataChange('product_rrp2',$iProdID,$rrp2);
+                        loggedDataChange('product_rrp3',$iProdID,$rrp3);
+                    }
 				}
 			}
 			else {

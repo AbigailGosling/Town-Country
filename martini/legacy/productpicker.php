@@ -315,6 +315,7 @@ include('includes/frontHeader.php');
 		$('.basketRow-' + id).remove();
 		var COOKIE_NAME = "quantity-"+product_id+"-"+pallet_id;
 		checkUBDates();
+        updatePrices();
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
 
@@ -887,9 +888,10 @@ function cancelSale()
             };
             items.forEach(function(item) {
                 $(item.element).css('border-color', '#f2f2f2');
-                count += $($(item.element).find('td[name="volume"]')[0]).html();
+                count += parseInt($($(item.element).find('td[name="volume"]')[0]).html());
             });
             var targetCost;
+            console.log(rrp1, rrp2, rrp3, cost, count);
             if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
                 targetCost = rrp3;
             }

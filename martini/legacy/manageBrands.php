@@ -2,7 +2,7 @@
 
 	include('functions.php');
 
-	
+
 
 ?>
 
@@ -26,7 +26,7 @@
 
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script> 
+	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
@@ -60,17 +60,17 @@
 
 			if(request()->input('id') != ''){
 
-				
+
 
 				$id = request()->input('id');
 
-				
 
-				$x = "SELECT * FROM brands WHERE id = ?";
+
+				$x = "SELECT * FROM `brands` WHERE `deleted` = 0 AND `id` = ?";
 
 				$yy = prepareExecuteQuery($x,'i',[$id]);
 
-				
+
 
 				$data = mysqli_fetch_array($yy);
 
@@ -86,7 +86,7 @@
 
 			<tr>
 
-				<td>
+				<td colspan="2">
 
 					<label>Name</label>
 
@@ -117,7 +117,11 @@
 					?>
 
 				</td>
-
+                <td>
+                    <?php if(request()->input('id') != ''){	?>
+                    <input type="button" value="<?php echo ($data['deleted'] == 1)?"Restore":"Delete"; ?>" onclick="if(confirm('Are you sure you want to <?php echo ($data['deleted'] == 1)?'restore':'delete'; ?> this?')){ window.location.href = 'scripts/<?php echo ($data['deleted'] == 1)?'restore':'delete'; ?>Brand.php?id=<?php echo $data['id']; ?>'; }"/>
+                    <?php } ?>
+                </td>
 			</tr>
 
 		</table>
@@ -128,13 +132,13 @@
 
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;" enterkeyhint="go">
 
-		
+
 
 		<div id="cutAjax">
 
 		<?php
 
-			$x = "SELECT * FROM `brands` ORDER BY name ASC";
+			$x = "SELECT * FROM `brands` WHERE `deleted` = 0 ORDER BY `name` ASC";
 
 			$y = prepareExecuteQuery($x);
 
@@ -144,10 +148,10 @@
 
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
 
-				
+
 
 				<tr><td align="center" class="pos">
-  
+
 					<a href="javascript:;" class="intake">
 						<table width="100%" border="0">
 							<tr>
@@ -157,9 +161,9 @@
 							</tr>
 						</table>
 					</a>
- 
+
 					<a href="manageBrands.php?id=<?php echo $row['id']; ?>"  <?php if($user['user_type'] == 'A'){ ?> style="right:-35px;" <?php } ?>id="delete_intake"><i class="fa fa-pencil"style="padding-right:0px;" aria-hidden="true"></i></a>
- 
+
 				</td></tr>
 
 		</table>
@@ -185,7 +189,7 @@ function mainFormSucess(){
 }
 	$(document).ready(function(){
 
-		
+
 
 		$('#instantSearch').keydown(function(){
 
@@ -195,7 +199,7 @@ function mainFormSucess(){
 
 			console.log(val);
 
-			
+
 
 				var xhttp = new XMLHttpRequest();
 
@@ -217,11 +221,11 @@ function mainFormSucess(){
 				xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 				xhttp.send("searchterm=" + val);
 
-			
+
 
 		});
 
-		
+
 
 		$('.speciesName').click(function(){
 
@@ -233,7 +237,7 @@ function mainFormSucess(){
 
 	});
 
-	
+
 
 	function deleteRow(id){
 
@@ -247,7 +251,7 @@ function mainFormSucess(){
 
 	}
 
-	
+
 
 </script>
 
