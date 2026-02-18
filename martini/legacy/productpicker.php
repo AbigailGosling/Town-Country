@@ -902,9 +902,17 @@ function cancelSale()
             else {
                 targetCost = cost;
             }
-            var formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits:3 });
-            var formattedCost = formatter.format(targetCost);
-            items.forEach(function(item) { $(item.rowPrice).html(formattedCost); });
+            if (typeof targetCost === 'number' && !isNaN(targetCost))
+            {
+                var formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits:3 });
+                var formattedCost = formatter.format(targetCost);
+                items.forEach(function(item) { $(item.rowPrice).html(formattedCost); });
+            }
+            else
+            {
+                items.forEach(function(item) { $(item.rowPrice).html(""); });
+            }
+
         }
     }
 	function checkSites(){

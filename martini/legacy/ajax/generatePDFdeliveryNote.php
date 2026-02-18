@@ -242,20 +242,20 @@
 					'. $customer['address1_3'].'<br/>
 					'. $customer['postcode_1'].'<br/>
 				</div>
-			</td>
-            <td class="invoiceaddresstd" width="100px">
-            Goods Out Notes
-				<div class="invoiceaddress">
-					'. $pickSheetRow['goods_out_notes'] .'<br/>
-					<br/>
-					<br/>
-					<br/>
-					<br/>
-					<br/>
-                    <br/>
-				</div>
-			</td>
-			<td align="right" width="90%">
+			</td>'.
+            // <td class="invoiceaddresstd" width="100px">
+            // Goods Out Notes
+			// 	<div class="invoiceaddress">
+			// 		'. $pickSheetRow['goods_out_notes'] .'<br/>
+			// 		<br/>
+			// 		<br/>
+			// 		<br/>
+			// 		<br/>
+			// 		<br/>
+            //         <br/>
+			// 	</div>
+			// </td>
+			'<td align="right" width="90%">
 
 				<table width="200" border="'.$border.'">
 					<tr>

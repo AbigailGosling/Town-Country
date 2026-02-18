@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 	        <th>Brand</th>
 	        <th class="searchRContent__date-range">ETA</th>
 	        <th>Expected KG</th>
-            <th>RRP</th>
+            <th>MSP</th>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th>
         </tr>

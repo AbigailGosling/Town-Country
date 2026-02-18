@@ -114,7 +114,7 @@ $isDelete ??= false;
 
                     <!-- rrp -->
                     <div>
-                        <x-input-label for="rrp" :value="__('RRP')" />
+                        <x-input-label for="rrp" :value="__('MSP')" />
                         <x-text-input id="rrp" class="block mt-1 w-full" type="number" step="0.001"
                             name="rrp" value="{{ old('rrp', $containerProduct->rrp) }}" required />
                         <x-input-error :messages="$errors->get('rrp')" class="mt-2" />
