@@ -103,6 +103,16 @@ use Illuminate\Support\Facades\Log;
 
                             ?>
                         </td>
+                        <td align="right">
+                            <?php
+                                if (strlen($intake['notes']) < 20) {
+                                    echo $intake['notes'];
+                                }
+                                else {
+                                    echo substr($intake['notes'],0,20-3)."...";
+                                }
+                            ?>
+                        </td>
                         <td width="30">
                             <?php
                                 if($hasInvoice){
