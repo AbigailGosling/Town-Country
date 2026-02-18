@@ -1,7 +1,7 @@
 <?php
 	require(__DIR__.'/../functions.php');
 	$name = request()->input('searchterm');
-	$cutX = "SELECT * FROM `brands` WHERE `name` LIKE ?";
+	$cutX = "SELECT * FROM `brands` WHERE `deleted` = 0 AND `name` LIKE ?";
 	$cutY = prepareExecuteQuery($cutX,'s',['%'.$name.'%']);
 	$count = mysqli_num_rows($cutY);
 	if($count > 0){

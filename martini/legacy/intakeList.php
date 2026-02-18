@@ -14,6 +14,7 @@
 	<title>Town &amp; Country</title>
 	<link href="css/style.css" rel="stylesheet" type="text/css">
 	<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/bdf4ecc939.js" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<script src="https://code.jquery.com/jquery-1.12.4.js"></script><script src="https://malsup.github.io/jquery.form.js"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -91,7 +92,7 @@
             }
             };
 
-            xhttp.open("POST", "ajax/intakePageList.php", true);
+            xhttp.open("POST", "ajax/page-list/intakePageList.php", true);
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
             xhttp.send("searchterm=" + encodeURIComponent(val)+"&showDeleted="+<?php echo $showDeleted; ?>);
@@ -152,7 +153,7 @@
 			}
 			};
 
-			xhttp.open("POST", "ajax/page-list/intakeList.php", true);
+			xhttp.open("POST", "ajax/page-list/intakePageList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 			xhttp.send("toSkip=" + toSkip+"&showDeleted="+<?php echo $showDeleted; ?>);
@@ -174,7 +175,7 @@
 			}
 			};
 
-			xhttp.open("POST", "ajax/intakePageListDate.php", true);
+			xhttp.open("POST", "ajax/page-list/intakePageList.php", true);
 			xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			xhttp.setRequestHeader('X-CSRF-TOKEN', "<?php echo csrf_token();?>");
 			xhttp.send("month=" + month + '&year=' + year);
