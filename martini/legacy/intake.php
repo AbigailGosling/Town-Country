@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 	$userX = "SELECT * FROM `users` WHERE id=?";
 	$userY = prepareExecuteQuery($userX,'i',[$userid]);
 	$user = mysqli_fetch_array($userY);
+    $userCanChangeRRP = User::find(Auth::id())->hasPermission("update_rrp");
 
 	$supplier = getSupplier($intake['supplier_id']);
 
@@ -647,7 +648,11 @@ use Illuminate\Support\Facades\Auth;
 					?>
 					<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 					</td>
-					<?php if ($intake['approved']==1) {?>
+					<?php if ($intake['approved']==1) {
+                        $rrp1Change = ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']=='')?"":"disabled";
+                        $rrp2Change = ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']=='')?"":"disabled";
+                        $rrp3Change = ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']=='')?"":"disabled";
+                        ?>
 					<td>
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
@@ -665,19 +670,19 @@ use Illuminate\Support\Facades\Auth;
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp1[]" value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
+                        <input style="width: 90px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp2[]" value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
+                        <input style="width: 90px;" type="text" name="rrp2[]" <?php echo $rrp2Change; ?> value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp3[]" value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
+                        <input style="width: 90px;" type="text" name="rrp3[]" <?php echo $rrp3Change; ?> value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
                     </td>
 					<?php } ?>
 					<?php } ?>
