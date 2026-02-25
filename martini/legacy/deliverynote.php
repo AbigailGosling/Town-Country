@@ -354,7 +354,7 @@ $s = (int)(microtime(true));
 
          <?php
 		 		$numOfRows = 0;
-                $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+                $outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
 
                 $outpalletCount = $outpalletResult2->num_rows;

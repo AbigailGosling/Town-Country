@@ -291,7 +291,7 @@
 
 			$howManyRows = 0;
 			# sell price * weight
-			$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+			$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 			$outpalletResult = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
 
 			$total_qty_count = 0;

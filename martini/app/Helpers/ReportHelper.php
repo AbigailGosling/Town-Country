@@ -323,8 +323,8 @@ class ReportHelper
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
         $resultQB = static::$conn->table("pickerSheets")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
-            ->join("palletsOut","pickerSheets.id"              ,'=',"palletsOut.pickersheet_id")
-            ->selectRaw("pickerSheets.*,pickerItems.*,palletsOut.*,group_concat(palletsOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->join("pickWeightOut","pickerSheets.id"              ,'=',"pickWeightOut.pickersheet_id")
+            ->selectRaw("pickerSheets.*,pickerItems.*,pickWeightOut.*,group_concat(pickWeightOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
@@ -465,9 +465,9 @@ class ReportHelper
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("palletsOut","pickerSheets.id"               ,'=',"palletsOut.pickersheet_id")
+            ->join("pickWeightOut","pickerSheets.id"               ,'=',"pickWeightOut.pickersheet_id")
             ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
-            ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT palletsOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT pickWeightOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id"]);
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);

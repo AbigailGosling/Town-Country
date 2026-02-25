@@ -143,7 +143,7 @@ if (!empty($paymentID)) {
 </tr>
 <?php
 
-    $outpalletResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
+    $outpalletResult = prepareExecuteQuery("SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
     $outpalletCount = mysqli_num_rows($outpalletResult);
 
     $total_weight_count = 0;

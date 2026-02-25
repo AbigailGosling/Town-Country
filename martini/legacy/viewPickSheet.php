@@ -350,7 +350,7 @@ use Illuminate\Support\Facades\Auth;
 	<br/><br/>
 
 	<?php
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 		$outpalletResult = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
 		$outpalletCount = mysqli_num_rows($outpalletResult);
@@ -390,7 +390,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php } ?>
 
 		<?php
-                $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+                $outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);

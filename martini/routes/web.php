@@ -18,6 +18,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShortStockController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
+use App\Http\Controllers\OutgoingPalletController;
 use App\Http\Controllers\SupplierReturnAttachmentController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
@@ -116,6 +117,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
+
+    Route::get('/outgoing-pallets', [OutgoingPalletController::class, 'index'])->name('outgoing-pallets.index');
+    Route::get('/outgoing-pallets/details', [OutgoingPalletController::class, 'details'])->name('outgoing-pallets.details');
+    Route::post('/outgoing-pallets', [OutgoingPalletController::class, 'createPallet'])->name('outgoing-pallets.create');
+    Route::delete('/outgoing-pallets/{outgoingPallet}', [OutgoingPalletController::class, 'deletePallet'])->name('outgoing-pallets.delete');
+    Route::post('/outgoing-pallets/attach-pick', [OutgoingPalletController::class, 'attachPick'])->name('outgoing-pallets.attach-pick');
+    Route::post('/outgoing-pallets/detach-pick', [OutgoingPalletController::class, 'detachPick'])->name('outgoing-pallets.detach-pick');
+    Route::post('/outgoing-pallets/update-type', [OutgoingPalletController::class, 'updatePalletType'])->name('outgoing-pallets.update-type');
+    Route::post('/outgoing-pallets/split-pick', [OutgoingPalletController::class, 'splitPick'])->name('outgoing-pallets.split-pick');
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
     Route::get('containers/{existingContainer}/clone-container', [InboundContainerController::class, 'cloneContainer'])->name('containers.clone-container');

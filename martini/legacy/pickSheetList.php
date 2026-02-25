@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Auth;
         $delid = request()->input('delid');
         $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=? WHERE id=?",'ii',[$userid,$delid]);
         $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id=?",'i',[$delid]);
-        $palletsOutResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$delid]);
+        $pickWeightOutResult = prepareExecuteQuery("SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?",'i',[$delid]);
             $deleteWeightsResult = prepareExecuteQuery("UPDATE `weights` SET status_id='0' WHERE id IN ($weightIDS)");
-        $x = "DELETE FROM `palletsOut` WHERE pickersheet_id=?";
+        $x = "DELETE FROM `pickWeightOut` WHERE pickersheet_id=?";
         $y = prepareExecuteQuery($x,'i',[$delid]);
 
         ?> <script> window.location.href = '/pickSheetList.php'; </script> <?php
