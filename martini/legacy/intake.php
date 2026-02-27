@@ -694,11 +694,11 @@ use Illuminate\Support\Facades\Auth;
 				<?php if ($intake['approved']==1) {?>
 				<td></td>
 				<?php } else {?>
-				<td align="right"><input type="submit" value="Save & Update"></td>
+				<td align="right"><?php if ($intake['container_id']==null || $intake['container_id']<0 || User::find(Auth::id())->hasPermission("update_container")) { ?><input type="submit" value="Save & Update"><?php } ?></td>
 				<?php }?>
 				<td align="right"><?php echo number_format($totalWeight, 3, '.', ''); ?>kg</td>
 				<?php if ($intake['approved']==1) {?>
-				<td colspan="5" align="right"><input type="submit" value="Save & Update"></td>
+				<td colspan="5" align="right"><?php if ($intake['container_id']==null || $intake['container_id']<0 || User::find(Auth::id())->hasPermission("update_container")) { ?><input type="submit" value="Save & Update"><?php } ?></td>
 				<?php }?>
 			</tr>
 		</table>
