@@ -108,6 +108,9 @@
     $colNames[] = "`override_cost_check`";
     $colValue[] = request()->input('override_cost_check_hidden',0);
 
+    $colNames[] = "`default_finance_person_id`";
+    $colValue[] = request()->input('default_finance_person_id',0);
+
 	for ($u=1;$u<10;$u++)
 	{
 		$colNames[] = '`address'.$u.'_1`';

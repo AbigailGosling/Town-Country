@@ -73,6 +73,9 @@ class BulkPermissionController extends Controller
             {
                 $user->assignPermission(Permission::find($assign_id));
             }
+            $user->disabled = $request->input("disabled")[$user_id] ?? false;
+            $user->is_hidden = $request->input("is_hidden")[$user_id] ?? false;
+            $user->save();
         }
         return redirect('bulkpermissions',302,['page' => $request->page])->with(['message' => 'Permissions Updated']);
     }

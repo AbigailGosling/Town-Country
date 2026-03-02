@@ -22,6 +22,8 @@
     <x-data-table>
         <x-slot:headers>
             <x-data-table-header>Username</x-data-table-header>
+            <x-data-table-header>Disabled?</x-data-table-header>
+            <x-data-table-header>Hidden?</x-data-table-header>
             @foreach ($permissions as $permission)
             <x-data-table-header>{{$permission->label}}</x-data-table-header>
             @endforeach
@@ -30,6 +32,8 @@
             @foreach($users as $user)
                 <tr>
                     <x-data-table-column>{{$user->name}}</x-data-table-column>
+                    <x-data-table-column><input type="checkbox" id="disabled[{{ $user->id }}]" name="disabled[{{ $user->id }}]" @if ($user->disabled) checked @endif /></x-data-table-column>
+                    <x-data-table-column><input type="checkbox" id="is_hidden[{{ $user->id }}]" name="is_hidden[{{ $user->id }}]" @if ($user->is_hidden) checked @endif /></x-data-table-column>
                     @foreach ($permissions as $permission)
                     <x-data-table-column><input type="checkbox" id="perms[{{ $user->id }}][{{ $permission->id }}]" name="perms[{{ $user->id }}][{{ $permission->id }}]"
                                                @if ($user->permissions->contains("id",$permission->id)) checked @endif /></x-data-table-column>
