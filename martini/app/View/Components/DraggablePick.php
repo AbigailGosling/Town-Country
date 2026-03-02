@@ -18,8 +18,6 @@ class DraggablePick extends Component
      */
     public function __construct(PickWeightOut $pickWeightOut)
     {
-        Log::debug($pickWeightOut->id);
-        Log::debug($pickWeightOut->pickersheet_id);
         $this->pickerSheet = PickerSheet::find($pickWeightOut->pickersheet_id);
         $this->pickWeightOut = $pickWeightOut;
     }

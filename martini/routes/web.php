@@ -19,6 +19,7 @@ use App\Http\Controllers\ShortStockController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
 use App\Http\Controllers\OutgoingPalletController;
+use App\Http\Controllers\OutgoingPalletsLoadingController;
 use App\Http\Controllers\SupplierReturnAttachmentController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
@@ -126,6 +127,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/outgoing-pallets/detach-pick', [OutgoingPalletController::class, 'detachPick'])->name('outgoing-pallets.detach-pick');
     Route::post('/outgoing-pallets/update-type', [OutgoingPalletController::class, 'updatePalletType'])->name('outgoing-pallets.update-type');
     Route::post('/outgoing-pallets/split-pick', [OutgoingPalletController::class, 'splitPick'])->name('outgoing-pallets.split-pick');
+
+    // Outgoing Pallets Loading endpoints
+    Route::get('/outgoing-pallets-loading', [OutgoingPalletsLoadingController::class, 'view'])->name('outgoing-pallets-loading.view');
+    Route::get('/outgoing-pallets-loading/vehicles', [OutgoingPalletsLoadingController::class, 'vehicle'])->name('outgoing-pallets-loading.vehicles');
+    Route::get('/outgoing-pallets-loading/vehicle-details', [OutgoingPalletsLoadingController::class, 'vehicleDetails'])->name('outgoing-pallets-loading.vehicle-details');
+    Route::get('/outgoing-pallets-loading/vehicle-allocations', [OutgoingPalletsLoadingController::class, 'vehicleAllocations'])->name('outgoing-pallets-loading.vehicle-allocations');
+    Route::post('/outgoing-pallets-loading/update-allocation', [OutgoingPalletsLoadingController::class, 'updateAllocation'])->name('outgoing-pallets-loading.update-allocation');
+    Route::get('/outgoing-pallets-loading/pallet-selection', [OutgoingPalletsLoadingController::class, 'palletSelection'])->name('outgoing-pallets-loading.pallet-selection');
+    Route::get('/outgoing-pallets-loading/orders', [OutgoingPalletsLoadingController::class, 'orders'])->name('outgoing-pallets-loading.orders');
+    Route::get('/outgoing-pallets-loading/depots', [OutgoingPalletsLoadingController::class, 'depots'])->name('outgoing-pallets-loading.depots');
+    Route::post('/outgoing-pallets-loading/ai-plan', [OutgoingPalletsLoadingController::class, 'aiPlan'])->name('outgoing-pallets-loading.ai-plan');
+
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
     Route::get('containers/{existingContainer}/clone-container', [InboundContainerController::class, 'cloneContainer'])->name('containers.clone-container');

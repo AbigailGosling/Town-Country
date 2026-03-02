@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 class OutgoingPallet extends Model
 {
@@ -43,7 +45,10 @@ class OutgoingPallet extends Model
     {
         return $this->hasMany(OutgoingPalletPickWeight::class, 'outgoing_pallet_id');
     }
-
+    public function vehicleAllocations()
+    {
+        return $this->belongsTo(VehicleOutgoingPalletAllocation::class, 'outgoing_pallet_id');
+    }
     public function getTotalWeight()
     {
         $total = 0;
@@ -52,9 +57,28 @@ class OutgoingPallet extends Model
                 $total += $pickWeightOut->getTotalWeight();
             }
         }
+        Log::info("Calculated total weight for OutgoingPallet ID {$this->id}: {$total} kg");
         return round($total, 3);
     }
+    private string $_temperatureCategoryCache = '';
+    public function getTemperatureCategory()
+    {
+        if ($this->_temperatureCategoryCache == '') {
+            foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
+                $pickWeightOut = PickWeightOut::where('id', $link->pickWeightOut_id)->first();
+                $weight = Weight::find($pickWeightOut->getWeights()[0]);
+                $product = Product::find($weight->product_id);
+                if ($product->cooling_id == 2){
+                    $this->_temperatureCategoryCache = 'Frozen';
+                }
+                else {
+                    $this->_temperatureCategoryCache = 'Fresh';
+                }
+            }
 
+        }
+        return $this->_temperatureCategoryCache;
+    }
     public function isOverWeight()
     {
         if (!$this->outgoingPalletType) {
@@ -84,7 +108,7 @@ class OutgoingPallet extends Model
         }
         $dates = array_unique($dates);
         if (count($dates) === 1) {
-            $this->estimated_delivery_date = $dates[0];
+            $this->estimated_delivery_date = Carbon::createFromFormat('d/m/Y', $dates[0])->format('Y-m-d');
         } else {
             $this->estimated_delivery_date = null;
         }

@@ -695,17 +695,22 @@ function cancelSale()
                 }
             });
             var targetCost;
-            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+            if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
+                console.log("Using RRP3", rrp3);
                 targetCost = rrp3;
             }
-            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+            else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
+                console.log("Using RRP2", rrp2);
                 targetCost = rrp2;
             }
-            else if (rrp1!= null && rrp1 != "" && count < 11){
+            else if (isNumActuallyNum(rrp1) && count < 11){
+                console.log("Using RRP1", rrp1);
                 targetCost = rrp1;
             }
             else {
+                console.log("Using Cost", cost);
                 targetCost = cost;
+                strict = false;
             }
             doneOnce = true;
             var showRed = false;
@@ -730,7 +735,6 @@ function cancelSale()
 			checkStock();
 			return false;
 		}else{
-
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
@@ -750,6 +754,9 @@ function cancelSale()
 	});
 	var getCustomResult;
 	var addressID=1;
+    function isNumActuallyNum(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n) && Number(n) == n && n.trim() != "" && n!= null;
+    }
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
         addressID=1;
@@ -891,14 +898,13 @@ function cancelSale()
                 count += parseInt($($(item.element).find('td[name="volume"]')[0]).html());
             });
             var targetCost;
-            console.log(rrp1, rrp2, rrp3, cost, count);
-            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+            if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
                 targetCost = rrp3;
             }
-            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+            else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
                 targetCost = rrp2;
             }
-            else if (rrp1!= null && rrp1 != "" && count < 11){
+            else if (isNumActuallyNum(rrp1) && count < 11){
                 targetCost = rrp1;
             }
             else {

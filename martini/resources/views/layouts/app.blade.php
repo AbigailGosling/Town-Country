@@ -61,7 +61,7 @@
 
             <!-- Page Content -->
             <main>
-                <div class="max-w-full mx-auto sm:px-6 lg:px-8">
+                <div class="max-w-full mx-auto sm:px-6 lg:px-8 bg-gray-100">
                     {{ $slot }}
                 </div>
             </main>

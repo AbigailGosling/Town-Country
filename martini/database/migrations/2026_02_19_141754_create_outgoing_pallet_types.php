@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamps();
         });
         Schema::connection('tandc_live')->table('outgoing_pallet', function (Blueprint $table) {
-            $table->unsignedBigInteger('outgoing_pallet_type_id')->default(1)->after('id');
+            $table->integer('outgoing_pallet_type_id')->default(1)->after('id');
             $table->date('estimated_delivery_date')->after('outgoing_pallet_type_id');
             $table->boolean('dispatched')->default(false)->after('estimated_delivery_date');
         });

@@ -16,16 +16,17 @@
     @if($fromPalletId) data-from-pallet-id="{{ $fromPalletId }}" @endif>
 <div><strong>Pick #{{ $resolvedPickerSheet?->id }}</strong> {{ $resolvedPickerSheet?->estimated_delivery_date }} {{ $resolvedPickerSheet?->orderReferenceNumber }}
 @if($pickWeightOut)
- <strong>Weight: {{ number_format($pickWeightOut->getTotalWeight(), 3, '.', '') }} kg</strong> {{ $weightCount }} case{{ $weightCount == 1 ? '' : 's' }}</div>
+ <strong>Weight: {{ number_format($pickWeightOut->getTotalWeight(), 3, '.', '') }} kg</strong></div>
 
     @if($weightCount > 1)
         <div class="mt-1 d-flex items-center gap-2">
             <span class="text-sm text-gray-600">Move Qty</span>
-            <select class="form-control form-control-sm js-move-weight-count" style="width: 90px;">
+            <select class="form-control form-control-sm js-move-weight-count" style="width: 90px;padding-top: 2px;padding-bottom: 2px;">
                 @for($i = 1; $i <= $weightCount; $i++)
                     <option value="{{ $i }}" @if($i === $weightCount) selected @endif>{{ $i }}</option>
                 @endfor
             </select>
+             <span class="text-sm text-gray-600">max {{ $weightCount }} case{{ $weightCount == 1 ? '' : 's' }}</span>
         </div>
     @endif
 @else

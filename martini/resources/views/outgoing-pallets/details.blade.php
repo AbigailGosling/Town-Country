@@ -4,42 +4,39 @@
             {{ __("Deliveries for: ".$customer->businessname. " : ".$customer->{'address'.$address_id.'_1'}. " : ".$customer->{'postcode_'.$address_id}) }}
         </h2>
     </x-slot>
-    <a href="{{ route('outgoing-pallets.index') }}" class="inline-block mt-4 px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">Back to List</a>
-    <div class="pl-4 pt-4">
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <h3 class="font-semibold text-md mb-2">Unloaded Picks (Next 3 Days)</h3>
-                <div id="unassigned-picks" class="border rounded p-2" style="min-height: 200px;">
-                    @if($deliveries->isEmpty())
-                        <div class="text-gray-600">No unloaded picks found for this customer/address in the next 3 days.</div>
-                    @else
-                        @foreach($deliveries as $delivery)
-                            @php
-                                $pickWeightOut = $delivery->pickWeightOut->first();
-                            @endphp
-                            <x-draggable-pick :pickWeightOut="$pickWeightOut" :pickerSheet="$delivery"/>
-                        @endforeach
-                    @endif
-                </div>
+    <div><a href="{{ route('outgoing-pallets.index') }}" class="inline-block mt-4 px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">Back to List</a></div>
+    <div style="display: inline;">
+        <div style="width: 50%;float: left;padding-right: 10px;" class="bg-gray-100">
+            <h3 class="font-semibold text-md mb-2">Unloaded Picks (Next 3 Days)</h3>
+            <div id="unassigned-picks" class="border rounded p-2 bg-blue-50" style="min-height: 200px;">
+                @if($deliveries->isEmpty())
+                    <div class="text-gray-600">No unloaded picks found for this customer/address in the next 3 days.</div>
+                @else
+                    @foreach($deliveries as $delivery)
+                        @php
+                            $pickWeightOut = $delivery->pickWeightOut->first();
+                        @endphp
+                        <x-draggable-pick :pickWeightOut="$pickWeightOut" :pickerSheet="$delivery"/>
+                    @endforeach
+                @endif
             </div>
-            <div class="col-md-6 mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h3 class="font-semibold text-md">Outgoing Pallets <button id="add-pallet" class="btn btn-sm btn-primary rounded bg-green-500 hover:bg-green-700 w-6 h-6"><i class="fa fa-plus text-white" style="font-size:12pt;"></i></button></h3>
-                </div>
-                <div id="pallets-list">
-                    @if($outgoingPallets->isEmpty())
-                        <div class="text-gray-600">No outgoing pallets found for this customer/address.</div>
-                    @else
-                        @foreach($outgoingPallets as $pallet)
-                            <div class="border rounded p-2 mb-3 pallet-card" data-outgoing-pallet-id="{{ $pallet->id }}" data-pallet-type-id="{{ $pallet->outgoing_pallet_type_id }}">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div><strong>Pallet #{{ $pallet->id }}</strong>
-                                        <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6 btn-danger js-delete-pallet" data-outgoing-pallet-id="{{ $pallet->id }}"><i class="fas fa-trash text-red-100"></i></button>
-                                    </div>
-                                </div>
-                                <div class="mb-2">
+        </div>
+        <div style="width: 50%;float: left;padding-left: 10px;" class="bg-gray-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="font-semibold text-md">Outgoing Pallets <button id="add-pallet" class="btn btn-sm btn-primary rounded bg-green-500 hover:bg-green-700 w-6 h-6"><i class="fa fa-plus text-white" style="font-size:12pt;"></i></button></h3>
+            </div>
+            <div id="pallets-list">
+                @if($outgoingPallets->isEmpty())
+                    <div class="text-gray-600">No outgoing pallets found for this customer/address.</div>
+                @else
+                    @foreach($outgoingPallets as $pallet)
+                        <div class="border rounded mb-3 pallet-card" data-outgoing-pallet-id="{{ $pallet->id }}" data-pallet-type-id="{{ $pallet->outgoing_pallet_type_id }}">
+                            <div class="d-flex justify-content-between align-items-center mb-2 ">
+                                <div class="">
+                                    <strong>Pallet #{{ $pallet->id }}</strong>
+                                    <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6 btn-danger js-delete-pallet" data-outgoing-pallet-id="{{ $pallet->id }}"><i class="fas fa-trash text-red-100"></i></button>
                                     <strong>Type:</strong>
-                                    <select class="form-control form-control-sm d-inline js-pallet-type-selector" style="width: auto;" data-pallet-id="{{ $pallet->id }}" data-current-type="{{ $pallet->outgoing_pallet_type_id }}">
+                                    <select class="form-control form-control-sm d-inline js-pallet-type-selector" style="width: auto;padding-top: 2px;padding-bottom: 2px;" data-pallet-id="{{ $pallet->id }}" data-current-type="{{ $pallet->outgoing_pallet_type_id }}">
                                         @foreach($palletTypes as $type)
                                             <option value="{{ $type->id }}" @if($type->id == $pallet->outgoing_pallet_type_id) selected @endif>
                                                 {{ $type->name }} (Max: {{ $type->max_weight }} kg)
@@ -47,21 +44,21 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="pallet-drop-zone border rounded p-2 mt-2"
-                                     data-outgoing-pallet-id="{{ $pallet->id }}"
-                                     style="min-height: 120px;">
-                                    @foreach($pallet->pickWeightOuts as $link)
-                                        @php
-                                            $pickWeightOut = $link->pickWeightOut;
-                                            if ($pickWeightOut == null) continue;
-                                        @endphp
-                                        <x-draggable-pick :pickWeightOut="$pickWeightOut" :fromPalletId="$pallet->id"/>
-                                    @endforeach
-                                </div>
                             </div>
-                        @endforeach
-                    @endif
-                </div>
+                            <div class="pallet-drop-zone border rounded mt-2 bg-blue-50"
+                                    data-outgoing-pallet-id="{{ $pallet->id }}"
+                                    style="min-height: 120px;">
+                                @foreach($pallet->pickWeightOuts as $link)
+                                    @php
+                                        $pickWeightOut = $link->pickWeightOut;
+                                        if ($pickWeightOut == null) continue;
+                                    @endphp
+                                    <x-draggable-pick :pickWeightOut="$pickWeightOut" :fromPalletId="$pallet->id"/>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
             </div>
         </div>
     </div>

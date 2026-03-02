@@ -16,14 +16,14 @@ return new class extends Migration
         Schema::connection('tandc_live')->rename('palletsOut','pickWeightOut');
         Schema::connection('tandc_live')->create('outgoing_pallet', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('customer_id');
-            $table->unsignedInteger('address_id');
+            $table->integer('customer_id');
+            $table->integer('address_id');
             $table->timestamps();
         });
         Schema::connection('tandc_live')->create('outgoing_pallet_pickWeights', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('outgoing_pallet_id');
-            $table->unsignedInteger('pickWeightOut_id');
+            $table->integer('outgoing_pallet_id');
+            $table->integer('pickWeightOut_id');
             $table->timestamps();
         });
 

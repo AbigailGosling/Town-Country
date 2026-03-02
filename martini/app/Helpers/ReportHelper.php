@@ -10,10 +10,12 @@ use App\Models\Report;
 use App\Models\ReportColumn;
 use App\Models\ReportTable;
 use App\Models\Species;
+use App\Models\User;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PDO;
@@ -330,6 +332,7 @@ class ReportHelper
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+        else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $debits */
@@ -345,6 +348,7 @@ class ReportHelper
 		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+        else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $credits */
@@ -473,6 +477,7 @@ class ReportHelper
         if ($start != NULL && $end != NULL) static::applyDateRange($resultQB,$dateType,$start,$end);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+        else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $debits */
@@ -488,6 +493,7 @@ class ReportHelper
 		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);
 		if ($pickIDs != NULL && count($pickIDs)>0) $resultQB->whereIn("pickerSheets.id",$pickIDs);
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
+        else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
 
         /** @var Collection $credits */
