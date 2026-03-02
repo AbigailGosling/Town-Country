@@ -695,13 +695,13 @@ function cancelSale()
                 }
             });
             var targetCost;
-            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+            if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
                 targetCost = rrp3;
             }
-            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+            else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
                 targetCost = rrp2;
             }
-            else if (rrp1!= null && rrp1 != "" && count < 11){
+            else if (isNumActuallyNum(rrp1) && count < 11){
                 targetCost = rrp1;
             }
             else {
