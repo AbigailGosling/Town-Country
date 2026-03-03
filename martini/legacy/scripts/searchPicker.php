@@ -393,7 +393,12 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
         $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
 
-        if($productsRow['cost'] == '0.00' || $productsRow['cost'] == ''){
+        //If product was created after 04/03/2026 and has no RRP's and no cost, lock it.
+        $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $productsRow['created_at']);
+        $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
+        if($productsRow['cost'] == '0.00' || $productsRow['cost'] == '' ||
+            ($timestampOfCreation > env('INTAKE_COST_LOCK_TIMESTAMP',1772582400) && (empty($productsRow['rrp1']) && empty($productsRow['rrp2']) && empty($productsRow['rrp3'])))
+        ){
             $locked = true;
             $lockedT = "y";
         }
