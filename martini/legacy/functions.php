@@ -1535,10 +1535,18 @@ use Ramsey\Uuid\Type\Decimal;
 		$palletData = $palletResult->fetch_assoc();
 		$pallet_ids = $palletData['ids'];
 		if (!$pallet_ids || strlen($pallet_ids) == 0) return 0;
-		$productResult = prepareExecuteQuery("SELECT count(id) as count FROM product WHERE (cost is null || cost = '0.000' || cost = '') && pallet_id IN ($pallet_ids)");
-		$productData = $productResult->fetch_assoc();
-
-		return $productData['count'];
+        $prodCount = 0;
+		$productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE `pallet_id` IN ($pallet_ids)");
+        while($row = $productResult->fetch_assoc()){
+            $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $row['created_at']);
+            $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
+            if($row['cost'] == '0.00' || $row['cost'] == '' ||
+            ($timestampOfCreation > env('INTAKE_COST_LOCK_TIMESTAMP',1772582400) && (empty($row['rrp1']) && empty($row['rrp2']) && empty($row['rrp3'])))
+            ){
+                $prodCount++;
+            }
+        }
+		return $prodCount;
 	}
 
 	function totalOutstandingForCustomer($customer_id){
