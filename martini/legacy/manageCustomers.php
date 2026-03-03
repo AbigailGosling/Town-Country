@@ -274,6 +274,26 @@ use Illuminate\Support\Facades\Auth;
 						</select>
 					</td>
 				</tr>
+                <tr>
+					<td class="label"><label>Default Finance Person</label></td>
+					<td>
+						<select id="finance_person" name="default_finance_person_id">
+							<?php
+                            if (request()->input('id') == '' || $data['default_finance_person_id'] == null) {
+                                ?> <option value="" selected disabled></option> <?php
+                            }
+                            $newUsers = User::where([["disabled",false],["is_hidden",false]]);
+                            if (request()->input('id') != '' && $data['default_finance_person_id'] != null) $newUsers= $newUsers->orWhere("id",$data['default_finance_person_id']);
+                            $newUsers = $newUsers->get()->pluck("id")->toArray();
+                            $_users = prepareExecuteQuery("SELECT * FROM `users` where `id` IN (".implode(",",$newUsers).")");
+
+                            while ($_user = mysqli_fetch_array($_users)) {
+                                ?><option value="<?php echo $_user['id']; ?>" <?php if($data['default_finance_person_id'] == $_user['id']){ echo 'selected'; } ?>><?php echo $_user['name']; ?></option><?php
+                            }
+							?>
+						</select>
+					</td>
+				</tr>
                 <tr height="40"><td colspan="2"></td></tr>
 				<tr>
 					<td class="label"><label>Served By</label></td>
@@ -481,8 +501,9 @@ use Illuminate\Support\Facades\Auth;
 		<div id="cutAjax">
 
 		<?php
+            $_limitedView = User::find(Auth::id())->listViewableCustomers();
 
-			$x = "SELECT * FROM `customers` WHERE `disabled`=? ORDER BY id ASC";
+			$x = "SELECT * FROM `customers` WHERE `disabled`=? AND `id` IN (" . implode(',', $_limitedView) . ") ORDER BY id ASC";
 
 			$y = prepareExecuteQuery($x,'i',[$showDisabled]);
 
@@ -532,7 +553,7 @@ use Illuminate\Support\Facades\Auth;
 					<input type="hidden" name="old_customer_id" id="old_customer_id">
 					<select name="new_customer_id">
 						<?php
-							$customers = prepareExecuteQuery("SELECT id,businessname FROM `customers`");
+							$customers = prepareExecuteQuery("SELECT id,businessname FROM `customers` WHERE `id` IN (" . implode(',', $_limitedView) . ") ORDER BY businessname ASC");
 
 							while($customer = mysqli_fetch_array($customers)){
 								?><option value="<?php echo $customer['id']; ?>" class="transfer_customers transfer_customers_<?php echo $customer['id']; ?>"><?php echo $customer['businessname']; ?></option><?php

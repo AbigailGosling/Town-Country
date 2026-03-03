@@ -159,7 +159,8 @@ use Illuminate\Support\Facades\Auth;
         <option value="" disabled selected>Select customer..</option>
         <option value="0">All customers</option>
 		<?php
-			$x = "SELECT * FROM `customers` where `disabled` = 0 order by businessname ASC";
+            $limitedView = User::find(Auth::id())->listViewableCustomers();
+            $x = "SELECT * FROM `customers` where `disabled` = 0 AND `id` IN (" . implode(',', $limitedView) . ") order by businessname ASC";
 			$y = prepareExecuteQuery($x);
 
 			while($row = mysqli_fetch_array($y)){
@@ -168,7 +169,7 @@ use Illuminate\Support\Facades\Auth;
 		?>
         <option value="" disabled>Disabled Customers</option>
         <?php
-			$x = "SELECT * FROM `customers` where `disabled` = 1 order by businessname ASC";
+			$x = "SELECT * FROM `customers` where `disabled` = 1 AND `id` IN (" . implode(',', $limitedView) . ") order by businessname ASC";
 			$y = prepareExecuteQuery($x);
 
 			while($row = mysqli_fetch_array($y)){

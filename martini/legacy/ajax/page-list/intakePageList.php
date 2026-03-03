@@ -60,11 +60,14 @@ use Illuminate\Support\Facades\Log;
         if ($addDateFilter){
             $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted date_received BETWEEN ? AND ? ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ssii',[$startDate,$endDate,$toSkip,$limit]);
         }else{
-		    $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted returned ='0' ORDER BY date_received DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);
+		    $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted 1=1 ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);
         }
 	}
     $countResults = mysqli_num_rows($searchResults);
-
+    $newSkipCount = ($toSkip + $countResults);
+    $totalRowsQueryResult = prepareExecuteQuery("SELECT count(`id`) as `count` FROM `intake`");
+    $totalRowsData = mysqli_fetch_array($totalRowsQueryResult);
+    $totalRowsInDatabase = $totalRowsData['count'];
     if($countResults == 0){
         ?><h2 style="color:#fff;font-size:12px;">No intakes found</h2><?php
     }else{
@@ -151,12 +154,14 @@ use Illuminate\Support\Facades\Log;
         <?php
         }
     }
-
-?>
-<?php
 	function validateDate($date, $format = 'd/m/Y')
 	{
 		$d = DateTime::createFromFormat($format, $date);
 		return $d && $d->format($format) === $date;
 	}
 ?>
+
+<script>
+    $('#toSkipCount').val(<?php echo $newSkipCount; ?>);
+    $('#totalRowsCount').val(<?php echo $totalRowsInDatabase; ?>);
+</script>
