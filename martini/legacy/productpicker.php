@@ -723,7 +723,6 @@ function cancelSale()
 			else if(lowestPrice >= targetCost * 2){
 				showPriceCheck = true;
                 showRed = true;
-                if (strict) { strictFailed = true; }
 			}
             if (showRed) { items.forEach(function(item) { $(item.element).css('border','1px solid red'); }); }
         }
@@ -751,7 +750,7 @@ function cancelSale()
 	var getCustomResult;
 	var addressID=1;
     function isNumActuallyNum(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n) && Number(n) == n && n.trim() != "" && n!= null;
+        return !isNaN(parseFloat(n)) && isFinite(n) && Number(n) == n && n.toString().trim() != "" && n!= null;
     }
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
@@ -894,6 +893,7 @@ function cancelSale()
                 count += parseInt($($(item.element).find('td[name="volume"]')[0]).html());
             });
             var targetCost;
+            var show = true;
             if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
                 targetCost = rrp3;
             }
@@ -904,9 +904,10 @@ function cancelSale()
                 targetCost = rrp1;
             }
             else {
+                show = false;
                 targetCost = cost;
             }
-            if (typeof targetCost === 'number' && !isNaN(targetCost))
+            if (show && typeof targetCost === 'number' && !isNaN(targetCost))
             {
                 var formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits:3 });
                 var formattedCost = formatter.format(targetCost);
