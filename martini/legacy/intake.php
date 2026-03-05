@@ -649,9 +649,9 @@ use Illuminate\Support\Facades\Auth;
 					<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 					</td>
 					<?php if ($intake['approved']==1) {
-                        $rrp1Change = ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']=='')?"":"disabled";
-                        $rrp2Change = ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']=='')?"":"disabled";
-                        $rrp3Change = ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']=='')?"":"disabled";
+                        $rrp1Change = ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']=='')?"":"readonly";
+                        $rrp2Change = ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']=='')?"":"readonly";
+                        $rrp3Change = ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']=='')?"":"readonly";
                         ?>
 					<td>
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
