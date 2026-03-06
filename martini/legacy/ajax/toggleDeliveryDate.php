@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 require(__DIR__.'/../functions.php');
 
 $id = request()->input('id');
+if ($id == null || $id == '') exit;
 define('DEL_SUNDAY',     1);
 define('DEL_SATURDAY',   2);
 define('DEL_FRIDAY',     4);
