@@ -54,7 +54,7 @@ use Illuminate\Support\Facades\Log;
         }else{
             $query = "SELECT * FROM `intake` WHERE $showDeleted {$dateFilter}(id=? OR `import_num` LIKE ? OR `internal_num` LIKE ? OR `vehicle_reg` LIKE ? OR `id` LIKE ? OR `delivery_note_number` LIKE ? OR ((`supplier_id` <> '') && `supplier_id` IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs))) $orderBy";
             $params = array_merge($dateParams, [$term,$term.'%',$term.'%',$term.'%',$term.'%',$term.'%']);
-            $types = ($addDateFilter ? 'ss' : '') . 'sssssss';
+            $types = ($addDateFilter ? 'ss' : '') . 'ssssss';
         }
     }else{
         if ($addDateFilter){

@@ -128,7 +128,7 @@ class User extends Authenticatable
             {
                 $users = ActiveHolidayCover::where("cover_id",$this->id)->pluck('absent_id')->toArray();
                 $users[] = $this->id;
-                $this->_listViewableCustomers = Customer::whereIn('default_salesman_id',$users)->pluck('id')->toArray();
+                $this->_listViewableCustomers = Customer::whereIn('default_salesman_id',$users)->orWhereIn('default_finance_person_id',$users)->pluck('id')->toArray();
             }
         }
         return $this->_listViewableCustomers;
