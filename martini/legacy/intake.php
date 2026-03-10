@@ -645,13 +645,14 @@ use Illuminate\Support\Facades\Auth;
 								$weightthing = 0;
 							}
 						}
+                        $species_id = prepareExecuteQuery("SELECT `species_id` FROM `cuts` WHERE id=?",'i',[$row['cut_id']])->fetch_assoc()['species_id'];
 					?>
 					<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 					</td>
 					<?php if ($intake['approved']==1) {
-                        $rrp1Change = ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']=='')?"":"readonly";
-                        $rrp2Change = ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']=='')?"":"readonly";
-                        $rrp3Change = ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']=='')?"":"readonly";
+                        $rrp1Change = ($species_id != "5" && $pRow['grosspallet'] == 0 && ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']==''))?"":"readonly";
+                        $rrp2Change = ($species_id != "5" && $pRow['grosspallet'] == 0 && ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']==''))?"":"readonly";
+                        $rrp3Change = ($species_id != "5" && ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']==''))?"":"readonly";
                         ?>
 					<td>
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>

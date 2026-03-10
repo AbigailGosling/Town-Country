@@ -117,6 +117,9 @@ use App\Models\Customer;
     $colNames[] = "`override_cost_check`=?";
     $colValue[] = request()->input('override_cost_check_hidden',$c->override_cost_check);
 
+    $colNames[] = "`cost_check_enabled`=?";
+    $colValue[] = request()->input('cost_check_enabled_hidden',$c->cost_check_enabled);
+
     $colNames[] = "`default_finance_person_id`=?";
     $colValue[] = request()->input('default_finance_person_id',$c->default_finance_person_id);
 

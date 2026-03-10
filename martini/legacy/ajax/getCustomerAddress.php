@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 	$creditCheck = precredit_check($customer_id);
 ?>
 <script type="text/javascript">
-    custStrictOverride = <?php echo ($row['override_cost_check']>0)?"true":"false"; ?>;
+    custStrictOverride = <?php echo ($row['cost_check_enabled']==0 || $row['override_cost_check']>0)?"true":"false"; ?>;
 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
 	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
 	showHigherWarning 	= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;

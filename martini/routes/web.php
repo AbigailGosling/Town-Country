@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerOverridesController;
 use App\Http\Controllers\CutController;
 use App\Http\Controllers\CutGroupController;
 use App\Http\Controllers\CutGroupNationalityDateController;
+use App\Http\Controllers\DeliveryCustomerController;
 use App\Http\Controllers\DropdownController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\HealthMarkController;
@@ -72,6 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('usercustomer',[UserCustomerController::class,'index'])->name('usercustomer.index');
     Route::get('/usercustomer/download', [UserCustomerController::class, 'download'])->name('usercustomer.download');
+
+    Route::get('deliverycustomer',[DeliveryCustomerController::class,'index'])->name('deliverycustomer.index');
+    Route::get('/deliverycustomer/download', [DeliveryCustomerController::class, 'download'])->name('deliverycustomer.download');
 
     Route::get('bulkpermissions', [BulkPermissionController::class, 'view'])->name('bulkpermission.view');
     Route::get('bulkpermissions/search', [BulkPermissionController::class, 'search'])->name('bulkpermission.search');
