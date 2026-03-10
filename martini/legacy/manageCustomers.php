@@ -437,6 +437,13 @@ use Illuminate\Support\Facades\Auth;
                         <input type="hidden" id="credit_enabled_hidden" name="credit_enabled_hidden" value="<?php echo $data['credit_rating']?1:0; ?>">
 					</td>
 				</tr>
+                <tr>
+					<td class="label"><label>MSP Checking</label></td>
+					<td align="right">
+						<a href="javascript:;" id="cost_check_enabled" onclick="mspChecking(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['cost_check_enabled'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['cost_check_enabled'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="cost_check_enabled_hidden" name="cost_check_enabled_hidden" value="<?php echo $data['cost_check_enabled']?1:0; ?>">
+					</td>
+				</tr>
             </table>
         </div>
         <div class="fullbox controls">
@@ -682,6 +689,24 @@ function mainForm2(){
 			setTimeout(alert,10,["Credit Checking Enabled!"]);
 		}
 		$.post("ajax/toggleCredit.php",{
+			id: id,
+		});
+	}
+    function mspChecking(ele, id){
+		var q = $('#cost_check_enabled');
+		if (q.text() != "Disabled") {
+            $("#cost_check_enabled_hidden").val("0");
+			q.css("background-color","red");
+			q.text("Disabled");
+			setTimeout(alert,10,["MSP Checking Disabled!"]);
+		}
+		else {
+            $("#cost_check_enabled_hidden").val("1");
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["MSP Checking Enabled!"]);
+		}
+		$.post("ajax/toggleCostCheck.php",{
 			id: id,
 		});
 	}
