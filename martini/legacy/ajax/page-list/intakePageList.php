@@ -19,50 +19,55 @@ use Illuminate\Support\Facades\Log;
         $endDate = $year . '-' . $month . '-31';
     }
 	$showDeleted = (request()->has("showDeleted") && request()->input('showDeleted') == 1)?"":"`deleted` = 0 AND";
-	if($term != ''){
+    $searchResults = null;
 
-		$SUPPLIER_CUSTOMER_IDS = array(0);
+    if($term != ''){
+        $SUPPLIER_CUSTOMER_IDS = array(0);
 
-		// Check for search matching suppliers
-		$suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?",'ss',['%'.$term.'%',$term]);
-		while($supplier = mysqli_fetch_array($suppliersResult)){ $SUPPLIER_CUSTOMER_IDS[]=$supplier['id']; }
-		$usermodel = User::find(Auth::id());
-		// Check for search matching customers
-		$customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',['%'.$term.'%',$term]);
-		while($customer = mysqli_fetch_array($customersResult)){ if (!$usermodel->canViewCustomer($customer['id'])) continue;$SUPPLIER_CUSTOMER_IDS[]=$customer['id']; }
-
-		$SUPPLIER_CUSTOMER_IDS = implode(',', $SUPPLIER_CUSTOMER_IDS);
+        // Check for search matching suppliers
+        $suppliersResult = prepareExecuteQuery("SELECT id FROM `supplier` WHERE `name` LIKE ? || `name` = ?",'ss',['%'.$term.'%',$term]);
+        while($supplier = mysqli_fetch_array($suppliersResult)){ $SUPPLIER_CUSTOMER_IDS[]=$supplier['id']; }
 
 
-		$palletQuery = prepareExecuteQuery("SELECT intake_id FROM `pallet` WHERE id = ?",'i',[$term]);
-		$intakeIDs = array(0);
-		while($pallet = mysqli_fetch_array($palletQuery)){ array_push($intakeIDs, $pallet['intake_id']); }
-		$intakeIDs = implode(',', $intakeIDs);
+        // Check for search matching customers
+        $usermodel = User::find(Auth::id());
+        $customersResult = prepareExecuteQuery("SELECT id FROM `customers` WHERE `businessname` LIKE ? || `businessname` = ?",'ss',['%'.$term.'%',$term]);
+        while($customer = mysqli_fetch_array($customersResult)){ if (!$usermodel->canViewCustomer($customer['id'])) continue;$SUPPLIER_CUSTOMER_IDS[]=$customer['id']; }
 
-		if (validateDate($term)) { # search term is a DATE
-			$date = str_replace('/', '-', $term);
-			$termDate = date('Y-m-d', strtotime($date));
-            if ($addDateFilter){
-                $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted `date_received` BETWEEN ? AND ? AND `date_received` LIKE ? ORDER BY `date_received` DESC, `id` DESC",'sss',[$startDate,$endDate,'%'.$termDate.'%']);
-            }else{
-			    $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted `date_received` LIKE ? ORDER BY `date_received` DESC, `id` DESC",'s',['%'.$termDate.'%']);
-            }
-		}else{
-            if ($addDateFilter){
-                $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted date_received BETWEEN ? AND ? AND (id=? OR `import_num` LIKE ? OR `internal_num` LIKE ? OR `vehicle_reg` LIKE ? OR `id` LIKE ? OR `delivery_note_number` LIKE ? OR ((`supplier_id` <> '') && `supplier_id` IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs))) ORDER BY `date_received` DESC, `id` DESC"
-                    ,'sssssss',[$startDate,$endDate,$term,$term.'%',$term.'%',$term.'%',$term.'%',$term.'%']);
-            }else{
-			    $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted id=? OR `import_num` LIKE ? OR `internal_num` LIKE ? OR `vehicle_reg` LIKE ? OR `id` LIKE ? OR `delivery_note_number` LIKE ? OR ((`supplier_id` <> '') && `supplier_id` IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs)) ORDER BY `date_received` DESC, `id` DESC",'ssssss',[$term,$term.'%',$term.'%',$term.'%',$term.'%',$term.'%']);
-            }
-		}
-	}else{ ?>
-		<?php
-        if ($addDateFilter){
-            $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted date_received BETWEEN ? AND ? ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ssii',[$startDate,$endDate,$toSkip,$limit]);
+        $SUPPLIER_CUSTOMER_IDS = implode(',', $SUPPLIER_CUSTOMER_IDS);
+
+        $palletQuery = prepareExecuteQuery("SELECT intake_id FROM `pallet` WHERE id = ?",'i',[$term]);
+        $intakeIDs = array(0);
+        while($pallet = mysqli_fetch_array($palletQuery)){ array_push($intakeIDs, $pallet['intake_id']); }
+        $intakeIDs = implode(',', $intakeIDs);
+
+        $dateFilter = $addDateFilter ? "date_received BETWEEN ? AND ? AND " : "";
+        $dateParams = $addDateFilter ? [$startDate, $endDate] : [];
+        $orderBy = "ORDER BY `date_received` DESC, `id` DESC";
+
+        if (validateDate($term)) {
+            $date = str_replace('/', '-', $term);
+            $termDate = date('Y-m-d', strtotime($date));
+            $query = "SELECT * FROM `intake` WHERE $showDeleted {$dateFilter}`date_received` LIKE ? $orderBy";
+            $params = array_merge($dateParams, ['%'.$termDate.'%']);
+            $types = ($addDateFilter ? 'ss' : 's') . 's';
         }else{
-		    $searchResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE $showDeleted 1=1 ORDER BY date_received DESC, id DESC LIMIT ?, ?",'ii',[$toSkip,$limit]);
+            $query = "SELECT * FROM `intake` WHERE $showDeleted {$dateFilter}(id=? OR `import_num` LIKE ? OR `internal_num` LIKE ? OR `vehicle_reg` LIKE ? OR `id` LIKE ? OR `delivery_note_number` LIKE ? OR ((`supplier_id` <> '') && `supplier_id` IN ($SUPPLIER_CUSTOMER_IDS)) OR (id IN ($intakeIDs))) $orderBy";
+            $params = array_merge($dateParams, [$term,$term.'%',$term.'%',$term.'%',$term.'%',$term.'%']);
+            $types = ($addDateFilter ? 'ss' : '') . 'ssssss';
         }
-	}
+    }else{
+        if ($addDateFilter){
+            $query = "SELECT * FROM `intake` WHERE $showDeleted date_received BETWEEN ? AND ? ORDER BY date_received DESC, id";
+            $params = [$startDate, $endDate];
+            $types = 'ss';
+        }else{
+            $query = "SELECT * FROM `intake` WHERE $showDeleted 1=1 ORDER BY date_received DESC, id DESC LIMIT ?, ?";
+            $params = [$toSkip, $limit];
+            $types = 'ii';
+        }
+    }
+    $searchResults = prepareExecuteQuery($query, $types, $params);
     $countResults = mysqli_num_rows($searchResults);
     $newSkipCount = ($toSkip + $countResults);
     $totalRowsQueryResult = prepareExecuteQuery("SELECT count(`id`) as `count` FROM `intake`");

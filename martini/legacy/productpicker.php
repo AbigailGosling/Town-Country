@@ -706,6 +706,7 @@ function cancelSale()
             }
             else {
                 targetCost = cost;
+                strict = false;
             }
             doneOnce = true;
             var showRed = false;
@@ -722,7 +723,6 @@ function cancelSale()
 			else if(lowestPrice >= targetCost * 2){
 				showPriceCheck = true;
                 showRed = true;
-                if (strict) { strictFailed = true; }
 			}
             if (showRed) { items.forEach(function(item) { $(item.element).css('border','1px solid red'); }); }
         }
@@ -730,7 +730,6 @@ function cancelSale()
 			checkStock();
 			return false;
 		}else{
-
 			if(!customerEntered || !dateEntered || !priceEntered || !UserSet){
 				alert('Please complete the missing fields');
 			}
@@ -750,6 +749,9 @@ function cancelSale()
 	});
 	var getCustomResult;
 	var addressID=1;
+    function isNumActuallyNum(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n) && Number(n) == n && n.toString().trim() != "" && n!= null;
+    }
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
         addressID=1;
@@ -891,20 +893,21 @@ function cancelSale()
                 count += parseInt($($(item.element).find('td[name="volume"]')[0]).html());
             });
             var targetCost;
-            console.log(rrp1, rrp2, rrp3, cost, count);
-            if (rrp3!= null && rrp3 != "" && (count >= 35 || isGT == true)){
+            var show = true;
+            if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
                 targetCost = rrp3;
             }
-            else if (rrp2!= null && rrp2 != "" && count >= 11 && count < 35){
+            else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
                 targetCost = rrp2;
             }
-            else if (rrp1!= null && rrp1 != "" && count < 11){
+            else if (isNumActuallyNum(rrp1) && count < 11){
                 targetCost = rrp1;
             }
             else {
+                show = false;
                 targetCost = cost;
             }
-            if (typeof targetCost === 'number' && !isNaN(targetCost))
+            if (show && typeof targetCost === 'number' && !isNaN(targetCost))
             {
                 var formatter = new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits:3 });
                 var formattedCost = formatter.format(targetCost);

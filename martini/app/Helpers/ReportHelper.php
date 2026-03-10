@@ -56,11 +56,16 @@ class ReportHelper
     string $HEALTH_ID = null,
     string $INTERNAL_NUM = null,
     string $IMPORT_NUM = null,
-    string $SITE_ID = null
+    string $SITE_ID = null,
+    bool $includeSupplierReturn = true
     ):array{
         ini_set('max_execution_time', 0);
         $INTERESTED_PRODUCTIDS=[];
         $filters=[];
+        if (!$includeSupplierReturn)
+        {
+            $filters['pickerSheets.is_return_to_supplier'] = 0;
+        }
         if ($INVOICE_ID != null && $INVOICE_ID != '' && $INVOICE_ID != '...' && $INVOICE_ID != '0')
         {
             $filters['pickerSheets.id'] = $INVOICE_ID;

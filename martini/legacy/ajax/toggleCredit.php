@@ -8,6 +8,7 @@ require(__DIR__.'/../functions.php');
 
 
 $id = request()->input('id');
+if ($id == null || $id == '') exit;
 $c = Customer::find($id);
 $cl = new CommentLogging();
 $cl->type = "credit_checking";

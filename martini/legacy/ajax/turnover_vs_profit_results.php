@@ -105,7 +105,7 @@ use Illuminate\Support\Facades\Auth;
     $PPC = "PPC";
 
     $report = Report::find(1);
-    $filters = ReportHelper::filterBuilder($INTERESTED_PICKS,$INVOICE_ID,$INTAKE_ID,$PALLET_ID,$USER_ID,$CUSTOMER_ID,$SPECIES_ID,$CUTGROUP_ID,$COOLING_ID,$BRAND_ID,$NATIONALITY_ID,$SUPPLIER_ID,null,null,null,$SITE_ID);
+    $filters = ReportHelper::filterBuilder($INTERESTED_PICKS,$INVOICE_ID,$INTAKE_ID,$PALLET_ID,$USER_ID,$CUSTOMER_ID,$SPECIES_ID,$CUTGROUP_ID,$COOLING_ID,$BRAND_ID,$NATIONALITY_ID,$SUPPLIER_ID,null,null,null,$SITE_ID,false);
     if (count(array_keys($filters))==0)$filters = null;
 	if ($date_start=== null && $date_end=== null && ($INTERESTED_PICKS === null||count($INTERESTED_PICKS)==0)) $dataRanges= [];
     else $dataRanges = ReportHelper::getCollectionsForReportRange($report,ReportHelper::DATE_TYPE_ASSEMBLED,$date_start,$date_end,$INTERESTED_PICKS,$CUSTOMER_ID,$USER_ID,$filters);
@@ -124,7 +124,8 @@ use Illuminate\Support\Facades\Auth;
 	$divFormat =  "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
 	$cellFormat = "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
     foreach ($report->getTables() as $index=>$table){
-		$processed[$table->name] = [];
+        if ($table->name == "Supplier Returns") continue;
+        $processed[$table->name] = [];
         $reportColumns =$table->getColumns();
         ?>
 		<table style="table-layout:fixed;" id="resultsTable">
