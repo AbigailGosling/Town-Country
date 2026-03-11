@@ -8,6 +8,7 @@
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 	use Illuminate\Support\Facades\File;
@@ -195,27 +196,27 @@ use Ramsey\Uuid\Type\Decimal;
 
 	function averageDaysUntilPaidForCustomer($customer_id){
         global $mysqli;
-
+        $timeBack = date('Y-m-d', strtotime('-2 months'));
         $invoice_payment_times = [];
 
-        $invoiceResults = prepareExecuteQuery("SELECT date_completed,id FROM `pickerSheets` WHERE completed ='1' && customer_id=?",'i',[$customer_id]);
+        $invoiceResults = prepareExecuteQuery("SELECT `id`,`date_completed`,`estimated_delivery_date` FROM `pickerSheets` WHERE `completed` ='1' && `customer_id`=? AND `date_completed` >= ?",'is',[$customer_id, $timeBack]);
 
         // loop through all completed invoices associated with this customer_id
         while($invoice = $invoiceResults->fetch_assoc()){
             $invoice_id = $invoice['id'];
-            $date_completed = $invoice['date_completed'];
+            $date_completed = Carbon::createFromFormat('d/m/Y', $invoice['estimated_delivery_date']) ?? Carbon::createFromFormat('Y-m-d H:i:s', $invoice['date_completed']); // use estimated_delivery_date if available, otherwise fall back to date_completed
 
             // get the final payment for this invoice
-            $paymentResult = prepareExecuteQuery("SELECT created_at,id FROM `invoice_payments` WHERE invoice_id=? ORDER BY created_at DESC LIMIT 1",'i',[$invoice_id]);
+            $paymentResult = prepareExecuteQuery("SELECT `created_at`,`id` FROM `invoice_payments` WHERE `invoice_id`=? ORDER BY `created_at` DESC LIMIT 1",'i',[$invoice_id]);
             $count = $paymentResult->num_rows;
 
             // check we have a payment record, old completed invoices do not have any
             if($count == 1){
                 $paymentData = $paymentResult->fetch_assoc();
 
-                $fully_paid_date = $paymentData['created_at'];
+                $fully_paid_date = Carbon::createFromFormat('Y-m-d H:i:s', $paymentData['created_at']);
 
-                $difference = abs(strtotime($fully_paid_date) - strtotime($date_completed));
+                $difference = abs($fully_paid_date->timestamp - $date_completed->timestamp);
 
                 $years = floor($difference / (365*60*60*24));
                 $months = floor(($difference - $years * 365*60*60*24) / (30*60*60*24));
