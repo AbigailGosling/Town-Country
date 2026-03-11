@@ -58,7 +58,10 @@ use App\Models\User;
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 				}
 
-				?></div><?php
+				?>
+                <a href="../outgoing-pallets">Outgoing Pallet Management</a>
+                <a href="../outgoing-pallets-loading">Outgoing Pallet Loading</a>
+                </div><?php
 			}
 
 
