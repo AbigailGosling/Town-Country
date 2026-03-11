@@ -109,8 +109,11 @@ class OutgoingPallet extends Model
         $dates = array_unique($dates);
         if (count($dates) === 1) {
             $this->estimated_delivery_date = Carbon::createFromFormat('d/m/Y', $dates[0])->format('Y-m-d');
-        } else {
-            $this->estimated_delivery_date = null;
+        } else if (count($dates) > 1) {
+            $this->estimated_delivery_date = Carbon::createFromFormat('d/m/Y', min($dates))->format('Y-m-d');
+        }
+        else {
+            $this->estimated_delivery_date = Carbon::today()->format('Y-m-d');
         }
         $this->save();
     }

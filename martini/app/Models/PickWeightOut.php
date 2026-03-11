@@ -115,7 +115,66 @@ protected $connection = 'tandc_live';
             'order_reference_number' => $pickerSheet?->orderReferenceNumber,
             'total_weight' => $this->getTotalWeight(),
             'weight_count' => count($this->getWeights()),
+            'cut_quantities' => $this->getCutQuantities(),
         ];
+    }
+    public function getCutQuantities(): array
+    {
+        $weightIds = $this->getWeights();
+        if ($weightIds === []) {
+            return [];
+        }
+
+        $weights = Weight::query()
+            ->select(['id', 'product_id', 'weight_gross', 'weight_tear'])
+            ->whereIn('id', $weightIds)
+            ->get();
+
+        if ($weights->isEmpty()) {
+            return [];
+        }
+
+        $products = Product::query()
+            ->select(['id', 'cut_id'])
+            ->whereIn('id', $weights->pluck('product_id')->filter()->unique()->values()->all())
+            ->get()
+            ->keyBy('id');
+
+        $cutNames = Cut::query()
+            ->whereIn('id', $products->pluck('cut_id')->filter()->unique()->values()->all())
+            ->pluck('name', 'id');
+
+        $summary = [];
+        foreach ($weights as $weight) {
+            $product = $products->get((int) $weight->product_id);
+            $cutId = (int) ($product?->cut_id ?? 0);
+            if ($cutId <= 0) {
+                continue;
+            }
+
+            $netWeight = ((float) $weight->weight_tear === (float) $weight->weight_gross)
+                ? (float) $weight->weight_gross
+                : (float) $weight->weight_gross - (float) $weight->weight_tear;
+
+            if (!isset($summary[$cutId])) {
+                $summary[$cutId] = [
+                    'cut_id' => $cutId,
+                    'cut_name' => (string) ($cutNames[$cutId] ?? 'Unknown'),
+                    'quantity' => 0,
+                    'total_weight' => 0.0,
+                ];
+            }
+
+            $summary[$cutId]['quantity']++;
+            $summary[$cutId]['total_weight'] += $netWeight;
+        }
+
+        uasort($summary, fn (array $a, array $b) => strcmp($a['cut_name'], $b['cut_name']));
+
+        return array_values(array_map(function (array $item) {
+            $item['total_weight'] = round((float) $item['total_weight'], 3);
+            return $item;
+        }, $summary));
     }
     public static function processPickerSheetsForPalletization(Collection $pickerSheets)
     {
@@ -185,7 +244,7 @@ protected $connection = 'tandc_live';
             }
         });
     }
-    public static function SPLIT_PICK(int $pickWeightOutId, int $moveWeightCount, ?int $targetOutgoingPalletId, ?int $fromOutgoingPalletId): array
+    public static function SPLIT_PICK(int $pickWeightOutId, int $moveWeightCount, ?int $targetOutgoingPalletId, ?int $fromOutgoingPalletId, ?int $moveCutId = null): array
     {
        $sourcePickWeightOut = self::query()->findOrFail($pickWeightOutId);
         $pickerSheetId = (int) $sourcePickWeightOut->pickersheet_id;
@@ -199,9 +258,9 @@ protected $connection = 'tandc_live';
             abort(422, 'Split quantity must be less than total weights on the pick.');
         }
 
-        $movedWeightIds = self::pickWeightsForSplit($sourceWeightIds, $moveWeightCount);
+        $movedWeightIds = self::pickWeightsForSplit($sourceWeightIds, $moveWeightCount, $moveCutId);
         if (count($movedWeightIds) !== $moveWeightCount) {
-            abort(422, 'Unable to split requested weight count.');
+            abort(422, $moveCutId ? 'Unable to split requested cut quantity.' : 'Unable to split requested weight count.');
         }
 
         $remainingWeightIds = array_values(array_diff($sourceWeightIds, $movedWeightIds));
@@ -283,13 +342,35 @@ protected $connection = 'tandc_live';
 
         return PickWeightOut::query()->with('pickerSheet')->find($keeperId);
     }
-    private static function pickWeightsForSplit(array $sourceWeightIds, int $moveWeightCount): array
+    private static function pickWeightsForSplit(array $sourceWeightIds, int $moveWeightCount, ?int $moveCutId = null): array
     {
         $weights = Weight::query()
             ->select(['id', 'product_id'])
             ->whereIn('id', $sourceWeightIds)
             ->get()
             ->keyBy('id');
+
+        $products = Product::query()
+            ->select(['id', 'cut_id'])
+            ->whereIn('id', $weights->pluck('product_id')->filter()->unique()->values()->all())
+            ->get()
+            ->keyBy('id');
+
+        if (!empty($moveCutId)) {
+            $matchingByCut = [];
+            foreach ($sourceWeightIds as $weightId) {
+                $weight = $weights->get((int) $weightId);
+                if (!$weight) {
+                    continue;
+                }
+                $product = $products->get((int) $weight->product_id);
+                if ((int) ($product?->cut_id ?? 0) === (int) $moveCutId) {
+                    $matchingByCut[] = (int) $weightId;
+                }
+            }
+
+            return array_values(array_slice($matchingByCut, 0, $moveWeightCount));
+        }
 
         $positions = array_flip($sourceWeightIds);
         $groupedByProduct = [];

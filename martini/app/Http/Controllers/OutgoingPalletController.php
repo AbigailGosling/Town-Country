@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
+use App\Models\OutgoingPalletType;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
 use Carbon\Carbon;
@@ -146,7 +147,7 @@ class OutgoingPalletController extends Controller
             return !in_array($sheet->id, $loadedIds);
         });
 
-        $palletTypes = \App\Models\OutgoingPalletType::all();
+        $palletTypes = OutgoingPalletType::all();
         $customer = Customer::find($customerId);
         return view('outgoing-pallets.details', [
             'customer' => $customer,
@@ -166,7 +167,7 @@ class OutgoingPalletController extends Controller
             'customer_id' => 'required|integer|exists:tandc_live.customers,id',
             'address_id' => 'required|integer',//|exists:address,id
         ]);
-
+        $validated['estimated_delivery_date'] = Carbon::today()->format('Y-m-d');
         $pallet = OutgoingPallet::create($validated);
         $pallet->load(['customer', 'address']);
 
@@ -215,7 +216,7 @@ class OutgoingPalletController extends Controller
             'address_id' => 'required|integer',
             'outgoing_pallet_type_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet_types,id',
         ]);
-
+        $validated['estimated_delivery_date'] = Carbon::today()->format('Y-m-d');
         if (!isset($validated['outgoing_pallet_type_id']) || !$validated['outgoing_pallet_type_id']) {
             $validated['outgoing_pallet_type_id'] = 1;
         }
@@ -317,6 +318,7 @@ class OutgoingPalletController extends Controller
         $validated = $request->validate([
             'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
             'move_weight_count' => 'required|integer|min:1',
+            'move_cut_id' => 'nullable|integer|exists:tandc_live.cuts,id',
             'target_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
             'from_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
         ]);
@@ -327,10 +329,34 @@ class OutgoingPalletController extends Controller
                 (int) $validated['move_weight_count'],
                 $validated['target_outgoing_pallet_id'] ?? null,
                 $validated['from_outgoing_pallet_id'] ?? null,
+                $validated['move_cut_id'] ?? null,
             );
         });
 
         return response()->json($result);
+    }
+    public function renderPickHtml(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
+            'from_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
+            'selected_cut_id' => 'nullable|integer|exists:tandc_live.cuts,id',
+            'move_weight_count' => 'nullable|integer|min:1',
+        ]);
+
+        $pickWeightOut = PickWeightOut::query()->with('pickerSheet')->findOrFail((int) $validated['pick_weight_out_id']);
+
+        $html = view('components.draggable-pick', [
+            'pickWeightOut' => $pickWeightOut,
+            'pickerSheet' => $pickWeightOut->pickerSheet,
+            'fromPalletId' => $validated['from_outgoing_pallet_id'] ?? null,
+            'selectedCutId' => $validated['selected_cut_id'] ?? null,
+            'moveWeightCount' => $validated['move_weight_count'] ?? null,
+        ])->render();
+
+        return response()->json([
+            'html' => $html,
+        ]);
     }
     private function formatCustomerAddress($row, string $addressId): array
     {

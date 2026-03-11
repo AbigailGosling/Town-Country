@@ -83,11 +83,13 @@
             }
             const totalWeightCount = Number(target.dataset.weightCount || 0);
             const selectedMoveWeightCount = Number(target.dataset.moveWeightCount || totalWeightCount || 0);
+            const selectedCutId = Number(target.dataset.selectedCutId || 0) || null;
             const payload = {
                 pickWeightOutId,
                 fromPalletId: target.dataset.fromPalletId || null,
                 weightCount: totalWeightCount,
                 moveWeightCount: selectedMoveWeightCount,
+                moveCutId: selectedCutId,
             };
             e.dataTransfer.setData('text/plain', JSON.stringify(payload));
         }
@@ -96,53 +98,152 @@
             e.preventDefault();
         }
 
-        function renderPickCardHtml(summary) {
-            const safeWeight = Number(summary.total_weight || 0).toFixed(3);
-            const count = Number(summary.weight_count || 0);
-            const suffix = count === 1 ? '' : 's';
-            const options = Array.from({ length: count }, (_, index) => {
-                const value = index + 1;
-                const selected = value === count ? 'selected' : '';
-                return `<option value="${value}" ${selected}>${value}</option>`;
-            }).join('');
-            const moveControls = count > 1
-                ? `<div class="mt-1 d-flex items-center gap-2">
-                        <span class="text-sm text-gray-600">Move Qty</span>
-                        <select class="form-control form-control-sm js-move-weight-count" style="width: 90px;">${options}</select>
-                   </div>`
-                : '';
-
-            return `
-                <div><strong>Pick #${summary.pickersheet_id ?? ''}</strong> ${summary.estimated_delivery_date ?? ''} ${summary.order_reference_number ?? ''} <strong>Weight: ${safeWeight} kg</strong> ${count} case${suffix}</div>
-                ${moveControls}
-            `;
-        }
-
-        function applyPickSummaryToElement(element, summary) {
-            element.dataset.pickWeightOutId = String(summary.id);
-            element.dataset.pickersheetId = String(summary.pickersheet_id ?? '');
-            element.dataset.weightCount = String(summary.weight_count ?? 0);
-            element.dataset.totalWeight = String(Number(summary.total_weight || 0));
-            element.dataset.moveWeightCount = String(summary.weight_count ?? 0);
-            element.innerHTML = renderPickCardHtml(summary);
-            bindMoveCountControls(element);
-        }
-
-        function createPickElement(summary, fromPalletId = null) {
-            const el = document.createElement('div');
-            el.className = 'border rounded p-2 mb-2 bg-white';
-            el.draggable = true;
-            el.dataset.pickWeightOutId = String(summary.id);
-            el.dataset.pickersheetId = String(summary.pickersheet_id ?? '');
-            el.dataset.weightCount = String(summary.weight_count ?? 0);
-            el.dataset.totalWeight = String(Number(summary.total_weight || 0));
-            el.dataset.moveWeightCount = String(summary.weight_count ?? 0);
-            if (fromPalletId) {
-                el.dataset.fromPalletId = String(fromPalletId);
+        function parseCutQuantities(rawValue) {
+            if (Array.isArray(rawValue)) {
+                return rawValue;
             }
-            el.innerHTML = renderPickCardHtml(summary);
-            bindMoveCountControls(el);
-            return el;
+
+            if (!rawValue) {
+                return [];
+            }
+
+            try {
+                const parsed = JSON.parse(rawValue);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function getCutEntry(cutQuantities, cutId) {
+            if (!Array.isArray(cutQuantities) || cutQuantities.length === 0) {
+                return null;
+            }
+
+            if (cutId === null || cutId === undefined || cutId === '') {
+                return null;
+            }
+
+            const numericCutId = Number(cutId || 0);
+            const found = cutQuantities.find((item) => Number(item.cut_id || 0) === numericCutId);
+            return found || null;
+        }
+
+        function renderMoveQtyOptions(maxQty, selectedQty) {
+            const limit = Math.max(0, Number(maxQty || 0));
+            const selected = Math.min(Math.max(1, Number(selectedQty || limit || 1)), limit || 1);
+            return Array.from({ length: limit }, (_, index) => {
+                const value = index + 1;
+                const isSelected = value === selected ? 'selected' : '';
+                return `<option value="${value}" ${isSelected}>${value}</option>`;
+            }).join('');
+        }
+
+        function htmlToElement(html) {
+            const template = document.createElement('template');
+            template.innerHTML = String(html || '').trim();
+            return template.content.firstElementChild;
+        }
+
+        async function fetchRenderedPickHtml({ pickWeightOutId, fromPalletId = null, selectedCutId = '', moveWeightCount = null }) {
+            const response = await fetch('{{ route('outgoing-pallets.render-pick-html') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                },
+                body: JSON.stringify({
+                    pick_weight_out_id: pickWeightOutId,
+                    from_outgoing_pallet_id: fromPalletId,
+                    selected_cut_id: selectedCutId === '' ? null : selectedCutId,
+                    move_weight_count: moveWeightCount,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to render pick HTML');
+            }
+
+            const data = await response.json();
+            return data?.html || '';
+        }
+
+        async function renderPickElement(summary, fromPalletId = null, selectedCutId = '', selectedMoveWeightCount = null) {
+            const html = await fetchRenderedPickHtml({
+                pickWeightOutId: summary.id,
+                fromPalletId,
+                selectedCutId,
+                moveWeightCount: selectedMoveWeightCount,
+            });
+
+            const element = htmlToElement(html);
+            if (!element) {
+                throw new Error('Rendered pick HTML is empty');
+            }
+
+            return element;
+        }
+
+        async function applyPickSummaryToElement(element, summary) {
+            const currentSelectedCutId = element.dataset.selectedCutId ?? '';
+            const currentMoveQty = Number(element.dataset.moveWeightCount || 0) || null;
+            const fromPalletId = element.dataset.fromPalletId || null;
+            const renderedElement = await renderPickElement(summary, fromPalletId, currentSelectedCutId, currentMoveQty);
+
+            element.replaceWith(renderedElement);
+            bindMoveControls(renderedElement);
+            return renderedElement;
+        }
+
+        async function createPickElement(summary, fromPalletId = null) {
+            const renderedElement = await renderPickElement(summary, fromPalletId, '', Number(summary.weight_count || 0));
+            bindMoveControls(renderedElement);
+            return renderedElement;
+        }
+
+        function updateCardMoveQtyForSelectedCut(card, selectedQty) {
+            const quantity = Math.max(1, Number(selectedQty || 1));
+            const qtySelect = card.querySelector('.js-move-weight-count');
+            const maxLabel = card.querySelector('.js-move-max-label');
+
+            if (qtySelect) {
+                qtySelect.innerHTML = renderMoveQtyOptions(quantity, quantity);
+            }
+
+            if (maxLabel) {
+                maxLabel.textContent = `max ${quantity} case${quantity === 1 ? '' : 's'}`;
+            }
+
+            card.dataset.moveWeightCount = String(quantity);
+        }
+
+        function handleMoveCutChange(e) {
+            const select = e.currentTarget;
+            const card = select.closest('[data-pick-weight-out-id]');
+            if (!card) {
+                return;
+            }
+
+            if (!select?.value) {
+                card.dataset.selectedCutId = '';
+                updateCardMoveQtyForSelectedCut(card, Number(card.dataset.weightCount || 0));
+                return;
+            }
+
+            const cutQuantities = parseCutQuantities(card.dataset.cutQuantities);
+            const selectedCut = getCutEntry(cutQuantities, select?.value || null);
+            if (!selectedCut) {
+                return;
+            }
+
+            const selectedCutId = Number(selectedCut.cut_id || 0);
+            const selectedQty = Number(selectedCut.quantity || 0);
+            if (!selectedCutId || selectedQty < 1) {
+                return;
+            }
+
+            card.dataset.selectedCutId = String(selectedCutId);
+            updateCardMoveQtyForSelectedCut(card, selectedQty);
         }
 
         function handleMoveWeightCountChange(e) {
@@ -152,23 +253,31 @@
                 return;
             }
 
-            const totalWeightCount = Number(card.dataset.weightCount || 0);
-            const selectedValue = Number(select?.value || totalWeightCount || 0);
-            if (!Number.isInteger(selectedValue) || selectedValue < 1 || selectedValue > totalWeightCount) {
+            const cutQuantities = parseCutQuantities(card.dataset.cutQuantities);
+            const selectedCut = getCutEntry(cutQuantities, card.dataset.selectedCutId || null);
+            const maxAllowed = selectedCut
+                ? Number(selectedCut.quantity || 0)
+                : Number(card.dataset.weightCount || 0);
+            const selectedValue = Number(select?.value || maxAllowed || 0);
+            if (!Number.isInteger(selectedValue) || selectedValue < 1 || selectedValue > maxAllowed) {
                 return;
             }
 
             card.dataset.moveWeightCount = String(selectedValue);
         }
 
-        function bindMoveCountControls(container = document) {
+        function bindMoveControls(container = document) {
+            container.querySelectorAll('.js-move-cut').forEach((select) => {
+                select.removeEventListener('change', handleMoveCutChange);
+                select.addEventListener('change', handleMoveCutChange);
+            });
             container.querySelectorAll('.js-move-weight-count').forEach((select) => {
                 select.removeEventListener('change', handleMoveWeightCountChange);
                 select.addEventListener('change', handleMoveWeightCountChange);
             });
         }
 
-        async function splitPickMove({ pickWeightOutId, moveWeightCount, fromPalletId = null, targetPalletId = null }) {
+        async function splitPickMove({ pickWeightOutId, moveWeightCount, moveCutId = null, fromPalletId = null, targetPalletId = null }) {
             const response = await fetch('{{ route('outgoing-pallets.split-pick') }}', {
                 method: 'POST',
                 headers: {
@@ -178,6 +287,7 @@
                 body: JSON.stringify({
                     pick_weight_out_id: pickWeightOutId,
                     move_weight_count: moveWeightCount,
+                    move_cut_id: moveCutId,
                     from_outgoing_pallet_id: fromPalletId,
                     target_outgoing_pallet_id: targetPalletId,
                 }),
@@ -235,24 +345,22 @@
             return data;
         }
 
-        function upsertSummaryInContainer(container, summary, fromPalletId = null) {
+        async function upsertSummaryInContainer(container, summary, fromPalletId = null) {
             if (!summary) {
                 return null;
             }
 
             const existing = container.querySelector(`[data-pick-weight-out-id="${summary.id}"]`);
             if (existing) {
-                applyPickSummaryToElement(existing, summary);
+                const rendered = await applyPickSummaryToElement(existing, summary);
                 if (fromPalletId) {
-                    existing.dataset.fromPalletId = String(fromPalletId);
-                } else {
-                    delete existing.dataset.fromPalletId;
+                    rendered.dataset.fromPalletId = String(fromPalletId);
                 }
                 cleanupRedundantPickCards(container, summary.id, summary.pickersheet_id);
-                return existing;
+                return rendered;
             }
 
-            const created = createPickElement(summary, fromPalletId);
+            const created = await createPickElement(summary, fromPalletId);
             container.appendChild(created);
             cleanupRedundantPickCards(container, summary.id, summary.pickersheet_id);
             return created;
@@ -297,24 +405,30 @@
             const dragged = document.querySelector(`[data-pick-weight-out-id="${payload.pickWeightOutId}"]`);
             const totalWeightCount = Number(payload.weightCount || dragged?.dataset?.weightCount || 0);
             const moveWeightCount = Number(payload.moveWeightCount || dragged?.dataset?.moveWeightCount || totalWeightCount || 0);
-            if (!moveWeightCount || moveWeightCount < 1 || moveWeightCount > totalWeightCount) {
+            const moveCutId = Number(payload.moveCutId || dragged?.dataset?.selectedCutId || 0) || null;
+            const cutQuantities = parseCutQuantities(dragged?.dataset?.cutQuantities);
+            const selectedCut = getCutEntry(cutQuantities, moveCutId);
+            const maxMovableCount = moveCutId ? Number(selectedCut?.quantity || 0) : totalWeightCount;
+            if (!moveWeightCount || moveWeightCount < 1 || moveWeightCount > maxMovableCount) {
                 return;
             }
 
-            if (totalWeightCount > 1 && moveWeightCount < totalWeightCount) {
+            const shouldSplit = totalWeightCount > 1 && (moveWeightCount < totalWeightCount || (moveCutId && maxMovableCount < totalWeightCount));
+            if (shouldSplit) {
                 const splitResult = await splitPickMove({
                     pickWeightOutId: payload.pickWeightOutId,
                     moveWeightCount,
+                    moveCutId,
                     fromPalletId: payload.fromPalletId || null,
                     targetPalletId: outgoingPalletId,
                 });
 
                 if (dragged) {
-                    applyPickSummaryToElement(dragged, splitResult.source);
-                    cleanupRedundantPickCards(dragged.parentElement, splitResult.source.id, splitResult.source.pickersheet_id);
+                    const updatedDragged = await applyPickSummaryToElement(dragged, splitResult.source);
+                    cleanupRedundantPickCards(updatedDragged.parentElement, splitResult.source.id, splitResult.source.pickersheet_id);
                 }
 
-                upsertSummaryInContainer(zone, splitResult.moved, outgoingPalletId);
+                await upsertSummaryInContainer(zone, splitResult.moved, outgoingPalletId);
                 bindDraggable(document);
                 updatePalletWeights();
                 return;
@@ -330,13 +444,13 @@
                 if (targetSummary) {
                     const existingInZone = zone.querySelector(`[data-pick-weight-out-id="${targetSummary.id}"]`);
                     if (existingInZone && existingInZone !== dragged) {
-                        applyPickSummaryToElement(existingInZone, targetSummary);
+                        await applyPickSummaryToElement(existingInZone, targetSummary);
                         dragged.remove();
                         cleanupRedundantPickCards(zone, targetSummary.id, targetSummary.pickersheet_id);
                     } else {
-                        applyPickSummaryToElement(dragged, targetSummary);
-                        dragged.dataset.fromPalletId = outgoingPalletId;
-                        zone.appendChild(dragged);
+                        const updatedDragged = await applyPickSummaryToElement(dragged, targetSummary);
+                        updatedDragged.dataset.fromPalletId = outgoingPalletId;
+                        zone.appendChild(updatedDragged);
                         cleanupRedundantPickCards(zone, targetSummary.id, targetSummary.pickersheet_id);
                     }
                 } else {
@@ -356,24 +470,30 @@
             const dragged = document.querySelector(`[data-pick-weight-out-id="${payload.pickWeightOutId}"]`);
             const totalWeightCount = Number(payload.weightCount || dragged?.dataset?.weightCount || 0);
             const moveWeightCount = Number(payload.moveWeightCount || dragged?.dataset?.moveWeightCount || totalWeightCount || 0);
-            if (!moveWeightCount || moveWeightCount < 1 || moveWeightCount > totalWeightCount) {
+            const moveCutId = Number(payload.moveCutId || dragged?.dataset?.selectedCutId || 0) || null;
+            const cutQuantities = parseCutQuantities(dragged?.dataset?.cutQuantities);
+            const selectedCut = getCutEntry(cutQuantities, moveCutId);
+            const maxMovableCount = moveCutId ? Number(selectedCut?.quantity || 0) : totalWeightCount;
+            if (!moveWeightCount || moveWeightCount < 1 || moveWeightCount > maxMovableCount) {
                 return;
             }
 
-            if (totalWeightCount > 1 && moveWeightCount < totalWeightCount) {
+            const shouldSplit = totalWeightCount > 1 && (moveWeightCount < totalWeightCount || (moveCutId && maxMovableCount < totalWeightCount));
+            if (shouldSplit) {
                 const splitResult = await splitPickMove({
                     pickWeightOutId: payload.pickWeightOutId,
                     moveWeightCount,
+                    moveCutId,
                     fromPalletId: payload.fromPalletId,
                     targetPalletId: null,
                 });
 
                 if (dragged) {
-                    applyPickSummaryToElement(dragged, splitResult.source);
-                    cleanupRedundantPickCards(dragged.parentElement, splitResult.source.id, splitResult.source.pickersheet_id);
+                    const updatedDragged = await applyPickSummaryToElement(dragged, splitResult.source);
+                    cleanupRedundantPickCards(updatedDragged.parentElement, splitResult.source.id, splitResult.source.pickersheet_id);
                 }
 
-                upsertSummaryInContainer(unassigned, splitResult.moved, null);
+                await upsertSummaryInContainer(unassigned, splitResult.moved, null);
                 bindDraggable(document);
                 updatePalletWeights();
                 return;
@@ -390,13 +510,13 @@
 
                 const existingInUnassigned = unassigned.querySelector(`[data-pick-weight-out-id="${movedSummary.id}"]`);
                 if (existingInUnassigned && existingInUnassigned !== dragged) {
-                    applyPickSummaryToElement(existingInUnassigned, movedSummary);
+                    await applyPickSummaryToElement(existingInUnassigned, movedSummary);
                     dragged.remove();
                     cleanupRedundantPickCards(unassigned, movedSummary.id, movedSummary.pickersheet_id);
                 } else {
-                    applyPickSummaryToElement(dragged, movedSummary);
-                    delete dragged.dataset.fromPalletId;
-                    unassigned.appendChild(dragged);
+                    const updatedDragged = await applyPickSummaryToElement(dragged, movedSummary);
+                    delete updatedDragged.dataset.fromPalletId;
+                    unassigned.appendChild(updatedDragged);
                     cleanupRedundantPickCards(unassigned, movedSummary.id, movedSummary.pickersheet_id);
                 }
             }
@@ -524,8 +644,8 @@
             card.dataset.palletTypeId = selectedTypeId;
             card.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div><strong>Pallet #${palletId}</strong></div>
-                    <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6 btn-danger js-delete-pallet" data-outgoing-pallet-id="${palletId}"><i class="fas fa-trash text-red-100"></i></button>
+                    <div><strong>Pallet #${palletId}</strong>
+                    <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6 btn-danger js-delete-pallet" data-outgoing-pallet-id="${palletId}"><i class="fas fa-trash text-red-100"></i></button></div>
                 </div>
                 <div class="mb-2">
                     <strong>Type:</strong>
@@ -536,7 +656,7 @@
                 <div class="current-weight-display mb-2">
                     <strong>Current Weight:</strong> <span class="text-gray-700">0 kg</span>
                 </div>
-                <div class="pallet-drop-zone border rounded p-2 mt-2" data-outgoing-pallet-id="${palletId}" style="min-height: 120px;"></div>
+                <div class="pallet-drop-zone border rounded bg-blue-50" data-outgoing-pallet-id="${palletId}" style="min-height: 120px;"></div>
             `;
 
             palletsList.appendChild(card);
@@ -577,7 +697,7 @@
         bindDropZones();
         bindDeleteButtons();
         bindTypeSelectors();
-        bindMoveCountControls();
+        bindMoveControls();
         addPalletBtn?.addEventListener('click', createPallet);
         updatePalletWeights();
 </script>
