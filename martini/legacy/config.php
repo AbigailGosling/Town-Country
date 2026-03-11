@@ -5,8 +5,8 @@
     $dbPass = env("DB_PASSWORD_SECOND");
     $dbName = env("DB_DATABASE_SECOND");
 
-    $domain = '//townandcountrystock.co.uk/legacy/';
-    $domainOld = '//townandcountrystock.co.uk/';
+    $domain = '//tcdev.tang.solutions/legacy/';
+    $domainOld = '//tcdev.tang.solutions/';
 
     $mail_host = 'smtp.mandrillapp.com';
     $mail_email = 'info@devclever.co.uk';
