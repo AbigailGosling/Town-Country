@@ -196,7 +196,7 @@ use Ramsey\Uuid\Type\Decimal;
 
 	function averageDaysUntilPaidForCustomer($customer_id){
         global $mysqli;
-        $timeBack = date('Y-m-d', strtotime('-2 months'));
+        $timeBack = date('Y-m-d', strtotime('-3 months'));
         $invoice_payment_times = [];
 
         $invoiceResults = prepareExecuteQuery("SELECT `id`,`date_completed`,`estimated_delivery_date` FROM `pickerSheets` WHERE `completed` ='1' && `customer_id`=? AND `date_completed` >= ?",'is',[$customer_id, $timeBack]);
