@@ -173,6 +173,22 @@ class OutgoingPalletController extends Controller
 
         return response()->json($pallet, 201);
     }
+    public function pickPallets(Request $request): JsonResponse
+    {
+        $pickSheetId = $request->input('pickersheet_id');
+         if (!$pickSheetId) {
+             return response()->json(['error' => 'picksheet_id query parameter is required'], 400);
+        }
+        $pickWeightOutIds = PickWeightOut::where('pickersheet_id', $pickSheetId)->pluck('id')->toArray();
+
+        $pallets = OutgoingPallet::query()
+            ->select('outgoing_pallet.*')
+            ->join('outgoing_pallet_pickweights', 'outgoing_pallet.id', '=', 'outgoing_pallet_pickweights.outgoing_pallet_id')
+            ->whereIn('outgoing_pallet_pickweights.pickWeightOut_id', $pickWeightOutIds)
+            ->get();
+
+        return response()->json($pallets);
+    }
     /**
      * Display the specified outgoing pallet.
      */

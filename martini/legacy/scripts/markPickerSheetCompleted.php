@@ -95,9 +95,6 @@ use Carbon\Carbon;
 		$x2 = "UPDATE `pickerItems` SET `status` = '1' WHERE pickersheet_id=?";
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
 
-        $ps = PickerSheet::where("id", $pickersheet_id)->get();
-        PickWeightOut::processPickerSheetsForPalletization($ps);
-
 	}
     pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:checkshortpick '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
     pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:credit_precheck '.$customer_id.' >NUL 2>NUL"', 'r'));
