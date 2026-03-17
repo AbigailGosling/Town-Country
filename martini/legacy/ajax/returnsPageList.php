@@ -63,7 +63,8 @@ use Illuminate\Support\Facades\Auth;
 
 		while($returnedIntake = mysqli_fetch_array($searchResults)){
 		    $date_received = date('d/m/Y', strtotime($returnedIntake['date_received']));
-			$qr = prepareExecuteQuery("SELECT count(*) as `rows`,`created_at` FROM `invoice_payments` WHERE `payment_method` = 'CREDIT_NOTE' AND `invoice_id` = ".$returnedIntake['delivery_note_number']);
+            if ($returnedIntake['delivery_note_number'] == null || $returnedIntake['delivery_note_number']== '') continue;
+			$qr = prepareExecuteQuery("SELECT count(*) as `rows`,`created_at` FROM `invoice_payments` WHERE `payment_method` = 'CREDIT_NOTE' AND `invoice_id` = ?",'s',[$returnedIntake['delivery_note_number']]);
 			$qr = $qr->fetch_assoc();
 			$payments = $qr['rows'];
 		?>

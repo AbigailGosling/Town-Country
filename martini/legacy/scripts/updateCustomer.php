@@ -3,7 +3,8 @@
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
-use App\Models\CustomerAddress;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
  $c = Customer::find(request()->input('id'));
@@ -99,9 +100,6 @@ use App\Models\CustomerAddress;
     $colNames[] = "`is_petfood_customer`=?";
 	$colValue[] = (request()->input('is_petfood_customer')!=null && request()->input('is_petfood_customer') != "")?request()->input('is_petfood_customer'):"0";
 
-    $colNames[] = "`credit_enabled`=?";
-	$colValue[] = (request()->input('credit_enabled_hidden',$c->credit_enabled))?1:0;
-
     $colNames[] = "`override`=?";
 	$colValue[] = request()->input('override_hidden',$c->override);
 
@@ -114,14 +112,8 @@ use App\Models\CustomerAddress;
     $colNames[] = "`delivery_day_override`=?";
 	$colValue[] = request()->input('delivery_day_override_hidden',$c->delivery_day_override);
 
-    $colNames[] = "`check_saledate`=?";
-	$colValue[] = request()->input('check_saledate_hidden',$c->check_saledate);
-
     $colNames[] = "`override_cost_check`=?";
     $colValue[] = request()->input('override_cost_check_hidden',$c->override_cost_check);
-
-    $colNames[] = "`cost_check_enabled`=?";
-    $colValue[] = request()->input('cost_check_enabled_hidden',$c->cost_check_enabled);
 
     $colNames[] = "`default_finance_person_id`=?";
     $colValue[] = request()->input('default_finance_person_id',$c->default_finance_person_id);
@@ -147,6 +139,17 @@ use App\Models\CustomerAddress;
 
 	$colNames[] = '`sage_no` = ?';
 	$colValue[] = request()->input('sage_no');
+
+    if (User::find(Auth::id())->hasPermission("control_credit_enabled")) {
+        $colNames[] = "`cost_check_enabled`=?";
+        $colValue[] = request()->input('cost_check_enabled_hidden',$c->cost_check_enabled);
+
+        $colNames[] = "`check_saledate`=?";
+        $colValue[] = request()->input('check_saledate_hidden',$c->check_saledate);
+
+        $colNames[] = "`credit_enabled`=?";
+        $colValue[] = (request()->input('credit_enabled_hidden',$c->credit_enabled))?1:0;
+    }
 
 	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";

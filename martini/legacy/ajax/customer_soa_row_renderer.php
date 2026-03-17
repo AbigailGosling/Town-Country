@@ -6,28 +6,29 @@ use Illuminate\Support\Facades\Auth;
     require(__DIR__.'/../functions.php');
     $customerPicksheets = json_decode(request()->input('picksheet'),true);
     $customer_id = request()->input('customer_id');
+    $customer = getCustomer($customer_id);
     $showAll = (request()->input('showAll') == "Y");
     $picksheet = null;
     for ($i = 0; $i < count($customerPicksheets);$i++) {
         $picksheet = $customerPicksheets[$i];
         if(!$showAll && ($picksheet['outstanding'] > -0.02 && $picksheet['outstanding'] < 0.02)) continue;
     ?>
-    <tr class="<?php if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">  
+    <tr class="<?php if($i%2 == 0){ echo 'odd'; }else{ echo 'even'; } ?>">
         <td data-order="<?php echo $picksheet['id']; ?>"><a href="invoice.php?id=<?php echo $picksheet['id']; ?>"><?php echo $picksheet['id']; ?></a>
             <?php
-                
-                
+
+
                 if(!$picksheet['hasCreditNote']){
                     if($picksheet['hasReturns']){
                         ?><div class="soa_cr_label">CR</div><?php
                     }
                 }
-            
-            ?> 
+
+            ?>
         </td>
-        <?php 
+        <?php
         $usermodel = User::find(Auth::id());
-        if (!$usermodel->hasPermission("restrictedaccess")) { ?>
+        if ($customer['default_finance_person_id']== $usermodel->id||!$usermodel->hasPermission("restrictedaccess")) { ?>
             <?php if(!$picksheet['invoicePaid']) { ?>
                 <td><a href="single_invoice_payments.php?customer_id=<?php echo $customer_id; ?>&invoice_id=<?php echo $picksheet['id']; ?>">Make / View payments</a></td>
             <?php }else{ ?>
@@ -40,14 +41,14 @@ use Illuminate\Support\Facades\Auth;
             <?php
                 echo $picksheet['estimated_delivery_date'];
 
-                /*if (strtotime($picksheet['estimated_delivery_date']) < time()) { 
+                /*if (strtotime($picksheet['estimated_delivery_date']) < time()) {
                     echo '<div class="overdue" style="display:inline-block;background:red;border-radius:20px;height:20px;width:20px;color:#fff;text-align:center;font-weight:bold;line-height:20px;">!</div>';
-                    
+
                 }*/
             ?>
             </td>
 
-        
+
             <?php
             $sortableDateFormat = date('d-m-Y',$date);
         ?>

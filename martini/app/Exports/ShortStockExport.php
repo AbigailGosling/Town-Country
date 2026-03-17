@@ -27,9 +27,10 @@ class ShortStockExport implements FromCollection
     private Collection $species;
     private Collection $nationalities;
     private Collection $brands;
-
-    function __construct()
+    private int $_dayRange;
+    function __construct(int $dayRange = +10)
     {
+        $this->_dayRange = min($dayRange,+1);
         $this->cuts = Cut::all()->keyBy('id');
         //$this->cutgroups = CutGroup::all()->keyBy('id');
         $this->species = Species::all()->keyBy('id');
@@ -45,9 +46,9 @@ class ShortStockExport implements FromCollection
         if (!isset($this->_collection))
         {
             $m=[];
-            $target_date = Carbon::now()->setDay(+10)->startOfDay()->format("d/m/Y");
+            $target_date = Carbon::now()->setDay($this->_dayRange)->startOfDay()->format("d/m/Y");
             $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->cursor();
-            $target_date = Carbon::now()->addDays(+10)->startOfDay();
+            $target_date = Carbon::now()->addDays($this->_dayRange)->startOfDay();
             $products = Product::whereIn("id",$lazysearch->pluck("id"))->get();
             $r = null;
             foreach ($products as $p)
