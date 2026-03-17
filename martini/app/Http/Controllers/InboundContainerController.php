@@ -50,7 +50,7 @@ class InboundContainerController extends Controller
      */
     public function create()
     {
-        return view("container.edit",['container'=>new InboundContainer,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>true]);
+        return view("container.edit",['container'=>new InboundContainer,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>true,'brands'=>Brand::all()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
     }
 
     /**
