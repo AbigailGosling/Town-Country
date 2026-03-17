@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -46,25 +48,19 @@ use Illuminate\Support\Facades\Auth;
 
 
 <?php
-	if($address_id != ''){
+	if($address_id == ''){
+        $address_id = 1;
 
-		$addressNumber = $row['address'.$address_id.'_number'];
-		$addressline1 = $row['address'.$address_id.'_1'];
-		$addressline2 = $row['address'.$address_id.'_2'];
-		$addressline3 = $row['address'.$address_id.'_3'];
-		$addressline4 = $row['address'.$address_id.'_4'];
-		$addresspostcode = $row['postcode_'.$address_id];
 
-	}else{
-		$addressNumber = $row['address1_number'];
 
-		$addressline1 = $row['address1_1'];
-		$addressline2 = $row['address1_2'];
-		$addressline3 = $row['address1_3'];
-		$addressline4 = $row['address1_4'];
-		$addresspostcode = $row['postcode_1'];
 	}
-
+    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
+    $addressNumber = $ca->address_number;
+		$addressline1 = $ca->address_1;
+		$addressline2 = $ca->address_2;
+		$addressline3 = $ca->address_3;
+		$addressline4 = $ca->address_4;
+		$addresspostcode = $ca->postcode;
 ?>
 
 
@@ -153,20 +149,20 @@ use Illuminate\Support\Facades\Auth;
 	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
 	<div class="addresses">
 		<?php
-			for ($u = 1;$u < 10;$u++)
-			{
-				if($row['address'.$u.'_1'] == '' && $row['postcode_'.$u] == ''){
+			foreach (ClientAddress::where('customer_id', $customer_id)->where('client_type', ClientType::CUSTOMER->value)->orderBy('address_id')->get() as $ca)
+            {
+				if($ca->{'address_1'} == '' && $ca->{'postcode'} == ''){
 					$addressOneEmpty = true;
 				}else{
 					$addressOneEmpty = false;
 				}
 		?>
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?php echo ($u>0)?$u:'1'; ?>)">
+		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?php echo ($ca->address_id>0)?$ca->address_id:'1'; ?>)">
 			<span><?php
 				if($addressOneEmpty){
 					echo 'Empty';
 				}else{
-					echo $row['address'.$u.'_1'] . ' ' . $row['postcode_'.$u];
+					echo $ca->{'address_1'} . ' ' . $ca->{'postcode'};
 				}
 			?></span>
 		</div>
@@ -184,9 +180,12 @@ use Illuminate\Support\Facades\Auth;
 
 		<?php
 		}
+        $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
+
+        $site_id = $ca->site_id ?? $row['site_id'];
 	?>
-    $('#served_by').val("<?php echo Site::find($row['site_id'])->name; ?>");
-    var served_by = <?php echo $row['site_id']; ?>
+    $('#served_by').val("<?php echo Site::find($site_id)->name; ?>");
+    var served_by = <?php echo $site_id; ?>
     </script>
 
 	<style>

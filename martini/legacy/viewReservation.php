@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\ContainerProduct;
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\InboundContainer;
 use App\Models\User;
 use Carbon\Carbon;
@@ -22,18 +24,18 @@ use Illuminate\Support\Facades\Auth;
 	$x1 = "SELECT * FROM `customers` WHERE id=?";
 	$y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y1);
+    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $reservation['address_id'])->where('client_type', ClientType::CUSTOMER->value)->first();
+	$addressNumber = $ca->address_number;
 
-	$addressNumber = $row['address'.$reservation['address_id'].'_number'];
+	$address = $ca->address_1;
+	if($ca->address_2){ $address .= ',&#13;'; }
+	$address .= $ca->address_2;
 
-	$address = $customer['address'.$reservation['address_id'].'_1'];
-	if($customer['address'.$reservation['address_id'].'_2']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$reservation['address_id'].'_2'];
+	if($ca->address_3){ $address .= ',&#13;'; }
+	$address .= $ca->address_3;
 
-	if($customer['address'.$reservation['address_id'].'_3']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$reservation['address_id'].'_3'];
-
-	if($customer['address'.$reservation['address_id'].'_4']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$reservation['address_id'].'_4'];
+	if($ca->address_4){ $address .= ',&#13;'; }
+	$address .= $ca->address_4;
 
 	if ($adv == false)
 	{

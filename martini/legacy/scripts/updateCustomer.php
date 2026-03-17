@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Customer;
+use App\Models\CustomerAddress;
 
 	require(__DIR__.'/../functions.php');
  $c = Customer::find(request()->input('id'));
@@ -123,21 +126,6 @@ use App\Models\Customer;
     $colNames[] = "`default_finance_person_id`=?";
     $colValue[] = request()->input('default_finance_person_id',$c->default_finance_person_id);
 
-	for ($u=1;$u<10;$u++)
-	{
-		$colNames[] = "`address".$u."_1` = ?";
-		$colValue[] = request()->input('address'.$u.'_1');
-		$colNames[] = "`address".$u."_2` = ?";
-		$colValue[] = request()->input('address'.$u.'_2');
-		$colNames[] = "`address".$u."_3` = ?";
-		$colValue[] = request()->input('address'.$u.'_3');
-		$colNames[] = "`address".$u."_4` = ?";
-		$colValue[] = request()->input('address'.$u.'_4');
-		$colNames[] = "`postcode_".$u."` = ?";
-		$colValue[] = request()->input('postcode_'.$u);
-		$colNames[] = "`address".$u."_number` = ?";
-		$colValue[] = request()->input('address'.$u.'_number');
-	}
 	define('DEL_SUNDAY',     1);
 	define('DEL_SATURDAY',   2);
 	define('DEL_FRIDAY',     4);
@@ -163,6 +151,25 @@ use App\Models\Customer;
 	$colValue[] = request()->input('id');
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";
 	$y = prepareExecuteQuery($x,str_repeat("s",count($colValue)),$colValue);
+
+    foreach (request()->input('address_id') as $i => $u)
+	{
+        $ca = ClientAddress::where('customer_id', request()->input('id'))->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
+        if (!$ca) {
+            $ca = new ClientAddress();
+            $ca->customer_id = request()->input('id');
+            $ca->address_id = $u;
+            $ca->client_type = ClientType::CUSTOMER->value;
+        }
+        $ca->address_1 = request()->input('address_1')[$i];
+        $ca->address_2 = request()->input('address_2')[$i];
+        $ca->address_3 = request()->input('address_3')[$i];
+        $ca->address_4 = request()->input('address_4')[$i];
+        $ca->postcode = request()->input('postcode')[$i];
+        $ca->address_number = request()->input('address_number')[$i];
+        $ca->site_id = request()->input('address_site_id')[$i];
+        $ca->save();
+	}
 ?>
 <script>
 	window.location = '../manageCustomers.php?id=<?php echo $id; ?>';

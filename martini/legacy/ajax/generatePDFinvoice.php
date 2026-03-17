@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\ClientAddress;
+use App\Models\ClientType;
+
 	require(__DIR__.'/../functions.php');
 
 	ini_set('memory_limit', '1024M');
@@ -53,7 +57,7 @@
     $saledate = DateTime::createFromFormat('d/m/Y', ''.$saledate);
     $saledate->modify('+'. $paydayDelay .' day');
 	$payByDate = $saledate->format('d/m/Y');
-
+    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
 
@@ -235,10 +239,10 @@
 				<div class="invoiceaddress">
 					'. $customer['businessname'] .'<br/>
 					t/a'. $customer['tradingas'] .'<br/>
-					'. $customer['address1_1'].'<br/>
-					'. $customer['address1_2'].'<br/>
-					'. $customer['address1_3'].'<br/>
-					'. $customer['postcode_1'].'<br/>
+					'. $ca->address_1.'<br/>
+					'. $ca->address_2.'<br/>
+					'. $ca->address_3.'<br/>
+					'. $ca->postcode.'<br/>
 				</div>
 			</td>
 			<td align="right" width="90%">
@@ -252,13 +256,13 @@
 							<div class="deliveryaddress">';
 
 						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
-
+                        $tca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 						$header .= $customer['businessname'] .'<br/>
 								t/a'. $customer['tradingas'] .'<br/>
-								'. $customer['address'.$pickSheetRow['addressid'].'_1'].'<br/>
-								'. $customer['address'.$pickSheetRow['addressid'].'_2'].'<br/>
-								'. $customer['address'.$pickSheetRow['addressid'].'_3'].'<br/>
-								'. $customer['postcode_'.$pickSheetRow['addressid'].''].'<br/>';
+								'. $tca->address_1.'<br/>
+								'. $tca->address_2.'<br/>
+								'. $tca->address_3.'<br/>
+								'. $tca->postcode.'<br/>';
 
                         if($pickSheetRow['addressid'] == 1){
 

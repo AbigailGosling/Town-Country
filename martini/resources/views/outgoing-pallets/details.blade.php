@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __("Deliveries for: ".$customer->businessname. " : ".$customer->{'address'.$address_id.'_1'}. " : ".$customer->{'postcode_'.$address_id}) }}
+            {{ __("Deliveries for: ".$customer->businessname. " : ".$customer->clientAddresses->firstWhere('address_id', $address_id)->address_1. " : ".$customer->customerAddresses->firstWhere('address_id', $address_id)->postcode) }}
         </h2>
     </x-slot>
     <div><a href="{{ route('outgoing-pallets.index') }}" class="inline-block mt-4 px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">Back to List</a></div>

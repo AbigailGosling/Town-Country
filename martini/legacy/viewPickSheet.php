@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +22,11 @@ use Illuminate\Support\Facades\Auth;
 
         $recieverName = $customer['businessname'];
         $recieverTA = 't/a '.$customer['tradingas'];
-        $recieverAddress1 = $customer['address'.$pickerSheet['addressid'].'_1'] . '<br/>';
-        $recieverAddress2 = $customer['address'.$pickerSheet['addressid'].'_2'] . '<br/>';
-        $recieverAddress3 = $customer['address'.$pickerSheet['addressid'].'_3'] . '<br/>';
-        $recieverPostCode = $customer['postcode_'.$pickerSheet['addressid'].''] . '<br/>';
+        $ca = ClientAddress::where('customer_id', $pickerSheet['customer_id'])->where('address_id', $pickerSheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+        $recieverAddress1 = $ca->address_1 . '<br/>';
+        $recieverAddress2 = $ca->address_2 . '<br/>';
+        $recieverAddress3 = $ca->address_3 . '<br/>';
+        $recieverPostCode = $ca->postcode . '<br/>';
     }
     else
     {

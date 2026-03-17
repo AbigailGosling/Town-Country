@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
 use App\Models\OutgoingPalletType;
@@ -24,16 +26,6 @@ class OutgoingPalletController extends Controller
         $startDate = Carbon::today();
         $endDate = Carbon::today()->addDays(3);
 
-        $addressFields = [];
-        for ($i = 1; $i <= 9; $i++) {
-            $addressFields[] = "customers.address{$i}_1";
-            $addressFields[] = "customers.address{$i}_2";
-            $addressFields[] = "customers.address{$i}_3";
-            $addressFields[] = "customers.address{$i}_4";
-            $addressFields[] = "customers.postcode_{$i}";
-            $addressFields[] = "customers.address{$i}_number";
-        }
-
         $pickSheets = PickerSheet::query()
             ->select([
                 'pickerSheets.id as pickersheet_id',
@@ -44,7 +36,6 @@ class OutgoingPalletController extends Controller
                 'customers.businessname',
                 'customers.tradingas',
             ])
-            ->addSelect($addressFields)
             ->join('customers', 'pickerSheets.customer_id', '=', 'customers.id')
             ->where('pickerSheets.deleted', 0)
             ->whereRaw(
@@ -52,20 +43,9 @@ class OutgoingPalletController extends Controller
                 [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]
             )
             ->orderByRaw("STR_TO_DATE(pickerSheets.estimated_delivery_date, '%d/%m/%Y') asc");
-            $pickSheets = $pickSheets->get();
+        $pickSheets = $pickSheets->get();
 
-        $expandedSheets = $pickSheets->flatMap(function ($sheet) {
-            $addressIds = $this->parseAddressIds((string) $sheet->addressid);
-
-            return collect($addressIds)->map(function ($addressId) use ($sheet) {
-                $copy = clone $sheet;
-                $copy->addressid = $addressId;
-
-                return $copy;
-            });
-        });
-
-        $deliveryGroups = $expandedSheets
+        $deliveryGroups = $pickSheets
             ->groupBy(function ($sheet) {
                 return $sheet->customer_id.'|'.$sheet->addressid;
             })
@@ -84,7 +64,7 @@ class OutgoingPalletController extends Controller
                     'customer_id' => $first->customer_id,
                     'customer_name' => $customerName,
                     'address_id' => $first->addressid,
-                    'address_lines' => $this->formatCustomerAddress($first, (string) $first->addressid),
+                    'address_lines' => $this->formatCustomerAddress($first->customer_id, (string) $first->addressid),
                     'deliveries_by_date' => $deliveriesByDate,
                 ];
             })
@@ -374,50 +354,41 @@ class OutgoingPalletController extends Controller
             'html' => $html,
         ]);
     }
-    private function formatCustomerAddress($row, string $addressId): array
+    private function formatCustomerAddress(int $customerId, string $addressId): array
     {
         $addressId = trim($addressId);
         if ($addressId === '') {
             return [];
         }
-
+       $ca = ClientAddress::where('customer_id', $customerId)
+            ->where('address_id', $addressId)
+            ->where('client_type', ClientType::CUSTOMER->value)
+            ->firstOrFail();
         $lines = [];
-        $numberKey = "address{$addressId}_number";
-        if (!empty($row->{$numberKey} ?? null)) {
-            $lines[] = $row->{$numberKey};
+        $numberKey = "address_number";
+        if (!empty($ca->{$numberKey} ?? null)) {
+            $lines[] = $ca->{$numberKey};
         }
         else {
             $lines[] = "";
         }
 
-        $key = "address{$addressId}_1";
-        if (!empty($row->{$key} ?? null)) {
-            $lines[] = $row->{$key};
+        $key = "address_1";
+        if (!empty($ca->{$key} ?? null)) {
+            $lines[] = $ca->{$key};
         }
         else {
             $lines[] = "";
         }
 
-        $postcodeKey = "postcode_{$addressId}";
-        if (!empty($row->{$postcodeKey} ?? null)) {
-            $lines[] = $row->{$postcodeKey};
+        $postcodeKey = "postcode";
+        if (!empty($ca->{$postcodeKey} ?? null)) {
+            $lines[] = $ca->{$postcodeKey};
         }
         else {
             $lines[] = "";
         }
 
         return $lines;
-    }
-    private function parseAddressIds(string $addressId): array
-    {
-        $addressId = trim($addressId);
-        if ($addressId === '') {
-            return [];
-        }
-
-        $parts = preg_split('/[^0-9]+/', $addressId);
-        $parts = array_values(array_filter($parts, fn ($part) => $part !== ''));
-
-        return $parts !== [] ? $parts : [$addressId];
     }
 }

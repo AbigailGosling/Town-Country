@@ -3,6 +3,8 @@
 namespace App\Exports;
 
 use App\Models\Customer;
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -55,9 +57,9 @@ class DeliveryCustomerExport implements FromCollection
             $this->_collection->add($this->colLookup);
             foreach($tmparr as $cust)
             {
-                for($i=1;$i<=10;$i++)
+                foreach (ClientAddress::where([["customer_id",$cust->id],["client_type",ClientType::CUSTOMER->value]])->get() as $address)
                 {
-                    if ($cust->{"address{$i}_1"} != null && $cust->{"address{$i}_1"} != "" && $cust->{"postcode_{$i}"} != null && $cust->{"postcode_{$i}"} != "")
+                    if ($address->{"address_1"} != null && $address->{"address_1"} != "" && $address->{"postcode"} != null && $address->{"postcode"} != "")
                     {
                         $newRow = new stdClass();
                         foreach ($this->colLookup as $key=>$value)
@@ -81,11 +83,11 @@ class DeliveryCustomerExport implements FromCollection
                             }
                             else if ($key == "postcode")
                             {
-                                $newRow->$key =  $cust->{"postcode_{$i}"};
+                                $newRow->$key =  $address->{"postcode"};
                             }
                             else if ($key == "address_number")
                             {
-                                $newRow->$key = ""; $cust->{"address{$i}_number"};
+                                $newRow->$key = ""; $address->{"address_number"};
                             }
                             else if ($key == "site_id")
                             {

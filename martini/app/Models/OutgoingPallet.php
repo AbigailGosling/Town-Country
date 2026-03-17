@@ -87,13 +87,10 @@ class OutgoingPallet extends Model
         return $this->getTotalWeight() > $this->outgoingPalletType->max_weight;
     }
 
-    /* public function address()
+    public function address()
     {
-        return $this->belongsTo(Address::class);
-    } */
-    /**
-     * Sync this pallet's estimated_delivery_date to the common date of all attached PickerSheets, or null if mixed.
-     */
+        return $this->belongsTo(ClientAddress::class, 'address_id', 'address_id')->where([['client_type', ClientType::CUSTOMER->value],['client_id', $this->customer_id]]);
+    }
 
     public function checkUpdateEstimatedDeliveryDate()
     {
@@ -101,7 +98,7 @@ class OutgoingPallet extends Model
         $dates = [];
         foreach ($pickWeightOuts as $pickWeightOut) {
             if (!$pickWeightOut) continue;
-            $pickerSheet = \App\Models\PickerSheet::find($pickWeightOut->pickersheet_id);
+            $pickerSheet = PickerSheet::find($pickWeightOut->pickersheet_id);
             if ($pickerSheet && $pickerSheet->estimated_delivery_date) {
                 $dates[] = $pickerSheet->estimated_delivery_date;
             }

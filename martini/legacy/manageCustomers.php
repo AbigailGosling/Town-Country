@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 	include('functions.php');
 	define('DEL_SUNDAY',     1);
@@ -17,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 	{
 		$showDisabled = request()->input('showDisabled');
 	}
-
+    $sites = Site::all();
 ?>
 <!doctype html>
 <html class="int">
@@ -120,31 +123,50 @@ use Illuminate\Support\Facades\Auth;
 					<td><input type="text" class="input" name="tradingas" value="<?php echo $data['tradingas']; ?>"></td>
 				</tr>
 				<?php
-					for ($u=1;$u<10;$u++)
+                if (request()->input('id') != '') {
+                    $cas = ClientAddress::where([['customer_id', request()->input('id')], ['client_type', ClientType::CUSTOMER->value]])->orderBy('address_id')->get();
+
+                } else {
+                    $cas = collect();
+                }
+                if ($cas->count() < 9) {
+                    $cas = $cas->concat(collect(array_fill(0, 9 - $cas->count(), new ClientAddress())));
+                }
+					foreach ($cas as $i=>$ca)
 					{
-						if ($u>1 && $data['address'.$u.'_1']=="")$style1 = "display:none;";
+						if (($ca->address_id == "" && $id>0) || ($ca->address_id > 1 && $ca->address_1==""))$style1 = "display:none;";
+                        $u = $i + 1;
 				?>
 				<tr style="vertical-align: top;">
-					<td class="label"><label>Delivery Address <?php echo $u; ?></label></td>
+					<td class="label"><label>Delivery Address <?php echo $ca->address_id ?? $u; ?></label></td>
 					<td>
-						<input type="text" class="input" id="address<?php echo $u; ?>" name="address<?php echo $u; ?>_1" value="<?php echo $data['address'.$u.'_1']; ?>">
-						<div style="<?php echo $style1; ?>" id="address<?php echo $u; ?>container">
- 							<input type="text" class="input" name="address<?php echo $u; ?>_2" value="<?php echo $data['address'.$u.'_2']; ?>"><br/>
-							<input type="text" class="input" name="address<?php echo $u; ?>_3" value="<?php echo $data['address'.$u.'_3']; ?>"><br/>
-							<input type="text" class="input" name="address<?php echo $u; ?>_4" value="<?php echo $data['address'.$u.'_4']; ?>">
+						<input type="text" class="input" id="address<?php echo $ca->address_id ?? $u; ?>" name="address_1[]" value="<?php echo $ca->address_1; ?>">
+                        <input type="hidden" name="address_id[]" value="<?php echo $ca->address_id ?? $u; ?>">
+						<div style="<?php echo $style1; ?>" id="address<?php echo $ca->address_id ?? $u; ?>container">
+ 							<input type="text" class="input" name="address_2[]" value="<?php echo $ca->address_2; ?>"><br/>
+							<input type="text" class="input" name="address_3[]" value="<?php echo $ca->address_3; ?>"><br/>
+							<input type="text" class="input" name="address_4[]" value="<?php echo $ca->address_4; ?>">
 						</div>
 
 					</td>
 				</tr>
-				<tr id="address<?php echo $u; ?>containerPostcode" style="<?php echo $style1; ?>">
+				<tr id="address<?php echo $ca->address_id ?? $u; ?>containerPostcode" style="<?php echo $style1; ?>">
 					<td class="label"><label>Postcode</label></td>
-					<td><input type="text" class="input postcode" name="postcode_<?php echo $u; ?>" value="<?php echo $data['postcode_'.$u]; ?>"></td>
+					<td><input type="text" class="input postcode" name="postcode[]" value="<?php echo $ca->postcode; ?>"></td>
 				</tr>
-				<tr id="address<?php echo $u; ?>containerNumber" style="<?php echo $style1; ?>">
+				<tr id="address<?php echo $ca->address_id ?? $u; ?>containerNumber" style="<?php echo $style1; ?>">
 					<td class="label"><label>Delivery Contact No.</label></td>
-					<td><input type="text" class="input" name="address<?php echo $u; ?>_number" value="<?php echo $data['address'.$u.'_number']; ?>"></td>
+					<td><input type="text" class="input" name="address_number[]" value="<?php echo $ca->address_number; ?>"></td>
 				</tr>
-
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>site_id" style="<?php echo $style1; ?>">
+					<td class="label"><label>Served By</label></td>
+					<td><select class="input" name="address_site_id[]">
+                            <option disabled value="">-- Please Select --</option>
+                            <?php foreach ($sites as $site){ ?>
+                                <option value="<?php echo $site->id; ?>" <?php if(($ca->site_id == $site->id)|| ($ca->site_id == null && $data['site_id'] == $site->id)){ echo 'selected'; } ?>><?php echo $site->name; ?></option>
+                            <?php } ?>
+                        </select></td>
+				</tr>
 				<tr height="40"><td colspan="2"></td></tr>
 				<?php
 					}
@@ -296,11 +318,10 @@ use Illuminate\Support\Facades\Auth;
 				</tr>
                 <tr height="40"><td colspan="2"></td></tr>
 				<tr>
-					<td class="label"><label>Served By</label></td>
+					<td class="label"><label>Default Served By</label></td>
 					<td>
 						<select id="site_id" name="site_id">
 							<?php
-								$sites = Site::all();
 								foreach ($sites as $site) {
 									?><option value="<?php echo $site->id; ?>" <?php if($data['site_id'] == $site->id){ echo 'selected'; } ?>><?php echo $site->name; ?></option><?php
 								}
@@ -597,10 +618,11 @@ function mainForm2(){
 		});
 	for (var u=2;u<10;u++){
 		$('#address'+u.toString()).click(function(){
-			var v = $(this).attr('name').toString().replace('address','').toString().substring(0, 1);
+			var v = $(this).attr('id').toString().replace('address','').toString().substring(0, 1);
 			$('#address'+v.toString()+'container').show();
 			$('#address'+v.toString()+'containerPostcode').show();
 			$('#address'+v.toString()+'containerNumber').show();
+            $('#address'+v.toString()+'site_id').show();
 		});
 	}
 

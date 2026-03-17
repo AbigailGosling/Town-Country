@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\OutgoingPallet;
 use App\Models\Site;
 use App\Models\Vehicle;
@@ -143,14 +145,18 @@ class OutgoingPalletsLoadingController extends Controller
                 $regAllocatedTo = '';
             }
             $delNoteNum = implode('-', $pallet->pickWeightOuts->pluck('pickersheet_id')->filter()->unique()->values()->all());
+            $ca = ClientAddress::where('customer_id', $pallet->customer_id)
+                ->where('address_id', $pallet->address_id)
+                ->where('client_type', ClientType::CUSTOMER->value)
+                ->first();
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
                     'deliveryNoteNumber' => $delNoteNum ?? '',
                     'title' => 'Pallet ' . ($pallet->id ?? ''),
-                    'subtext' => trim(($pallet->customer->businessname ?? '') . ' • ' . ($pallet->customer->{"address".$pallet->address_id."_1"} ?? '') . ' • ' . ($pallet->customer->{"postcode_".$pallet->address_id} ?? '')),
+                    'subtext' => trim(($pallet->customer->businessname ?? '') . ' • ' . ($ca->address_1 ?? '') . ' • ' . ($ca->postcode ?? '')),
                     'customerName' => $pallet->customer->businessname ?? '',
-                    'customerDeliveryAddress' => $pallet->customer->{"address".$pallet->address_id."_1"} ?? '',
-                    'customerDeliveryPostcode' => $pallet->customer->{"postcode_".$pallet->address_id} ?? '',
+                    'customerDeliveryAddress' => $ca->address_1 ?? '',
+                    'customerDeliveryPostcode' => $ca->postcode ?? '',
                     'palletType' => $pallet->outgoingPalletType->name,
                     'weightKg' => (int)($pallet->getTotalWeight() ?? 0),
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
