@@ -22,6 +22,7 @@
         <x-slot:headers>
             <x-data-table-header>Internal #</x-data-table-header>
             <x-data-table-header>Brand</x-data-table-header>
+            <x-data-table-header>Destination</x-data-table-header>
             <x-data-table-header>Origin Port</x-data-table-header>
             <x-data-table-header>ETA</x-data-table-header>
             <x-data-table-header :show-on-mobile="false">Admin Approved</x-data-table-header>
@@ -39,6 +40,7 @@
                     <x-data-table-column>{{ $container->internal_number }}</x-data-table-column>
                     @endif
                     <x-data-table-column>{{ $brandLookup[$container->id] }}</x-data-table-column>
+                    <x-data-table-column>{{ $container->site->name ?? "" }}</x-data-table-column>
                     <x-data-table-column>{{ $container->origin_port }}</x-data-table-column>
                     <x-data-table-column>{{ $container->eta->format('d/m/Y') }}</x-data-table-column>
                     <x-data-table-column :show-on-mobile="false">
