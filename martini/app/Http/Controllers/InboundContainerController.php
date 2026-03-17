@@ -66,7 +66,8 @@ class InboundContainerController extends Controller
             'origin_port'     => 'required|string',
             'eta'             => 'required|date|after:today',
             'vessel'          => 'sometimes|string',
-            'temperature_id'  => 'required|int|in:1,2'
+            'temperature_id'  => 'required|int|in:1,2',
+            'site_id'         => 'sometimes|int|exists:tandc_live.site,id',
         ]);
 
         $container = new InboundContainer();
@@ -76,6 +77,7 @@ class InboundContainerController extends Controller
         $container->vessel = $request->input("vessel","");
         $container->eta = $request->input("eta");
         $container->temperature_id = $request->input("temperature_id");
+        $container->site_id = $request->input("site_id");
         $container->save();
         return $this->show($container);
     }
