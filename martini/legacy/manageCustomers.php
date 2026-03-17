@@ -124,7 +124,7 @@ use Illuminate\Support\Facades\Log;
 				</tr>
 				<?php
                 if (request()->input('id') != '') {
-                    $cas = ClientAddress::where([['customer_id', request()->input('id')], ['client_type', ClientType::CUSTOMER->value]])->orderBy('address_id')->get();
+                    $cas = ClientAddress::where([['client_id', request()->input('id')], ['client_type', ClientType::CUSTOMER->value]])->orderBy('address_id')->get();
 
                 } else {
                     $cas = collect();

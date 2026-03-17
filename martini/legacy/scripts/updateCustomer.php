@@ -157,10 +157,10 @@ use Illuminate\Support\Facades\Auth;
 
     foreach (request()->input('address_id') as $i => $u)
 	{
-        $ca = ClientAddress::where('customer_id', request()->input('id'))->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', request()->input('id'))->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
         if (!$ca) {
             $ca = new ClientAddress();
-            $ca->customer_id = request()->input('id');
+            $ca->client_id = request()->input('id');
             $ca->address_id = $u;
             $ca->client_type = ClientType::CUSTOMER->value;
         }

@@ -57,7 +57,7 @@ class DeliveryCustomerExport implements FromCollection
             $this->_collection->add($this->colLookup);
             foreach($tmparr as $cust)
             {
-                foreach (ClientAddress::where([["customer_id",$cust->id],["client_type",ClientType::CUSTOMER->value]])->get() as $address)
+                foreach (ClientAddress::where([["client_id",$cust->id],["client_type",ClientType::CUSTOMER->value]])->get() as $address)
                 {
                     if ($address->{"address_1"} != null && $address->{"address_1"} != "" && $address->{"postcode"} != null && $address->{"postcode"} != "")
                     {

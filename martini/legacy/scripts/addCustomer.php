@@ -149,10 +149,10 @@ use App\Models\ClientType;
 
 	for ($u=1;$u<10;$u++)
 	{
-        $ca = ClientAddress::where('customer_id', $y)->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', $y)->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
         if (!$ca) {
             $ca = new ClientAddress();
-            $ca->customer_id = $y;
+            $ca->client_id = $y;
             $ca->address_id = $u;
             $ca->client_type = ClientType::CUSTOMER->value;
         }

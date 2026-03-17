@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Auth;
 	$x1 = "SELECT * FROM `customers` WHERE id=?";
 	$y1 = prepareExecuteQuery($x1,'i',[$customer_id]);
 	$customer = mysqli_fetch_array($y1);
-    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $picksheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $picksheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 	$addressNumber = $ca->address_number;
 
 	$address = $ca->address_1;

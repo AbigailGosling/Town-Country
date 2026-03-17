@@ -132,6 +132,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/outgoing-pallets/update-type', [OutgoingPalletController::class, 'updatePalletType'])->name('outgoing-pallets.update-type');
     Route::post('/outgoing-pallets/split-pick', [OutgoingPalletController::class, 'splitPick'])->name('outgoing-pallets.split-pick');
     Route::post('/outgoing-pallets/render-pick-html', [OutgoingPalletController::class, 'renderPickHtml'])->name('outgoing-pallets.render-pick-html');
+    Route::post('/outgoing-pallets/pick-pallets', [OutgoingPalletController::class, 'pickPallets'])->name('outgoing-pallets.pick-pallets');
 
     // Outgoing Pallets Loading endpoints
     Route::get('/outgoing-pallets-loading', [OutgoingPalletsLoadingController::class, 'view'])->name('outgoing-pallets-loading.view');

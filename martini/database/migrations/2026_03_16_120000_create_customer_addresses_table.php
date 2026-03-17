@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\ClientType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +27,7 @@ return new class extends Migration
             $table->unsignedBigInteger('site_id');
             $table->string('client_type');
 
+            $table->unique(['client_id', 'client_type'], 'client_addresses_client_type_unique');
             $table->unique(['client_id', 'address_id', 'client_type'], 'client_addresses_client_address_type_unique');
             $table->index('client_id', 'client_addresses_client_idx');
             $table->index('address_id', 'client_addresses_address_idx');
@@ -76,7 +76,7 @@ return new class extends Migration
                             'address_4' => $addressLine4,
                             'postcode' => $postcode,
                             'site_id' => $customer->site_id,
-                            'client_type' => ClientType::CUSTOMER->value,
+                            'client_type' => "customer",
                         ];
                     }
                 }
@@ -84,6 +84,17 @@ return new class extends Migration
                 if (!empty($rows)) {
                     DB::connection('tandc_live')->table('client_addresses')->insert($rows);
                 }
+            });
+            Schema::connection('tandc_live')->table('customers', function ($table) {
+                for ($index = 1; $index <= 9; $index++) {
+                    $table->dropColumn('address' . $index . '_number');;
+                    $table->dropColumn('address' . $index . '_1');
+                    $table->dropColumn('address' . $index . '_2');
+                    $table->dropColumn('address' . $index . '_3');
+                    $table->dropColumn('address' . $index . '_4');
+                    $table->dropColumn('postcode_' . $index);
+                }
+
             });
     }
 
@@ -94,6 +105,44 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::connection('tandc_live')->table('customers', function ($table) {
+            for ($index = 1; $index <= 9; $index++) {
+                $table->string('address' . $index . '_number')->default('');
+                $table->string('address' . $index . '_1')->default('');
+                $table->string('address' . $index . '_2')->default('');
+                $table->string('address' . $index . '_3')->default('');
+                $table->string('address' . $index . '_4')->default('');
+                $table->string('postcode_' . $index)->default('');
+            }
+
+        });
+        foreach(DB::Connection('tandc_live')->table('client_addresses')->where('client_type', 'customer')->cursor() as $clientAddress) {
+            $updateData = [];
+            if (!is_null($clientAddress->address_number)) {
+                $updateData['address' . $clientAddress->address_id . '_number'] = $clientAddress->address_number;
+            }
+            if (!is_null($clientAddress->address_1)) {
+                $updateData['address' . $clientAddress->address_id . '_1'] = $clientAddress->address_1;
+            }
+            if (!is_null($clientAddress->address_2)) {
+                $updateData['address' . $clientAddress->address_id . '_2'] = $clientAddress->address_2;
+            }
+            if (!is_null($clientAddress->address_3)) {
+                $updateData['address' . $clientAddress->address_id . '_3'] = $clientAddress->address_3;
+            }
+            if (!is_null($clientAddress->address_4)) {
+                $updateData['address' . $clientAddress->address_id . '_4'] = $clientAddress->address_4;
+            }
+            if (!is_null($clientAddress->postcode)) {
+                $updateData['postcode_' . $clientAddress->address_id] = $clientAddress->postcode;
+            }
+            if (!empty($updateData)) {
+                DB::connection('tandc_live')
+                    ->table('customers')
+                    ->where('id', $clientAddress->client_id)
+                    ->update($updateData);
+            }
+        }
         Schema::connection('tandc_live')->dropIfExists('client_addresses');
     }
 };

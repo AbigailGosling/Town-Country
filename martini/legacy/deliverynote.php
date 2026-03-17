@@ -30,7 +30,7 @@ $s = (int)(microtime(true));
         $name = $customerRow['businessname'];
         $ta = 't/a'. $customerRow['tradingas'];
         if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
-        $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
         $address1 = $ca->address_1;
         $address2 = $ca->address_2;
         $address3 = $ca->address_3;

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Auth;
 
         $recieverName = $customer['businessname'];
         $recieverTA = 't/a '.$customer['tradingas'];
-        $ca = ClientAddress::where('customer_id', $pickerSheet['customer_id'])->where('address_id', $pickerSheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', $pickerSheet['customer_id'])->where('address_id', $pickerSheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
         $recieverAddress1 = $ca->address_1 . '<br/>';
         $recieverAddress2 = $ca->address_2 . '<br/>';
         $recieverAddress3 = $ca->address_3 . '<br/>';

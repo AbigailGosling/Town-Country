@@ -54,7 +54,7 @@ use Illuminate\Support\Facades\Auth;
 
 
 	}
-    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
     $addressNumber = $ca->address_number;
 		$addressline1 = $ca->address_1;
 		$addressline2 = $ca->address_2;
@@ -149,7 +149,7 @@ use Illuminate\Support\Facades\Auth;
 	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
 	<div class="addresses">
 		<?php
-			foreach (ClientAddress::where('customer_id', $customer_id)->where('client_type', ClientType::CUSTOMER->value)->orderBy('address_id')->get() as $ca)
+			foreach (ClientAddress::where('client_id', $customer_id)->where('client_type', ClientType::CUSTOMER->value)->orderBy('address_id')->get() as $ca)
             {
 				if($ca->{'address_1'} == '' && $ca->{'postcode'} == ''){
 					$addressOneEmpty = true;
@@ -180,7 +180,7 @@ use Illuminate\Support\Facades\Auth;
 
 		<?php
 		}
-        $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
 
         $site_id = $ca->site_id ?? $row['site_id'];
 	?>

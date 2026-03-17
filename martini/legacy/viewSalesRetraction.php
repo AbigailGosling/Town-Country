@@ -22,7 +22,7 @@ use App\Models\User;
 	$x1 = "SELECT * FROM `customers` WHERE id='$customer_id'";
 	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($mysqli));
 	$customer = mysqli_fetch_array($y1);
-    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $picksheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $picksheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 	$addressNumber = $ca->address_number;
 
 	$address = $ca->address_1;

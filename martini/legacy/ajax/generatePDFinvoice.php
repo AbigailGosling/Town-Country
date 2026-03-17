@@ -57,7 +57,7 @@ use App\Models\ClientType;
     $saledate = DateTime::createFromFormat('d/m/Y', ''.$saledate);
     $saledate->modify('+'. $paydayDelay .' day');
 	$payByDate = $saledate->format('d/m/Y');
-    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
 
@@ -256,7 +256,7 @@ use App\Models\ClientType;
 							<div class="deliveryaddress">';
 
 						if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
-                        $tca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+                        $tca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 						$header .= $customer['businessname'] .'<br/>
 								t/a'. $customer['tradingas'] .'<br/>
 								'. $tca->address_1.'<br/>

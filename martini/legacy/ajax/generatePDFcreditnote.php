@@ -68,8 +68,8 @@ use InternalScripts\PDFRenderer;
 
 	$date->modify('+'. $paydayDelay .' day');
 	$payByDate = $date->format('d/m/Y');
-    $ca = ClientAddress::where('customer_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
-    $delca = ClientAddress::where('customer_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
+    $delca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://'.$_SERVER['SERVER_NAME'].'/legacy/css/style.css" rel="stylesheet" type="text/css">';

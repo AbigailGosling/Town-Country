@@ -145,7 +145,7 @@ class OutgoingPalletsLoadingController extends Controller
                 $regAllocatedTo = '';
             }
             $delNoteNum = implode('-', $pallet->pickWeightOuts->pluck('pickersheet_id')->filter()->unique()->values()->all());
-            $ca = ClientAddress::where('customer_id', $pallet->customer_id)
+            $ca = ClientAddress::where('client_id', $pallet->customer_id)
                 ->where('address_id', $pallet->address_id)
                 ->where('client_type', ClientType::CUSTOMER->value)
                 ->first();
