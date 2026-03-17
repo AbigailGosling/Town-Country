@@ -33,12 +33,14 @@ class InboundContainer extends Model
         'arrived',
         'vessel',
         'temperature_id',
+        'site_id',
     ];
     protected $casts = [
         'eta' => 'date',
         'admin_approved' => 'boolean',
         'arrived' => 'boolean',
         'temperature_id' => 'integer',
+        'site_id' => 'integer',
     ];
     public function containerProducts()
     {
@@ -47,5 +49,9 @@ class InboundContainer extends Model
     public function getProducts():Collection
     {
         return ContainerProduct::where("container_id",$this->id)->get();
+    }
+    public function site()
+    {
+        return $this->belongsTo(Site::class, 'site_id','id');
     }
 }
