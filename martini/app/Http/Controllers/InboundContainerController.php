@@ -10,6 +10,7 @@ use App\Models\Nationality;
 use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\ReservationProduct;
+use App\Models\Site;
 use App\Models\Species;
 use App\Models\Temperature;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class InboundContainerController extends Controller
     private static $defaultPaginate = 200;
     public function index()
     {
-        $containers = InboundContainer::where('deleted',false)->orderByDesc("id")->paginate($this::$defaultPaginate);
+        $containers = InboundContainer::with('site')->where('deleted',false)->orderByDesc("id")->paginate($this::$defaultPaginate);
         return view("container.index",["containers"=>$containers,"brandLookup"=>$this->containerBrandLookup($containers)]);
     }
 
@@ -87,7 +88,7 @@ class InboundContainerController extends Controller
      */
     public function show(InboundContainer $container)
     {
-        return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false,'brands'=>Brand::all()->keyBy('id')]);
+        return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false,'brands'=>Brand::all()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
     }
 
     /**
@@ -116,7 +117,8 @@ class InboundContainerController extends Controller
             'origin_port'     => 'required|string',
             'eta'             => 'required|date',
             'vessel'          => 'sometimes|string',
-            'temperature_id'  => 'sometimes|int|in:1,2'
+            'temperature_id'  => 'sometimes|int|in:1,2',
+            'site_id'         => 'sometimes|int|exists:tandc_live.site,id',
         ]);
         $container->internal_number = $request->input("internal_number",$container->internal_number)??"";
         $container->origin_port = $request->input("origin_port",$container->origin_port)??"";
@@ -124,6 +126,7 @@ class InboundContainerController extends Controller
         $container->eta = $request->input("eta",$container->eta);
         $container->vessel = $request->input("vessel",$container->vessel);
         $container->temperature_id = $request->input("temperature_id",$container->temperature_id);
+        $container->site_id = $request->input("site_id",$container->site_id);
         $container->save();
         return $this->show($container);
     }

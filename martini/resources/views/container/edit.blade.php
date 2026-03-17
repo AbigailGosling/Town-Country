@@ -61,8 +61,8 @@ $isDelete ??= false;
                             name="eta" value="{{ old('eta', ($container->eta)?$container->eta->format('Y-m-d'):"") }}" required />
                         <x-input-error :messages="$errors->get('eta')" class="mt-2" />
                     </div>
-                     <!-- Brand -->
-                     <div>
+                    <!-- Temperature -->
+                    <div>
                         <x-input-label for="temperature_id" :value="__('Temperatures')" />
                         <select id="temperature_id" class="block mt-1 w-full" name="temperature_id" required>
                             <option disabled="disabled" selected value="">Select Temperature</option>
@@ -72,6 +72,18 @@ $isDelete ??= false;
                         </select>
                         <x-input-error :messages="$errors->get('temperature_id')" class="mt-2" />
                     </div>
+                    <!-- Site -->
+                     <div>
+                        <x-input-label for="site_id" :value="__('Site')" />
+                        <select id="site_id" class="block mt-1 w-full" name="site_id" required>
+                            <option disabled="disabled" selected value="">Select Site</option>
+                            @foreach ($sites as $site)
+                            <option {{($site->id==old('site_id', $container->site_id)) ? "selected":"";}} value="{{$site->id}}">{{$site->name}}</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('site_id')" class="mt-2" />
+                    </div>
+
 
                 </x-form-section>
 
