@@ -33,7 +33,7 @@ class ShortStockEmail extends Command
      */
     public function handle()
     {
-        $f = (new ShortStockExport)->file();
+        $f = (new ShortStockExport(+11))->file();
         $users = User::where("disabled",0)->get()->reject(function (User $user){
             return !$user->hasPermissionClarified(Permission::find(1));
         });

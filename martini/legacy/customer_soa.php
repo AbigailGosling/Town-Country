@@ -35,7 +35,7 @@ include_once('ajax/customer_soa_results_function.php');
 		{
             $bg = '#ff6666';
             $bor= '#ff0000';
-			
+
 		}
         if ($creditCheck['hideOnStmt'] == false && ($creditCheck['saleAllowed'] == false || $creditCheck['showWarning'] == true))
         {
@@ -70,7 +70,7 @@ include_once('ajax/customer_soa_results_function.php');
             ?>
         </h2>
         <a id="viewAllLabel" href="">Show All</a>
-        <?php if (!User::find(Auth::id())->hasPermission("restrictedaccess")) {?><a class="mp" href="multi_invoice_payments.php?customer_id=<?php echo request()->input('id'); ?>">Make / View payments</a><?php }?>
+        <?php if ($customer['default_finance_person_id']==Auth::id()||!User::find(Auth::id())->hasPermission("restrictedaccess")) {?><a class="mp" href="multi_invoice_payments.php?customer_id=<?php echo request()->input('id'); ?>">Make / View payments</a><?php }?>
         <div class="loadingContainer">
             <img src="img/loading.gif" alt="">
         </div>
@@ -125,14 +125,14 @@ include_once('ajax/customer_soa_results_function.php');
         table = $('#soaTable').DataTable({
             "pageLength": -1,
             "order": [[ 0, "ASC" ]],
-            
+
         });
         getData();
     });
     document.getElementById("viewAllLabel").addEventListener("click", toggleViewAll);
 
     function getData() {
-        
+
         $.post("ajax/customer_soa_results.php", {
                 customer_id: customer_id
             },
@@ -143,7 +143,7 @@ include_once('ajax/customer_soa_results_function.php');
     function getDataResp(data, status) {
         $('#soaTable').DataTable().destroy();
         $("#soaTable > tbody").empty();
-        dataParsed = JSON.parse(data);     
+        dataParsed = JSON.parse(data);
         getRender();
     }
     function getRender(){
@@ -156,7 +156,7 @@ include_once('ajax/customer_soa_results_function.php');
     }
     function getRenderResp(data, status){
         $('#soaTable tbody').append(data);
-        
+
         table = $('#soaTable').DataTable({
             "aaSorting": [],
             "pageLength": -1,
@@ -212,7 +212,7 @@ include_once('ajax/customer_soa_results_function.php');
         $('.digit_outstanding').each(function(index) {
             total_digit_outstanding += parseFloat($(this).attr('value'));
         });
-        
+
         total_digit_outstanding = nf.format(total_digit_outstanding);
         $('.total_digit_outstanding').text(total_digit_outstanding);
 
@@ -229,12 +229,12 @@ include_once('ajax/customer_soa_results_function.php');
     function toggleViewAll(event){
         event.preventDefault();
         $('.loadingContainer').show();
-        if (showAll) 
+        if (showAll)
         {
             showAll = false;
             $("#viewAllLabel").text('Show All');
         }
-        else 
+        else
         {
             showAll = true;
             $("#viewAllLabel").text('Show Outstanding');
@@ -248,8 +248,8 @@ include_once('ajax/customer_soa_results_function.php');
             var columnName = '';
             if (column == 2) columnName = 'sortableDueDateFormat';
             else columnName = 'sortableDateFormat';
-            
-            var sortDirection = -1;           
+
+            var sortDirection = -1;
             if (order == "asc") sortDirection = 1;
 
             return  b[columnName] < a[columnName] ? sortDirection
