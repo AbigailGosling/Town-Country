@@ -598,6 +598,10 @@ use App\Models\Site;
 		$('#msgNotice2').html(msg);
 
 		if(good == 1){
+			if(individualWeightsMode != 'S'){
+				$('#single_weight_val').val('');
+			}
+
 			if(individualWeightsMode == 'S' && hasSoldWeights){
 				var standardWeightVal = $('#single_weight_val').val();
 				var targetWeightInput = $('#addPalletForm').find('input[name="weight' + currentWeightId + '"]');
