@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}" />
   <title>Pallet Allocator</title>
   <style>
     :root {
@@ -589,6 +590,7 @@
     const aiPlanModal = document.getElementById("aiPlanModal");
     const aiPlanClose = document.getElementById("aiPlanClose");
     const aiPlanBody = document.getElementById("aiPlanBody");
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
     let activeDragOrderId = null;
     let hideAllocated = false;
     let selectedOrderId = null;
@@ -623,18 +625,26 @@
       return trimmed.startsWith("s") ? "Standard" : "Euro";
     }
 
-    async function updateAllocation(deliveryNoteNumber, regAllocatedTo, palletRow, palletColumn) {
-      if (!deliveryNoteNumber) {
+    function jsonHeaders() {
+      const headers = {
+        "Content-Type": "application/json"
+      };
+      if (csrfToken) {
+        headers["X-CSRF-TOKEN"] = csrfToken;
+      }
+      return headers;
+    }
+
+    async function updateAllocation(outgoingPalletId, regAllocatedTo, palletRow, palletColumn) {
+      if (!outgoingPalletId) {
         return;
       }
       try {
         const response = await fetch("{{ route('outgoing-pallets-loading.update-allocation') }}", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: jsonHeaders(),
           body: JSON.stringify({
-            deliveryNoteNumber,
+            outgoingPalletId,
             regAllocatedTo,
             palletRow,
             palletColumn
@@ -695,27 +705,29 @@
 
       const orderMap = new Map();
       orders.forEach(order => {
-        if (order.deliveryNoteNumber) {
-          orderMap.set(String(order.deliveryNoteNumber), order);
+        if (order.outgoingPalletId) {
+          orderMap.set(Number(order.outgoingPalletId), order);
         }
       });
 
       dateMatchedAllocations.forEach((alloc, index) => {
-        const deliveryNoteNumber = String(alloc.deliveryNoteNumber || "");
+        const outgoingPalletId = Number(alloc.outgoingPalletId || 0);
         const row = Number(alloc.row) || 0;
         const column = Number(alloc.column) || 0;
-        if (!deliveryNoteNumber || !row || !column) {
+        if (!outgoingPalletId || !row || !column) {
           return;
         }
         const slotIndex = (row - 1) * 3 + column;
         const slotId = `slot-${slotIndex}`;
-        let order = orderMap.get(deliveryNoteNumber);
+        let order = orderMap.get(outgoingPalletId);
         if (!order) {
+          const deliveryNoteNumber = String(alloc.deliveryNoteNumber || "");
           const customerName = alloc.customerName || "";
           const customerDeliveryPostcode = alloc.customerDeliveryPostcode || "";
           const subtext = [customerName, customerDeliveryPostcode].filter(Boolean).join(" • ");
           order = {
             id: `alloc-${deliveryNoteNumber || index + 1}`,
+            outgoingPalletId,
             title: `Order ${deliveryNoteNumber}`,
             subtext,
             customerName,
@@ -729,7 +741,7 @@
             slotId
           };
           orders.push(order);
-          orderMap.set(deliveryNoteNumber, order);
+          orderMap.set(outgoingPalletId, order);
         } else {
           order.palletType = normalizePalletType(alloc.palletType || order.palletType);
           order.weightKg = Number(alloc.palletWeight) || order.weightKg;
@@ -817,6 +829,7 @@
           const slotId = hasSlot ? `slot-${(row - 1) * 3 + column}` : null;
           return {
           id: order.id || `order-${index + 1}`,
+          outgoingPalletId: Number(order.outgoingPalletId) || null,
           title: order.title || `Order ${order.deliveryNoteNumber || index + 1}`,
           subtext: order.subtext || "",
           customerName: order.customerName || "",
@@ -1111,7 +1124,7 @@
             order.allocatedReg = reg;
             const palletRow = getRowForIndex(i);
             const palletColumn = column;
-            updateAllocation(order.deliveryNoteNumber, reg, palletRow, palletColumn);
+            updateAllocation(order.outgoingPalletId, reg, palletRow, palletColumn);
           }
           renderOrders();
           renderGrid();
@@ -1152,7 +1165,7 @@
         order.allocated = false;
         order.slotId = null;
         order.allocatedReg = "";
-        updateAllocation(order.deliveryNoteNumber, "", null, null);
+        updateAllocation(order.outgoingPalletId, "", null, null);
       }
       renderOrders();
       renderGrid();
@@ -1193,10 +1206,31 @@
       loadOrders();
     });
 
-    document.getElementById("loadCompleteBtn").addEventListener("click", () => {
+    document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
       const confirmed = window.confirm("Are you sure you want to complete this Vehicle Load and generate the PODs?");
-      if (confirmed) {
-        // Placeholder for completion logic
+      if (!confirmed) {
+        return;
+      }
+
+      const reg = vehicleSelect.value || vehiclePlate.textContent || "";
+      const dueDate = document.getElementById("deliveryDate").value || "";
+      const depot = depotSelect.value || "";
+
+      try {
+        const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
+          method: "POST",
+          headers: jsonHeaders(),
+          body: JSON.stringify({ reg, dueDate, depot })
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "Commit failed");
+        }
+        const data = await response.json();
+        window.alert(`Load committed (${data.committedCount || 0} allocations).`);
+      } catch (error) {
+        window.alert("Load commit failed. Check server logs.");
+        console.error(error);
       }
     });
 
@@ -1297,9 +1331,7 @@
       try {
         const response = await fetch("{{ route('outgoing-pallets-loading.ai-plan') }}", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: jsonHeaders(),
           body: JSON.stringify({
             startPostcode: "WV2 2QJ",
             stopMinutes: 20,

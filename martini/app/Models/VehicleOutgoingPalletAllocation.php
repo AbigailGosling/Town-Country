@@ -13,6 +13,18 @@ class VehicleOutgoingPalletAllocation extends Model
         'outgoing_pallet_id',
         'row',
         'column',
+        'committed_by_user_id',
+        'committed_by_name',
+        'committed_at',
+    ];
+
+    protected $casts = [
+        'vehicle_id' => 'integer',
+        'outgoing_pallet_id' => 'integer',
+        'row' => 'integer',
+        'column' => 'integer',
+        'committed_by_user_id' => 'integer',
+        'committed_at' => 'datetime',
     ];
 
     public function vehicle()

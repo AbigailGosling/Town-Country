@@ -10,6 +10,7 @@ use App\Models\Vehicle;
 use App\Models\VehicleOutgoingPalletAllocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class OutgoingPalletsLoadingController extends Controller
 {
@@ -63,56 +64,109 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['allocations' => []]);
         }
 
-        // Assume Pallet model exists and is mapped to the pallets table
-        $allocations = OutgoingPallet::where('regAllocatedTo', $reg)
-            ->get([
-                'deliveryNoteNumber',
-                'customerName',
-                'customerDeliveryPostcode',
-                'palletWeight',
-                'palletType',
-                'freshFrozen',
-                'dueDate',
-                'row',
-                'column',
-            ])
-            ->map(function ($row) {
+        $vehicle = Vehicle::where('reg', $reg)->first();
+        if (!$vehicle) {
+            return response()->json(['allocations' => []]);
+        }
+
+        $allocations = VehicleOutgoingPalletAllocation::with([
+            'outgoingPallet.pickWeightOuts',
+            'outgoingPallet.customer',
+            'outgoingPallet.outgoingPalletType',
+        ])
+            ->where('vehicle_id', $vehicle->id)
+            ->get()
+            ->map(function ($allocation) {
+                $pallet = $allocation->outgoingPallet;
+                if (!$pallet) {
+                    return null;
+                }
+
+                $deliveryNoteNumber = implode('-', $pallet->pickWeightOuts
+                    ->pluck('pickersheet_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all());
+
+                $ca = ClientAddress::where('client_id', $pallet->customer_id)
+                    ->where('address_id', $pallet->address_id)
+                    ->where('client_type', ClientType::CUSTOMER->value)
+                    ->first();
+
                 return [
-                    'deliveryNoteNumber' => $row->deliveryNoteNumber ?? '',
-                    'customerName' => $row->customerName ?? '',
-                    'customerDeliveryPostcode' => $row->customerDeliveryPostcode ?? '',
-                    'palletWeight' => (int)($row->palletWeight ?? 0),
-                    'palletType' => $row->palletType ?? 'Euro',
-                    'freshFrozen' => $row->freshFrozen ?? '',
-                    'dueDate' => $row->dueDate ?? '',
-                    'row' => isset($row->row) ? (int)$row->row : null,
-                    'column' => isset($row->column) ? (int)$row->column : null,
+                    'outgoingPalletId' => (int) $pallet->id,
+                    'deliveryNoteNumber' => $deliveryNoteNumber,
+                    'customerName' => $pallet->customer->businessname ?? '',
+                    'customerDeliveryPostcode' => $ca->postcode ?? '',
+                    'palletWeight' => (int)($pallet->getTotalWeight() ?? 0),
+                    'palletType' => $pallet->outgoingPalletType->name ?? 'Euro',
+                    'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
+                    'dueDate' => $pallet->estimated_delivery_date ? date('Y-m-d', strtotime((string)$pallet->estimated_delivery_date)) : '',
+                    'row' => isset($allocation->row) ? (int)$allocation->row : null,
+                    'column' => isset($allocation->column) ? (int)$allocation->column : null,
+                    'committedByUserId' => $allocation->committed_by_user_id ? (int) $allocation->committed_by_user_id : null,
+                    'committedByName' => $allocation->committed_by_name,
+                    'committedAt' => $allocation->committed_at,
                 ];
             })
+            ->filter()
+            ->values()
             ->toArray();
 
         return response()->json(['allocations' => $allocations]);
     }
     public function updateAllocation(Request $request): JsonResponse
     {
-        $deliveryNoteNumber = trim((string) $request->input('deliveryNoteNumber', ''));
+        $outgoingPalletId = (int) $request->input('outgoingPalletId', 0);
         $regAllocatedTo = (string) $request->input('regAllocatedTo', '');
         $palletRow = $request->input('palletRow');
         $palletColumn = $request->input('palletColumn');
 
-        if ($deliveryNoteNumber === '') {
-            return response()->json(['error' => 'deliveryNoteNumber is required'], 400);
+        if ($outgoingPalletId <= 0) {
+            return response()->json(['error' => 'outgoingPalletId is required'], 400);
         }
 
-        $pallet = OutgoingPallet::where('deliveryNoteNumber', $deliveryNoteNumber)->first();
+        $pallet = OutgoingPallet::find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
 
-        $pallet->regAllocatedTo = $regAllocatedTo;
-        $pallet->row = $palletRow !== null ? (int)$palletRow : null;
-        $pallet->column = $palletColumn !== null ? (int)$palletColumn : null;
-        $pallet->save();
+        $regAllocatedTo = trim($regAllocatedTo);
+
+        if ($regAllocatedTo === '' || $palletRow === null || $palletColumn === null) {
+            $deleted = VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)->delete();
+            return response()->json(['success' => true, 'affectedRows' => $deleted]);
+        }
+
+        $vehicle = Vehicle::where('reg', $regAllocatedTo)->first();
+        if (!$vehicle) {
+            return response()->json(['error' => 'Vehicle not found'], 404);
+        }
+
+        VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)
+            ->where('vehicle_id', '<>', $vehicle->id)
+            ->delete();
+
+        VehicleOutgoingPalletAllocation::where('vehicle_id', $vehicle->id)
+            ->where('row', (int)$palletRow)
+            ->where('column', (int)$palletColumn)
+            ->where('outgoing_pallet_id', '<>', $pallet->id)
+            ->delete();
+
+        VehicleOutgoingPalletAllocation::updateOrCreate(
+            [
+                'vehicle_id' => $vehicle->id,
+                'outgoing_pallet_id' => $pallet->id,
+            ],
+            [
+                'row' => (int)$palletRow,
+                'column' => (int)$palletColumn,
+                'committed_by_user_id' => null,
+                'committed_by_name' => null,
+                'committed_at' => null,
+            ]
+        );
 
         return response()->json(['success' => true, 'affectedRows' => 1]);
     }
@@ -151,6 +205,7 @@ class OutgoingPalletsLoadingController extends Controller
                 ->first();
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
+                    'outgoingPalletId' => (int) $pallet->id,
                     'deliveryNoteNumber' => $delNoteNum ?? '',
                     'title' => 'Pallet ' . ($pallet->id ?? ''),
                     'subtext' => trim(($pallet->customer->businessname ?? '') . ' • ' . ($ca->address_1 ?? '') . ' • ' . ($ca->postcode ?? '')),
@@ -161,8 +216,8 @@ class OutgoingPalletsLoadingController extends Controller
                     'weightKg' => (int)($pallet->getTotalWeight() ?? 0),
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
                     'regAllocatedTo' => $regAllocatedTo ?? '',
-                    'row' => isset($pallet->row) ? (int)$pallet->row : null,
-                    'column' => isset($pallet->column) ? (int)$pallet->column : null,
+                    'row' => $allocation ? (int) $allocation->row : null,
+                    'column' => $allocation ? (int) $allocation->column : null,
             ];
         }
 
@@ -274,5 +329,79 @@ class OutgoingPalletsLoadingController extends Controller
                         'detail' => $e->getMessage(),
                 ], 500);
         }
+    }
+
+    public function commitAllocations(Request $request): JsonResponse
+    {
+        $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
+
+        if ($reg === '') {
+            return response()->json(['error' => 'reg is required'], 400);
+        }
+
+        $vehicle = Vehicle::where('reg', $reg)->first();
+        if (!$vehicle) {
+            return response()->json(['error' => 'Vehicle not found'], 404);
+        }
+
+        $query = VehicleOutgoingPalletAllocation::with('outgoingPallet')
+            ->where('vehicle_id', $vehicle->id);
+
+        if ($dueDate !== '') {
+            $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
+                $q->where('estimated_delivery_date', $dueDate);
+            });
+        }
+
+        $allocations = $query->get();
+        $allocatedPalletIds = [];
+        $committedAt = now();
+        $authUser = $request->user();
+        $committedByUserId = $authUser ? (int) $authUser->id : null;
+        $committedByName = $authUser ? (string) $authUser->name : null;
+
+        DB::connection('tandc_live')->transaction(function () use ($allocations, $reg, $dueDate, &$allocatedPalletIds, $committedAt, $committedByUserId, $committedByName) {
+            foreach ($allocations as $allocation) {
+                $pallet = $allocation->outgoingPallet;
+                if (!$pallet) {
+                    continue;
+                }
+
+                $allocation->committed_by_user_id = $committedByUserId;
+                $allocation->committed_by_name = $committedByName;
+                $allocation->committed_at = $committedAt;
+                $allocation->save();
+
+                $pallet->regAllocatedTo = $reg;
+                $pallet->row = $allocation->row;
+                $pallet->column = $allocation->column;
+                $pallet->save();
+
+                $allocatedPalletIds[] = (int) $pallet->id;
+            }
+
+            $clearQuery = OutgoingPallet::where('regAllocatedTo', $reg);
+            if ($dueDate !== '') {
+                $clearQuery->where('estimated_delivery_date', $dueDate);
+            }
+            if (!empty($allocatedPalletIds)) {
+                $clearQuery->whereNotIn('id', $allocatedPalletIds);
+            }
+
+            $clearQuery->update([
+                'regAllocatedTo' => '',
+                'row' => null,
+                'column' => null,
+            ]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'committedCount' => count($allocatedPalletIds),
+            'committedAt' => $committedAt,
+            'committedByUserId' => $committedByUserId,
+            'committedByName' => $committedByName,
+        ]);
     }
 }

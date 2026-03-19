@@ -24,7 +24,7 @@ class OutgoingPalletController extends Controller
      */
     public function index(): View
     {
-        Log::debug('A');
+
         $startDate = Carbon::today();
         $endDate = Carbon::today()->addDays(3);
 
@@ -45,29 +45,29 @@ class OutgoingPalletController extends Controller
                 [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]
             )
             ->orderByRaw("STR_TO_DATE(pickerSheets.estimated_delivery_date, '%d/%m/%Y') asc");
-        Log::debug('A.5', ['pickSheetsQuery' => $pickSheets->toSql(), 'bindings' => $pickSheets->getBindings()]);
+
         $pickSheets = $pickSheets->get();
-        Log::debug('B', ['pickSheets' => $pickSheets->toArray()]);
+
         $deliveryGroups = $pickSheets->groupBy(function ($sheet) {
             return $sheet->customer_id.'|'.$sheet->addressid;
         });
-        Log::debug('C', ['deliveryGroups' => $deliveryGroups->count()]);
-        Log::debug(json_encode($deliveryGroups));
+
+
         $mapped = collect();
         foreach ($deliveryGroups as $key => $sheets) {
-            Log::debug(json_encode($sheets));
-            Log::debug($key);
-            Log::debug('D', ['customer_id' => $sheets->first()->customer_id, 'address_id' => $sheets->first()->addressid]);
+
+
+
             $first = $sheets->first();
             $customerName = $first->businessname ?: ($first->tradingas ?: '');
-            Log::debug('E', ['customer_id' => $first->customer_id, 'address_id' => $first->addressid, 'customer_name' => $customerName]);
+
             // Group deliveries by date and count
             $deliveriesByDate = $sheets->groupBy(function ($sheet) {
                 return $sheet->estimated_delivery_date;
             })->map(function ($group) {
                 return count($group);
             });
-            Log::debug('F', ['customer_id' => $first->customer_id, 'address_id' => $first->addressid, 'deliveries_by_date' => $deliveriesByDate->toArray()]);
+
             $mapped->push([
                 'customer_id' => $first->customer_id,
                 'customer_name' => $customerName,
@@ -76,12 +76,12 @@ class OutgoingPalletController extends Controller
                 'deliveries_by_date' => $deliveriesByDate,
             ]);
         }
-        Log::debug('G', ['mapped' => $mapped->toArray()]);
+
         $sorted = $mapped->sortBy(function ($group) {
             return mb_strtolower($group['customer_name'] ?? '');
         })
         ->values();
-        Log::debug('H', ['sorted' => $sorted->toArray()]);
+
         return view('outgoing-pallets.index', [
             'deliveryGroups' => $sorted,
             'startDate' => $startDate,
@@ -97,7 +97,7 @@ class OutgoingPalletController extends Controller
         $addressId = $request->query('address_id');
 
         // Find all pickersheets for this customer/address in the next 3 days
-        $startDate = Carbon::today();
+        $startDate = Carbon::today()->addDays(-1);
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()
@@ -138,6 +138,10 @@ class OutgoingPalletController extends Controller
 
         $palletTypes = OutgoingPalletType::all();
         $customer = Customer::find($customerId);
+        $customerAddress = ClientAddress::where('client_id', $customerId)
+            ->where('address_id', $addressId)
+            ->where('client_type', ClientType::CUSTOMER->value)
+            ->first();
         return view('outgoing-pallets.details', [
             'customer' => $customer,
             'customer_id' => $customerId,
@@ -145,6 +149,7 @@ class OutgoingPalletController extends Controller
             'deliveries' => $unloadedPickSheets,
             'outgoingPallets' => $outgoingPallets,
             'palletTypes' => $palletTypes,
+            'customerAddress' => $customerAddress,
         ]);
     }
     /**

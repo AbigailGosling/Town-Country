@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __("Deliveries for: ".$customer->businessname. " : ".$customer->clientAddresses->firstWhere('address_id', $address_id)->address_1. " : ".$customer->customerAddresses->firstWhere('address_id', $address_id)->postcode) }}
+            {{ __("Deliveries for: ".$customer->businessname. " : ".$customerAddress->address_1. " : ".$customerAddress->postcode) }}
         </h2>
     </x-slot>
     <div><a href="{{ route('outgoing-pallets.index') }}" class="inline-block mt-4 px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700">Back to List</a></div>
@@ -191,12 +191,14 @@
             const renderedElement = await renderPickElement(summary, fromPalletId, currentSelectedCutId, currentMoveQty);
 
             element.replaceWith(renderedElement);
+            bindDraggable(renderedElement);
             bindMoveControls(renderedElement);
             return renderedElement;
         }
 
         async function createPickElement(summary, fromPalletId = null) {
             const renderedElement = await renderPickElement(summary, fromPalletId, '', Number(summary.weight_count || 0));
+            bindDraggable(renderedElement);
             bindMoveControls(renderedElement);
             return renderedElement;
         }
@@ -381,7 +383,18 @@
         }
 
         function bindDraggable(container) {
-            container.querySelectorAll('[draggable="true"]').forEach((el) => {
+            const elements = [];
+            if (container?.matches?.('[draggable="true"]')) {
+                elements.push(container);
+            }
+
+            if (container?.querySelectorAll) {
+                container.querySelectorAll('[draggable="true"]').forEach((el) => {
+                    elements.push(el);
+                });
+            }
+
+            elements.forEach((el) => {
                 el.removeEventListener('dragstart', onDragStart);
                 el.addEventListener('dragstart', onDragStart);
             });
@@ -458,6 +471,8 @@
                     zone.appendChild(dragged);
                 }
             }
+
+            updatePalletWeights();
         }
 
         async function handleDropOnUnassigned(e) {
@@ -505,6 +520,7 @@
                 if (!movedSummary) {
                     delete dragged.dataset.fromPalletId;
                     unassigned.appendChild(dragged);
+                    updatePalletWeights();
                     return;
                 }
 
@@ -520,6 +536,8 @@
                     cleanupRedundantPickCards(unassigned, movedSummary.id, movedSummary.pickersheet_id);
                 }
             }
+
+            updatePalletWeights();
         }
 
         function bindDropZones() {
