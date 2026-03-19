@@ -94,6 +94,17 @@
 	$ytest = prepareExecuteQuery($xtest,'i',[$product_id]);
 	$weightCount = mysqli_num_rows($ytest);
 
+	$hasSoldWeights = false;
+	if($mode == 'S'){
+		$xsold = "SELECT COUNT(*) AS sold_count FROM `weights` WHERE product_id=? AND status_id=1";
+		$ysold = prepareExecuteQuery($xsold,'i',[$product_id]);
+		if($soldRow = mysqli_fetch_array($ysold)){
+			$hasSoldWeights = ((int)$soldRow['sold_count'] > 0);
+		}
+	}
+
+	$allowStandardBulkUpdate = ($mode == 'S' && !empty($single_weight_val) && !$hasSoldWeights);
+
 	while($row = mysqli_fetch_array($ytest)){
 		$weightid = $row['id'];
 
@@ -103,8 +114,14 @@
 			$weightVal = $akg;
 		}else if($mode == 'D'){
 			$weightVal = isset($net_weight) ? $net_weight : $weightVal;
-		}else if(!empty($single_weight_val)){
-			$weightVal = $single_weight_val;
+		}else if($mode == 'S' && !empty($single_weight_val)){
+			if($allowStandardBulkUpdate){
+				$weightVal = $single_weight_val;
+			}else if((int)$weightid === (int)$weight_id){
+				$weightVal = $single_weight_val;
+			}else if($weightVal === null || $weightVal === ''){
+				$weightVal = $row['weight_gross'];
+			}
 		}
 
 		$xxx = "UPDATE `weights` SET product_id=?,weight_gross=?,weight_tear=? WHERE id=?";
