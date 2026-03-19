@@ -33,23 +33,9 @@ use App\Models\Site;
 	$ytest = prepareExecuteQuery($xtest,'i',[$product_id]);
 	$weightCount = mysqli_num_rows($ytest);
 
-	$xsold = "SELECT COUNT(*) AS sold_count FROM `weights` WHERE product_id = ? AND status_id = 1";
-	$ysold = prepareExecuteQuery($xsold,'i',[$product_id]);
-	$soldCountRow = mysqli_fetch_array($ysold);
-	$hasSoldWeights = ((int)($soldCountRow['sold_count'] ?? 0) > 0);
-
 	$x4 = "SELECT * FROM intake WHERE id=?";
 	$y4 = prepareExecuteQuery($x4,'i',[$intake_id]);
 	$intake = mysqli_fetch_array($y4);
-
-	$mode = 'S';
-	if($productRow['unit'] == 'P'){
-		$mode = 'D';
-	}else if(!empty($productRow['akg'])){
-		$mode = 'AKG';
-	}else if($weightCount > 1){
-		$mode = 'C';
-	}
 
 ?>
 <a href="javascript:;" id="closeAddPalletEditForm" class="close closeAddPalletEditForm"></a>
@@ -202,50 +188,12 @@ use App\Models\Site;
  			<option value="DS" <?php if($productRow['unit'] == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
 		</select>
 
-		<div class="indiweights">
-			<label class="standardcatchtext">Standard or catch weights?</label>
-			<select name="individualweights" id="individualweights">
-				<option value="C" <?php if($mode == 'C'){ echo 'selected'; } ?>>Catch Weights</option>
-				<option value="S" <?php if($mode == 'S'){ echo 'selected'; } ?>>Standard Weight</option>
-				<option value="D" <?php if($mode == 'D'){ echo 'selected'; } ?>>Dolav/Cases</option>
-				<option value="AKG" <?php if($mode == 'AKG'){ echo 'selected'; } ?>>Advised kg</option>
-			</select>
-		</div>
-
-		<div id="akgDiv" <?php if($mode != 'AKG'){ echo 'style="display:none;"'; } ?>>
-			<label>Net Weight</label>
-			<input type="number" name="akg" id="akg" value="<?php echo $productRow['akg']; ?>">
-		</div>
-
-		<div id="SingleWeightDiv" <?php if($mode != 'S'){ echo 'style="display:none;"'; } ?>>
+		<?php if($weightCount == 1){ ?>
+		<div id="SingleWeightDiv">
 			<label>Weight <?php if($productRow['akg'] != ''){ echo ' ['. $productRow['quantity'] . '  Cases Advised KG] ';  } ?> </label>
 			<input type="number" name="single_weight_val" value="<?php echo $weightRow['weight_gross']; ?>" id="single_weight_val">
 		</div>
-
-		<div id="grossWeightDiv" <?php if($mode != 'D'){ echo 'style="display:none;"'; } ?>>
-			<label>Gross Weight</label>
-			<input type="number" name="gross_weight_val" id="gross_weight_val" value="<?php echo $palletRow['gross_weight']; ?>">
-		</div>
-
-		<div id="tearWeightDiv" <?php if($mode != 'D'){ echo 'style="display:none;"'; } ?>>
-			<label>Pallet Tare</label>
-			<input type="number" name="pallet_tare" id="pallet_tare" value="<?php echo $palletRow['pallet_tare']; ?>">
-
-			<label>Tare per carton</label>
-			<input type="number" name="tare_per_carton" id="tare_per_carton" value="<?php echo $palletRow['tare_per_carton']; ?>">
-
-			<label>Number of cartons</label>
-			<input type="number" name="number_of_cartons" id="number_of_cartons" value="<?php echo $palletRow['number_of_cartons']; ?>">
-
-			<br/><br/>
-			<label>Net Weight</label>
-			<input type="number" name="net_weight" id="net_weight" value="<?php echo $palletRow['net_weight']; ?>">
-
-			<div style="display:none;">
-				<label>Tear Weight</label>
-				<input type="number" name="tear_weight_val" id="tear_weight_val" value="<?php echo $weightRow['weight_tear']; ?>">
-			</div>
-		</div>
+		<?php } ?>
 		<?php if($intake['returned'] == 1){ ?>
 		<div>
 			<label>Original Intake ID</label>
@@ -262,7 +210,7 @@ use App\Models\Site;
 
 	<br/>
 
-	<div id="MultiWeightDiv" <?php if($mode != 'C'){ echo 'style="display:none;"'; } ?>>
+	<div id="MultiWeightDiv">
 	<?php
 		if($weightCount > 1){
 
@@ -283,7 +231,7 @@ use App\Models\Site;
 	?>
 	</div>
 
-	<h1 style="padding-left:19px;<?php if($mode == 'C'){ echo 'display:block;'; }else{ echo 'display:none;'; } ?>color:#FFF;font-size:18px;float:left;" id="totalCatchWeightContainer">Total Catch Weight: <span id="totalCatchWeight"></span></h1>
+	<h1 style="padding-left:19px;display:none;color:#FFF;font-size:18px;float:left;" id="totalCatchWeightContainer">Total Catch Weight: <span id="totalCatchWeight"></span></h1>
 	<div class="clearfix"></div>
 
 	<div class="btnContainer">
@@ -310,9 +258,6 @@ use App\Models\Site;
 
 
 <script type="text/javascript">
-	const hasSoldWeights = <?php echo $hasSoldWeights ? 'true' : 'false'; ?>;
-	const currentWeightId = <?php echo (int)$weight_id; ?>;
-
     function enforceMinMax(el) {
   if (el.value != "") {
     if (parseInt(el.value) < parseInt(el.min)) {
@@ -328,10 +273,6 @@ use App\Models\Site;
 	});
 	$(document).ready(function(){
 
-		$('#pallet_tare').keyup(function(){ calculateTare(); });
-		$('#tare_per_carton').keyup(function(){ calculateTare(); });
-		$('#number_of_cartons').keyup(function(){ calculateTare(); });
-		$('#gross_weight_val').keyup(function(){ calculateTare(); });
 
 		updateForm();
 
@@ -430,7 +371,7 @@ use App\Models\Site;
 		var best_by = $('#best_by').val();
 		var best_by_range_from = $('#best_by_range_from').val();
 		var best_by_range_to = $('#best_by_range_to').val();
-		var individualWeightsMode = $('#individualweights').val();
+		var quantityWeight = $('#quantityWeight').val();
 
 		var ubbb = $('#ubbb').val();
 
@@ -523,62 +464,12 @@ use App\Models\Site;
 		}
 
 
-		if(individualWeightsMode == 'S'){
-			var singleWeight = parseFloat($('#single_weight_val').val());
-			if(isNaN(singleWeight) || singleWeight <= 0){
-				msg = "The highlighted fields cannot be blank!3";
-				$('#single_weight_val').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#single_weight_val').css('border','1px solid grey');
-			}
-		}
-
-		if(individualWeightsMode == 'C'){
-			$('#MultiWeightDiv input[type="number"]').each(function(){
-				if($(this).val() == '' || parseFloat($(this).val()) <= 0){
-					msg = "The highlighted fields cannot be blank!3";
-					$(this).css('border','2px solid red');
-					good = 0;
-				}else{
-					$(this).css('border','1px solid grey');
-				}
-			});
-		}
-
-		if(individualWeightsMode == 'AKG'){
-			var akgVal = parseFloat($('#akg').val());
-			if(isNaN(akgVal) || akgVal <= 0){
-				msg = "The highlighted fields cannot be blank!3";
-				$('#akg').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#akg').css('border','1px solid grey');
-			}
-		}
-
-		if(individualWeightsMode == 'D'){
-			var grossVal = parseFloat($('#gross_weight_val').val());
-			var tareVal = parseFloat($('#tear_weight_val').val());
-			if(isNaN(grossVal) || grossVal <= 0){
-				msg = "The highlighted fields cannot be blank!3";
-				$('#gross_weight_val').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#gross_weight_val').css('border','1px solid grey');
-			}
-
-			if(isNaN(tareVal) || tareVal < 0){
-				msg = "The highlighted fields cannot be blank!3";
-				$('#pallet_tare').css('border','2px solid red');
-				$('#tare_per_carton').css('border','2px solid red');
-				$('#number_of_cartons').css('border','2px solid red');
-				good = 0;
-			}else{
-				$('#pallet_tare').css('border','1px solid grey');
-				$('#tare_per_carton').css('border','1px solid grey');
-				$('#number_of_cartons').css('border','1px solid grey');
-			}
+		if(quantityWeight == ''){
+			msg = "The highlighted fields cannot be blank!3";
+			$('#quantityWeight').css('border','2px solid red');
+			good = 0;
+		}else{
+			$('#quantityWeight').css('border','1px solid grey');
 		}
 
 		if(nationality == ''){
@@ -598,15 +489,6 @@ use App\Models\Site;
 		$('#msgNotice2').html(msg);
 
 		if(good == 1){
-			if(individualWeightsMode == 'S' && hasSoldWeights){
-				var standardWeightVal = $('#single_weight_val').val();
-				var targetWeightInput = $('#addPalletForm').find('input[name="weight' + currentWeightId + '"]');
-				if(targetWeightInput.length){
-					targetWeightInput.val(standardWeightVal);
-				}
-				$('#single_weight_val').val('');
-			}
-
 			var formName = '#addPalletForm';
 			$(formName).ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:function(){	location.reload();}});
 		}
@@ -648,67 +530,50 @@ use App\Models\Site;
 	var boxCount = 0;
 
 	function updateForm(){
+		// HERE WE WILL HANDLE ALL THE FORM LOGIC
 		console.log('Updating form..');
 
-		var unit = $('#unit').val();
-		if(unit == 'P'){
-			$('#individualweights').val('D');
-			$("#individualweights option[value=C]").hide();
-			$("#individualweights option[value=S]").hide();
-			$("#individualweights option[value=AKG]").hide();
+		if($('#howManyWeights').val() > 1){
+
 		}else{
-			$("#individualweights option[value=C]").show();
-			$("#individualweights option[value=S]").show();
-			$("#individualweights option[value=AKG]").show();
+
 		}
+
+
+		// if($("#unit").val() == 'LB' || $("#unit").val() == 'KG'){
+			// console.log('Single Weight Selected....' + $("#unit").val());
+			// $('#SingleWeightDiv').fadeIn();
+			// $('.indiweights').fadeOut();
+		// }else{
+			// $('.indiweights').fadeIn();
+			// $('#SingleWeightDiv').fadeOut();
+		// }
+
+
 
 		if($('#individualweights').val() == 'C'){
-			$('#MultiWeightDiv').fadeIn();
-			$('#totalCatchWeightContainer').fadeIn();
+			console.log('Individual Weights...' + $('#individualweights').val());
+
+			var amount = $('.quantityWeight').val();
+
+			generateWeightBoxes(amount);
 			hideSingleWeight();
-			$('#akgDiv').fadeOut();
+
 			$('#grossWeightDiv').fadeOut();
 			$('#tearWeightDiv').fadeOut();
-		}else if($('#individualweights').val() == 'AKG'){
-			$('#MultiWeightDiv').fadeOut();
-			$('#totalCatchWeightContainer').fadeOut();
-			hideSingleWeight();
-			$('#akgDiv').fadeIn();
-			$('#grossWeightDiv').fadeOut();
-			$('#tearWeightDiv').fadeOut();
+
 		}else if($('#individualweights').val() == 'D'){
-			$('#MultiWeightDiv').fadeOut();
-			$('#totalCatchWeightContainer').fadeOut();
-			hideSingleWeight();
-			$('#akgDiv').fadeOut();
 			$('#grossWeightDiv').fadeIn();
 			$('#tearWeightDiv').fadeIn();
-			calculateTare();
 		}else{
-			$('#MultiWeightDiv').fadeOut();
-			$('#totalCatchWeightContainer').fadeOut();
 			showSingleWeight();
-			$('#akgDiv').fadeOut();
+			removeWeightBoxes();
+
 			$('#grossWeightDiv').fadeOut();
 			$('#tearWeightDiv').fadeOut();
+
 		}
 
-	}
-
-	function calculateTare(){
-		var grossWeightVal = parseFloat($('#gross_weight_val').val());
-		var palletTare = parseFloat($('#pallet_tare').val());
-		var tarePerCarton = parseFloat($('#tare_per_carton').val());
-		var numberOfCartons = parseFloat($('#number_of_cartons').val());
-
-		grossWeightVal = isNaN(grossWeightVal) ? 0 : grossWeightVal;
-		palletTare = isNaN(palletTare) ? 0 : palletTare;
-		tarePerCarton = isNaN(tarePerCarton) ? 0 : tarePerCarton;
-		numberOfCartons = isNaN(numberOfCartons) ? 0 : numberOfCartons;
-
-		var tareWeight = (tarePerCarton * numberOfCartons) + palletTare;
-		$('#tear_weight_val').val(tareWeight);
-		$('#net_weight').val(grossWeightVal - tareWeight);
 	}
 
 	function showSingleWeight(){
@@ -723,18 +588,17 @@ use App\Models\Site;
 		updateForm();
 
 		if($('#unit').val() == 'P'){
-			$('#individualweights').val('D');
+
+			$('#individualweights').prop('selectedIndex', 3);
 			hideSingleWeight();
-			$('#MultiWeightDiv').fadeOut();
-			$('#totalCatchWeightContainer').fadeOut();
 			$('#grossWeightDiv').fadeIn();
 			$('#tearWeightDiv').fadeIn();
-			calculateTare();
 
 		}
 
 	});
 	$('#individualweights').change(function(){ updateForm(); });
+	$('#quantityWeight').change(function(){ updateForm(); });
 
 
 	function removeWeightBoxes(){
@@ -748,12 +612,13 @@ use App\Models\Site;
 
 	function countWeights(){
 		var totalWeights = 0;
-		$('#MultiWeightDiv input[type="number"]').each(function(){
-			var tig = parseFloat($(this).val());
-			if(!isNaN(tig) && tig > 0){
-				totalWeights += tig;
+		for(var x = 1; x < 100; x++){
+			var tig = $('.weights' + x).val();
+
+			if(tig > 0){
+				totalWeights += parseFloat(tig);
 			}
-		});
+		}
 		var totalWeightRounded = round(totalWeights, 5)
 		$('#totalCatchWeight').html(totalWeightRounded + 'kg');
 	}
