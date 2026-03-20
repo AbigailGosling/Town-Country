@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ReportHelper;
 use App\Models\InvoicePayment;
 use App\Models\PickerItem;
-use App\Models\PalletsOut;
+use App\Models\PickWeightOut;
 use App\Models\PickerSheet;
 use App\Models\Product;
 use App\Models\Supplier;
@@ -86,7 +86,7 @@ class SupplierReturnController extends Controller
             $line->value = 0;
             $line->paid = 0;
             $returnProducts = PickerItem::selectRaw("ANY_VALUE(`price`) AS `price`, ANY_VALUE(`product_id`) AS `product_id`, count(`product_id`) as `count`")->where("pickersheet_id",$pick->id)->groupBy('product_id')->get();
-            $quickWeightLookup = explode(",",implode(",",PalletsOut::where("pickersheet_id",$pick->id)->pluck("weight_ids")->toArray()));
+            $quickWeightLookup = explode(",",implode(",",PickWeightOut::where("pickersheet_id",$pick->id)->pluck("weight_ids")->toArray()));
             foreach ($returnProducts as $returnProduct)
             {
                 $internalProduct = Product::find($returnProduct->product_id);

@@ -98,9 +98,9 @@ protected $connection = 'tandc_live';
 		'is_return_to_supplier',
 		'goods_out_notes'
 	];
-    public function palletsOut():HasMany
+    public function pickWeightOut():HasMany
     {
-        return $this->hasMany(PalletsOut::class,"pickersheet_id","id");
+        return $this->hasMany(PickWeightOut::class,"pickersheet_id","id");
     }
     public function pickerItems():HasMany
     {

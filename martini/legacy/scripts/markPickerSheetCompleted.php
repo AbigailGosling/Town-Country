@@ -1,4 +1,12 @@
 <?php
+
+use App\Models\OutgoingPallet;
+use App\Models\OutgoingPalletPickWeight;
+use App\Models\OutgoingPalletType;
+use App\Models\PickerSheet;
+use App\Models\PickWeightOut;
+use Carbon\Carbon;
+
 	require(__DIR__.'/../functions.php');
 	$id = request()->input('id');
 	$pickersheet_id = request()->input('id');
@@ -67,7 +75,7 @@
 
 
 
-		$x = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$x = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 		$y = prepareExecuteQuery($x,'i',[$id]);
 
 		while($row = mysqli_fetch_array($y)){
@@ -86,6 +94,7 @@
 		}
 		$x2 = "UPDATE `pickerItems` SET `status` = '1' WHERE pickersheet_id=?";
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
+
 	}
     pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:checkshortpick '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
     pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:credit_precheck '.$customer_id.' >NUL 2>NUL"', 'r'));

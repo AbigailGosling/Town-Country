@@ -11,7 +11,7 @@ use App\Models\Intake;
 use App\Models\InvoicePayment;
 use App\Models\Nationality;
 use App\Models\Pallet;
-use App\Models\PalletsOut;
+use App\Models\PickWeightOut;
 use App\Models\PickerItem;
 use App\Models\PickerSheet;
 use App\Models\Product;
@@ -93,7 +93,7 @@ class IntakeReportController extends Controller
             $creditInfo =new Collection();
             foreach ($sales as $sale)
             {
-                $outPallets = PalletsOut::where("pickersheet_id",$sale->id)->get();
+                $outPallets = PickWeightOut::where("pickersheet_id",$sale->id)->get();
                 $weightIDsForSale = array();
                 $internalCount = 0;
                 foreach ($outPallets as $outPallet){
@@ -209,7 +209,7 @@ class IntakeReportController extends Controller
             $resaleInfo = new Collection();
             foreach($resales as $resale)
             {
-                $outPallets = PalletsOut::where("pickersheet_id",$resale->id)->get();
+                $outPallets = PickWeightOut::where("pickersheet_id",$resale->id)->get();
                 $weightIDsForSale = array();
                 $internalCount = 0;
                 foreach ($outPallets as $outPallet){

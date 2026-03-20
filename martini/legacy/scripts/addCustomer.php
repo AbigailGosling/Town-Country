@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\ClientAddress;
+use App\Models\ClientType;
+
 	require(__DIR__.'/../functions.php');
 	$colNames = array();
 	$colValue = array();
@@ -114,26 +118,6 @@
     $colNames[] = "`default_finance_person_id`";
     $colValue[] = request()->input('default_finance_person_id',0);
 
-	for ($u=1;$u<10;$u++)
-	{
-		$colNames[] = '`address'.$u.'_1`';
-		$colValue[] = request()->input('address'.$u.'_1');
-
-		$colNames[] = '`address'.$u.'_2`';
-		$colValue[] = request()->input('address'.$u.'_2');
-
-		$colNames[] = '`address'.$u.'_3`';
-		$colValue[] = request()->input('address'.$u.'_3');
-
-		$colNames[] = '`address'.$u.'_4`';
-		$colValue[] = request()->input('address'.$u.'_4');
-
-		$colNames[] = '`postcode_'.$u.'`';
-		$colValue[] = request()->input('postcode_'.$u);
-
-		$colNames[] = '`address'.$u.'_number`';
-		$colValue[] = request()->input('address'.$u.'_number');
-	}
 	define('DEL_SUNDAY',     1);
 	define('DEL_SATURDAY',   2);
 	define('DEL_FRIDAY',     4);
@@ -161,6 +145,25 @@
 	(".implode(",",array_fill(0,count($colNames),"?")).");";
 
 	$y = prepareExecuteQuery($x,str_repeat('s',count($colNames)),$colValue);
+
+
+	for ($u=1;$u<10;$u++)
+	{
+        $ca = ClientAddress::where('client_id', $y)->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
+        if (!$ca) {
+            $ca = new ClientAddress();
+            $ca->client_id = $y;
+            $ca->address_id = $u;
+            $ca->client_type = ClientType::CUSTOMER->value;
+        }
+        $ca->address_1 = request()->input('address_1');
+        $ca->address_2 = request()->input('address_2');
+        $ca->address_3 = request()->input('address_3');
+        $ca->address_4 = request()->input('address_4');
+        $ca->postcode = request()->input('postcode');
+        $ca->address_number = request()->input('address_number');
+        $ca->save();
+	}
 
 ?>
 

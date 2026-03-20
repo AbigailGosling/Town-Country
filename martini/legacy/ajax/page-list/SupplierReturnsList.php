@@ -21,7 +21,7 @@
         while($supplierReturn = mysqli_fetch_assoc($supplierReturns))
         {
             $returnProducts = prepareExecuteQuery("SELECT *,COUNT(product_id) as `count` FROM `pickeritems` WHERE `pickersheet_id` = ".$supplierReturn['id']);
-            $quickWeightLookup = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `palletsout` WHERE `pickersheet_id` = ".$supplierReturn['id'])->fetch_assoc()['weight_ids'];
+            $quickWeightLookup = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `pickweightout` WHERE `pickersheet_id` = ".$supplierReturn['id'])->fetch_assoc()['weight_ids'];
 
             while($returnProduct= mysqli_fetch_assoc($returnProducts))
             {

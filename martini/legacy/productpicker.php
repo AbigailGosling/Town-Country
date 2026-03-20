@@ -696,15 +696,19 @@ function cancelSale()
             });
             var targetCost;
             if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
+                console.log("Using RRP3", rrp3);
                 targetCost = rrp3;
             }
             else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
+                console.log("Using RRP2", rrp2);
                 targetCost = rrp2;
             }
             else if (isNumActuallyNum(rrp1) && count < 11){
+                console.log("Using RRP1", rrp1);
                 targetCost = rrp1;
             }
             else {
+                console.log("Using Cost", cost);
                 targetCost = cost;
                 strict = false;
             }

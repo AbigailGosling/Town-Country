@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +22,11 @@ use Illuminate\Support\Facades\Auth;
 
         $recieverName = $customer['businessname'];
         $recieverTA = 't/a '.$customer['tradingas'];
-        $recieverAddress1 = $customer['address'.$pickerSheet['addressid'].'_1'] . '<br/>';
-        $recieverAddress2 = $customer['address'.$pickerSheet['addressid'].'_2'] . '<br/>';
-        $recieverAddress3 = $customer['address'.$pickerSheet['addressid'].'_3'] . '<br/>';
-        $recieverPostCode = $customer['postcode_'.$pickerSheet['addressid'].''] . '<br/>';
+        $ca = ClientAddress::where('client_id', $pickerSheet['customer_id'])->where('address_id', $pickerSheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+        $recieverAddress1 = $ca->address_1 . '<br/>';
+        $recieverAddress2 = $ca->address_2 . '<br/>';
+        $recieverAddress3 = $ca->address_3 . '<br/>';
+        $recieverPostCode = $ca->postcode . '<br/>';
     }
     else
     {
@@ -182,6 +185,7 @@ use Illuminate\Support\Facades\Auth;
 		</div>
 	</div>
 	<form method="POST" id="palletAddBtnForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
+    <input type="text" id="outgoingPalletID" name="outgoingPalletID" value="#" style="display:none;">
 	<?php
 
 		##########################
@@ -350,7 +354,7 @@ use Illuminate\Support\Facades\Auth;
 	<br/><br/>
 
 	<?php
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 		$outpalletResult = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
 		$outpalletCount = mysqli_num_rows($outpalletResult);
@@ -359,7 +363,6 @@ use Illuminate\Support\Facades\Auth;
 	<?php if($pickerSheet['completed'] != '1'){ ?>
 	<div class="picksheet_controls" style="position:fixed;bottom:0px;right:10px;display:none;">
 		 	<input type="text" id="weightids" name="weightids" style="display:none;">
-			<input type="text" id="functype" name="functype" style="display:none;">
 			<input type="text" id="newweightvals" name="newweightvals" style="display:none">
 			<input type="button" onclick="mainForm()" style="display:none;">
  			<input type="button" id="palletAddBtn" value="Add to Pallet" style="width:323px;height:34px;margin-bottom:10px;display:block;"<?php if($pickIsLocked) echo " disabled"?>>
@@ -390,14 +393,14 @@ use Illuminate\Support\Facades\Auth;
 		<?php } ?>
 
 		<?php
-                $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+                $outpalletQuery = "SELECT *,pickWeightOut.id as pid FROM `outgoing_pallet_pickweights` INNER JOIN `pickWeightOut` ON `outgoing_pallet_pickweights`.pickWeightOut_id = `pickWeightOut`.id WHERE `pickWeightOut`.pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
 
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
-                    ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
+                    ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['outgoing_pallet_id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
 
                     $productIDArray = array();
 
@@ -439,7 +442,6 @@ use Illuminate\Support\Facades\Auth;
 
 							var howManyWeGot = '<?php echo ${"globalProductCount" . $product['id']}; ?>';
 							var target = $('#topform<?php echo $product['id']; ?>').attr('targetamount');
-							console.log('How many we have: ' + howManyWeGot + ' ||||  target: ' + target + '  ('+ howManyWeGot +'/'+ target +')');
 
 							if(parseInt(howManyWeGot) >= parseInt(target)){
 								$('#topform<?php echo $product['id']; ?>').css('opacity','0.2');
@@ -462,7 +464,7 @@ use Illuminate\Support\Facades\Auth;
 
                             (double)$k = (double)$k + (double)$w;
                         }
-                        ?><div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
+                        ?><div><?php echo $outpallet['pid']." ".$count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
 							<?php if($product['unit'] != 'PPC'){ ?>[<?php echo $k . $ext; $k = 0; ?>]</div> <?php } ?>
 						<?php
                     }
@@ -582,13 +584,7 @@ function mainFormSucess(){
 		}
 	}
 
-	$('#nextPallet').click(function(){
-		$('#functype').val('NEW');
-		checkSelectedWeightsAndSubmit();
-	});
-
 	$('#palletAddBtn').click(function(){
-		$('#functype').val('ADD');
 		checkSelectedWeightsAndSubmit();
 	});
 
@@ -674,10 +670,7 @@ function mainFormSucess(){
 			askForIncompleteSelectionApprovalAndSubmit();
 			return false;
 		 }
-		$('#palletAddBtn').prop("disabled", true);
-		$('#completeFormBtn').prop("disabled", true);
-		console.log(1);
-		$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+		askForOutgoingPallet();
 	}
 
 	function askForIncompleteSelectionApprovalAndSubmit()
@@ -691,12 +684,51 @@ function mainFormSucess(){
 			confirmButtonText: 'Continue'
 		}).then((result) => {
 			if (result.value) {
-				$('#palletAddBtn').attr("disabled", true);
-				$('#completeFormBtn').attr("disabled", true);
-				$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+				askForOutgoingPallet();
 			}
 		});
 	}
+    function askForOutgoingPallet()
+    {
+        $.ajax({
+            url:'<?php echo route("outgoing-pallets.pick-pallets");?>',
+            type:'POST',
+            headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},
+            data:{pickersheet_id:<?php echo $picksheetid; ?>},
+            success:function(data){
+                if (data.length == 0)
+                {
+                    finalSubmit(-1);
+                }
+                else
+                {
+                    var options = '<option value="" disabled selected>Select your option</option><option value="-1">Create New Pallet</option>';
+                    data.forEach(function(pallet){
+                        options += '<option value="' + pallet.id + '">Pallet ' + pallet.id + '</option>';
+                    });
+
+                    Swal.fire({
+                        title: 'Select Outgoing Pallet',
+                        html: '<select id="outgoingPalletSelect" class="swal2-input">' + options + '</select>',
+                        showCancelButton: true,
+                        confirmButtonText: 'Continue'
+                    }).then((result) => {
+                        if (result.value) {
+                            var outgoingPalletID = $('#outgoingPalletSelect').val();
+                            if (outgoingPalletID != null) finalSubmit(outgoingPalletID);
+                        }
+                     });
+                }
+            }
+        });
+    }
+    function finalSubmit(outgoingPalletID)
+    {
+        $('#outgoingPalletID').attr('value', outgoingPalletID);
+        $('#palletAddBtn').attr("disabled", true);
+        $('#completeFormBtn').attr("disabled", true);
+        $('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+    }
 
 </script>
 </body>

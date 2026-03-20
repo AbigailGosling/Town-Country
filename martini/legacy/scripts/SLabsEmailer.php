@@ -28,6 +28,7 @@ class SLabsEmailer {
     }
     public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null,$isAbsolPath = false) {
         global $mysqli;
+        if (env("APP_DEBUG",true)==true) $toEmails = [env("MAIL_TEST_ADDRESS")];
         if ($document_id == null) $document_id = "NULL";
         //---PHP CONFIG---//
         ini_set('memory_limit', '1024M');
@@ -44,7 +45,7 @@ class SLabsEmailer {
             $message->subject = $subject;
             $message->plainTextBody = $message->htmlBody = $htmlBody;
             $message->charset = "utf-8";
-            $message->from = new EmailAddress("noreply-api@townandcountrymeats.co.uk", "Town and Country Meats Group");
+            $message->from = new EmailAddress(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'). " Group");
 
             $fullExplainedPath = "NULL";
             if ($pathToFile != '' && $fileName !='')

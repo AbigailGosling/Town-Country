@@ -18,7 +18,7 @@ class CutGroupNationalityDateController extends Controller
     {
         $this->authorizeResource(CutGroupNationalityDate::class, 'cutdate');
     }
-    
+
     private function baseQuery():Builder
     {
         return CutGroupNationalityDate::with('cutgroup','species')->join('cutgroups','cutgroup_nationality_dates.cutgroup_id','=','cutgroups.id')->join('species','cutgroups.species_id','=','species.id')->select('cutgroup_nationality_dates.*','species.id as species_id2','cutgroups.id as cutgroups_id2');
@@ -26,18 +26,18 @@ class CutGroupNationalityDateController extends Controller
     private function dataSetBuilder(Builder $cutgroup_nationality_datess = null, Request $request = null):array
     {
         if ($cutgroup_nationality_datess == null) $cutgroup_nationality_datess = $this->baseQuery();
-        if ($request != null) 
+        if ($request != null)
         {
             $nationalities = Nationality::generateHTMLList($request->input('nationality_id', null));
             $species = Species::generateHTMLList($request->input('species_id',  null));
             $cutgroups = CutGroup::generateHTMLList($request->input('cutgroup_id', null),$request->input('species_id',  null));
         }
-        else 
+        else
         {
             $nationalities = Nationality::generateHTMLList();
             $species = Species::generateHTMLList();
             $cutgroups = CutGroup::generateHTMLList();
-        }  
+        }
         $dataSet= [
             'cutgroup_nationality_datess' => $cutgroup_nationality_datess->paginate(25),
             'nationalities' =>  $nationalities,
@@ -99,10 +99,12 @@ class CutGroupNationalityDateController extends Controller
             'cutgroup_id' => ['required','int'],
             'warning' => ['required','int'],
             'danger' => ['required', 'int']
-        ]);   
+        ]);
         $input = $request->all();
         if (Nationality::find($input['nationality_id'])==null) return redirect()->back()->withErrors(__('nationality_id'));
         if (CutGroup::find($input['cutgroup_id'])==null) return redirect()->back()->withErrors(__('cutgroup_id'));
+        if (CutGroupNationalityDate::where([["nationality_id",$input['nationality_id']],["cutgroup_id",$input['cutgroup_id']]])->first()!=null)
+            return redirect()->back()->withErrors(__('A rule for this Cutgroup and Nationality already exists'));
         $cutdate = new CutGroupNationalityDate;
         $cutdate->nationality_id = $input['nationality_id'];
         $cutdate->cutgroup_id = $input['cutgroup_id'];
@@ -155,7 +157,7 @@ class CutGroupNationalityDateController extends Controller
             'cutgroup_id' => ['required','int'],
             'warning' => ['required','int'],
             'danger' => ['required', 'int']
-        ]);   
+        ]);
         $input = $request->all();
         if (Nationality::find($input['nationality_id'])==null) return redirect()->back()->withErrors(__('nationality_id'));
         if (CutGroup::find($input['cutgroup_id'])==null) return redirect()->back()->withErrors(__('cutgroup_id'));
