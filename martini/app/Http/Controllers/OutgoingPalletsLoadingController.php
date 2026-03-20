@@ -17,6 +17,30 @@ use Mpdf\Mpdf;
 
 class OutgoingPalletsLoadingController extends Controller
 {
+    private const DEFAULT_MAX_PALLET_ROWS = 5;
+    private const PALLET_COLUMNS = 3;
+
+    private function normalizeMaxPalletRows($value): int
+    {
+        $rows = (int) $value;
+        return $rows > 0 ? $rows : self::DEFAULT_MAX_PALLET_ROWS;
+    }
+
+    private function isWithinVehicleCapacity(int $row, int $column, int $maxRows): bool
+    {
+        return $row >= 1
+            && $row <= $maxRows
+            && $column >= 1
+            && $column <= self::PALLET_COLUMNS;
+    }
+
+    private function isStandardPallet(OutgoingPallet $pallet): bool
+    {
+        $pallet->loadMissing('outgoingPalletType');
+        $typeName = strtolower(trim((string) ($pallet->outgoingPalletType->name ?? '')));
+        return str_starts_with($typeName, 'standard');
+    }
+
     public function view()
     {
         return view('outgoing-pallets.loading');
@@ -72,6 +96,8 @@ class OutgoingPalletsLoadingController extends Controller
             'payload' => $vehicle->payload,
             'site' => $vehicle->site ? $vehicle->site->name : null,
             'driver' => $vehicle->driver,
+            'maxPalletRows' => $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null),
+            'maxPallets' => $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null) * self::PALLET_COLUMNS,
         ];
         return response()->json(['vehicle' => $data]);
     }
@@ -87,6 +113,8 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['allocations' => []]);
         }
 
+        $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
+
         $allocations = VehicleOutgoingPalletAllocation::with([
             'outgoingPallet.pickWeightOuts',
             'outgoingPallet.customer',
@@ -94,9 +122,18 @@ class OutgoingPalletsLoadingController extends Controller
         ])
             ->where('vehicle_id', $vehicle->id)
             ->get()
-            ->map(function ($allocation) {
+            ->map(function ($allocation) use ($maxRows) {
                 $pallet = $allocation->outgoingPallet;
                 if (!$pallet) {
+                    return null;
+                }
+
+                $row = isset($allocation->row) ? (int) $allocation->row : null;
+                $column = isset($allocation->column) ? (int) $allocation->column : null;
+                if ($row === null || $column === null) {
+                    return null;
+                }
+                if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
                     return null;
                 }
 
@@ -121,8 +158,8 @@ class OutgoingPalletsLoadingController extends Controller
                     'palletType' => $pallet->outgoingPalletType->name ?? 'Euro',
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
                     'dueDate' => $pallet->estimated_delivery_date ? date('Y-m-d', strtotime((string)$pallet->estimated_delivery_date)) : '',
-                    'row' => isset($allocation->row) ? (int)$allocation->row : null,
-                    'column' => isset($allocation->column) ? (int)$allocation->column : null,
+                    'row' => $row,
+                    'column' => $column,
                     'committedByUserId' => $allocation->committed_by_user_id ? (int) $allocation->committed_by_user_id : null,
                     'committedByName' => $allocation->committed_by_name,
                     'committedAt' => $allocation->committed_at,
@@ -162,13 +199,25 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'Vehicle not found'], 404);
         }
 
+        $row = (int) $palletRow;
+        $column = (int) $palletColumn;
+        $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
+
+        if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
+            return response()->json(['error' => 'Invalid slot for vehicle capacity'], 422);
+        }
+
+        if ($column === self::PALLET_COLUMNS && $this->isStandardPallet($pallet)) {
+            return response()->json(['error' => 'Standard pallets cannot be allocated to column 3'], 422);
+        }
+
         VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)
             ->where('vehicle_id', '<>', $vehicle->id)
             ->delete();
 
         VehicleOutgoingPalletAllocation::where('vehicle_id', $vehicle->id)
-            ->where('row', (int)$palletRow)
-            ->where('column', (int)$palletColumn)
+            ->where('row', $row)
+            ->where('column', $column)
             ->where('outgoing_pallet_id', '<>', $pallet->id)
             ->delete();
 
@@ -178,8 +227,8 @@ class OutgoingPalletsLoadingController extends Controller
                 'outgoing_pallet_id' => $pallet->id,
             ],
             [
-                'row' => (int)$palletRow,
-                'column' => (int)$palletColumn,
+                'row' => $row,
+                'column' => $column,
                 'committed_by_user_id' => null,
                 'committed_by_name' => null,
                 'committed_at' => null,
@@ -593,6 +642,8 @@ class OutgoingPalletsLoadingController extends Controller
             return response('Vehicle not found', 404);
         }
 
+        $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
+
         $depot = Site::find($depotSiteId);
 
         $query = VehicleOutgoingPalletAllocation::with([
@@ -623,6 +674,12 @@ class OutgoingPalletsLoadingController extends Controller
                 ->first();
 
             if (!$ca || (int) ($ca->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+
+            $row = (int) ($allocation->row ?? 0);
+            $column = (int) ($allocation->column ?? 0);
+            if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
                 continue;
             }
 
@@ -663,8 +720,8 @@ class OutgoingPalletsLoadingController extends Controller
             }
 
             $loadRows[] = [
-                'row' => (int) ($allocation->row ?? 0),
-                'column' => (int) ($allocation->column ?? 0),
+                'row' => $row,
+                'column' => $column,
                 'palletId' => (int) $pallet->id,
                 'deliveryNoteNumber' => $deliveryNoteNumber,
                 'customerName' => $pallet->customer->businessname ?? '',
@@ -691,6 +748,7 @@ class OutgoingPalletsLoadingController extends Controller
             'dueDate' => $dueDate,
             'vehicle' => $vehicle,
             'depotName' => $depot ? $depot->name : '',
+            'maxRows' => $maxRows,
             'rows' => $loadRows,
             'totalWeight' => $totalWeight,
         ])->render();

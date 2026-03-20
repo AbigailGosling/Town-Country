@@ -20,6 +20,7 @@ class Vehicle extends Model
         'payload',
         'site_id',
         'driver',
+        'max_pallet_rows',
     ];
 
     public function site()

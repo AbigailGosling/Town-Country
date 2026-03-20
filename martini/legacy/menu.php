@@ -58,7 +58,7 @@ use App\Models\User;
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     if ($page['file'] == "../outgoing-pallets/") {
                         ?>
-                        <a href="../outgoing-pallets/loading"><span class="small">Outgoing</span> Pallet Loading</a>
+                        <a href="../outgoing-pallets-loading"><span class="small">Outgoing</span> Pallet Loading</a>
                         <?php
                     }
 				}

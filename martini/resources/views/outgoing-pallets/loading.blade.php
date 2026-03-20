@@ -712,8 +712,31 @@
     let activeTouchDrag = null;
     const touchEdgeScrollThreshold = 90;
     const touchEdgeScrollMaxStep = 22;
+    const PALLET_COLUMNS = 3;
+    const DEFAULT_MAX_PALLET_ROWS = 5;
 
     let vehicleInfo = null;
+    let vehicleMaxPalletRows = DEFAULT_MAX_PALLET_ROWS;
+
+    function normalizeMaxPalletRows(value) {
+      const rows = Number(value);
+      if (!Number.isFinite(rows) || rows <= 0) {
+        return DEFAULT_MAX_PALLET_ROWS;
+      }
+      return Math.floor(rows);
+    }
+
+    function getMaxPalletRows() {
+      return normalizeMaxPalletRows(vehicleInfo?.maxPalletRows ?? vehicleMaxPalletRows);
+    }
+
+    function getMaxSlotCount() {
+      return getMaxPalletRows() * PALLET_COLUMNS;
+    }
+
+    function isSlotWithinCapacity(row, column) {
+      return row >= 1 && row <= getMaxPalletRows() && column >= 1 && column <= PALLET_COLUMNS;
+    }
 
     function getOrderById(orderId) {
       return orders.find(item => item.id === orderId) || null;
@@ -948,10 +971,10 @@
         const outgoingPalletId = Number(alloc.outgoingPalletId || 0);
         const row = Number(alloc.row) || 0;
         const column = Number(alloc.column) || 0;
-        if (!outgoingPalletId || !row || !column) {
+        if (!outgoingPalletId || !row || !column || !isSlotWithinCapacity(row, column)) {
           return;
         }
-        const slotIndex = (row - 1) * 3 + column;
+        const slotIndex = (row - 1) * PALLET_COLUMNS + column;
         const slotId = `slot-${slotIndex}`;
         let order = orderMap.get(outgoingPalletId);
         if (!order) {
@@ -1053,16 +1076,20 @@
         }
         const data = await response.json();
         vehicleInfo = data.vehicle || { reg };
+        vehicleMaxPalletRows = normalizeMaxPalletRows(vehicleInfo.maxPalletRows);
         currentPayload = vehicleInfo.payload ?? null;
         const totalWeight = orders.reduce((sum, order) => sum + (order.allocated ? order.weightKg : 0), 0);
         updateTotalWeightDisplay(totalWeight);
+        renderGrid();
         return vehicleInfo;
       } catch (error) {
         console.error(error);
         vehicleInfo = { reg };
+        vehicleMaxPalletRows = DEFAULT_MAX_PALLET_ROWS;
         currentPayload = null;
         const totalWeight = orders.reduce((sum, order) => sum + (order.allocated ? order.weightKg : 0), 0);
         updateTotalWeightDisplay(totalWeight);
+        renderGrid();
         return vehicleInfo;
       }
     }
@@ -1083,8 +1110,8 @@
           const allocatedToSelected = normalizeReg(order.regAllocatedTo) === normalizedCurrentReg;
           const row = Number(order.row) || 0;
           const column = Number(order.column) || 0;
-          const hasSlot = allocatedToSelected && row > 0 && column > 0;
-          const slotId = hasSlot ? `slot-${(row - 1) * 3 + column}` : null;
+          const hasSlot = allocatedToSelected && isSlotWithinCapacity(row, column);
+          const slotId = hasSlot ? `slot-${(row - 1) * PALLET_COLUMNS + column}` : null;
           return {
           id: order.id || `order-${index + 1}`,
           outgoingPalletId: Number(order.outgoingPalletId) || null,
@@ -1162,11 +1189,11 @@
     }
 
     function getRowForIndex(index) {
-      return Math.ceil(index / 3);
+      return Math.ceil(index / PALLET_COLUMNS);
     }
 
     function getColumnForIndex(index) {
-      return ((index - 1) % 3) + 1;
+      return ((index - 1) % PALLET_COLUMNS) + 1;
     }
 
     function getRowCounts(excludeOrderId) {
@@ -1191,7 +1218,7 @@
       }
 
       const column = getColumnForIndex(slotIndex);
-      if (order.palletType === "Standard" && column === 3) {
+      if (order.palletType === "Standard" && column === PALLET_COLUMNS) {
         return false;
       }
 
@@ -1660,25 +1687,38 @@
     function renderGrid() {
       palletGrid.innerHTML = "";
       rowWeightsEl.innerHTML = "";
+      const maxRows = getMaxPalletRows();
+      const maxSlots = getMaxSlotCount();
+      rowWeightsEl.style.gridTemplateRows = `repeat(${maxRows}, minmax(110px, 1fr))`;
       const totalWeight = orders.reduce((sum, order) => sum + (order.allocated ? order.weightKg : 0), 0);
       updateTotalWeightDisplay(totalWeight);
-      const rowTotals = Array.from({ length: 10 }, () => 0);
+      const rowTotals = Array.from({ length: maxRows }, () => 0);
       orders.forEach(order => {
         if (!order.slotId) return;
-        const row = getRowForIndex(getSlotIndex(order.slotId));
+        const slotIndex = getSlotIndex(order.slotId);
+        const row = getRowForIndex(slotIndex);
+        const column = getColumnForIndex(slotIndex);
+        if (!isSlotWithinCapacity(row, column)) {
+          return;
+        }
         rowTotals[row - 1] += order.weightKg;
       });
       const slotMap = new Map();
       orders.forEach(order => {
         if (order.slotId) {
-          slotMap.set(order.slotId, order);
+          const slotIndex = getSlotIndex(order.slotId);
+          const row = getRowForIndex(slotIndex);
+          const column = getColumnForIndex(slotIndex);
+          if (isSlotWithinCapacity(row, column)) {
+            slotMap.set(order.slotId, order);
+          }
         }
       });
-      for (let i = 1; i <= 30; i += 1) {
+      for (let i = 1; i <= maxSlots; i += 1) {
         const slot = document.createElement("div");
         slot.className = "slot";
         slot.dataset.slotId = `slot-${i}`;
-        if (i % 3 === 0) {
+        if (i % PALLET_COLUMNS === 0) {
           slot.classList.add("euro-only");
         }
         const assignedOrder = slotMap.get(slot.dataset.slotId);
@@ -1759,7 +1799,7 @@
       requestAnimationFrame(() => {
         const weightCells = rowWeightsEl.querySelectorAll(".row-weight");
         weightCells.forEach((cell, index) => {
-          const slotIndex = index * 3 + 1;
+          const slotIndex = index * PALLET_COLUMNS + 1;
           const slot = palletGrid.querySelector(`[data-slot-id="slot-${slotIndex}"]`);
           if (slot) {
             cell.style.height = `${slot.offsetHeight}px`;
@@ -1879,7 +1919,9 @@
           ["Model", vehicle.model || ""],
           ["Gross Weight", vehicle.grossWeight || ""],
           ["Payload", vehicle.payload || ""],
-          ["Depot", vehicle.depot || ""],
+          ["Max Pallet Rows", `${normalizeMaxPalletRows(vehicle.maxPalletRows)}`],
+          ["Max Pallets", `${normalizeMaxPalletRows(vehicle.maxPalletRows) * PALLET_COLUMNS}`],
+          ["Depot", vehicle.site || ""],
           ["Driver", vehicle.driver || ""]
         ];
         rows.forEach(([label, value]) => {
