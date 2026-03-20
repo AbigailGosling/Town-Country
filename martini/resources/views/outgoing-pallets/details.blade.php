@@ -74,24 +74,62 @@
         const unassigned = document.getElementById('unassigned-picks');
         const palletsList = document.getElementById('pallets-list');
         const addPalletBtn = document.getElementById('add-pallet');
+        let activeTouchDrag = null;
+        const touchEdgeScrollThreshold = 90;
+        const touchEdgeScrollMaxStep = 24;
+        let unassignedHeightObserver = null;
 
-        function onDragStart(e) {
-            const target = e.currentTarget;
+        function createDragPayloadFromElement(target) {
             const pickWeightOutId = target?.dataset?.pickWeightOutId;
             if (!pickWeightOutId) {
-                return;
+                return null;
             }
+
             const totalWeightCount = Number(target.dataset.weightCount || 0);
             const selectedMoveWeightCount = Number(target.dataset.moveWeightCount || totalWeightCount || 0);
             const selectedCutId = Number(target.dataset.selectedCutId || 0) || null;
-            const payload = {
+
+            return {
                 pickWeightOutId,
                 fromPalletId: target.dataset.fromPalletId || null,
                 weightCount: totalWeightCount,
                 moveWeightCount: selectedMoveWeightCount,
                 moveCutId: selectedCutId,
             };
+        }
+
+        function onDragStart(e) {
+            const target = e.currentTarget;
+            const payload = createDragPayloadFromElement(target);
+            if (!payload) {
+                return;
+            }
             e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+        }
+
+        function syncUnassignedDropZoneHeight() {
+            if (!unassigned || !palletsList) {
+                return;
+            }
+
+            const palletCards = palletsList.querySelectorAll('.pallet-card');
+            const measuredHeight = palletCards.length > 0
+                ? Math.ceil(palletsList.scrollHeight)
+                : 120;
+
+            unassigned.style.minHeight = `${Math.max(120, measuredHeight)}px`;
+        }
+
+        function observeUnassignedDropZoneHeight() {
+            if (!palletsList || typeof ResizeObserver === 'undefined' || unassignedHeightObserver) {
+                return;
+            }
+
+            unassignedHeightObserver = new ResizeObserver(() => {
+                syncUnassignedDropZoneHeight();
+            });
+
+            unassignedHeightObserver.observe(palletsList);
         }
 
         function allowDrop(e) {
@@ -382,32 +420,11 @@
             });
         }
 
-        function bindDraggable(container) {
-            const elements = [];
-            if (container?.matches?.('[draggable="true"]')) {
-                elements.push(container);
-            }
-
-            if (container?.querySelectorAll) {
-                container.querySelectorAll('[draggable="true"]').forEach((el) => {
-                    elements.push(el);
-                });
-            }
-
-            elements.forEach((el) => {
-                el.removeEventListener('dragstart', onDragStart);
-                el.addEventListener('dragstart', onDragStart);
-            });
-        }
-
-        async function handleDropOnPallet(e) {
-            e.preventDefault();
-            const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+        async function processDropOnPallet(payload, zone) {
             if (!payload.pickWeightOutId) {
                 return;
             }
 
-            const zone = e.currentTarget;
             const outgoingPalletId = zone.dataset.outgoingPalletId;
 
             const isSamePalletMove = payload.fromPalletId && String(payload.fromPalletId) === String(outgoingPalletId);
@@ -444,6 +461,7 @@
                 await upsertSummaryInContainer(zone, splitResult.moved, outgoingPalletId);
                 bindDraggable(document);
                 updatePalletWeights();
+                syncUnassignedDropZoneHeight();
                 return;
             }
 
@@ -473,11 +491,16 @@
             }
 
             updatePalletWeights();
+            syncUnassignedDropZoneHeight();
         }
 
-        async function handleDropOnUnassigned(e) {
+        async function handleDropOnPallet(e) {
             e.preventDefault();
             const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+            await processDropOnPallet(payload, e.currentTarget);
+        }
+
+        async function processDropOnUnassigned(payload) {
             if (!payload.pickWeightOutId || !payload.fromPalletId) {
                 return;
             }
@@ -511,6 +534,7 @@
                 await upsertSummaryInContainer(unassigned, splitResult.moved, null);
                 bindDraggable(document);
                 updatePalletWeights();
+                syncUnassignedDropZoneHeight();
                 return;
             }
 
@@ -538,6 +562,242 @@
             }
 
             updatePalletWeights();
+            syncUnassignedDropZoneHeight();
+        }
+
+        async function handleDropOnUnassigned(e) {
+            e.preventDefault();
+            const payload = JSON.parse(e.dataTransfer.getData('text/plain') || '{}');
+            await processDropOnUnassigned(payload);
+        }
+
+        function removeTouchDragGhost(state = activeTouchDrag) {
+            if (state?.ghostElement?.parentNode) {
+                state.ghostElement.parentNode.removeChild(state.ghostElement);
+            }
+        }
+
+        function clearTouchDragHover(state = activeTouchDrag) {
+            if (state?.hoverZone) {
+                state.hoverZone.classList.remove('ring-2', 'ring-blue-400');
+            }
+
+            if (state?.hoverUnassigned) {
+                unassigned.classList.remove('ring-2', 'ring-blue-400');
+            }
+        }
+
+        function updateTouchDropTarget(clientX, clientY) {
+            if (!activeTouchDrag) {
+                return;
+            }
+
+            clearTouchDragHover(activeTouchDrag);
+            activeTouchDrag.hoverZone = null;
+            activeTouchDrag.hoverUnassigned = false;
+
+            const elementAtPoint = document.elementFromPoint(clientX, clientY);
+            const zone = elementAtPoint?.closest?.('.pallet-drop-zone');
+            if (zone) {
+                activeTouchDrag.hoverZone = zone;
+                zone.classList.add('ring-2', 'ring-blue-400');
+                return;
+            }
+
+            if (elementAtPoint?.closest?.('#unassigned-picks')) {
+                activeTouchDrag.hoverUnassigned = true;
+                unassigned.classList.add('ring-2', 'ring-blue-400');
+            }
+        }
+
+        function shouldIgnoreTouchDragStart(eventTarget) {
+            return !!eventTarget?.closest?.('select, option, input, button, a, textarea, label');
+        }
+
+        function runTouchAutoScroll() {
+            if (!activeTouchDrag) {
+                return;
+            }
+
+            const speed = Number(activeTouchDrag.autoScrollSpeed || 0);
+            if (speed !== 0) {
+                window.scrollBy(0, speed);
+                updateTouchDropTarget(activeTouchDrag.lastTouchClientX, activeTouchDrag.lastTouchClientY);
+            }
+
+            activeTouchDrag.autoScrollFrame = window.requestAnimationFrame(runTouchAutoScroll);
+        }
+
+        function stopTouchAutoScroll(state = activeTouchDrag) {
+            if (!state) {
+                return;
+            }
+
+            if (state.autoScrollFrame) {
+                window.cancelAnimationFrame(state.autoScrollFrame);
+            }
+
+            state.autoScrollFrame = null;
+            state.autoScrollSpeed = 0;
+        }
+
+        function updateTouchAutoScroll(clientY) {
+            if (!activeTouchDrag) {
+                return;
+            }
+
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+            const topZone = touchEdgeScrollThreshold;
+            const bottomZone = Math.max(0, viewportHeight - touchEdgeScrollThreshold);
+
+            let speed = 0;
+            if (clientY < topZone) {
+                speed = -Math.ceil((topZone - clientY) / 4);
+            } else if (clientY > bottomZone) {
+                speed = Math.ceil((clientY - bottomZone) / 4);
+            }
+
+            speed = Math.max(-touchEdgeScrollMaxStep, Math.min(touchEdgeScrollMaxStep, speed));
+            activeTouchDrag.autoScrollSpeed = speed;
+        }
+
+        function onTouchStart(e) {
+            if (!e.touches || e.touches.length !== 1) {
+                return;
+            }
+
+            if (shouldIgnoreTouchDragStart(e.target)) {
+                return;
+            }
+
+            const card = e.currentTarget;
+            const payload = createDragPayloadFromElement(card);
+            if (!payload) {
+                return;
+            }
+
+            const touch = e.touches[0];
+            const rect = card.getBoundingClientRect();
+            const ghost = card.cloneNode(true);
+            ghost.style.position = 'fixed';
+            ghost.style.left = `${touch.clientX - (rect.width / 2)}px`;
+            ghost.style.top = `${touch.clientY - 25}px`;
+            ghost.style.width = `${rect.width}px`;
+            ghost.style.pointerEvents = 'none';
+            ghost.style.opacity = '0.85';
+            ghost.style.zIndex = '9999';
+            ghost.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+            ghost.classList.add('ring-2', 'ring-blue-300');
+            document.body.appendChild(ghost);
+
+            activeTouchDrag = {
+                payload,
+                sourceElement: card,
+                ghostElement: ghost,
+                hoverZone: null,
+                hoverUnassigned: false,
+                autoScrollFrame: null,
+                autoScrollSpeed: 0,
+                lastTouchClientX: touch.clientX,
+                lastTouchClientY: touch.clientY,
+            };
+
+            activeTouchDrag.autoScrollFrame = window.requestAnimationFrame(runTouchAutoScroll);
+
+            card.style.opacity = '0.5';
+            updateTouchDropTarget(touch.clientX, touch.clientY);
+            updateTouchAutoScroll(touch.clientY);
+            e.preventDefault();
+        }
+
+        function onTouchMove(e) {
+            if (!activeTouchDrag || !e.touches || e.touches.length !== 1) {
+                return;
+            }
+
+            const touch = e.touches[0];
+            const ghost = activeTouchDrag.ghostElement;
+            if (ghost) {
+                ghost.style.left = `${touch.clientX - (ghost.offsetWidth / 2)}px`;
+                ghost.style.top = `${touch.clientY - 25}px`;
+            }
+
+            activeTouchDrag.lastTouchClientX = touch.clientX;
+            activeTouchDrag.lastTouchClientY = touch.clientY;
+
+            updateTouchDropTarget(touch.clientX, touch.clientY);
+            updateTouchAutoScroll(touch.clientY);
+            e.preventDefault();
+        }
+
+        async function onTouchEnd() {
+            if (!activeTouchDrag) {
+                return;
+            }
+
+            const state = activeTouchDrag;
+            activeTouchDrag = null;
+
+            stopTouchAutoScroll(state);
+            clearTouchDragHover(state);
+            removeTouchDragGhost(state);
+
+            if (state.sourceElement) {
+                state.sourceElement.style.opacity = '';
+            }
+
+            if (state.hoverZone) {
+                await processDropOnPallet(state.payload, state.hoverZone);
+                return;
+            }
+
+            if (state.hoverUnassigned) {
+                await processDropOnUnassigned(state.payload);
+            }
+        }
+
+        function bindTouchDraggable(container) {
+            const elements = [];
+            if (container?.matches?.('[draggable="true"]')) {
+                elements.push(container);
+            }
+
+            if (container?.querySelectorAll) {
+                container.querySelectorAll('[draggable="true"]').forEach((el) => {
+                    elements.push(el);
+                });
+            }
+
+            elements.forEach((el) => {
+                el.removeEventListener('touchstart', onTouchStart);
+                el.removeEventListener('touchmove', onTouchMove);
+                el.removeEventListener('touchend', onTouchEnd);
+                el.removeEventListener('touchcancel', onTouchEnd);
+                el.addEventListener('touchstart', onTouchStart, { passive: false });
+                el.addEventListener('touchmove', onTouchMove, { passive: false });
+                el.addEventListener('touchend', onTouchEnd);
+                el.addEventListener('touchcancel', onTouchEnd);
+            });
+        }
+
+        function bindDraggable(container) {
+            const elements = [];
+            if (container?.matches?.('[draggable="true"]')) {
+                elements.push(container);
+            }
+
+            if (container?.querySelectorAll) {
+                container.querySelectorAll('[draggable="true"]').forEach((el) => {
+                    elements.push(el);
+                });
+            }
+
+            elements.forEach((el) => {
+                el.removeEventListener('dragstart', onDragStart);
+                el.addEventListener('dragstart', onDragStart);
+            });
+
+            bindTouchDraggable(container);
         }
 
         function bindDropZones() {
@@ -682,6 +942,7 @@
             bindDeleteButtons();
             bindTypeSelectors();
             updatePalletWeights();
+            syncUnassignedDropZoneHeight();
         }
         async function deletePallet(outgoingPalletId) {
             const response = await fetch(`/outgoing-pallets/${outgoingPalletId}`, {
@@ -703,6 +964,8 @@
                 });
                 card.remove();
             }
+
+            syncUnassignedDropZoneHeight();
         }
 
         function bindDeleteButtons() {
@@ -716,7 +979,10 @@
         bindDeleteButtons();
         bindTypeSelectors();
         bindMoveControls();
+        observeUnassignedDropZoneHeight();
+        window.addEventListener('resize', syncUnassignedDropZoneHeight);
         addPalletBtn?.addEventListener('click', createPallet);
         updatePalletWeights();
+        syncUnassignedDropZoneHeight();
 </script>
 
