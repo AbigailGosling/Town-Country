@@ -182,11 +182,13 @@
 </head>
 <body>
     @php
+        $maxRows = max(1, (int) ($maxRows ?? 5));
+        $maxSlots = $maxRows * 3;
         $slotMap = [];
-        $rowTotals = array_fill(1, 10, 0);
+        $rowTotals = array_fill(1, $maxRows, 0);
         foreach ($rows as $row) {
             $slotIndex = ((int)$row['row'] - 1) * 3 + (int)$row['column'];
-            if ($slotIndex >= 1 && $slotIndex <= 30) {
+            if ($slotIndex >= 1 && $slotIndex <= $maxSlots) {
                 $slotMap[$slotIndex] = $row;
                 $rowTotals[(int)$row['row']] += (int)$row['weightKg'];
             }
@@ -226,7 +228,7 @@
             </table>
 
             <table class="layout">
-                @for ($r = 1; $r <= 10; $r++)
+                @for ($r = 1; $r <= $maxRows; $r++)
                     <tr>
                         @for ($c = 1; $c <= 3; $c++)
                             @php

@@ -1539,10 +1539,11 @@ use Ramsey\Uuid\Type\Decimal;
         $prodCount = 0;
 		$productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE `pallet_id` IN ($pallet_ids)");
         while($row = $productResult->fetch_assoc()){
+             $species_id = prepareExecuteQuery("SELECT `species_id` FROM `cuts` WHERE id=?",'i',[$row['cut_id']])->fetch_assoc()['species_id'];
             $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $row['created_at']);
             $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
             if($row['cost'] == '0.00' || $row['cost'] == '' ||
-            ($timestampOfCreation > env('INTAKE_COST_LOCK_TIMESTAMP',1772582400) && (empty($row['rrp1']) && empty($row['rrp2']) && empty($row['rrp3'])))
+            ($timestampOfCreation > env('INTAKE_COST_LOCK_TIMESTAMP',1772582400) && ($species_id != "5" && empty($row['rrp1']) && empty($row['rrp2']) && empty($row['rrp3'])))
             ){
                 $prodCount++;
             }
