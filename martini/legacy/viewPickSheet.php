@@ -393,7 +393,7 @@ use Illuminate\Support\Facades\Auth;
 		<?php } ?>
 
 		<?php
-                $outpalletQuery = "SELECT * FROM `outgoing_pallet_pickweights` INNER JOIN `pickWeightOut` ON `outgoing_pallet_pickweights`.pickWeightOut_id = `pickWeightOut`.id WHERE `pickWeightOut`.pickersheet_id=?";
+                $outpalletQuery = "SELECT *,pickWeightOut.id as pid FROM `outgoing_pallet_pickweights` INNER JOIN `pickWeightOut` ON `outgoing_pallet_pickweights`.pickWeightOut_id = `pickWeightOut`.id WHERE `pickWeightOut`.pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
@@ -464,7 +464,7 @@ use Illuminate\Support\Facades\Auth;
 
                             (double)$k = (double)$k + (double)$w;
                         }
-                        ?><div><?php echo $count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
+                        ?><div><?php echo $outpallet['pid']." ".$count; ?> <?php echo getSpeciesFromCutID($product['cut_id']); ?> - <?php echo getCut($product['cut_id']); ?>
 							<?php if($product['unit'] != 'PPC'){ ?>[<?php echo $k . $ext; $k = 0; ?>]</div> <?php } ?>
 						<?php
                     }

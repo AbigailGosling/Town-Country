@@ -27,7 +27,6 @@ return new class extends Migration
             $table->unsignedBigInteger('site_id');
             $table->string('client_type');
 
-            $table->unique(['client_id', 'client_type'], 'client_addresses_client_type_unique');
             $table->unique(['client_id', 'address_id', 'client_type'], 'client_addresses_client_address_type_unique');
             $table->index('client_id', 'client_addresses_client_idx');
             $table->index('address_id', 'client_addresses_address_idx');

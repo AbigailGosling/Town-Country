@@ -71,6 +71,16 @@
       color: inherit;
       min-width: 200px;
     }
+    .field-hint {
+      display: none;
+      margin-top: 0.35rem;
+      color: #b91c1c;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .field-hint.visible {
+      display: block;
+    }
     .top-bar input[type="date"] {
       padding: 0.5rem 0.75rem;
       border-radius: 0.5rem;
@@ -131,6 +141,20 @@
     }
     .load-complete-btn:hover {
       background: #15803d;
+    }
+    .print-load-btn {
+      justify-self: end;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.5rem;
+      border: none;
+      background: #111827;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(17, 24, 39, 0.25);
+    }
+    .print-load-btn:hover {
+      background: #030712;
     }
     .ai-plan-btn {
       justify-self: end;
@@ -300,6 +324,21 @@
       background: #111827;
       color: #fff;
     }
+    .contents-btn {
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background: #fff;
+      color: #111827;
+      border-radius: 0.45rem;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .contents-list {
+      margin: 0;
+      padding-left: 1rem;
+      line-height: 1.45;
+    }
     .pallet {
       width: 64px;
       height: 64px;
@@ -389,6 +428,19 @@
       font-size: 0.7rem;
       color: #6b7280;
       text-align: center;
+    }
+    .slot-frozen-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(14, 165, 233, 0.12);
+      color: #0ea5e9;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-top: 0.2rem;
     }
     .slot.euro-only:not(.occupied) {
       background: rgba(37, 99, 235, 0.08);
@@ -503,6 +555,7 @@
         <select id="vehicleSelect">
           <option>...</option>
         </select>
+        <div class="field-hint" id="vehicleHint">No vehicles available for selected depot.</div>
       </div>
       <div>
         <label>&nbsp;</label>
@@ -524,8 +577,9 @@
             <div class="total-weight" id="totalWeight">0 kg</div>
           </div>
           <div class="truck-actions">
+            <button class="print-load-btn" id="printLoadBtn" type="button">Print Load</button>
             <button class="load-complete-btn" id="loadCompleteBtn" type="button">Load Complete</button>
-            <button class="ai-plan-btn" id="aiPlanBtn" type="button" disabled>AI Plan</button>
+            <!--<button class="ai-plan-btn" id="aiPlanBtn" type="button" disabled>AI Plan</button>-->
           </div>
         </div>
         <div class="grid-wrapper">
@@ -566,6 +620,16 @@
     </div>
   </div>
 
+  <div class="modal" id="contentsModal" role="dialog" aria-modal="true" aria-label="Pallet contents overview">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="contentsModalTitle">Pallet Contents</h2>
+        <button class="modal-close" type="button" id="contentsModalClose">×</button>
+      </div>
+      <div class="modal-grid" id="contentsModalBody"></div>
+    </div>
+  </div>
+
   <script>
     let orders = [];
 
@@ -574,10 +638,12 @@
     const rowWeightsEl = document.getElementById("rowWeights");
     const totalWeightEl = document.getElementById("totalWeight");
     const payloadBadge = document.getElementById("payloadBadge");
+    const printLoadBtn = document.getElementById("printLoadBtn");
     const sortBySelect = document.getElementById("sortBy");
     const toggleAllocatedBtn = document.getElementById("toggleAllocatedBtn");
     const depotSelect = document.getElementById("depotSelect");
     const vehicleSelect = document.getElementById("vehicleSelect");
+    const vehicleHint = document.getElementById("vehicleHint");
     const vehiclePlate = document.getElementById("vehiclePlate");
     const vehicleModal = document.getElementById("vehicleModal");
     const vehicleModalClose = document.getElementById("vehicleModalClose");
@@ -590,6 +656,10 @@
     const aiPlanModal = document.getElementById("aiPlanModal");
     const aiPlanClose = document.getElementById("aiPlanClose");
     const aiPlanBody = document.getElementById("aiPlanBody");
+    const contentsModal = document.getElementById("contentsModal");
+    const contentsModalClose = document.getElementById("contentsModalClose");
+    const contentsModalTitle = document.getElementById("contentsModalTitle");
+    const contentsModalBody = document.getElementById("contentsModalBody");
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
     let activeDragOrderId = null;
     let hideAllocated = false;
@@ -625,6 +695,10 @@
       return trimmed.startsWith("s") ? "Standard" : "Euro";
     }
 
+    function normalizeReg(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
     function jsonHeaders() {
       const headers = {
         "Content-Type": "application/json"
@@ -633,6 +707,19 @@
         headers["X-CSRF-TOKEN"] = csrfToken;
       }
       return headers;
+    }
+
+    function updateVehicleHint(message) {
+      if (!vehicleHint) {
+        return;
+      }
+      if (!message) {
+        vehicleHint.classList.remove("visible");
+        vehicleHint.textContent = "";
+        return;
+      }
+      vehicleHint.textContent = message;
+      vehicleHint.classList.add("visible");
     }
 
     async function updateAllocation(outgoingPalletId, regAllocatedTo, palletRow, palletColumn) {
@@ -657,6 +744,88 @@
       } catch (error) {
         console.error("Allocation update error", error);
       }
+    }
+
+    async function updatePalletType(outgoingPalletId, palletType) {
+      if (!outgoingPalletId) {
+        return false;
+      }
+
+      try {
+        const response = await fetch("{{ route('outgoing-pallets-loading.update-pallet-type') }}", {
+          method: "POST",
+          headers: jsonHeaders(),
+          body: JSON.stringify({
+            outgoingPalletId,
+            palletType
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Unable to update pallet type");
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Pallet type update error", error);
+        return false;
+      }
+    }
+
+    async function openContentsModal(order) {
+      if (!order || !order.outgoingPalletId) {
+        return;
+      }
+
+      contentsModalTitle.textContent = `Pallet ${order.outgoingPalletId} Contents`;
+      contentsModalBody.innerHTML = "";
+
+      try {
+        const response = await fetch(`{{ route('outgoing-pallets-loading.pallet-overview') }}?outgoingPalletId=${encodeURIComponent(order.outgoingPalletId)}`);
+        if (!response.ok) {
+          throw new Error("Pallet contents unavailable");
+        }
+        const data = await response.json();
+        const overview = data.overview || {};
+
+        const rows = [
+          ["Customer", overview.customerName || ""],
+          ["Address", [overview.address || "", overview.postcode || ""].filter(Boolean).join(" • ")],
+          ["Type", overview.palletType || ""],
+          ["Temperature", overview.temperature || ""],
+          ["Total Weight", `${Number(overview.totalWeightKg || 0)} kg`],
+          ["PickWeightOuts", `${Number(overview.pickWeightOutCount || 0)}`],
+        ];
+
+        rows.forEach(([label, value]) => {
+          const row = document.createElement("div");
+          row.className = "modal-row";
+          row.innerHTML = `<strong>${label}</strong><div>${value}</div>`;
+          contentsModalBody.append(row);
+        });
+
+        const cuts = Array.isArray(overview.cuts) ? overview.cuts : [];
+        const cutsRow = document.createElement("div");
+        cutsRow.className = "modal-row";
+        if (!cuts.length) {
+          cutsRow.innerHTML = `<strong>Contents</strong><div>No cut breakdown available.</div>`;
+        } else {
+          const items = cuts.map(cut => `<li>${cut.cutName}: ${Number(cut.quantity || 0)} pcs • ${Number(cut.totalWeight || 0)} kg</li>`).join("");
+          cutsRow.innerHTML = `<strong>Contents</strong><div><ul class="contents-list">${items}</ul></div>`;
+        }
+        contentsModalBody.append(cutsRow);
+      } catch (error) {
+        const row = document.createElement("div");
+        row.className = "modal-row";
+        row.innerHTML = `<strong>Error</strong><div>${error.message}</div>`;
+        contentsModalBody.append(row);
+      }
+
+      contentsModal.classList.add("open");
+    }
+
+    function closeContentsModal() {
+      contentsModal.classList.remove("open");
     }
 
     async function loadVehicleAllocations(reg) {
@@ -730,6 +899,7 @@
             outgoingPalletId,
             title: `Order ${deliveryNoteNumber}`,
             subtext,
+            contentsPreview: "",
             customerName,
             customerDeliveryPostcode,
             deliveryNoteNumber,
@@ -762,28 +932,50 @@
       renderGrid();
     }
 
-    async function loadVehicles() {
+    async function loadVehicles(selectedReg = "") {
       try {
-        const response = await fetch("{{ route('outgoing-pallets-loading.vehicles') }}");
+        const depot = depotSelect.value || "";
+        const url = `{{ route('outgoing-pallets-loading.vehicles') }}?depot=${encodeURIComponent(depot)}`;
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error("Vehicle list unavailable");
         }
         const data = await response.json();
         const vehicles = Array.isArray(data.vehicles) ? data.vehicles : [];
+        vehicleSelect.innerHTML = "";
         if (!vehicles.length) {
+          const selectedDepotName = depotSelect.options[depotSelect.selectedIndex]?.text || "selected depot";
+          updateVehicleHint(`No vehicles available for ${selectedDepotName}.`);
+          vehiclePlate.textContent = "...";
+          currentPayload = null;
+          updateTotalWeightDisplay(0);
+          vehicleSelect.disabled = true;
+          renderOrders();
+          renderGrid();
           return;
         }
-        vehicleSelect.innerHTML = "";
+        updateVehicleHint("");
+        vehicleSelect.disabled = false;
         vehicles.forEach(reg => {
+          const normalizedReg = String(reg || "").trim();
+          if (!normalizedReg) {
+            return;
+          }
           const option = document.createElement("option");
-          option.value = reg;
-          option.textContent = reg;
+          option.value = normalizedReg;
+          option.textContent = normalizedReg;
           vehicleSelect.append(option);
         });
-        vehicleSelect.value = vehicles[0];
-        vehiclePlate.textContent = vehicles[0];
-        await loadVehicleDetails(vehicles[0]);
+
+        const optionValues = Array.from(vehicleSelect.options).map(option => option.value);
+        const normalizedSelectedReg = normalizeReg(selectedReg);
+        const nextReg = optionValues.find(value => normalizeReg(value) === normalizedSelectedReg) || optionValues[0];
+        vehicleSelect.value = nextReg;
+        vehiclePlate.textContent = nextReg;
+        await loadVehicleDetails(nextReg);
+        await loadOrders();
       } catch (error) {
+        updateVehicleHint("Vehicle list unavailable. Please try again.");
         console.error(error);
       }
     }
@@ -821,8 +1013,9 @@
         }
         const data = await response.json();
         const incoming = Array.isArray(data.orders) ? data.orders : [];
+        const normalizedCurrentReg = normalizeReg(reg);
         orders = incoming.map((order, index) => {
-          const allocatedToSelected = order.regAllocatedTo && order.regAllocatedTo === reg;
+          const allocatedToSelected = normalizeReg(order.regAllocatedTo) === normalizedCurrentReg;
           const row = Number(order.row) || 0;
           const column = Number(order.column) || 0;
           const hasSlot = allocatedToSelected && row > 0 && column > 0;
@@ -832,6 +1025,7 @@
           outgoingPalletId: Number(order.outgoingPalletId) || null,
           title: order.title || `Order ${order.deliveryNoteNumber || index + 1}`,
           subtext: order.subtext || "",
+          contentsPreview: order.contentsPreview || "",
           customerName: order.customerName || "",
           customerDeliveryAddress: order.customerDeliveryAddress || "",
           customerDeliveryPostcode: order.customerDeliveryPostcode || "",
@@ -839,7 +1033,7 @@
           palletType: normalizePalletType(order.palletType),
           weightKg: Number(order.weightKg) || 0,
           freshFrozen: order.freshFrozen || "",
-            allocatedReg: order.regAllocatedTo || "",
+            allocatedReg: String(order.regAllocatedTo || "").trim(),
             allocated: hasSlot,
             slotId
           };
@@ -869,14 +1063,30 @@
           return;
         }
         depotSelect.innerHTML = "";
-        depots.forEach(name => {
+        depots.forEach(depot => {
+          const depotId = typeof depot === "object" && depot !== null ? Number(depot.id) : Number(depot);
+          const depotName = typeof depot === "object" && depot !== null ? String(depot.name || "") : String(depot || "");
+          if (!depotId || !depotName) {
+            return;
+          }
           const option = document.createElement("option");
-          option.value = name;
-          option.textContent = name;
+          option.value = String(depotId);
+          option.textContent = depotName;
           depotSelect.append(option);
         });
-        depotSelect.value = depots.includes("WOLVES") ? "WOLVES" : depots[0];
-        loadOrders();
+
+        const options = Array.from(depotSelect.options);
+        if (!options.length) {
+          return;
+        }
+
+        const wolverhamptonOption = options.find(option => {
+          const text = String(option.textContent || "").trim().toLowerCase();
+          return text === "wolverhampton" || text.includes("wolverhampton");
+        });
+
+        depotSelect.value = wolverhamptonOption ? wolverhamptonOption.value : options[0].value;
+        await loadVehicles();
       } catch (error) {
         console.error(error);
       }
@@ -909,8 +1119,8 @@
     function renderOrders() {
       ordersContainer.innerHTML = "";
       orders.forEach(order => {
-        const currentReg = vehicleSelect.value || vehiclePlate.textContent || "";
-        if (order.allocatedReg && order.allocatedReg !== currentReg) {
+        const currentReg = normalizeReg(vehicleSelect.value || vehiclePlate.textContent || "");
+        if (normalizeReg(order.allocatedReg) && normalizeReg(order.allocatedReg) !== currentReg) {
           return;
         }
         if (hideAllocated && order.allocated) {
@@ -964,6 +1174,10 @@
         }
         const weight = document.createElement("p");
         weight.textContent = `Weight: ${order.weightKg} kg`;
+        const contentsPreview = document.createElement("p");
+        if (order.contentsPreview) {
+          contentsPreview.textContent = `Contents: ${order.contentsPreview}`;
+        }
         const status = document.createElement("div");
         status.className = "order-status";
         if (order.allocatedReg) {
@@ -978,10 +1192,23 @@
         if (order.allocated) {
           status.classList.add("visible");
         }
-        info.append(title, sub, weight, status);
+        info.append(title, sub, weight);
+        if (order.contentsPreview) {
+          info.append(contentsPreview);
+        }
+        info.append(status);
 
         const palletControls = document.createElement("div");
         palletControls.className = "pallet-controls";
+
+        const contentsBtn = document.createElement("button");
+        contentsBtn.type = "button";
+        contentsBtn.className = "contents-btn";
+        contentsBtn.textContent = "Contents";
+        contentsBtn.addEventListener("click", event => {
+          event.stopPropagation();
+          openContentsModal(order);
+        });
 
         const typeToggle = document.createElement("div");
         typeToggle.className = "pallet-type";
@@ -990,20 +1217,44 @@
         euroBtn.textContent = "Euro";
         euroBtn.className = order.palletType === "Euro" ? "active" : "";
         euroBtn.disabled = !!order.allocated;
-        euroBtn.addEventListener("click", () => {
+        euroBtn.addEventListener("click", async () => {
+          if (order.palletType === "Euro") {
+            return;
+          }
+          const previousType = order.palletType;
           order.palletType = "Euro";
           renderOrders();
           renderGrid();
+
+          const updated = await updatePalletType(order.outgoingPalletId, "Euro");
+          if (!updated) {
+            order.palletType = previousType;
+            renderOrders();
+            renderGrid();
+            window.alert("Unable to update pallet type. Please try again.");
+          }
         });
         const standardBtn = document.createElement("button");
         standardBtn.type = "button";
         standardBtn.textContent = "Standard";
         standardBtn.className = order.palletType === "Standard" ? "active" : "";
         standardBtn.disabled = !!order.allocated;
-        standardBtn.addEventListener("click", () => {
+        standardBtn.addEventListener("click", async () => {
+          if (order.palletType === "Standard") {
+            return;
+          }
+          const previousType = order.palletType;
           order.palletType = "Standard";
           renderOrders();
           renderGrid();
+
+          const updated = await updatePalletType(order.outgoingPalletId, "Standard");
+          if (!updated) {
+            order.palletType = previousType;
+            renderOrders();
+            renderGrid();
+            window.alert("Unable to update pallet type. Please try again.");
+          }
         });
         typeToggle.append(euroBtn, standardBtn);
 
@@ -1019,7 +1270,7 @@
         });
 
         pallet.style.display = order.allocated ? "none" : "grid";
-        palletControls.append(typeToggle, pallet);
+        palletControls.append(contentsBtn, typeToggle, pallet);
         card.append(info, palletControls);
         ordersContainer.append(card);
       });
@@ -1052,6 +1303,7 @@
         const assignedOrder = slotMap.get(slot.dataset.slotId);
         if (assignedOrder) {
           slot.classList.add("occupied");
+          const isFrozen = String(assignedOrder.freshFrozen || "").trim().toUpperCase() === "FROZEN";
           const pallet = document.createElement("div");
           pallet.className = `pallet ${assignedOrder.palletType === "Standard" ? "standard" : "euro"}`;
           pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div>`;
@@ -1071,6 +1323,23 @@
           subText.textContent = assignedOrder.subtext;
 
           slot.append(pallet, orderText, subText);
+
+          if (isFrozen) {
+            const frozenBadge = document.createElement("div");
+            frozenBadge.className = "slot-frozen-badge";
+            frozenBadge.textContent = "Frozen";
+            slot.append(frozenBadge);
+          }
+
+          if (assignedOrder.contentsPreview) {
+            const contentsDiv = document.createElement("div");
+            contentsDiv.className = "slot-subtext";
+            contentsDiv.style.marginTop = "0.4rem";
+            contentsDiv.style.fontSize = "0.65rem";
+            contentsDiv.style.fontWeight = "500";
+            contentsDiv.textContent = assignedOrder.contentsPreview;
+            slot.append(contentsDiv);
+          }
         }
         slot.addEventListener("dragover", event => {
           if (!activeDragOrderId) return;
@@ -1121,7 +1390,7 @@
             order.allocated = true;
             order.slotId = slot.dataset.slotId;
             const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-            order.allocatedReg = reg;
+            order.allocatedReg = String(reg).trim();
             const palletRow = getRowForIndex(i);
             const palletColumn = column;
             updateAllocation(order.outgoingPalletId, reg, palletRow, palletColumn);
@@ -1202,8 +1471,8 @@
     deliveryDateInput.addEventListener("change", () => {
       loadOrders();
     });
-    depotSelect.addEventListener("change", () => {
-      loadOrders();
+    depotSelect.addEventListener("change", async () => {
+      await loadVehicles();
     });
 
     document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
@@ -1232,6 +1501,20 @@
         window.alert("Load commit failed. Check server logs.");
         console.error(error);
       }
+    });
+
+    printLoadBtn.addEventListener("click", () => {
+      const reg = vehicleSelect.value || vehiclePlate.textContent || "";
+      const dueDate = document.getElementById("deliveryDate").value || "";
+      const depot = depotSelect.value || "";
+
+      if (!reg || !depot) {
+        window.alert("Select a depot and vehicle before printing.");
+        return;
+      }
+
+      const url = `{{ route('outgoing-pallets-loading.print-truck-load') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}`;
+      window.open(url, "_blank", "noopener");
     });
 
     let resizeTimer;
@@ -1315,7 +1598,8 @@
       }
     });
 
-    aiPlanBtn.addEventListener("click", async () => {
+    if (aiPlanBtn) {
+      aiPlanBtn.addEventListener("click", async () => {
       const allocatedOrders = orders.filter(order => order.allocated);
       const postcodes = Array.from(new Set(allocatedOrders
         .map(order => (order.customerDeliveryPostcode || "").trim())
@@ -1351,18 +1635,33 @@
         aiPlanBtn.disabled = false;
         aiPlanBtn.textContent = "AI Plan";
       }
-    });
+      });
+    }
 
-    aiPlanClose.addEventListener("click", closeAiPlanModal);
-    aiPlanModal.addEventListener("click", event => {
-      if (event.target === aiPlanModal) {
-        closeAiPlanModal();
-      }
-    });
+    if (aiPlanClose) {
+      aiPlanClose.addEventListener("click", closeAiPlanModal);
+    }
+    if (aiPlanModal) {
+      aiPlanModal.addEventListener("click", event => {
+        if (event.target === aiPlanModal) {
+          closeAiPlanModal();
+        }
+      });
+    }
+
+    if (contentsModalClose) {
+      contentsModalClose.addEventListener("click", closeContentsModal);
+    }
+    if (contentsModal) {
+      contentsModal.addEventListener("click", event => {
+        if (event.target === contentsModal) {
+          closeContentsModal();
+        }
+      });
+    }
 
     renderOrders();
     renderGrid();
-    loadVehicles();
     loadDepots();
   </script>
 </body>

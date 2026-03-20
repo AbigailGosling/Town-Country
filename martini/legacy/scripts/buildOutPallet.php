@@ -54,7 +54,7 @@ use Illuminate\Support\Facades\Log;
     $exists = mysqli_num_rows($y);
     $outPallet = mysqli_fetch_array($y);
     $outPalletID = $outPallet['id'];
-    $grossTareArray = explode(',', $outPallet['weight_ids']);
+    $grossTareArray = array_filter(explode(',', $outPallet['weight_ids']));
 
     foreach(request()->input('grossids') as $weightID){
 
@@ -103,7 +103,7 @@ use Illuminate\Support\Facades\Log;
     }
 
 if(!empty($grossTareArray)){
-    $pickers = explode(",",$outPallet['picker_ids']);
+    $pickers = array_filter(explode(",",$outPallet['picker_ids']));
     $pickers[] = $userid;
     $pickers = array_unique($pickers);
     $pickers = implode(",",$pickers);

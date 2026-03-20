@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\OutgoingPallet;
+use App\Models\OutgoingPalletType;
 use App\Models\Site;
 use App\Models\Vehicle;
 use App\Models\VehicleOutgoingPalletAllocation;
+use App\Models\OutgoingPalletPickWeight;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Mpdf\Mpdf;
 
 class OutgoingPalletsLoadingController extends Controller
 {
@@ -18,26 +21,41 @@ class OutgoingPalletsLoadingController extends Controller
     {
         return view('outgoing-pallets.loading');
     }
-    public function vehicle():JsonResponse
+    public function vehicle(Request $request):JsonResponse
     {
+        $depotSiteId = (int) $request->input('depot', 0);
+
         // Return all vehicle registrations as JSON using Eloquent
-        $vehicles = Vehicle::orderBy('reg', 'asc')
+        $vehiclesQuery = Vehicle::orderBy('reg', 'asc')
             ->whereNotNull('reg')
+            ->where('reg', '<>', '');
+
+        if ($depotSiteId > 0) {
+            $vehiclesQuery->where('site_id', $depotSiteId);
+        }
+
+        $vehicles = $vehiclesQuery
+            ->get(['reg'])
             ->pluck('reg')
+            ->map(function ($reg) {
+                return trim((string) $reg);
+            })
             ->filter()
+            ->unique()
             ->values();
+
         return response()->json(['vehicles' => $vehicles]);
     }
     public function vehicleDetails(Request $request): JsonResponse
     {
-        $reg = $request->input('reg');
+        $reg = trim((string) $request->input('reg', ''));
         if (!$reg) {
             return response()->json(['error' => 'Missing reg parameter'], 400);
         }
 
         // Adjust fields to match your new schema (type, depot removed, vehicle_type_id, site_id added)
         $vehicle = Vehicle::with(['vehicleType', 'site'])
-            ->where('reg', $reg)
+            ->whereRaw('TRIM(reg) = ?', [$reg])
             ->first();
 
         if (!$vehicle) {
@@ -64,7 +82,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['allocations' => []]);
         }
 
-        $vehicle = Vehicle::where('reg', $reg)->first();
+        $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
         if (!$vehicle) {
             return response()->json(['allocations' => []]);
         }
@@ -139,7 +157,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['success' => true, 'affectedRows' => $deleted]);
         }
 
-        $vehicle = Vehicle::where('reg', $regAllocatedTo)->first();
+        $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [trim($regAllocatedTo)])->first();
         if (!$vehicle) {
             return response()->json(['error' => 'Vehicle not found'], 404);
         }
@@ -170,22 +188,58 @@ class OutgoingPalletsLoadingController extends Controller
 
         return response()->json(['success' => true, 'affectedRows' => 1]);
     }
+
+    public function updatePalletType(Request $request): JsonResponse
+    {
+        $outgoingPalletId = (int) $request->input('outgoingPalletId', 0);
+        $palletType = trim((string) $request->input('palletType', ''));
+
+        if ($outgoingPalletId <= 0 || $palletType === '') {
+            return response()->json(['error' => 'outgoingPalletId and palletType are required'], 400);
+        }
+
+        $normalizedType = strtolower($palletType);
+        if (!in_array($normalizedType, ['standard', 'euro'], true)) {
+            return response()->json(['error' => 'Invalid palletType'], 400);
+        }
+
+        $pallet = OutgoingPallet::find($outgoingPalletId);
+        if (!$pallet) {
+            return response()->json(['error' => 'Pallet not found'], 404);
+        }
+
+        $type = OutgoingPalletType::query()
+            ->whereRaw('LOWER(name) LIKE ?', [$normalizedType . '%'])
+            ->orderBy('id')
+            ->first();
+
+        if (!$type) {
+            return response()->json(['error' => 'Pallet type not found'], 404);
+        }
+
+        $pallet->outgoing_pallet_type_id = (int) $type->id;
+        $pallet->save();
+
+        return response()->json([
+            'success' => true,
+            'outgoingPalletId' => (int) $pallet->id,
+            'outgoingPalletTypeId' => (int) $pallet->outgoing_pallet_type_id,
+            'palletType' => $type->name,
+        ]);
+    }
     public function palletSelection(Request $request): JsonResponse
     {
         $dueDate = trim((string) $request->input('dueDate', ''));
-        $depot = trim((string) $request->input('depot', ''));
+        $depotSiteId = (int) $request->input('depot', 0);
         $reg = trim((string) $request->input('reg', ''));
 
-        if ($dueDate === '' || $depot === '' || $reg === '') {
+        if ($dueDate === '' || $depotSiteId <= 0 || $reg === '') {
                 return response()->json(['orders' => []]);
         }
 
         $pallets = OutgoingPallet::with('pickWeightOuts','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
         $allocations = VehicleOutgoingPalletAllocation::with('vehicle')
-            ->whereHas('vehicle', function ($query) use ($reg) {
-                $query->where('reg', $reg);
-            })
             ->get()
             ->keyBy('outgoing_pallet_id');
 
@@ -194,7 +248,7 @@ class OutgoingPalletsLoadingController extends Controller
         {
             $allocation = $allocations->get($pallet->id);
             if ($allocation) {
-                $regAllocatedTo = $allocation->vehicle ? $allocation->vehicle->reg : '';
+                $regAllocatedTo = $allocation->vehicle ? trim((string)$allocation->vehicle->reg) : '';
             } else {
                 $regAllocatedTo = '';
             }
@@ -203,6 +257,39 @@ class OutgoingPalletsLoadingController extends Controller
                 ->where('address_id', $pallet->address_id)
                 ->where('client_type', ClientType::CUSTOMER->value)
                 ->first();
+
+            if (!$ca || (int) ($ca->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+
+            $cutTotals = [];
+            $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
+            foreach ($pickLinks as $link) {
+                $pickWeightOut = $link->pickWeightOut;
+                if (!$pickWeightOut) {
+                    continue;
+                }
+                foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
+                    $cutName = (string) ($cutLine['cut_name'] ?? 'Unknown');
+                    $quantity = (int) ($cutLine['quantity'] ?? 0);
+                    if (!isset($cutTotals[$cutName])) {
+                        $cutTotals[$cutName] = 0;
+                    }
+                    $cutTotals[$cutName] += $quantity;
+                }
+            }
+
+            arsort($cutTotals);
+            $topCuts = array_slice($cutTotals, 0, 3, true);
+            $contentsPreview = '';
+            if (!empty($topCuts)) {
+                $parts = [];
+                foreach ($topCuts as $cutName => $qty) {
+                    $parts[] = $cutName . ': ' . $qty;
+                }
+                $contentsPreview = implode(' • ', $parts);
+            }
+
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
                     'outgoingPalletId' => (int) $pallet->id,
@@ -214,6 +301,7 @@ class OutgoingPalletsLoadingController extends Controller
                     'customerDeliveryPostcode' => $ca->postcode ?? '',
                     'palletType' => $pallet->outgoingPalletType->name,
                     'weightKg' => (int)($pallet->getTotalWeight() ?? 0),
+                    'contentsPreview' => $contentsPreview,
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
                     'regAllocatedTo' => $regAllocatedTo ?? '',
                     'row' => $allocation ? (int) $allocation->row : null,
@@ -225,19 +313,23 @@ class OutgoingPalletsLoadingController extends Controller
     }
     public function orders(Request $request): JsonResponse
     {
-        $dueDate = $request->input('dueDate');
-        $depot = $request->input('depot');
+        $dueDate = trim((string) $request->input('dueDate', ''));
+        $depotSiteId = (int) $request->input('depot', 0);
+
+        if ($depotSiteId <= 0) {
+            return response()->json(['orders' => []]);
+        }
 
         $query = OutgoingPallet::query();
         if ($dueDate) {
             $query->where('estimated_delivery_date', $dueDate);
         }
-        if ($depot) {
-            $query->where('depot', $depot);
-        }
+
         $pallets = $query->orderBy('customerName')
             ->orderBy('customerDeliveryPostcode')
             ->get([
+                'customer_id',
+                'address_id',
                 'deliveryNoteNumber',
                 'customerName',
                 'palletWeight',
@@ -250,6 +342,15 @@ class OutgoingPalletsLoadingController extends Controller
         $orders = [];
         $idx = 1;
         foreach ($pallets as $row) {
+            $ca = ClientAddress::where('client_id', $row->customer_id)
+                ->where('address_id', $row->address_id)
+                ->where('client_type', ClientType::CUSTOMER->value)
+                ->first();
+
+            if (!$ca || (int) ($ca->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+
             $orders[] = [
                 'id' => 'order-' . $idx,
                 'title' => 'Order ' . ($row->deliveryNoteNumber ?? ''),
@@ -269,15 +370,87 @@ class OutgoingPalletsLoadingController extends Controller
     }
     public function depots(): JsonResponse
     {
-        $depots = Site::select('name')
-            ->distinct()
-            ->whereNotNull('name')
-            ->where('name', '<>', '')
+        $depots = Site::query()
+            ->select('id', 'name')
             ->where('disabled', false)
             ->orderBy('name')
-            ->pluck('name');
+            ->get()
+            ->map(function ($site) {
+                return [
+                    'id' => (int) $site->id,
+                    'name' => (string) ($site->name ?? ''),
+                ];
+            })
+            ->filter(function ($site) {
+                return $site['id'] > 0 && $site['name'] !== '';
+            })
+            ->values();
 
         return response()->json(['depots' => $depots]);
+    }
+
+    public function palletOverview(Request $request): JsonResponse
+    {
+        $outgoingPalletId = (int) $request->input('outgoingPalletId', 0);
+        if ($outgoingPalletId <= 0) {
+            return response()->json(['error' => 'outgoingPalletId is required'], 400);
+        }
+
+        $pallet = OutgoingPallet::with(['customer', 'outgoingPalletType'])->find($outgoingPalletId);
+        if (!$pallet) {
+            return response()->json(['error' => 'Pallet not found'], 404);
+        }
+
+        $address = ClientAddress::where('client_id', $pallet->customer_id)
+            ->where('address_id', $pallet->address_id)
+            ->where('client_type', ClientType::CUSTOMER->value)
+            ->first();
+
+        $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
+        $pickWeightOutIds = $pickLinks->pluck('pickWeightOut_id')->map(fn ($id) => (int) $id)->filter()->values()->all();
+
+        $cutTotals = [];
+        foreach ($pickLinks as $link) {
+            $pickWeightOut = $link->pickWeightOut;
+            if (!$pickWeightOut) {
+                continue;
+            }
+
+            foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
+                $cutName = (string) ($cutLine['cut_name'] ?? 'Unknown');
+                if (!isset($cutTotals[$cutName])) {
+                    $cutTotals[$cutName] = [
+                        'cutName' => $cutName,
+                        'quantity' => 0,
+                        'totalWeight' => 0.0,
+                    ];
+                }
+
+                $cutTotals[$cutName]['quantity'] += (int) ($cutLine['quantity'] ?? 0);
+                $cutTotals[$cutName]['totalWeight'] += (float) ($cutLine['total_weight'] ?? 0);
+            }
+        }
+
+        ksort($cutTotals);
+        $cuts = array_values(array_map(function (array $line) {
+            $line['totalWeight'] = round((float) $line['totalWeight'], 3);
+            return $line;
+        }, $cutTotals));
+
+        return response()->json([
+            'overview' => [
+                'outgoingPalletId' => (int) $pallet->id,
+                'customerName' => $pallet->customer->businessname ?? '',
+                'address' => $address->address_1 ?? '',
+                'postcode' => $address->postcode ?? '',
+                'palletType' => $pallet->outgoingPalletType->name ?? '',
+                'temperature' => $pallet->getTemperatureCategory() ?? '',
+                'totalWeightKg' => (int) ($pallet->getTotalWeight() ?? 0),
+                'pickWeightOutCount' => count($pickWeightOutIds),
+                'pickWeightOutIds' => $pickWeightOutIds,
+                'cuts' => $cuts,
+            ],
+        ]);
     }
     public function aiPlan(Request $request): JsonResponse
     {
@@ -340,7 +513,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'reg is required'], 400);
         }
 
-        $vehicle = Vehicle::where('reg', $reg)->first();
+        $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
         if (!$vehicle) {
             return response()->json(['error' => 'Vehicle not found'], 404);
         }
@@ -402,6 +575,142 @@ class OutgoingPalletsLoadingController extends Controller
             'committedAt' => $committedAt,
             'committedByUserId' => $committedByUserId,
             'committedByName' => $committedByName,
+        ]);
+    }
+
+    public function printTruckLoad(Request $request)
+    {
+        $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
+        $depotSiteId = (int) $request->input('depot', 0);
+
+        if ($reg === '' || $depotSiteId <= 0) {
+            return response('Missing reg or depot parameter', 400);
+        }
+
+        $vehicle = Vehicle::with('site')->whereRaw('TRIM(reg) = ?', [$reg])->first();
+        if (!$vehicle) {
+            return response('Vehicle not found', 404);
+        }
+
+        $depot = Site::find($depotSiteId);
+
+        $query = VehicleOutgoingPalletAllocation::with([
+            'outgoingPallet.pickWeightOuts',
+            'outgoingPallet.customer',
+            'outgoingPallet.outgoingPalletType',
+        ])->where('vehicle_id', $vehicle->id);
+
+        if ($dueDate !== '') {
+            $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
+                $q->where('estimated_delivery_date', $dueDate);
+            });
+        }
+
+        $allocations = $query->get();
+        $loadRows = [];
+        $totalWeight = 0;
+
+        foreach ($allocations as $allocation) {
+            $pallet = $allocation->outgoingPallet;
+            if (!$pallet) {
+                continue;
+            }
+
+            $ca = ClientAddress::where('client_id', $pallet->customer_id)
+                ->where('address_id', $pallet->address_id)
+                ->where('client_type', ClientType::CUSTOMER->value)
+                ->first();
+
+            if (!$ca || (int) ($ca->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+
+            $weightKg = (int) ($pallet->getTotalWeight() ?? 0);
+            $deliveryNoteNumber = implode('-', $pallet->pickWeightOuts
+                ->pluck('pickersheet_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all());
+
+            $cutTotals = [];
+            $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
+            foreach ($pickLinks as $link) {
+                $pickWeightOut = $link->pickWeightOut;
+                if (!$pickWeightOut) {
+                    continue;
+                }
+                foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
+                    $cutName = (string) ($cutLine['cut_name'] ?? 'Unknown');
+                    $quantity = (int) ($cutLine['quantity'] ?? 0);
+                    if (!isset($cutTotals[$cutName])) {
+                        $cutTotals[$cutName] = 0;
+                    }
+                    $cutTotals[$cutName] += $quantity;
+                }
+            }
+
+            arsort($cutTotals);
+            $topCuts = array_slice($cutTotals, 0, 3, true);
+            $contentsPreview = '';
+            if (!empty($topCuts)) {
+                $parts = [];
+                foreach ($topCuts as $cutName => $qty) {
+                    $parts[] = $cutName . ': ' . $qty;
+                }
+                $contentsPreview = implode(' • ', $parts);
+            }
+
+            $loadRows[] = [
+                'row' => (int) ($allocation->row ?? 0),
+                'column' => (int) ($allocation->column ?? 0),
+                'palletId' => (int) $pallet->id,
+                'deliveryNoteNumber' => $deliveryNoteNumber,
+                'customerName' => $pallet->customer->businessname ?? '',
+                'address' => $ca->address_1 ?? '',
+                'postcode' => $ca->postcode ?? '',
+                'palletType' => $pallet->outgoingPalletType->name ?? 'Euro',
+                'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
+                'contentsPreview' => $contentsPreview,
+                'weightKg' => $weightKg,
+            ];
+
+            $totalWeight += $weightKg;
+        }
+
+        usort($loadRows, function ($a, $b) {
+            if ($a['row'] === $b['row']) {
+                return $a['column'] <=> $b['column'];
+            }
+            return $a['row'] <=> $b['row'];
+        });
+
+        $html = view('outgoing-pallets.truck-load-pdf', [
+            'generatedAt' => now(),
+            'dueDate' => $dueDate,
+            'vehicle' => $vehicle,
+            'depotName' => $depot ? $depot->name : '',
+            'rows' => $loadRows,
+            'totalWeight' => $totalWeight,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'format' => 'A4',
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+            'margin_right' => 10,
+        ]);
+        $mpdf->WriteHTML($html);
+
+        $filenameDate = $dueDate !== '' ? $dueDate : now()->format('Y-m-d');
+        $filename = 'truck-load-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $reg) . '-' . $filenameDate . '.pdf';
+        $pdfBinary = $mpdf->Output($filename, \Mpdf\Output\Destination::STRING_RETURN);
+
+        return response($pdfBinary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
     }
 }

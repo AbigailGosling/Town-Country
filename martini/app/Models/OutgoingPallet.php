@@ -57,7 +57,6 @@ class OutgoingPallet extends Model
                 $total += $pickWeightOut->getTotalWeight();
             }
         }
-        Log::info("Calculated total weight for OutgoingPallet ID {$this->id}: {$total} kg");
         return round($total, 3);
     }
     private string $_temperatureCategoryCache = '';

@@ -140,8 +140,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/outgoing-pallets-loading/vehicle-details', [OutgoingPalletsLoadingController::class, 'vehicleDetails'])->name('outgoing-pallets-loading.vehicle-details');
     Route::get('/outgoing-pallets-loading/vehicle-allocations', [OutgoingPalletsLoadingController::class, 'vehicleAllocations'])->name('outgoing-pallets-loading.vehicle-allocations');
     Route::post('/outgoing-pallets-loading/update-allocation', [OutgoingPalletsLoadingController::class, 'updateAllocation'])->name('outgoing-pallets-loading.update-allocation');
+    Route::post('/outgoing-pallets-loading/update-pallet-type', [OutgoingPalletsLoadingController::class, 'updatePalletType'])->name('outgoing-pallets-loading.update-pallet-type');
     Route::post('/outgoing-pallets-loading/commit-allocations', [OutgoingPalletsLoadingController::class, 'commitAllocations'])->name('outgoing-pallets-loading.commit-allocations');
+    Route::get('/outgoing-pallets-loading/print-truck-load', [OutgoingPalletsLoadingController::class, 'printTruckLoad'])->name('outgoing-pallets-loading.print-truck-load');
     Route::get('/outgoing-pallets-loading/pallet-selection', [OutgoingPalletsLoadingController::class, 'palletSelection'])->name('outgoing-pallets-loading.pallet-selection');
+    Route::get('/outgoing-pallets-loading/pallet-overview', [OutgoingPalletsLoadingController::class, 'palletOverview'])->name('outgoing-pallets-loading.pallet-overview');
     Route::get('/outgoing-pallets-loading/orders', [OutgoingPalletsLoadingController::class, 'orders'])->name('outgoing-pallets-loading.orders');
     Route::get('/outgoing-pallets-loading/depots', [OutgoingPalletsLoadingController::class, 'depots'])->name('outgoing-pallets-loading.depots');
     Route::post('/outgoing-pallets-loading/ai-plan', [OutgoingPalletsLoadingController::class, 'aiPlan'])->name('outgoing-pallets-loading.ai-plan');
