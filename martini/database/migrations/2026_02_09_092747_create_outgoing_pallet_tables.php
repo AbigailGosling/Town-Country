@@ -36,7 +36,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::connection('tandc_live')->rename('pickWeightOut','palletOut');
+        Schema::connection('tandc_live')->rename('pickWeightOut','palletsOut');
         Schema::connection('tandc_live')->dropIfExists('outgoing_pallet');
         Schema::connection('tandc_live')->dropIfExists('outgoing_pallet_pickWeights');
     }
