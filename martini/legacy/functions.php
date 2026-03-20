@@ -139,7 +139,7 @@ use Ramsey\Uuid\Type\Decimal;
 		global $mysqli;
 
 		# sell price * weight
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 		$outpalletResult = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
 		$totalPrice = 0;
 		while($outpallet = $outpalletResult->fetch_assoc()){
@@ -1558,7 +1558,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function invoiceTotal($pickersheet_id){
 		global $mysqli;
 
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE `pickersheet_id` = ?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE `pickersheet_id` = ?";
 		$outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
 
 		$outpalletCount = $outpalletResult2->num_rows;
@@ -1642,7 +1642,7 @@ use Ramsey\Uuid\Type\Decimal;
 
 		$totalCost = 0;
 
-		$outPalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outPalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
 		$outPalletsResult = prepareExecuteQuery($outPalletQuery,'i',[$pickersheet_id]);
 
 		$outPalletCount = $outPalletsResult->num_rows;
@@ -1690,7 +1690,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function weightCountOfProductOnPicksheet($pick_id, $productID){
 		global $mysqli;
 
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
         	$outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pick_id]);
 
 		$total_count = 0;
@@ -1713,7 +1713,7 @@ use Ramsey\Uuid\Type\Decimal;
 	function weightValueOfProductOnPicksheet($pick_id, $productID){
 		global $mysqli;
 
-		$outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
         $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pick_id]);
 
 		$weight = 0;

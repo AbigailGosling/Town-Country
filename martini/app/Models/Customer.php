@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Customer
@@ -225,10 +226,22 @@ class Customer extends Model
         'override_cost_check',
         'cost_check_enabled',
 	];
+
     public function user():BelongsTo{
         return $this->belongsTo(OldUser::class,"default_salesman_id","id");
     }
+
     public function site():BelongsTo{
         return $this->belongsTo(Site::class,"site_id","id");
     }
+
+	public function clientAddresses(): HasMany
+	{
+		return $this->hasMany(ClientAddress::class, 'client_id', 'id')->where('client_type', ClientType::CUSTOMER->value);
+	}
+
+	public function clientAddressById(int $addressId): ?ClientAddress
+	{
+		return $this->clientAddresses->firstWhere('address_id', $addressId);
+	}
 }

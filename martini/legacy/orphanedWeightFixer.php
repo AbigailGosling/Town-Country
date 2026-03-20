@@ -12,8 +12,8 @@ $orphans = array();
 $pickedWeightsQ = mysqli_query($mysqli,"SELECT `id` from `weights` where `status_id` = 1 and product_id in ($product_ids)");
 while ($weight = mysqli_fetch_assoc($pickedWeightsQ))
 {
-    if ($si2 != "" ) $isOrphanCheckQ = mysqli_query($mysqli,"SELECT * from `palletsOut` where `pickersheet_id` in ($si2) AND `weight_ids` LIKE '%".$weight['id']."%'");
-    else $isOrphanCheckQ = mysqli_query($mysqli,"SELECT * from `palletsOut` where `weight_ids` LIKE '%".$weight['id']."%'");
+    if ($si2 != "" ) $isOrphanCheckQ = mysqli_query($mysqli,"SELECT * from `pickWeightOut` where `pickersheet_id` in ($si2) AND `weight_ids` LIKE '%".$weight['id']."%'");
+    else $isOrphanCheckQ = mysqli_query($mysqli,"SELECT * from `pickWeightOut` where `weight_ids` LIKE '%".$weight['id']."%'");
     if (mysqli_num_rows($isOrphanCheckQ) == 0)
     {
         $orphans[] = $weight['id'];

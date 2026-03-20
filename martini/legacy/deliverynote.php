@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Location;
 use App\Models\Site;
 use App\Models\User;
@@ -28,12 +30,13 @@ $s = (int)(microtime(true));
         $name = $customerRow['businessname'];
         $ta = 't/a'. $customerRow['tradingas'];
         if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
-        $address1 = $customerRow['address'.$pickSheetRow['addressid'].'_1'];
-        $address2 = $customerRow['address'.$pickSheetRow['addressid'].'_2'];
-        $address3 = $customerRow['address'.$pickSheetRow['addressid'].'_3'];
-        $address4 = $customerRow['address'.$pickSheetRow['addressid'].'_4'];
-        $postcode = $customerRow['postcode_'.$pickSheetRow['addressid'].''];
-        $delPhone = $customerRow['address'.$pickSheetRow['addressid'].'_number'];
+        $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+        $address1 = $ca->address_1;
+        $address2 = $ca->address_2;
+        $address3 = $ca->address_3;
+        $address4 = $ca->address_4;
+        $postcode = $ca->postcode;
+        $delPhone = $ca->address_number;
         $accountaddress_1 = $customerRow['accounts_address_1'];
         $accountaddress_2 = $customerRow['accounts_address_2'];
         $accountaddress_3 = $customerRow['accounts_address_3'];
@@ -354,7 +357,7 @@ $s = (int)(microtime(true));
 
          <?php
 		 		$numOfRows = 0;
-                $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+                $outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
 
                 $outpalletCount = $outpalletResult2->num_rows;

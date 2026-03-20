@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\User;
 
 	$adv = request()->has("adv");
@@ -20,18 +22,18 @@ use App\Models\User;
 	$x1 = "SELECT * FROM `customers` WHERE id='$customer_id'";
 	$y1 = prepareExecuteQuery($x1) or die(mysqli_error($mysqli));
 	$customer = mysqli_fetch_array($y1);
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $picksheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
+	$addressNumber = $ca->address_number;
 
-	$addressNumber = $row['address'.$picksheet['addressid'].'_number'];
+	$address = $ca->address_1;
+	if($ca->address_2){ $address .= ',&#13;'; }
+	$address .= $ca->address_2;
 
-	$address = $customer['address'.$picksheet['addressid'].'_1'];
-	if($customer['address'.$picksheet['addressid'].'_2']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$picksheet['addressid'].'_2'];
+	if($ca->address_3){ $address .= ',&#13;'; }
+	$address .= $ca->address_3;
 
-	if($customer['address'.$picksheet['addressid'].'_3']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$picksheet['addressid'].'_3'];
-
-	if($customer['address'.$picksheet['addressid'].'_4']){ $address .= ',&#13;'; }
-	$address .= $customer['address'.$picksheet['addressid'].'_4'];
+	if($ca->address_4){ $address .= ',&#13;'; }
+	$address .= $ca->address_4;
 
 	if ($adv == false)
 	{

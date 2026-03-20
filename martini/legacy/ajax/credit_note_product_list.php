@@ -56,7 +56,7 @@
 </tr>
 <?php
 
-    $outpalletResult = prepareExecuteQuery("SELECT * FROM `palletsOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
+    $outpalletResult = prepareExecuteQuery("SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?",'i',[$invoiceID]);
     $outpalletCount = mysqli_num_rows($outpalletResult);
 
     $total_weight_count = 0;
@@ -100,18 +100,18 @@
 
             $y2 = prepareExecuteQuery($x2,str_repeat("i",count($weightids)),$weightids);
             $count = mysqli_num_rows($y2);
-            
-             
-            
-            while($weightRow = mysqli_fetch_array($y2)){               
+
+
+
+            while($weightRow = mysqli_fetch_array($y2)){
                 if($weightRow['weight_tear'] == $weightRow['weight_gross']){
                     $tw = (double)$weightRow['weight_gross'];
                 }else{
                     $tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
                 }
-                
+
                 $kg = $kg + $tw;
-                
+
                 $kg = number_format($kg, 2, '.', '');
             }
 
@@ -119,7 +119,7 @@
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
             <td align="left"><span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
             <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
-            <td align="left">                    
+            <td align="left">
                 <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
                 <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                 <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
@@ -159,7 +159,7 @@
             <td>
                 <?php echo $kg; ?> kg
             </td>
-             
+
             <td align="left" class="">£<input type="number" disabled style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?>"></td>
             <td>
             </td>
@@ -168,7 +168,7 @@
             }
         }
     ?>
-</table> 
+</table>
 </div>
 <Br/>
 <h2 style="font-size:22px;padding-bottom:10px;">Returned Products</h2>
@@ -187,9 +187,9 @@
         <?php
         # gather IDs of all returned intakes
         $returnedIntakeIDS = [];
-        while($returnedIntake = mysqli_fetch_array($returnIntakeResult)){ array_push($returnedIntakeIDS, $returnedIntake['id']); }        
+        while($returnedIntake = mysqli_fetch_array($returnIntakeResult)){ array_push($returnedIntakeIDS, $returnedIntake['id']); }
 
-        # 
+        #
         $palletsResult = prepareExecuteQuery("SELECT GROUP_CONCAT(id) as pallet_ids from `pallet` WHERE intake_id IN (".implode(',',array_fill(0,count($returnedIntakeIDS),"?")).")",
     str_repeat('i',count($returnedIntakeIDS)),$returnedIntakeIDS);
         $palletData = mysqli_fetch_array($palletsResult);
@@ -197,7 +197,7 @@
         $pallet_ids = $palletData['pallet_ids'];
 
         $productsResult = prepareExecuteQuery("SELECT * FROM `product` WHERE pallet_id IN ($pallet_ids)");
-        
+
         $i = 0;
         while($product = mysqli_fetch_array($productsResult)){
             $i++;
@@ -215,7 +215,7 @@
                     $productQuantityToDeduct += $creditNoteData['quantity'];
                 }
             }
-            
+
             # get number of weights for this product
 		    $weightCountResult = prepareExecuteQuery("SELECT id FROM `weights` WHERE product_id=?",'i',[$productID]);
             $count = mysqli_num_rows($weightCountResult);
@@ -232,14 +232,14 @@
                 <?php } ?>
             </td>
             <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
-            <td align="left">                    
+            <td align="left">
                 <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
                 <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                 <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
                 <b class=""><?php echo getCut($product['cut_id']); ?></b>
                 <b class=""><?php echo getBrand($product['brand_id']); ?></b>
             </td>
-            
+
             <?php
                 $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
                 $howManyY = prepareExecuteQuery($howManyX,'ii',[$invoiceID,$productID]);
@@ -276,11 +276,11 @@
             </td>
             <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
             <td align="left" class="">
-                <?php if($loop_count > 0){ ?>    
+                <?php if($loop_count > 0){ ?>
                 £<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$product['price'], 2, '.', ''); ?>"></td>
                 <?php } ?>
             <td>
-                
+
                 <?php if($loop_count > 0){ ?>
                 <a href="javascript:removeProductRow('<?php echo $rowClass; ?>');" class="fa fa-times" style="color:red;text-decoration:none;font-size:22px;"></a>
                 <?php } ?>

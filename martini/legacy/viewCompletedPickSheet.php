@@ -65,7 +65,7 @@ use Carbon\Carbon;
         <?php if($pickerSheet['completedby_userid'] != ''){ ?>
         <h4 class="completedby-tag">
         <?php
-            	$pickersQ = "SELECT GROUP_CONCAT(picker_ids) as pickers FROM `palletsOut` WHERE pickersheet_id =?";
+            	$pickersQ = "SELECT GROUP_CONCAT(picker_ids) as pickers FROM `pickWeightOut` WHERE pickersheet_id =?";
                 $pickersR = prepareExecuteQuery($pickersQ,'i',[$picksheetid]);
 
                 $pickersA = mysqli_fetch_assoc($pickersR);
@@ -90,7 +90,7 @@ use Carbon\Carbon;
 
     <div>
             <?php
-                $outpalletQuery = "SELECT * FROM `palletsOut` WHERE pickersheet_id=?";
+                $outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);

@@ -81,7 +81,7 @@ foreach ($items as $item){
 }
 if (count($weights) == 0) die("N/A");
 $weightString = implode(',', $weights);
-$x = "INSERT INTO `palletsOut` (pickersheet_id,weight_ids,stringName,picker_ids) VALUES (?,?,'#',?)";
+$x = "INSERT INTO `pickWeightOut` (pickersheet_id,weight_ids,stringName,picker_ids) VALUES (?,?,'#',?)";
 $y = prepareExecuteQuery($x,'iss',[$pickersheet_id,$weightString,$userid]);
 
 $x = "UPDATE `weights` SET status_id = '1' WHERE id IN ($weightString) LIMIT 1";

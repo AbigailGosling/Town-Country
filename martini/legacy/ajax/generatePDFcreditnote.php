@@ -2,7 +2,10 @@
 	require(__DIR__.'/../functions.php');
 
 	require(__DIR__.'/../scripts/PDFRenderer.php');
-	use InternalScripts\PDFRenderer;
+
+use App\Models\ClientAddress;
+use App\Models\ClientType;
+use InternalScripts\PDFRenderer;
 	if (!request()->has('adv'))
 	{
 		$filename2 = 'Credit_Note_'.request()->input('id').'.pdf';
@@ -65,7 +68,8 @@
 
 	$date->modify('+'. $paydayDelay .' day');
 	$payByDate = $date->format('d/m/Y');
-
+    $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', 1)->where('client_type', ClientType::CUSTOMER->value)->first();
+    $delca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,700&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://fonts.googleapis.com/css?family=Handlee&display=swap" rel="stylesheet">';
 	$header .= '<link href="https://'.$_SERVER['SERVER_NAME'].'/legacy/css/style.css" rel="stylesheet" type="text/css">';
@@ -254,10 +258,10 @@
 				<div class="invoiceaddress">
 					'. $customer['businessname'] .'<br/>
 					t/a'. $customer['tradingas'] .'<br/>
-					'. $customer['address1_1'].'<br/>
-					'. $customer['address1_2'].'<br/>
-					'. $customer['address1_3'].'<br/>
-					'. $customer['postcode_1'].'<br/>
+					'. $ca->address_1.'<br/>
+					'. $ca->address_2.'<br/>
+					'. $ca->address_3.'<br/>
+					'. $ca->postcode.'<br/>
 				</div>
 			</td>
 			<td align="right" width="90%">
@@ -271,10 +275,10 @@
 							<div class="deliveryaddress">
 								'. $customer['businessname'] .'<br/>
 								t/a'. $customer['tradingas'] .'<br/>
-								'. $customer['address1_1'].'<br/>
-								'. $customer['address1_2'].'<br/>
-								'. $customer['address1_3'].'<br/>
-								'. $customer['postcode_1'].'<br/>
+								'. $delca->address_1.'<br/>
+								'. $delca->address_2.'<br/>
+								'. $delca->address_3.'<br/>
+								'. $delca->postcode.'<br/>
 							</div>
 						</td>
 					</tr>
