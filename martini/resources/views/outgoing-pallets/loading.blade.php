@@ -93,6 +93,7 @@
     .main {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: minmax(0, 1fr);
       gap: 0;
       height: calc(100vh - 100px);
       margin-top: 100px;
@@ -100,6 +101,7 @@
     .pane {
       overflow-y: auto;
       padding: 1.5rem;
+      min-height: 0;
     }
     .left-pane {
       background: #f9fafb;
@@ -407,6 +409,8 @@
       font-weight: 600;
       color: #6b7280;
       background: #f9fafb;
+      padding: 0.45rem;
+      overflow: hidden;
     }
     .slot.drop-target {
       border-color: #2563eb;
@@ -417,17 +421,43 @@
       border-color: #16a34a;
       background: rgba(22, 163, 74, 0.12);
       color: #166534;
+      justify-content: flex-start;
+    }
+    .slot-content {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto auto auto;
+      justify-items: center;
+      align-content: start;
+      gap: 0.25rem;
     }
     .slot-order {
       font-size: 0.75rem;
       font-weight: 700;
       color: #111827;
       text-align: center;
+      width: 100%;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     .slot-subtext {
       font-size: 0.7rem;
       color: #6b7280;
       text-align: center;
+      width: 100%;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
     }
     .slot-frozen-badge {
       display: inline-flex;
@@ -441,6 +471,22 @@
       letter-spacing: 0.02em;
       text-transform: uppercase;
       margin-top: 0.2rem;
+      max-width: 100%;
+      flex-shrink: 0;
+    }
+    .slot-contents {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #4b5563;
+      text-align: center;
+      width: 100%;
+      line-height: 1.15;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
     }
     .slot.euro-only:not(.occupied) {
       background: rgba(37, 99, 235, 0.08);
@@ -517,11 +563,9 @@
       border-radius: 0.6rem;
     }
     @media (max-width: 900px) {
-      body {
-        grid-template-rows: 220px 1fr;
-      }
       .main {
         grid-template-columns: 1fr;
+        grid-template-rows: 25% 75%;
       }
       .left-pane {
         border-right: none;
@@ -665,8 +709,29 @@
     let hideAllocated = false;
     let selectedOrderId = null;
     let currentPayload = null;
+    let activeTouchDrag = null;
+    const touchEdgeScrollThreshold = 90;
+    const touchEdgeScrollMaxStep = 22;
 
     let vehicleInfo = null;
+
+    function getOrderById(orderId) {
+      return orders.find(item => item.id === orderId) || null;
+    }
+
+    function createDragPayloadFromOrder(order) {
+      if (!order) {
+        return null;
+      }
+
+      return {
+        orderId: order.id,
+        fromSlotId: order.slotId || null,
+        allocated: !!order.allocated,
+        palletType: order.palletType,
+        outgoingPalletId: order.outgoingPalletId || null,
+      };
+    }
 
     function formatPayload(payload) {
       if (payload === null || payload === undefined || payload === "") {
@@ -1100,6 +1165,10 @@
       return Math.ceil(index / 3);
     }
 
+    function getColumnForIndex(index) {
+      return ((index - 1) % 3) + 1;
+    }
+
     function getRowCounts(excludeOrderId) {
       const rowCounts = new Map();
       orders.forEach(order => {
@@ -1114,6 +1183,315 @@
         rowCounts.set(row, counts);
       });
       return rowCounts;
+    }
+
+    function canAllocateOrderToSlot(order, slotIndex, slotElement = null) {
+      if (!order || !slotIndex) {
+        return false;
+      }
+
+      const column = getColumnForIndex(slotIndex);
+      if (order.palletType === "Standard" && column === 3) {
+        return false;
+      }
+
+      const slot = slotElement || palletGrid.querySelector(`[data-slot-id="slot-${slotIndex}"]`);
+      if (slot?.classList.contains("occupied")) {
+        return false;
+      }
+
+      const row = getRowForIndex(slotIndex);
+      const rowCounts = getRowCounts(order.id);
+      const counts = rowCounts.get(row) || { euro: 0, standard: 0 };
+      const nextStandard = counts.standard + (order.palletType === "Standard" ? 1 : 0);
+      const nextEuro = counts.euro + (order.palletType === "Standard" ? 0 : 1);
+      return nextStandard <= 2 && (nextStandard === 0 ? nextEuro <= 3 : (nextStandard === 1 ? nextEuro <= 1 : nextEuro === 0));
+    }
+
+    function processOrderDropToSlot(orderId, slotId) {
+      if (!orderId || !slotId) {
+        return false;
+      }
+
+      const order = getOrderById(orderId);
+      if (!order) {
+        return false;
+      }
+
+      const slotIndex = getSlotIndex(slotId);
+      if (!canAllocateOrderToSlot(order, slotIndex)) {
+        return false;
+      }
+
+      order.allocated = true;
+      order.slotId = slotId;
+      const reg = vehicleSelect.value || vehiclePlate.textContent || "";
+      order.allocatedReg = String(reg).trim();
+      const palletRow = getRowForIndex(slotIndex);
+      const palletColumn = getColumnForIndex(slotIndex);
+      updateAllocation(order.outgoingPalletId, reg, palletRow, palletColumn);
+      renderOrders();
+      renderGrid();
+      return true;
+    }
+
+    function processOrderDropToOrders(orderId) {
+      if (!orderId) {
+        return false;
+      }
+
+      const order = getOrderById(orderId);
+      if (!order) {
+        return false;
+      }
+
+      order.allocated = false;
+      order.slotId = null;
+      order.allocatedReg = "";
+      updateAllocation(order.outgoingPalletId, "", null, null);
+      renderOrders();
+      renderGrid();
+      return true;
+    }
+
+    function clearTouchDropHighlights(state = activeTouchDrag) {
+      if (state?.hoverSlot) {
+        state.hoverSlot.classList.remove("drop-target");
+      }
+
+      if (state?.hoverOrders) {
+        ordersContainer.style.outline = "";
+        ordersContainer.style.outlineOffset = "";
+      }
+    }
+
+    function removeTouchDragGhost(state = activeTouchDrag) {
+      if (state?.ghostElement?.parentNode) {
+        state.ghostElement.parentNode.removeChild(state.ghostElement);
+      }
+    }
+
+    function resolveTouchScrollContainer(clientX, clientY) {
+      const elementAtPoint = document.elementFromPoint(clientX, clientY);
+      const pane = elementAtPoint?.closest?.('.pane');
+      if (pane) {
+        return pane;
+      }
+
+      const panes = Array.from(document.querySelectorAll('.pane'));
+      return panes.find((candidate) => {
+        const rect = candidate.getBoundingClientRect();
+        return clientX >= rect.left && clientX <= rect.right;
+      }) || panes[0] || null;
+    }
+
+    function updateTouchAutoScroll(clientX, clientY) {
+      if (!activeTouchDrag) {
+        return;
+      }
+
+      const scrollContainer = resolveTouchScrollContainer(clientX, clientY);
+      activeTouchDrag.scrollContainer = scrollContainer;
+      if (!scrollContainer) {
+        activeTouchDrag.autoScrollSpeed = 0;
+        return;
+      }
+
+      const rect = scrollContainer.getBoundingClientRect();
+      let speed = 0;
+
+      if (clientY < rect.top + touchEdgeScrollThreshold) {
+        speed = -Math.ceil(((rect.top + touchEdgeScrollThreshold) - clientY) / 4);
+      } else if (clientY > rect.bottom - touchEdgeScrollThreshold) {
+        speed = Math.ceil((clientY - (rect.bottom - touchEdgeScrollThreshold)) / 4);
+      }
+
+      activeTouchDrag.autoScrollSpeed = Math.max(-touchEdgeScrollMaxStep, Math.min(touchEdgeScrollMaxStep, speed));
+    }
+
+    function updateTouchDropTarget(clientX, clientY) {
+      if (!activeTouchDrag) {
+        return;
+      }
+
+      clearTouchDropHighlights(activeTouchDrag);
+      activeTouchDrag.hoverSlot = null;
+      activeTouchDrag.hoverOrders = false;
+
+      const elementAtPoint = document.elementFromPoint(clientX, clientY);
+      const slot = elementAtPoint?.closest?.('.slot');
+      const order = getOrderById(activeTouchDrag.payload?.orderId);
+
+      if (slot && order) {
+        const slotId = slot.dataset.slotId || "";
+        const slotIndex = slotId ? getSlotIndex(slotId) : 0;
+        if (slotIndex && canAllocateOrderToSlot(order, slotIndex, slot)) {
+          activeTouchDrag.hoverSlot = slot;
+          slot.classList.add('drop-target');
+          return;
+        }
+      }
+
+      if (elementAtPoint?.closest?.('#orders')) {
+        activeTouchDrag.hoverOrders = true;
+        ordersContainer.style.outline = '2px solid #2563eb';
+        ordersContainer.style.outlineOffset = '-2px';
+      }
+    }
+
+    function runTouchAutoScroll() {
+      if (!activeTouchDrag) {
+        return;
+      }
+
+      const speed = Number(activeTouchDrag.autoScrollSpeed || 0);
+      const container = activeTouchDrag.scrollContainer;
+      if (container && speed !== 0) {
+        container.scrollTop += speed;
+        updateTouchDropTarget(activeTouchDrag.lastTouchClientX, activeTouchDrag.lastTouchClientY);
+      }
+
+      activeTouchDrag.autoScrollFrame = window.requestAnimationFrame(runTouchAutoScroll);
+    }
+
+    function stopTouchAutoScroll(state = activeTouchDrag) {
+      if (!state) {
+        return;
+      }
+
+      if (state.autoScrollFrame) {
+        window.cancelAnimationFrame(state.autoScrollFrame);
+      }
+
+      state.autoScrollFrame = null;
+      state.autoScrollSpeed = 0;
+      state.scrollContainer = null;
+    }
+
+    function shouldIgnoreTouchDragStart(eventTarget) {
+      return !!eventTarget?.closest?.('button, select, option, input, textarea, a, label');
+    }
+
+    function onTouchStart(e) {
+      if (!e.touches || e.touches.length !== 1) {
+        return;
+      }
+
+      if (shouldIgnoreTouchDragStart(e.target)) {
+        return;
+      }
+
+      const orderId = e.currentTarget?.dataset?.orderId;
+      const order = getOrderById(orderId);
+      const payload = createDragPayloadFromOrder(order);
+      if (!payload) {
+        return;
+      }
+
+      activeDragOrderId = orderId;
+      const touch = e.touches[0];
+      const source = e.currentTarget;
+      const rect = source.getBoundingClientRect();
+      const ghost = source.cloneNode(true);
+      ghost.style.position = 'fixed';
+      ghost.style.left = `${touch.clientX - (rect.width / 2)}px`;
+      ghost.style.top = `${touch.clientY - Math.min(40, rect.height / 2)}px`;
+      ghost.style.width = `${rect.width}px`;
+      ghost.style.pointerEvents = 'none';
+      ghost.style.opacity = '0.88';
+      ghost.style.zIndex = '9999';
+      ghost.style.boxShadow = '0 12px 28px rgba(0, 0, 0, 0.18)';
+      document.body.appendChild(ghost);
+
+      activeTouchDrag = {
+        payload,
+        sourceElement: source,
+        ghostElement: ghost,
+        hoverSlot: null,
+        hoverOrders: false,
+        autoScrollFrame: null,
+        autoScrollSpeed: 0,
+        scrollContainer: resolveTouchScrollContainer(touch.clientX, touch.clientY),
+        lastTouchClientX: touch.clientX,
+        lastTouchClientY: touch.clientY,
+      };
+
+      source.style.opacity = '0.45';
+      updateTouchDropTarget(touch.clientX, touch.clientY);
+      updateTouchAutoScroll(touch.clientX, touch.clientY);
+      activeTouchDrag.autoScrollFrame = window.requestAnimationFrame(runTouchAutoScroll);
+      e.preventDefault();
+    }
+
+    function onTouchMove(e) {
+      if (!activeTouchDrag || !e.touches || e.touches.length !== 1) {
+        return;
+      }
+
+      const touch = e.touches[0];
+      activeTouchDrag.lastTouchClientX = touch.clientX;
+      activeTouchDrag.lastTouchClientY = touch.clientY;
+
+      const ghost = activeTouchDrag.ghostElement;
+      if (ghost) {
+        ghost.style.left = `${touch.clientX - (ghost.offsetWidth / 2)}px`;
+        ghost.style.top = `${touch.clientY - Math.min(40, ghost.offsetHeight / 2)}px`;
+      }
+
+      updateTouchDropTarget(touch.clientX, touch.clientY);
+      updateTouchAutoScroll(touch.clientX, touch.clientY);
+      e.preventDefault();
+    }
+
+    function onTouchEnd() {
+      if (!activeTouchDrag) {
+        return;
+      }
+
+      const state = activeTouchDrag;
+      activeTouchDrag = null;
+      activeDragOrderId = null;
+
+      stopTouchAutoScroll(state);
+      clearTouchDropHighlights(state);
+      removeTouchDragGhost(state);
+
+      if (state.sourceElement) {
+        state.sourceElement.style.opacity = '';
+      }
+
+      if (state.hoverSlot?.dataset?.slotId) {
+        processOrderDropToSlot(state.payload?.orderId, state.hoverSlot.dataset.slotId);
+        return;
+      }
+
+      if (state.hoverOrders) {
+        processOrderDropToOrders(state.payload?.orderId);
+      }
+    }
+
+    function bindTouchDraggable(container = document) {
+      const elements = [];
+      if (container?.matches?.('.pallet[data-order-id][draggable="true"]')) {
+        elements.push(container);
+      }
+
+      if (container?.querySelectorAll) {
+        container.querySelectorAll('.pallet[data-order-id][draggable="true"]').forEach((el) => {
+          elements.push(el);
+        });
+      }
+
+      elements.forEach((el) => {
+        el.removeEventListener('touchstart', onTouchStart);
+        el.removeEventListener('touchmove', onTouchMove);
+        el.removeEventListener('touchend', onTouchEnd);
+        el.removeEventListener('touchcancel', onTouchEnd);
+        el.addEventListener('touchstart', onTouchStart, { passive: false });
+        el.addEventListener('touchmove', onTouchMove, { passive: false });
+        el.addEventListener('touchend', onTouchEnd);
+        el.addEventListener('touchcancel', onTouchEnd);
+      });
     }
 
     function renderOrders() {
@@ -1262,6 +1640,7 @@
         pallet.className = `pallet ${order.palletType === "Standard" ? "standard" : "euro"}`;
         pallet.textContent = order.palletType === "Standard" ? "STD" : "EU";
         pallet.draggable = !order.allocated;
+        pallet.dataset.orderId = order.id;
         pallet.addEventListener("dragstart", () => {
           activeDragOrderId = order.id;
         });
@@ -1274,6 +1653,8 @@
         card.append(info, palletControls);
         ordersContainer.append(card);
       });
+
+      bindTouchDraggable(ordersContainer);
     }
 
     function renderGrid() {
@@ -1304,10 +1685,14 @@
         if (assignedOrder) {
           slot.classList.add("occupied");
           const isFrozen = String(assignedOrder.freshFrozen || "").trim().toUpperCase() === "FROZEN";
+          const slotContent = document.createElement("div");
+          slotContent.className = "slot-content";
+
           const pallet = document.createElement("div");
           pallet.className = `pallet ${assignedOrder.palletType === "Standard" ? "standard" : "euro"}`;
           pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div>`;
           pallet.draggable = true;
+          pallet.dataset.orderId = assignedOrder.id;
           pallet.addEventListener("dragstart", () => {
             activeDragOrderId = assignedOrder.id;
           });
@@ -1322,46 +1707,33 @@
           subText.className = "slot-subtext";
           subText.textContent = assignedOrder.subtext;
 
-          slot.append(pallet, orderText, subText);
+          slotContent.append(pallet, orderText, subText);
 
           if (isFrozen) {
             const frozenBadge = document.createElement("div");
             frozenBadge.className = "slot-frozen-badge";
             frozenBadge.textContent = "Frozen";
-            slot.append(frozenBadge);
+            slotContent.append(frozenBadge);
           }
 
           if (assignedOrder.contentsPreview) {
             const contentsDiv = document.createElement("div");
-            contentsDiv.className = "slot-subtext";
-            contentsDiv.style.marginTop = "0.4rem";
-            contentsDiv.style.fontSize = "0.65rem";
-            contentsDiv.style.fontWeight = "500";
+            contentsDiv.className = "slot-contents";
             contentsDiv.textContent = assignedOrder.contentsPreview;
-            slot.append(contentsDiv);
+            slotContent.append(contentsDiv);
           }
+
+          slot.append(slotContent);
         }
         slot.addEventListener("dragover", event => {
           if (!activeDragOrderId) return;
           const order = orders.find(item => item.id === activeDragOrderId);
           if (!order) return;
-          const column = (i - 1) % 3 + 1;
-          if (order.palletType === "Standard" && column === 3) {
+          if (!canAllocateOrderToSlot(order, i, slot)) {
             return;
           }
-          const row = getRowForIndex(i);
-          const rowCounts = getRowCounts(order.id);
-          const counts = rowCounts.get(row) || { euro: 0, standard: 0 };
-          const nextStandard = counts.standard + (order.palletType === "Standard" ? 1 : 0);
-          const nextEuro = counts.euro + (order.palletType === "Standard" ? 0 : 1);
-          const valid = nextStandard <= 2 && (nextStandard === 0 ? nextEuro <= 3 : (nextStandard === 1 ? nextEuro <= 1 : nextEuro === 0));
-          if (!valid) {
-            return;
-          }
-          if (!slot.classList.contains("occupied")) {
-            event.preventDefault();
-            slot.classList.add("drop-target");
-          }
+          event.preventDefault();
+          slot.classList.add("drop-target");
         });
         slot.addEventListener("dragleave", () => {
           slot.classList.remove("drop-target");
@@ -1369,34 +1741,10 @@
         slot.addEventListener("drop", event => {
           event.preventDefault();
           slot.classList.remove("drop-target");
-          if (!activeDragOrderId || slot.classList.contains("occupied")) {
+          if (!activeDragOrderId) {
             return;
           }
-          const order = orders.find(item => item.id === activeDragOrderId);
-          if (order) {
-            const column = (i - 1) % 3 + 1;
-            if (order.palletType === "Standard" && column === 3) {
-              return;
-            }
-            const row = getRowForIndex(i);
-            const rowCounts = getRowCounts(order.id);
-            const counts = rowCounts.get(row) || { euro: 0, standard: 0 };
-            const nextStandard = counts.standard + (order.palletType === "Standard" ? 1 : 0);
-            const nextEuro = counts.euro + (order.palletType === "Standard" ? 0 : 1);
-            const valid = nextStandard <= 2 && (nextStandard === 0 ? nextEuro <= 3 : (nextStandard === 1 ? nextEuro <= 1 : nextEuro === 0));
-            if (!valid) {
-              return;
-            }
-            order.allocated = true;
-            order.slotId = slot.dataset.slotId;
-            const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-            order.allocatedReg = String(reg).trim();
-            const palletRow = getRowForIndex(i);
-            const palletColumn = column;
-            updateAllocation(order.outgoingPalletId, reg, palletRow, palletColumn);
-          }
-          renderOrders();
-          renderGrid();
+          processOrderDropToSlot(activeDragOrderId, slot.dataset.slotId);
         });
         palletGrid.append(slot);
       }
@@ -1418,6 +1766,8 @@
           }
         });
       });
+
+      bindTouchDraggable(palletGrid);
     }
 
     ordersContainer.addEventListener("dragover", event => {
@@ -1429,15 +1779,7 @@
       if (!activeDragOrderId) {
         return;
       }
-      const order = orders.find(item => item.id === activeDragOrderId);
-      if (order) {
-        order.allocated = false;
-        order.slotId = null;
-        order.allocatedReg = "";
-        updateAllocation(order.outgoingPalletId, "", null, null);
-      }
-      renderOrders();
-      renderGrid();
+      processOrderDropToOrders(activeDragOrderId);
     });
 
     sortBySelect.value = "postcode";
