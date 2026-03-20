@@ -56,11 +56,14 @@ use App\Models\User;
 				?><div class="col"><h1>Goods in/out</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn2)){
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+                    if ($page['file'] == "../outgoing-pallets/") {
+                        ?>
+                        <a href="../outgoing-pallets/loading"><span class="small">Outgoing</span> Pallet Loading</a>
+                        <?php
+                    }
 				}
 
 				?>
-                <a href="../outgoing-pallets">Outgoing Pallet Management</a>
-                <a href="../outgoing-pallets-loading">Outgoing Pallet Loading</a>
                 </div><?php
 			}
 
