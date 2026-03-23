@@ -300,6 +300,31 @@
                 </tbody>
             </table>
         @endif
+        <div>
+            <table style="margin-top: 12px; width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="border: 1px solid #000000; padding: 6px; font-weight: 700;">Please collect any empty pallets and trays from customers. Please ensure that lorries are returned at the end of the day with a full tank of fuel and AdBlue is filled up on return to the yard.</td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <table style="margin-top: 12px; width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th style="width:70%">Additional Notes</th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td style="border: 1px solid #000000; padding: 6px; font-weight: 700; height: 100px; vertical-align: top; text-align: left;">Loaded By</td>
+                    <td style="border: 1px solid #000000; padding: 6px;" rowspan="2"></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000000; padding: 6px; font-weight: 700; height: 100px; vertical-align: top; text-align: left;">Checked By</td>
+                </tr>
+            </table>
+        </div>
     </div>
+
 </body>
 </html>
