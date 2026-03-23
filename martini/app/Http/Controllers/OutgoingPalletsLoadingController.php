@@ -742,7 +742,7 @@ class OutgoingPalletsLoadingController extends Controller
             }
             return $a['row'] <=> $b['row'];
         });
-
+        $loadRows = array_reverse($loadRows);
         $html = view('outgoing-pallets.truck-load-pdf', [
             'generatedAt' => now(),
             'dueDate' => $dueDate,
