@@ -556,10 +556,14 @@ class OutgoingPalletsLoadingController extends Controller
     public function commitAllocations(Request $request): JsonResponse
     {
         $reg = trim((string) $request->input('reg', ''));
-        $dueDate = trim((string) $request->input('dueDate', ''));
+        $outgoingPalletIds = $request->input('outgoingPalletIds', []);
 
         if ($reg === '') {
             return response()->json(['error' => 'reg is required'], 400);
+        }
+
+        if (!is_array($outgoingPalletIds) || empty($outgoingPalletIds)) {
+            return response()->json(['error' => 'outgoingPalletIds must be a non-empty array'], 400);
         }
 
         $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
@@ -567,60 +571,37 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'Vehicle not found'], 404);
         }
 
-        $query = VehicleOutgoingPalletAllocation::with('outgoingPallet')
-            ->where('vehicle_id', $vehicle->id);
+        $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
-        if ($dueDate !== '') {
-            $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
-                $q->where('estimated_delivery_date', $dueDate);
-            });
-        }
+        // Fetch allocations for the given vehicle and pallet IDs
+        $allocations = VehicleOutgoingPalletAllocation::with('outgoingPallet')
+            ->where('vehicle_id', $vehicle->id)
+            ->whereIn('outgoing_pallet_id', $outgoingPalletIds)
+            ->get()
+            ->filter(function ($allocation) use ($maxRows) {
+                $row = (int) ($allocation->row ?? 0);
+                $column = (int) ($allocation->column ?? 0);
+                return $this->isWithinVehicleCapacity($row, $column, $maxRows);
+            })
+            ->values();
 
-        $allocations = $query->get();
-        $allocatedPalletIds = [];
         $committedAt = now();
         $authUser = $request->user();
         $committedByUserId = $authUser ? (int) $authUser->id : null;
         $committedByName = $authUser ? (string) $authUser->name : null;
 
-        DB::connection('tandc_live')->transaction(function () use ($allocations, $reg, $dueDate, &$allocatedPalletIds, $committedAt, $committedByUserId, $committedByName) {
+        DB::connection('tandc_live')->transaction(function () use ($allocations, $committedAt, $committedByUserId, $committedByName) {
             foreach ($allocations as $allocation) {
-                $pallet = $allocation->outgoingPallet;
-                if (!$pallet) {
-                    continue;
-                }
-
                 $allocation->committed_by_user_id = $committedByUserId;
                 $allocation->committed_by_name = $committedByName;
                 $allocation->committed_at = $committedAt;
                 $allocation->save();
-
-                $pallet->regAllocatedTo = $reg;
-                $pallet->row = $allocation->row;
-                $pallet->column = $allocation->column;
-                $pallet->save();
-
-                $allocatedPalletIds[] = (int) $pallet->id;
             }
-
-            $clearQuery = OutgoingPallet::where('regAllocatedTo', $reg);
-            if ($dueDate !== '') {
-                $clearQuery->where('estimated_delivery_date', $dueDate);
-            }
-            if (!empty($allocatedPalletIds)) {
-                $clearQuery->whereNotIn('id', $allocatedPalletIds);
-            }
-
-            $clearQuery->update([
-                'regAllocatedTo' => '',
-                'row' => null,
-                'column' => null,
-            ]);
         });
 
         return response()->json([
             'success' => true,
-            'committedCount' => count($allocatedPalletIds),
+            'committedCount' => $allocations->count(),
             'committedAt' => $committedAt,
             'committedByUserId' => $committedByUserId,
             'committedByName' => $committedByName,

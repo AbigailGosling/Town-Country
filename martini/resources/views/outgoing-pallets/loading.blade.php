@@ -1864,14 +1864,23 @@
       }
 
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-      const dueDate = document.getElementById("deliveryDate").value || "";
-      const depot = depotSelect.value || "";
+
+      // Collect outgoing pallet IDs from allocated orders
+      const outgoingPalletIds = orders
+        .filter(order => order.allocated)
+        .map(order => order.outgoingPalletId)
+        .filter(id => id > 0);
+
+      if (!outgoingPalletIds.length) {
+        window.alert("No pallets allocated to this vehicle.");
+        return;
+      }
 
       try {
         const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
           method: "POST",
           headers: jsonHeaders(),
-          body: JSON.stringify({ reg, dueDate, depot })
+          body: JSON.stringify({ reg, outgoingPalletIds })
         });
         if (!response.ok) {
           const errorText = await response.text();
