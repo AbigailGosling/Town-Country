@@ -205,12 +205,20 @@
                     <td>{{ $vehicle->reg }}</td>
                     <td class="label">Depot</td>
                     <td>{{ $depotName ?: ($vehicle->site->name ?? '') }}</td>
+                    <td class="label">Driver</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td class="label">Delivery Date</td>
                     <td>{{ $dueDate ?: 'All dates' }}</td>
                     <td class="label">Generated</td>
                     <td>{{ $generatedAt->format('Y-m-d H:i') }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </table>
         </div>
