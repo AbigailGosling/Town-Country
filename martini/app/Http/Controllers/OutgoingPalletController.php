@@ -97,7 +97,7 @@ class OutgoingPalletController extends Controller
         $addressId = $request->query('address_id');
 
         // Find all pickersheets for this customer/address in the next 3 days
-        $startDate = Carbon::today()->addDays(-1);
+        $startDate = Carbon::today()->addDays();
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()
@@ -120,7 +120,12 @@ class OutgoingPalletController extends Controller
             ->get();
 
         $loadedPickWeightOutIds = [];
+
+        $outgoingPallets2 = collect();
         foreach ($outgoingPallets as $pallet) {
+            if (!$pallet->dispatched) {
+                $outgoingPallets2->push($pallet);
+            }
             foreach ($pallet->pickWeightOuts as $pwLink) {
                 $loadedPickWeightOutIds[] = $pwLink->pickWeightOut_id;
             }
@@ -147,7 +152,7 @@ class OutgoingPalletController extends Controller
             'customer_id' => $customerId,
             'address_id' => $addressId,
             'deliveries' => $unloadedPickSheets,
-            'outgoingPallets' => $outgoingPallets,
+            'outgoingPallets' => $outgoingPallets2,
             'palletTypes' => $palletTypes,
             'customerAddress' => $customerAddress,
         ]);
