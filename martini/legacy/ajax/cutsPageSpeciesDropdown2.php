@@ -6,11 +6,11 @@
 
     $cutsArray = Array();
 
-    $cutsResult = prepareExecuteQuery("SELECT * FROM `cuts` WHERE species_id = ? ORDER by `name` ASC",'i',[$speciesID]);
+    $cutsResult = prepareExecuteQuery("SELECT * FROM `cuts` WHERE `disabled` = 0 AND `species_id` = ? ORDER by `name` ASC",'i',[$speciesID]);
 
-    while($cutRow = mysqli_fetch_array($cutsResult)){  
-        if ($cutID == $cutRow['id']) $thisName = $cutRow['name'];           
-        array_push($cutsArray, $cutRow);  
+    while($cutRow = mysqli_fetch_array($cutsResult)){
+        if ($cutID == $cutRow['id']) $thisName = $cutRow['name'];
+        array_push($cutsArray, $cutRow);
     }
 ?>
 
@@ -26,7 +26,7 @@
             <?php
                 foreach ($cutsArray as $cut) {
                     if($cut['id'] != $cutID){
-                        ?><option value="<?php echo $cut['id']; ?>"><?php echo $cut['name']; ?></option><?php        
+                        ?><option value="<?php echo $cut['id']; ?>"><?php echo $cut['name']; ?></option><?php
                     }
                 }
             ?>

@@ -139,7 +139,7 @@ use App\Models\User;
 				<td style="width:20%"><select id="SearchBrand" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
 					<option value="" disabled selected>Select Brand..</option>
 					<?php
-						$x = "SELECT * FROM `brands` ORDER BY `name`";
+						$x = "SELECT * FROM `brands` WHERE `deleted` = 0 ORDER BY `name`";
 						$y = prepareExecuteQuery($x);
 
 						while($row = mysqli_fetch_array($y)){

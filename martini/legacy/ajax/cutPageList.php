@@ -3,18 +3,18 @@
 	require(__DIR__.'/../functions.php');
 
 	$name = request()->input('searchterm');
-	
+
 	if($name != '' && strlen($name) > 1){
 		$speciesX = "SELECT * FROM `species`";
 		$speciesY = prepareExecuteQuery($speciesX);
-		
+
 		while($speciesRow = mysqli_fetch_array($speciesY)){
 			$speciesID = $speciesRow['id'];
-			
-			
-			$cutXtemp = "SELECT * FROM `cuts` WHERE species_id = ? AND `name` LIKE ?";
+
+
+			$cutXtemp = "SELECT * FROM `cuts` WHERE `disabled` = 0 AND `species_id` = ? AND `name` LIKE ?";
 			$cutYtemp = prepareExecuteQuery($cutXtemp,'is',[$speciesID,'%'.$name.'%']);
-			
+
 			if(mysqli_num_rows($cutYtemp) > 0){
 			?>
 			<table width="100%" class="speciesName">
@@ -25,7 +25,7 @@
 			<?php } ?>
 			<div class="cutsContainer">
 			<?php
-			
+
 			while($cutRow = mysqli_fetch_array($cutYtemp)){
 			?>
 			<table width="100%">
@@ -41,12 +41,12 @@
 			}
 			?></div><?php
 		}
-		
+
 	}else{
 		$speciesX = "SELECT * FROM `species`";
 		$speciesY = prepareExecuteQuery($speciesX);
 		while($speciesRow = mysqli_fetch_array($speciesY)){
-			$speciesID = $speciesRow['id']; 
+			$speciesID = $speciesRow['id'];
 			?>
 			<table width="100%" class="speciesName">
 				<tr><td align="left" class="pos">
@@ -55,9 +55,9 @@
 			</table>
 			<div class="cutsContainer" style="display:none;">
 			<?php
-			$cutX = "SELECT * FROM `cuts` WHERE species_id = ?";
+			$cutX = "SELECT * FROM `cuts` WHERE `disabled` = 0 AND `species_id` = ?";
 			$cutY = prepareExecuteQuery($cutX,'i',[$speciesID]);
-			
+
 			while($cutRow = mysqli_fetch_array($cutY)){
 			?>
 			<table width="100%">
