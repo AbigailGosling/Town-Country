@@ -5,12 +5,34 @@ use App\Models\OutgoingPalletPickWeight;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../functions.php');
 
 	$pickersheet_id = request()->input('id');
     $outgoingPalletID = request()->input('outgoingPalletID',-1);
+    $transactionId = request()->input('transaction_id');
+
+    if (empty($transactionId)) {
+    ?>
+        <script>
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
+        </script>
+    <?php
+        exit();
+    }
+
+    $transactionCacheKey = 'build_out_pallet_transaction:' . $transactionId;
+    $isNewTransaction = Cache::add($transactionCacheKey, true, now()->addHours(12));
+    if (!$isNewTransaction) {
+    ?>
+        <script>
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
+        </script>
+    <?php
+        exit();
+    }
 
     $weight_ids = request()->input('weightids');
     $weight_ids = rtrim($weight_ids,',');
@@ -39,7 +61,6 @@ use Illuminate\Support\Facades\Log;
         ]);
     }
     else $op = OutgoingPallet::find($outgoingPalletID);
-    Log::debug("op is", ['op' => $op,'id'=>$op->id]);
     $oppw = OutgoingPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first() ?? OutgoingPalletPickWeight::create([
         'outgoing_pallet_id' => $op->id,
         'pickWeightOut_id' => PickWeightOut::create([
