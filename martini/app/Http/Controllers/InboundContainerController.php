@@ -50,7 +50,7 @@ class InboundContainerController extends Controller
      */
     public function create()
     {
-        return view("container.edit",['container'=>new InboundContainer,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>true,'brands'=>Brand::all()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
+        return view("container.edit",['container'=>new InboundContainer,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>true,'brands'=>Brand::where('deleted',false)->get()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
     }
 
     /**
@@ -90,7 +90,7 @@ class InboundContainerController extends Controller
      */
     public function show(InboundContainer $container)
     {
-        return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false,'brands'=>Brand::all()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
+        return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false,'brands'=>Brand::where('deleted',false)->get()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
     }
 
     /**
@@ -210,7 +210,7 @@ class InboundContainerController extends Controller
         return view("container.product",[
             'container'=>$container,
             'containerProduct'=>new ContainerProduct(),
-            'brands'=>Brand::all(),
+            'brands'=>Brand::where("deleted",false)->get(),
             'species'=>Species::all(),
             'nationalities'=>Nationality::all(),
             'cuts'=>Cut::where('disabled',false)->get(),
@@ -241,7 +241,7 @@ class InboundContainerController extends Controller
         [
             'container'=>InboundContainer::find($containerProduct->container_id),
             'containerProduct'=>$containerProduct,
-            'brands'=>Brand::all(),
+            'brands'=>Brand::where("deleted",false)->get(),
             'species'=>Species::all(),
             'nationalities'=>Nationality::all(),
             'cuts'=>Cut::where('disabled',false)->get(),
@@ -309,7 +309,7 @@ class InboundContainerController extends Controller
         [
             'container'=>InboundContainer::find($containerProduct->container_id),
             'containerProduct'=>$containerProduct,
-            'brands'=>Brand::all(),
+            'brands'=>Brand::where('deleted',false)->get(),
             'species'=>Species::all(),
             'nationalities'=>Nationality::all(),
             'cuts'=>Cut::where('disabled',false)->get(),

@@ -1191,7 +1191,7 @@ use Ramsey\Uuid\Type\Decimal;
 		global $mysqli;
 
 
-		$x = "SELECT * FROM cuts WHERE species_id=? ORDER BY name ASC";
+		$x = "SELECT * FROM cuts WHERE species_id=? AND `disabled` = 0 ORDER BY name ASC";
 		$y = prepareExecuteQuery($x,'i',[$species]);
 
 		return $y;
@@ -1455,7 +1455,7 @@ use Ramsey\Uuid\Type\Decimal;
     function cutsFromCutGroup($species_id, $cutgroup_id){
         global $mysqli;
 
-        $x = "SELECT id from `cuts` WHERE species_id=? && cutgroup_id=?";
+        $x = "SELECT id from `cuts` WHERE species_id=? && cutgroup_id=? AND `disabled` = 0";
         $y = prepareExecuteQuery($x,'ii',[$species_id,$cutgroup_id]);
 
         $data = [];

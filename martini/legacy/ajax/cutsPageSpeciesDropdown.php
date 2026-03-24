@@ -5,10 +5,10 @@
 
     $cutsArray = Array();
 
-    $cutsResult = prepareExecuteQuery("SELECT * FROM `cuts` WHERE species_id = ? ORDER by `name` ASC",'i',[$speciesID]);
+    $cutsResult = prepareExecuteQuery("SELECT * FROM `cuts` WHERE `disabled` = 0 AND `species_id` = ? ORDER by `name` ASC",'i',[$speciesID]);
 
-    while($cutRow = mysqli_fetch_array($cutsResult)){              
-        array_push($cutsArray, $cutRow);  
+    while($cutRow = mysqli_fetch_array($cutsResult)){
+        array_push($cutsArray, $cutRow);
     }
     foreach ($cutsArray as $cutRow) {
     ?>
