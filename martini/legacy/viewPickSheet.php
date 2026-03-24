@@ -5,10 +5,12 @@ use App\Models\ClientType;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 	include('includes/frontHeader.php');
 
 	$picksheetid = request()->input('id');
+	$transactionId = Str::random(50);
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id =?";
 	$y = prepareExecuteQuery($x,'i',[$picksheetid]);
@@ -186,6 +188,7 @@ use Illuminate\Support\Facades\Auth;
 	</div>
 	<form method="POST" id="palletAddBtnForm" action="scripts/buildOutPallet.php?id=<?php echo $picksheetid; ?>&type=<?php echo request()->input('type'); ?>">
     <input type="text" id="outgoingPalletID" name="outgoingPalletID" value="#" style="display:none;">
+	<input type="hidden" id="transaction_id" name="transaction_id" value="<?php echo $transactionId; ?>">
 	<?php
 
 		##########################
@@ -590,6 +593,11 @@ function mainFormSucess(){
 
 	globalReady++;
 	$('#completeFormBtn').click(function(){
+		askForCompleteConfirmation();
+	});
+
+	function askForCompleteConfirmation()
+	{
 		var totalNeeded = 0;
 		var totalGot = 0;
 
@@ -597,22 +605,34 @@ function mainFormSucess(){
 			totalNeeded += parseInt($(this).attr('targetamount'));
 		});
 
-		console.log('Total Needed: ' + totalNeeded);
-
 		$('.counter').each(function(){
 			totalGot += parseInt($(this).val());
 		});
 
-		console.log('Total Got: ' + totalGot);
+		var confirmationText = 'Are you sure you want to mark this pick sheet as completed?';
+		if(totalGot < totalNeeded){
+			confirmationText = 'You have selected ' + totalGot + ' of ' + totalNeeded + ' required weights. Mark as completed anyway?';
+		}
 
-
-		var formName = '#markCompletedForm';
+		Swal.fire({
+			title: 'Confirm Completion',
+			text: confirmationText,
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonText: 'Confirm'
+		}).then((result) => {
+			if (result.value) {
+				submitCompleteForm();
+			}
+		});
+	}
+	function submitCompleteForm()
+	{
+		$('#completeFormBtn').attr("disabled", true);
 		$('#markCompletedForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:markCompletedSucess});
-	window.location = '../menu.php';
-	});
+	}
 	function markCompletedSucess(){
-		//alert("Picking Sheet Submitted!");
-		//window.location = 'menu.php';
+		window.location = '../menu.php';
 	}
 
 	function addStringName(data){

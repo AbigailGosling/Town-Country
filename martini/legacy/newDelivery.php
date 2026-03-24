@@ -2,6 +2,7 @@
 
 use App\Models\InboundContainer;
 use App\Models\Site;
+use Illuminate\Support\Str;
 
 	include('functions.php');
 	// $id = request()->input('id');
@@ -19,6 +20,7 @@ use App\Models\Site;
 	$purchase = getPurchase(request()->input('purchaseid'));
 	$supplierid = $purchase['supplier_id'];
 	$supplier = getSupplier($supplierid);
+	$transactionId = Str::random(50);
 ?>
 
 <!doctype html>
@@ -49,6 +51,7 @@ use App\Models\Site;
 		<form method="GET" id="mainForm" action="scripts/newDelivery.php">
         <?php if($isContainer){ ?><input type="text" name="container" value="<?php echo $container->id;?>" style="display:none;"><?php } ?>
 		<input type="text" name="purchase_id" value="<?php if($purchase['id'] != ''){ echo $purchase['id']; }else{ echo '#'; } ?>" style="display:none;">
+		<input type="hidden" name="transaction_id" value="<?php echo $transactionId; ?>">
 		<table>
 			<tbody>
 				<tr>
