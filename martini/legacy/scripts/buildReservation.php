@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ContainerProduct;
 use App\Models\Customer;
 use App\Models\Location;
 use App\Models\Pallet;
@@ -54,6 +55,24 @@ use Illuminate\Support\Facades\Auth;
 			$baskets[$location->id."-".$defProduct->cooling_id][] = $value;
 		}
 	}
+    $prods = [];
+    foreach ($baskets as $basket) {
+        foreach ($basket as $item) {
+			$details = explode('-', $item);
+			$prods[] = $details[0];
+        }
+    }
+    $numOfContainters = count(array_unique(ContainerProduct::whereIn("product_id",$prods)->get()->pluck("container_id")->toArray()));
+    if ($numOfContainters>1)
+    {
+        ?>
+<script>
+	alert("Cannot Reserve Across Multiple Containers!!");
+</script>
+        <?php
+        die();
+        exit;
+    }
 	foreach ($baskets as $basket) {
 
         $reservation = Reservation::create([

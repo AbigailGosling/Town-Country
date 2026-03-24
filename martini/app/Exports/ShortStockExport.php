@@ -30,7 +30,7 @@ class ShortStockExport implements FromCollection
     private int $_dayRange;
     function __construct(int $dayRange = +10)
     {
-        $this->_dayRange = min($dayRange,+1);
+        $this->_dayRange = max($dayRange,+1);
         $this->cuts = Cut::all()->keyBy('id');
         //$this->cutgroups = CutGroup::all()->keyBy('id');
         $this->species = Species::all()->keyBy('id');
@@ -46,9 +46,8 @@ class ShortStockExport implements FromCollection
         if (!isset($this->_collection))
         {
             $m=[];
-            $target_date = Carbon::now()->setDay($this->_dayRange)->startOfDay()->format("d/m/Y");
             $lazysearch = DB::connection("tandc_live")->table("product")->selectRaw("DISTINCT `product`.`id`")->join("weights","product.id","=","weights.product_id")->join("pallet","pallet.id","=","product.pallet_id")->join("intake","intake.id","=","pallet.intake_id")->where([["intake.approved",true],["intake.deleted",0],["weights.status_id",0],["product.range_from","<>",""],["product.range_to","<>",""],["product.cooling_id",1]])->whereNotNull(["product.range_from","product.range_to"])->cursor();
-            $target_date = Carbon::now()->addDays($this->_dayRange)->startOfDay();
+            $target_date = Carbon::now()->addDays(+$this->_dayRange)->startOfDay();
             $products = Product::whereIn("id",$lazysearch->pluck("id"))->get();
             $r = null;
             foreach ($products as $p)
@@ -94,8 +93,8 @@ class ShortStockExport implements FromCollection
         $range_from = ($product->range_from == null || $product->range_from == "")?Carbon::createFromFormat("d/m/Y",$product->range_to):Carbon::createFromFormat("d/m/Y",$product->range_from);
         $range_to = ($product->range_to == null || $product->range_to == "")?Carbon::createFromFormat("d/m/Y",$product->range_from):Carbon::createFromFormat("d/m/Y",$product->range_to);
         if ($product->range_extension != null || $product->range_extension != "") $range_from = $range_to = Carbon::createFromFormat("d/m/Y",$product->range_extension);
-        if ($range_from->isAfter($target_date) && $range_to->isAfter($target_date)) return null;
         $shortestDate = ($range_from->isBefore($range_to))?$range_from:$range_to;
+        if ($shortestDate->isAfter($target_date)) return null;
 
         $cut = $this->cuts[$product->cut_id]??null;
         if ($cut == null) return null;
