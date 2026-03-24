@@ -25,6 +25,7 @@ use App\Http\Controllers\SupplierReturnAttachmentController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCustomerController;
+use App\Http\Controllers\VehicleController;
 use App\Models\ContainerProduct;
 use App\Models\InboundContainer;
 use App\Models\User;
@@ -70,6 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
     Route::get('/users/forgottenPassword', [UserController::class, 'resetPassword'])->name('users.forgot-password');
     Route::resource('users', 'App\Http\Controllers\UserController');
+
+    Route::get('/vehicles/search', [VehicleController::class, 'search'])->name('vehicles.search');
+    Route::resource('vehicles', 'App\Http\Controllers\VehicleController');
 
     Route::get('usercustomer',[UserCustomerController::class,'index'])->name('usercustomer.index');
     Route::get('/usercustomer/download', [UserCustomerController::class, 'download'])->name('usercustomer.download');
