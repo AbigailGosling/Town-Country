@@ -153,7 +153,7 @@ class InboundContainerController extends Controller
      */
     public function preDelete(InboundContainer $container)
     {
-        return view("container.edit",['container'=>$container,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isDelete'=>true]);
+        return view("container.edit",['container'=>$container,'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isDelete'=>true,'sites'=>Site::all()->keyBy('id')]);
     }
 
     /**
