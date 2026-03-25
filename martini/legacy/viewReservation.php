@@ -40,6 +40,25 @@ use Illuminate\Support\Facades\Auth;
 	if ($adv == false)
 	{
 ?>
+<style>
+    @media screen
+    {
+        .noPrint{}
+        .noScreen{display:none;}
+    }
+    @media print
+    {
+        .noPrint{display:none;}
+        .noScreen{}
+    }
+    .MsoNormal
+    {
+        margin:0;
+        padding:0;
+        font-size:10pt;
+        font-family:"Times New Roman",serif;
+    }
+</style>
 <div id="top" class="printhide">
 	<a href="menu.php" id="menu">MENU</a>
 	<a href="logout" id="logout">LOGOUT</a>
@@ -216,10 +235,173 @@ use Illuminate\Support\Facades\Auth;
 		<br/>
   	</div>
 </div>
+<div class="noScreen" style="text-align:center;margin-top:20px;page-break-before: always;">
+ <div class=WordSection1>
 
+<p class=MsoNormal><b>PRE-ORDER SALES CONTRACT<o:p></o:p></b></p>
 
+<p class=MsoNormal><b>For Fresh and Frozen Meat Products</b></p>
 
-<div class="clearfix"></div>
+<p class=MsoNormal>This Pre-Order Sales Contract (“<b>Contract</b>”) is entered
+into between:</p>
+
+<p class=MsoNormal><b>Supplier</b> and <b>Customer</b></p>
+
+<p class=MsoNormal>(Collectively, the “<b>Parties</b>”).</p>
+
+<p class=MsoNormal>This Contract sets forth the terms and conditions governing
+all preorders of fresh and frozen meat placed by the Customer with the
+Supplier.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>1. Definitions<o:p></o:p></b></p>
+
+<p class=MsoNormal>1.1. <b>“Supplier”</b> means the business entity supplying
+the Products.<br>
+1.2. <b>“Customer”</b> means the individual or business entity purchasing the
+Products.<br>
+1.3. <b>“Products”</b> means the fresh and/or frozen meat items included in the
+Customer’s preorder.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>2. Pre-Order Process<o:p></o:p></b></p>
+
+<p class=MsoNormal>2.1. All preorders must be submitted within the timelines
+specified by the Supplier.<br>
+2.2. All preorders are subject to product availability, seasonal variations,
+and production capacity.<br>
+2.3. The Supplier may require a deposit or full payment before confirming the
+preorder, where applicable.<br>
+2.4. A preorder is considered confirmed only once acknowledged in writing by
+the Supplier.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>3. Customer Account Requirements<o:p></o:p></b></p>
+
+<p class=MsoNormal>3.1. The Customer’s <b>statement of account must be fully up
+to date</b>, with no overdue invoices, charges, or outstanding fees at the time
+of fulfilment.<br>
+3.2. The Supplier <b>shall not release any Products</b>—for delivery or
+collection—<b>until the Customer’s account is in good standing</b>.<br>
+3.3. If the Customer’s account remains overdue beyond the agreed credit terms,
+the Supplier may, at its discretion:<br>
+a. Place the preorder on hold;<br>
+b. Cancel the preorder;<br>
+c. Require full payment in advance for future orders.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>4. Cancellation Policy<o:p></o:p></b></p>
+
+<p class=MsoNormal>4.1. All preorder cancellations must be made in writing and
+acknowledged by the Supplier.<br>
+4.2. The Customer acknowledges that preorders require the Supplier to reserve
+stock and allocate production capacity.<br>
+4.3. <b>If the Customer cancels a confirmed preorder for any reason other than
+Supplier error or force majeure, the Customer will forfeit the right to place
+any future preorders with the Supplier.</b><br>
+4.4. The Supplier reserves the right to recover reasonable direct costs arising
+from a <span class=GramE>Customer</span>-led cancellation, including spoilage,
+storage, or restocking fees.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>5. Order Fulfilment<o:p></o:p></b></p>
+
+<p class=MsoNormal>5.1. The Supplier will use reasonable efforts to provide
+Products in the quantities and specifications agreed.<br>
+5.2. Due to the nature of fresh and frozen meat processing, minor weight
+variations may occur.<br>
+5.3. The Supplier is not liable for delays caused by factors outside its
+control, including but not limited to supply shortages, transport delays, or
+equipment failure beyond its reasonable control.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>6. Collection or Delivery<o:p></o:p></b></p>
+
+<p class=MsoNormal>6.1. Collection or delivery dates provided by the Supplier
+are estimates only.<br>
+6.2. The Customer must collect or accept delivery on the date specified.
+Failure to do so may result in storage charges or spoilage.<br>
+6.3. Any Product spoilage or loss due to delayed collection or refusal of
+delivery by the Customer shall be the Customer’s responsibility.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>7. Quality and Complaints<o:p></o:p></b></p>
+
+<p class=MsoNormal>7.1. The Customer must inspect all Products immediately upon
+collection or delivery.<br>
+7.2. Any quality concerns must be reported to the Supplier <b>within 24 hours</b>,
+accompanied by reasonable evidence such as photographs.<br>
+7.3. Where a valid complaint is lodged, the Supplier’s liability is limited to
+replacing the Product or refunding its purchase price, at the Supplier’s
+discretion.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>8. Limitation of Liability<o:p></o:p></b></p>
+
+<p class=MsoNormal>8.1. The Supplier shall not be liable for indirect,
+incidental, or consequential losses arising from preorder delays,
+cancellations, or Product issues.<br>
+8.2. The Supplier’s liability shall not exceed the total value of the Products
+purchased under the affected preorder.</p>
+
+<div class=MsoNormal align=center style='text-align:center'>
+
+<hr size=2 width="100%" align=center>
+
+</div>
+
+<p class=MsoNormal><b>9. Suspension or Termination of Pre-Order Privileges<o:p></o:p></b></p>
+
+<p class=MsoNormal>9.1. The Supplier may suspend or permanently revoke the
+Customer’s ability to place preorders if:<br>
+a. The Customer cancels a preorder;<br>
+b. The Customer repeatedly makes late payments;<br>
+c. The Customer breaches any terms of this Contract.<br>
+9.2. Suspension or termination does not waive the Supplier’s right to recover
+any outstanding amounts owed.</p>
+</div>
+
+</div>
 <?php
 	if(request()->input('msg') != ''){
 	?>
