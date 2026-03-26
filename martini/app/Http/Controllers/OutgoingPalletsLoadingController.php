@@ -41,6 +41,54 @@ class OutgoingPalletsLoadingController extends Controller
         return str_starts_with($typeName, 'standard');
     }
 
+    private function getPicksheetIdsForPallet(OutgoingPallet $pallet): array
+    {
+        $pallet->loadMissing('pickWeightOuts.pickWeightOut');
+
+        return $pallet->pickWeightOuts
+            ->map(function ($link) {
+                return isset($link->pickWeightOut) ? trim((string) ($link->pickWeightOut->pickersheet_id ?? '')) : '';
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function getPicksheetCutSummaryLines(OutgoingPallet $pallet, int $maxLines = 3): array
+    {
+        $pallet->loadMissing('pickWeightOuts.pickWeightOut');
+
+        $lines = [];
+        foreach ($pallet->pickWeightOuts as $link) {
+            $pickWeightOut = $link->pickWeightOut;
+            if (!$pickWeightOut) {
+                continue;
+            }
+
+            $picksheetId = trim((string) ($pickWeightOut->pickersheet_id ?? ''));
+            foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
+                $cutName = trim((string) ($cutLine['cut_name'] ?? 'Unknown'));
+                $quantity = (int) ($cutLine['quantity'] ?? 0);
+                if ($cutName === '' || $quantity <= 0) {
+                    continue;
+                }
+
+                $line = $cutName . ': ' . $quantity;
+                if ($picksheetId !== '') {
+                    $line .= ' • Picksheet: ' . $picksheetId;
+                }
+
+                $lines[] = $line;
+                if (count($lines) >= $maxLines) {
+                    return $lines;
+                }
+            }
+        }
+
+        return $lines;
+    }
+
     public function view()
     {
         return view('outgoing-pallets.loading');
@@ -137,12 +185,7 @@ class OutgoingPalletsLoadingController extends Controller
                     return null;
                 }
 
-                $deliveryNoteNumber = implode('-', $pallet->pickWeightOuts
-                    ->pluck('pickersheet_id')
-                    ->filter()
-                    ->unique()
-                    ->values()
-                    ->all());
+                $deliveryNoteNumber = implode('-', $this->getPicksheetIdsForPallet($pallet));
 
                 $ca = ClientAddress::where('client_id', $pallet->customer_id)
                     ->where('address_id', $pallet->address_id)
@@ -286,7 +329,7 @@ class OutgoingPalletsLoadingController extends Controller
                 return response()->json(['orders' => []]);
         }
 
-        $pallets = OutgoingPallet::with('pickWeightOuts','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
+        $pallets = OutgoingPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
         $allocations = VehicleOutgoingPalletAllocation::with('vehicle')
             ->get()
@@ -301,7 +344,7 @@ class OutgoingPalletsLoadingController extends Controller
             } else {
                 $regAllocatedTo = '';
             }
-            $delNoteNum = implode('-', $pallet->pickWeightOuts->pluck('pickersheet_id')->filter()->unique()->values()->all());
+            $delNoteNum = implode('-', $this->getPicksheetIdsForPallet($pallet));
             $ca = ClientAddress::where('client_id', $pallet->customer_id)
                 ->where('address_id', $pallet->address_id)
                 ->where('client_type', ClientType::CUSTOMER->value)
@@ -311,33 +354,7 @@ class OutgoingPalletsLoadingController extends Controller
                 continue;
             }
 
-            $cutTotals = [];
-            $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
-            foreach ($pickLinks as $link) {
-                $pickWeightOut = $link->pickWeightOut;
-                if (!$pickWeightOut) {
-                    continue;
-                }
-                foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
-                    $cutName = (string) ($cutLine['cut_name'] ?? 'Unknown');
-                    $quantity = (int) ($cutLine['quantity'] ?? 0);
-                    if (!isset($cutTotals[$cutName])) {
-                        $cutTotals[$cutName] = 0;
-                    }
-                    $cutTotals[$cutName] += $quantity;
-                }
-            }
-
-            arsort($cutTotals);
-            $topCuts = array_slice($cutTotals, 0, 3, true);
-            $contentsPreview = '';
-            if (!empty($topCuts)) {
-                $parts = [];
-                foreach ($topCuts as $cutName => $qty) {
-                    $parts[] = $cutName . ': ' . $qty;
-                }
-                $contentsPreview = implode(' • ', $parts);
-            }
+            $contentsPreview = implode("\n", $this->getPicksheetCutSummaryLines($pallet));
 
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
@@ -445,7 +462,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'outgoingPalletId is required'], 400);
         }
 
-        $pallet = OutgoingPallet::with(['customer', 'outgoingPalletType'])->find($outgoingPalletId);
+        $pallet = OutgoingPallet::with(['customer', 'outgoingPalletType', 'pickWeightOuts.pickWeightOut'])->find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
@@ -457,6 +474,8 @@ class OutgoingPalletsLoadingController extends Controller
 
         $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
         $pickWeightOutIds = $pickLinks->pluck('pickWeightOut_id')->map(fn ($id) => (int) $id)->filter()->values()->all();
+        $picksheetIds = $this->getPicksheetIdsForPallet($pallet);
+        $contentSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
 
         $cutTotals = [];
         foreach ($pickLinks as $link) {
@@ -497,6 +516,8 @@ class OutgoingPalletsLoadingController extends Controller
                 'totalWeightKg' => (int) ($pallet->getTotalWeight() ?? 0),
                 'pickWeightOutCount' => count($pickWeightOutIds),
                 'pickWeightOutIds' => $pickWeightOutIds,
+                'picksheetIds' => $picksheetIds,
+                'contentSummaryLines' => $contentSummaryLines,
                 'cuts' => $cuts,
             ],
         ]);
@@ -628,7 +649,7 @@ class OutgoingPalletsLoadingController extends Controller
         $depot = Site::find($depotSiteId);
 
         $query = VehicleOutgoingPalletAllocation::with([
-            'outgoingPallet.pickWeightOuts',
+            'outgoingPallet.pickWeightOuts.pickWeightOut',
             'outgoingPallet.customer',
             'outgoingPallet.outgoingPalletType',
         ])->where('vehicle_id', $vehicle->id);
@@ -665,40 +686,8 @@ class OutgoingPalletsLoadingController extends Controller
             }
 
             $weightKg = (int) ($pallet->getTotalWeight() ?? 0);
-            $deliveryNoteNumber = implode('-', $pallet->pickWeightOuts
-                ->pluck('pickersheet_id')
-                ->filter()
-                ->unique()
-                ->values()
-                ->all());
-
-            $cutTotals = [];
-            $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
-            foreach ($pickLinks as $link) {
-                $pickWeightOut = $link->pickWeightOut;
-                if (!$pickWeightOut) {
-                    continue;
-                }
-                foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
-                    $cutName = (string) ($cutLine['cut_name'] ?? 'Unknown');
-                    $quantity = (int) ($cutLine['quantity'] ?? 0);
-                    if (!isset($cutTotals[$cutName])) {
-                        $cutTotals[$cutName] = 0;
-                    }
-                    $cutTotals[$cutName] += $quantity;
-                }
-            }
-
-            arsort($cutTotals);
-            $topCuts = array_slice($cutTotals, 0, 3, true);
-            $contentsPreview = '';
-            if (!empty($topCuts)) {
-                $parts = [];
-                foreach ($topCuts as $cutName => $qty) {
-                    $parts[] = $cutName . ': ' . $qty;
-                }
-                $contentsPreview = implode(' • ', $parts);
-            }
+            $deliveryNoteNumber = implode('-', $this->getPicksheetIdsForPallet($pallet));
+            $contentsPreview = implode("\n", $this->getPicksheetCutSummaryLines($pallet));
 
             $loadRows[] = [
                 'row' => $row,

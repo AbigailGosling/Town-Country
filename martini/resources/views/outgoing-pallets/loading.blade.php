@@ -378,7 +378,7 @@
     }
     .grid-wrapper {
       display: grid;
-      grid-template-columns: 1fr 110px;
+      /*grid-template-columns: 1fr 110px;*/
       gap: 1rem;
       align-items: start;
     }
@@ -482,10 +482,20 @@
       width: 100%;
       line-height: 1.15;
       overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      display: block;
+      white-space: pre-line;
+      max-height: 3.45em;
+      word-break: break-word;
+    }
+    .order-contents-summary {
+      margin: 0;
+      color: #4b5563;
+      font-size: 0.9rem;
+      line-height: 1.25;
+      overflow: hidden;
+      display: block;
+      white-space: pre-line;
+      max-height: 3.75em;
       word-break: break-word;
     }
     .slot.euro-only:not(.occupied) {
@@ -556,6 +566,14 @@
     .modal-row strong {
       color: #374151;
     }
+    .modal-summary-text {
+      line-height: 1.25;
+      overflow: hidden;
+      display: block;
+      white-space: pre-line;
+      max-height: 3.75em;
+      word-break: break-word;
+    }
     .map-frame {
       width: 100%;
       height: 460px;
@@ -618,7 +636,7 @@
           <div class="plate-wrap">
             <div class="plate" id="vehiclePlate">...</div>
             <div class="payload-badge" id="payloadBadge">Payload: —</div>
-            <div class="total-weight" id="totalWeight">0 kg</div>
+            <!--<div class="total-weight" id="totalWeight">0 kg</div>-->
           </div>
           <div class="truck-actions">
             <button class="print-load-btn" id="printLoadBtn" type="button">Print Load</button>
@@ -628,7 +646,7 @@
         </div>
         <div class="grid-wrapper">
           <div class="grid" id="palletGrid"></div>
-          <div class="row-weights" id="rowWeights"></div>
+          <!--<div class="row-weights" id="rowWeights"></div>-->
         </div>
       </div>
     </section>
@@ -773,7 +791,7 @@
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
-      totalWeightEl.textContent = `Total payload: ${totalWeight} kg (${tonnesText} t)`;
+      //totalWeightEl.textContent = `Total payload: ${totalWeight} kg (${tonnesText} t)`;
       payloadBadge.textContent = `Payload: ${formatPayload(currentPayload)}`;
     }
 
@@ -785,6 +803,16 @@
 
     function normalizeReg(value) {
       return String(value || "").trim().toUpperCase();
+    }
+
+    function buildContentSummary(order) {
+      return String(order?.contentsPreview || "").trim();
+    }
+
+    function buildOverviewContentSummary(overview) {
+      return Array.isArray(overview?.contentSummaryLines)
+        ? overview.contentSummaryLines.map(line => String(line || "").trim()).filter(Boolean).join("\n")
+        : "";
     }
 
     function jsonHeaders() {
@@ -875,6 +903,7 @@
         }
         const data = await response.json();
         const overview = data.overview || {};
+        const modalContentSummary = buildOverviewContentSummary(overview);
 
         const rows = [
           ["Customer", overview.customerName || ""],
@@ -882,26 +911,20 @@
           ["Type", overview.palletType || ""],
           ["Temperature", overview.temperature || ""],
           ["Total Weight", `${Number(overview.totalWeightKg || 0)} kg`],
+          ["Content Summary", modalContentSummary || "No cut/picksheet summary available."],
           ["PickWeightOuts", `${Number(overview.pickWeightOutCount || 0)}`],
         ];
 
         rows.forEach(([label, value]) => {
           const row = document.createElement("div");
           row.className = "modal-row";
-          row.innerHTML = `<strong>${label}</strong><div>${value}</div>`;
+          if (label === "Content Summary") {
+            row.innerHTML = `<strong>${label}</strong><div class="modal-summary-text">${value}</div>`;
+          } else {
+            row.innerHTML = `<strong>${label}</strong><div>${value}</div>`;
+          }
           contentsModalBody.append(row);
         });
-
-        const cuts = Array.isArray(overview.cuts) ? overview.cuts : [];
-        const cutsRow = document.createElement("div");
-        cutsRow.className = "modal-row";
-        if (!cuts.length) {
-          cutsRow.innerHTML = `<strong>Contents</strong><div>No cut breakdown available.</div>`;
-        } else {
-          const items = cuts.map(cut => `<li>${cut.cutName}: ${Number(cut.quantity || 0)} pcs • ${Number(cut.totalWeight || 0)} kg</li>`).join("");
-          cutsRow.innerHTML = `<strong>Contents</strong><div><ul class="contents-list">${items}</ul></div>`;
-        }
-        contentsModalBody.append(cutsRow);
       } catch (error) {
         const row = document.createElement("div");
         row.className = "modal-row";
@@ -1580,8 +1603,10 @@
         const weight = document.createElement("p");
         weight.textContent = `Weight: ${order.weightKg} kg`;
         const contentsPreview = document.createElement("p");
-        if (order.contentsPreview) {
-          contentsPreview.textContent = `Contents: ${order.contentsPreview}`;
+        const contentSummary = buildContentSummary(order);
+        if (contentSummary) {
+          contentsPreview.className = "order-contents-summary";
+          contentsPreview.textContent = contentSummary;
         }
         const status = document.createElement("div");
         status.className = "order-status";
@@ -1598,7 +1623,7 @@
           status.classList.add("visible");
         }
         info.append(title, sub, weight);
-        if (order.contentsPreview) {
+        if (contentSummary) {
           info.append(contentsPreview);
         }
         info.append(status);
@@ -1686,10 +1711,10 @@
 
     function renderGrid() {
       palletGrid.innerHTML = "";
-      rowWeightsEl.innerHTML = "";
+      //rowWeightsEl.innerHTML = "";
       const maxRows = getMaxPalletRows();
       const maxSlots = getMaxSlotCount();
-      rowWeightsEl.style.gridTemplateRows = `repeat(${maxRows}, minmax(110px, 1fr))`;
+      //rowWeightsEl.style.gridTemplateRows = `repeat(${maxRows}, minmax(110px, 1fr))`;
       const totalWeight = orders.reduce((sum, order) => sum + (order.allocated ? order.weightKg : 0), 0);
       updateTotalWeightDisplay(totalWeight);
       const rowTotals = Array.from({ length: maxRows }, () => 0);
@@ -1756,10 +1781,11 @@
             slotContent.append(frozenBadge);
           }
 
-          if (assignedOrder.contentsPreview) {
+          const slotContentSummary = buildContentSummary(assignedOrder);
+          if (slotContentSummary) {
             const contentsDiv = document.createElement("div");
             contentsDiv.className = "slot-contents";
-            contentsDiv.textContent = assignedOrder.contentsPreview;
+            contentsDiv.textContent = slotContentSummary;
             slotContent.append(contentsDiv);
           }
 
@@ -1793,7 +1819,7 @@
         const weight = document.createElement("div");
         weight.className = "row-weight";
         weight.textContent = `${total} kg`;
-        rowWeightsEl.append(weight);
+        //rowWeightsEl.append(weight);
       });
 
       requestAnimationFrame(() => {
