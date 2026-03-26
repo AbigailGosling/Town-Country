@@ -126,6 +126,10 @@
             font-size: 9px;
             margin-bottom: 2px;
         }
+        .slot-sub.multiline {
+            white-space: pre-line;
+            line-height: 1.25;
+        }
         .slot-meta {
             color: #000000;
             font-size: 9px;
@@ -163,6 +167,10 @@
             border: 1px solid #000000;
             padding: 5px 6px;
             vertical-align: top;
+        }
+        .manifest-preline {
+            white-space: pre-line;
+            line-height: 1.25;
         }
         .manifest th {
             background: #ffffff;
@@ -230,7 +238,7 @@
                     <td>
                         <span class="plate">{{ $vehicle->reg }}</span>
                         <span class="badge payload-badge">Payload: {{ $payloadValue }}kg</span>
-                        <span class="badge weight-badge">Total payload: {{ $totalWeight }} kg</span>
+                        <!--<span class="badge weight-badge">Total payload: {{ $totalWeight }} kg</span>-->
                     </td>
                 </tr>
             </table>
@@ -260,15 +268,14 @@
                                         <div class="slot-frozen-badge">Frozen</div>
                                     @endif
                                     @if (!empty($slot['contentsPreview']))
-                                        <div class="slot-sub">{{ $slot['contentsPreview'] }}</div>
+                                        <div class="slot-sub multiline">{!! nl2br(e($slot['contentsPreview'])) !!}</div>
                                     @endif
-                                    <div class="slot-sub">DN: {{ $slot['deliveryNoteNumber'] }}</div>
                                 @else
                                     <div class="slot-sub">{{ $c === 3 ? 'Euro pallet only' : 'Empty slot' }}</div>
                                 @endif
                             </td>
                         @endfor
-                        <td class="row-weight">{{ $rowTotals[$r] }} kg</td>
+                        <!--<td class="row-weight">{{ $rowTotals[$r] }} kg</td>-->
                     </tr>
                 @endfor
             </table>
@@ -288,7 +295,7 @@
                         <th>Type</th>
                         <th>Contents</th>
                         <th>Temp</th>
-                        <th class="right">Weight (kg)</th>
+                        <!--<th class="right">Weight (kg)</th>-->
                     </tr>
                 </thead>
                 <tbody>
@@ -300,9 +307,9 @@
                             <td>{{ $row['customerName'] }}</td>
                             <td>{{ $row['postcode'] }}</td>
                             <td>{{ $row['palletType'] }}</td>
-                            <td>{{ $row['contentsPreview'] ?? '' }}</td>
+                            <td class="manifest-preline">{!! nl2br(e($row['contentsPreview'] ?? '')) !!}</td>
                             <td>{{ $row['freshFrozen'] }}</td>
-                            <td class="right">{{ $row['weightKg'] }}</td>
+                            <!--<td class="right">{{ $row['weightKg'] }}</td>-->
                         </tr>
                     @endforeach
                 </tbody>
