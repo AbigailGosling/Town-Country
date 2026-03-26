@@ -16,6 +16,7 @@ use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ShortPickReportController;
 use App\Http\Controllers\ShortStockController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
@@ -126,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
+    Route::get('/shortpick', [ShortPickReportController::class, 'index'])->name('shortpick.index');
 
     Route::get('/outgoing-pallets', [OutgoingPalletController::class, 'index'])->name('outgoing-pallets.index');
     Route::get('/outgoing-pallets/details', [OutgoingPalletController::class, 'details'])->name('outgoing-pallets.details');

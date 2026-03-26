@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\Weight;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
 

@@ -121,16 +121,42 @@ protected $connection = 'tandc_live';
     }
     public function getWeights():Collection
     {
-        return Weight::where("product_id",$this->id);
+        return Weight::where("product_id",$this->id)->get();
     }
     public function brand():BelongsTo
 	{
-		return $this->belongsTo(Cut::class,"brand_id","id");
+		return $this->belongsTo(Brand::class,"brand_id","id");
 	}
     private Brand $_brand;
     public function getBrand():Brand|null
     {
         return $this->_brand ??= Brand::find($this->brand_id);
     }
-
+    public function nationality():BelongsTo
+    {
+        return $this->belongsTo(Nationality::class,"nationality_id","id");
+    }
+    private Nationality $_nationality;
+    public function getNationality():Nationality|null
+    {
+        return $this->_nationality ??= Nationality::find($this->nationality_id);
+    }
+    public function temperature():BelongsTo
+    {
+        return $this->belongsTo(Temperature::class,"cooling_id","id");
+    }
+    private Temperature $_temperature;
+    public function getTemperature():Temperature|null
+    {
+        return $this->_temperature ??= Temperature::find($this->cooling_id);
+    }
+    public function healthMark():BelongsTo
+    {
+        return $this->belongsTo(HealthMark::class,"health_id","id");
+    }
+    private HealthMark $_health;
+    public function getHealthMark():HealthMark|null
+    {
+        return $this->_health ??= HealthMark::find($this->health_id);
+    }
 }
