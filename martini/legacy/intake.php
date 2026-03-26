@@ -2,6 +2,7 @@
 
 use App\Models\Cut;
 use App\Models\DocType;
+use App\Models\Product;
 use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
@@ -51,6 +52,25 @@ use Illuminate\Support\Facades\Auth;
             if ($rrp1 == 0) $rrp1 = null;
             if ($rrp2 == 0) $rrp2 = null;
             if ($rrp3 == 0) $rrp3 = null;
+            if($cost < $price && $price != null && $cost != null)
+            {
+                $p = Product::find($productids[$i]);
+                $c = Cut::find($p->cut_id);
+                ?>
+                <script>
+                    Swal.fire({
+					title: "Cost of <?php echo $c->name; ?> cannot be lower than £<?php echo $price; ?>",
+					text: "Please check the values and try again",
+					icon: "warning",
+					allowOutsideClick: false,
+					allowEscapeKey: false,
+					showCancelButton: false,
+					showConfirmButton: false,
+					showCloseButton: true
+				});
+                </script><?php
+                continue;
+            }
 			$weightnote = request()->input('weightnote')[$i];
 			if($product_id != '' && $intake['approved']==1){
 				if (User::find(Auth::id())->hasPermission("viewcosts"))
