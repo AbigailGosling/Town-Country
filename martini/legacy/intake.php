@@ -7,6 +7,8 @@ use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 	include('includes/frontHeader.php');
     ini_set('memory_limit','15M'); //this might kill the process - keep in mind
@@ -39,7 +41,6 @@ use Illuminate\Support\Facades\Auth;
 		$size = sizeof($productids ?? []);
 
 		$intakeid = request()->input('intakeid');
-
 		for($i=0;$i<$size;$i++){
 			$product_id = "(" . $productids[$i] . ")";
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
@@ -47,15 +48,17 @@ use Illuminate\Support\Facades\Auth;
             $rrp1 = number_format((double)request()->input('rrp1')[$i],3,".",",");
             $rrp2 = number_format((double)request()->input('rrp2')[$i],3,".",",");
             $rrp3 = number_format((double)request()->input('rrp3')[$i],3,".",",");
+			$weightnote = request()->input('weightnote')[$i];
 			if ($cost == 0) $cost = null;
 			if ($price == 0) $price = null;
             if ($rrp1 == 0) $rrp1 = null;
             if ($rrp2 == 0) $rrp2 = null;
             if ($rrp3 == 0) $rrp3 = null;
+            $p = Product::find($productids[$i]);
+            $cacheArray[] = $p;
+            $c = Cut::find($p->cut_id);
             if($cost < $price && $price != null && $cost != null)
             {
-                $p = Product::find($productids[$i]);
-                $c = Cut::find($p->cut_id);
                 ?>
                 <script>
                     Swal.fire({
@@ -71,7 +74,7 @@ use Illuminate\Support\Facades\Auth;
                 </script><?php
                 continue;
             }
-			$weightnote = request()->input('weightnote')[$i];
+
 			if($product_id != '' && $intake['approved']==1){
 				if (User::find(Auth::id())->hasPermission("viewcosts"))
 				{
@@ -102,7 +105,8 @@ use Illuminate\Support\Facades\Auth;
 				loggedDataChange('product_note',$product_id,$weightnote);
 			}
 		}
-
+        $rowId = prepareExecuteQuery("INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES (?,?,?,?,?)",'sssss',['intake.php',$intakeid,Auth::id(),session()->getId(),json_encode($cacheArray)],true);
+        pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:pricechangeemail '.$rowId.' >NUL 2>NUL"', 'r'));
  	}
 
 ?>
