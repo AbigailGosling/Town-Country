@@ -144,6 +144,7 @@ abstract class SLabsEmailerType
     const ShortStock= 'SHORT_STOCK_NOTICE';
     const Reservatin= 'RESERVATION';
     const ShortPick = 'SHORT_PICK';
+    const PrceChnge = 'PRICE_CHANGE';
 }
 abstract class SLabsEmailerStatus
 {
