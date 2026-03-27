@@ -144,24 +144,26 @@ use App\Models\ClientType;
 	VALUES
 	(".implode(",",array_fill(0,count($colNames),"?")).");";
 
-	$y = prepareExecuteQuery($x,str_repeat('s',count($colNames)),$colValue);
+	$customer_id = prepareExecuteQuery($x,str_repeat('s',count($colNames)),$colValue,true);
 
 
-	for ($u=1;$u<10;$u++)
+	foreach (request()->input('address_id') as $index => $address_id)
 	{
-        $ca = ClientAddress::where('client_id', $y)->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
-        if (!$ca) {
-            $ca = new ClientAddress();
-            $ca->client_id = $y;
-            $ca->address_id = $u;
-            $ca->client_type = ClientType::CUSTOMER->value;
+        if (request()->input('site_id')[$index] == "" || request()->input('site_id')[$index] == null) {
+            continue; // Skip addresses without a site_id
         }
-        $ca->address_1 = request()->input('address_1');
-        $ca->address_2 = request()->input('address_2');
-        $ca->address_3 = request()->input('address_3');
-        $ca->address_4 = request()->input('address_4');
-        $ca->postcode = request()->input('postcode');
-        $ca->address_number = request()->input('address_number');
+        $ca = new ClientAddress();
+        $ca->client_id = $customer_id;
+        $ca->address_id = $address_id;
+        $ca->client_type = ClientType::CUSTOMER->value;
+        $ca->address_1 = request()->input('address_1')[$index] ?? null;
+        $ca->address_2 = request()->input('address_2')[$index] ?? null;
+        $ca->address_3 = request()->input('address_3')[$index] ?? null;
+        $ca->address_4 = request()->input('address_4')[$index] ?? null;
+        $ca->postcode = request()->input('postcode')[$index] ?? null;
+        $ca->address_number = request()->input('address_number')[$index] ?? null;
+        $ca->site_id = request()->input('site_id')[$index];
+        $ca->restrictions = request()->input('restrictions')[$index] ?? null;
         $ca->save();
 	}
 

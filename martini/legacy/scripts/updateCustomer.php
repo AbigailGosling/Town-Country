@@ -155,22 +155,23 @@ use Illuminate\Support\Facades\Auth;
 	$x = "UPDATE `customers` SET ".implode(",",$colNames)." WHERE id=? LIMIT 1";
 	$y = prepareExecuteQuery($x,str_repeat("s",count($colValue)),$colValue);
 
-    foreach (request()->input('address_id') as $i => $u)
+    foreach (request()->input('address_id') as $index => $address_id)
 	{
-        $ca = ClientAddress::where('client_id', request()->input('id'))->where('address_id', $u)->where('client_type', ClientType::CUSTOMER->value)->first();
+        $ca = ClientAddress::where('client_id', request()->input('id'))->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
         if (!$ca) {
             $ca = new ClientAddress();
             $ca->client_id = request()->input('id');
-            $ca->address_id = $u;
+            $ca->address_id = $address_id;
             $ca->client_type = ClientType::CUSTOMER->value;
         }
-        $ca->address_1 = request()->input('address_1')[$i];
-        $ca->address_2 = request()->input('address_2')[$i];
-        $ca->address_3 = request()->input('address_3')[$i];
-        $ca->address_4 = request()->input('address_4')[$i];
-        $ca->postcode = request()->input('postcode')[$i];
-        $ca->address_number = request()->input('address_number')[$i];
-        $ca->site_id = request()->input('address_site_id')[$i];
+        $ca->address_1 = request()->input('address_1')[$index] ?? null;
+        $ca->address_2 = request()->input('address_2')[$index] ?? null;
+        $ca->address_3 = request()->input('address_3')[$index] ?? null;
+        $ca->address_4 = request()->input('address_4')[$index] ?? null;
+        $ca->postcode = request()->input('postcode')[$index] ?? null;
+        $ca->address_number = request()->input('address_number')[$index] ?? null;
+        $ca->site_id = request()->input('address_site_id')[$index] ?? null;
+        $ca->restrictions = request()->input('restrictions')[$index] ?? null;
         $ca->save();
 	}
 ?>

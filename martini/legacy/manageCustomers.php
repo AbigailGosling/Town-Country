@@ -134,7 +134,7 @@ use Illuminate\Support\Facades\Log;
                 }
 					foreach ($cas as $i=>$ca)
 					{
-						if (($ca->address_id == "" && $id>0) || ($ca->address_id > 1 && $ca->address_1==""))$style1 = "display:none;";
+						if (($ca->address_id == null && $i>0) || ($ca->address_id > 1 && $ca->address_1==""))$style1 = "display:none;";
                         $u = $i + 1;
 				?>
 				<tr style="vertical-align: top;">
@@ -157,6 +157,10 @@ use Illuminate\Support\Facades\Log;
 				<tr id="address<?php echo $ca->address_id ?? $u; ?>containerNumber" style="<?php echo $style1; ?>">
 					<td class="label"><label>Delivery Contact No.</label></td>
 					<td><input type="text" class="input" name="address_number[]" value="<?php echo $ca->address_number; ?>"></td>
+				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>containerRestrictions" style="<?php echo $style1; ?>">
+					<td class="label"><label>Restrictions</label></td>
+					<td><input type="text" class="input" name="address_restrictions[]" value="<?php echo $ca->restrictions; ?>"></td>
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>site_id" style="<?php echo $style1; ?>">
 					<td class="label"><label>Served By</label></td>
@@ -622,6 +626,7 @@ function mainForm2(){
 			$('#address'+v.toString()+'container').show();
 			$('#address'+v.toString()+'containerPostcode').show();
 			$('#address'+v.toString()+'containerNumber').show();
+            $('#address'+v.toString()+'containerRestrictions').show();
             $('#address'+v.toString()+'site_id').show();
 		});
 	}
