@@ -51,10 +51,10 @@ class PriceChangeEmail extends Command
             $newProduct = Product::find($oldProduct['id']);
             /** @var Cut $cut */
             $cut = Cut::find($newProduct->cut_id);
-            if ($oldProduct['cost'] != $newProduct->cost) {
+            if ($oldProduct['cost'] != null && $oldProduct['cost'] != $newProduct->cost) {
                 $toOutput[] = "<tr><td>{$cut->name}</td><td>Cost</td><td>" . $oldProduct['cost'] . "</td><td>" . $newProduct->cost . "</td></tr>";
             }
-            if ($oldProduct['price'] != $newProduct->price) {
+            if ($oldProduct['price'] != null && $oldProduct['price'] != $newProduct->price) {
                 $toOutput[] = "<tr><td>{$cut->name}</td><td>Actual Cost</td><td>" . $oldProduct['price'] . "</td><td>" . $newProduct->price . "</td></tr>";
             }
             if (count($toOutput) > 0) {

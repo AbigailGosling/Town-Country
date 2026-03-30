@@ -28,7 +28,7 @@ class ShortStockExport implements FromCollection
     private Collection $nationalities;
     private Collection $brands;
     private int $_dayRange;
-    function __construct(int $dayRange = +10)
+    function __construct(int $dayRange = +9)
     {
         $this->_dayRange = max($dayRange,+1);
         $this->cuts = Cut::all()->keyBy('id');
