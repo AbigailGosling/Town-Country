@@ -71,6 +71,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
         */
         foreach ($products as $containerProduct)
         {
+            if ($containerProduct->deleted == 1) continue;
             $prod = Product::find($containerProduct->product_id);
             if ($prod == null) continue;
             $pallet=Pallet::find($prod->pallet_id);

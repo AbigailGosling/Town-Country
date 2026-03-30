@@ -54,6 +54,12 @@ class OutgoingPallet extends Model
         $total = 0;
         foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
             foreach (PickWeightOut::where('id', $link->pickWeightOut_id)->get() as $pickWeightOut) {
+                if (count($pickWeightOut->getWeights()) == 0)
+                {
+                    $link->delete();
+                    $pickWeightOut->delete();
+                    continue;
+                }
                 $total += $pickWeightOut->getTotalWeight();
             }
         }
@@ -65,6 +71,12 @@ class OutgoingPallet extends Model
         if ($this->_temperatureCategoryCache == '') {
             foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
                 $pickWeightOut = PickWeightOut::where('id', $link->pickWeightOut_id)->first();
+                if (count($pickWeightOut->getWeights()) == 0)
+                {
+                    $link->delete();
+                    $pickWeightOut->delete();
+                    continue;
+                }
                 $weight = Weight::find($pickWeightOut->getWeights()[0]);
                 $product = Product::find($weight->product_id);
                 if ($product->cooling_id == 2){

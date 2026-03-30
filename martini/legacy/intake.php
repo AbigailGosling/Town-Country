@@ -105,8 +105,11 @@ use Illuminate\Support\Facades\Log;
 				loggedDataChange('product_note',$product_id,$weightnote);
 			}
 		}
-        $rowId = prepareExecuteQuery("INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES (?,?,?,?,?)",'sssss',['intake.php',$intakeid,Auth::id(),session()->getId(),json_encode($cacheArray)],true);
-        pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:pricechangeemail '.$rowId.' >NUL 2>NUL"', 'r'));
+        if ($intakeid != "" && $intakeid != null)
+        {
+            $rowId = prepareExecuteQuery("INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES (?,?,?,?,?)",'sssss',['intake.php',$intakeid,Auth::id(),session()->getId(),json_encode($cacheArray)],true);
+            pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:pricechangeemail '.$rowId.' >NUL 2>NUL"', 'r'));
+        }
  	}
 
 ?>

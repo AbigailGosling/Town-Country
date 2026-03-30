@@ -160,7 +160,7 @@ use Illuminate\Support\Facades\Log;
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>containerRestrictions" style="<?php echo $style1; ?>">
 					<td class="label"><label>Restrictions</label></td>
-					<td><input type="text" class="input" name="address_restrictions[]" value="<?php echo $ca->restrictions; ?>"></td>
+					<td><input type="text" class="input" name="restrictions[]" value="<?php echo $ca->restrictions; ?>"></td>
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>site_id" style="<?php echo $style1; ?>">
 					<td class="label"><label>Served By</label></td>

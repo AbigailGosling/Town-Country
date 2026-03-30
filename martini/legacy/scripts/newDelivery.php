@@ -56,6 +56,7 @@ use Illuminate\Support\Facades\Cache;
         $intakeModel->save();
 
         foreach($container->getProducts() as $containerProduct){
+            if ($containerProduct->deleted == 1)continue;
             $pallet = new Pallet();
             $pallet->intake_id = $intake_id;
             $pallet->storage_location = Location::where("site_id",$site_id)->get()[0]->id;
