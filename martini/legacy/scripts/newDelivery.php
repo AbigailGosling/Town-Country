@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\InternalCache;
 use App\Models\InboundContainer;
 use App\Models\Intake;
 use App\Models\Location;
@@ -34,7 +35,7 @@ use Illuminate\Support\Facades\Cache;
     }
 
     $transactionCacheKey = 'new_delivery_transaction:' . $transactionId;
-    if (Cache::has($transactionCacheKey)) {
+    if (InternalCache::has($transactionCacheKey)) {
     ?>
     <script>
         alert("This delivery is already being processed. Please check Intakes.");
@@ -43,7 +44,7 @@ use Illuminate\Support\Facades\Cache;
     <?php
         exit();
     }
-    Cache::put($transactionCacheKey, true, now()->addHours(12));
+    InternalCache::put($transactionCacheKey, true, now()->addHours(12));
 	$date_received = str_replace('/', '-', $date_received);
 	$date_received = date('Y-m-d H:i:s', strtotime($date_received));
 	$intake_id = addIntakeDupe($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature,$product_temperature, $delivery_note_number, $staff_id, $security_id, $purchase_id, $site_id,$internal_number);

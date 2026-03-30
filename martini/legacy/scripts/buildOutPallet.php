@@ -1,11 +1,11 @@
 <?php
 
+use App\Helpers\InternalCache;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 	require(__DIR__.'/../functions.php');
 
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Cache;
     }
 
     $transactionCacheKey = 'build_out_pallet_transaction:' . $transactionId;
-    if (Cache::has($transactionCacheKey)) {
+    if (InternalCache::has($transactionCacheKey)) {
     ?>
         <script>
             window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Cache;
     <?php
         exit();
     }
-    Cache::put($transactionCacheKey, true, now()->addHours(12));
+    InternalCache::put($transactionCacheKey, true, now()->addHours(12));
     $weight_ids = request()->input('weightids');
     $weight_ids = rtrim($weight_ids,',');
     $weight_id_array = explode(",",$weight_ids);
