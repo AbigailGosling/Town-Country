@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\InternalCache;
 use App\Models\Cut;
 use App\Models\Intake;
 use App\Models\Product;
@@ -37,7 +38,7 @@ class PriceChangeEmail extends Command
     public function handle()
     {
         $cacheKey = $this->argument('cacheKey');
-        $cacheRow = DB::connection('tandc_live')->table('debug_logging')->where('id', $cacheKey)->get()[0];
+        $cacheRow = InternalCache::get($cacheKey);
         /** @var Product[] $cacheArray */
         $cacheArray = json_decode($cacheRow->body, true);
         /** @var User $user */
