@@ -71,6 +71,11 @@ class OutgoingPallet extends Model
         if ($this->_temperatureCategoryCache == '') {
             foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
                 $pickWeightOut = PickWeightOut::where('id', $link->pickWeightOut_id)->first();
+                if ($pickWeightOut === null)
+                {
+                    $link->delete();
+                    continue;
+                }
                 if (count($pickWeightOut->getWeights()) == 0)
                 {
                     $link->delete();
