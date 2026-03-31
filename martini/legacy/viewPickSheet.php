@@ -373,6 +373,7 @@ use Illuminate\Support\Str;
 		</form>
 		<br/>
 		<form method="POST" action="scripts/markPickerSheetCompleted.php?id=<?php echo $picksheetid; ?>" id="markCompletedForm">
+        <input type="hidden" name="transaction_id" value="<?php echo $transactionId; ?>">
 		<input type="hidden" name="sheet_type" value="<?php echo request()->input('type'); ?>">
 			<?php if($outpalletCount == 0){ ?><div class="completepickwarning">Not ready</div><?php } ?>
 			<input type="button" id="completeFormBtn" value="Completed" style="width:323px;height:34px;margin-bottom:10px;"<?php if($outpalletCount == 0 || $pickIsLocked){ ?> disabled <?php } ?>>
@@ -485,7 +486,8 @@ use Illuminate\Support\Str;
 <div id="btm"></div>
 <script>
  function mainForm(){
-	$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php echo csrf_token();?>"},success:mainFormSucess});
+	console.log('submit');
+    //$('#palletAddBtnForm').ajaxSubmit({headers:{'X-CSRF-TOKEN': "<?php //echo csrf_token();?>"},success:mainFormSucess});
 }
 function mainFormSucess(){
 	location.reload();
@@ -718,7 +720,7 @@ function mainFormSucess(){
             success:function(data){
                 if (data.length == 0)
                 {
-                    finalSubmit(-1);
+                    addToPalletSubmit(-1);
                 }
                 else
                 {
@@ -735,14 +737,14 @@ function mainFormSucess(){
                     }).then((result) => {
                         if (result.value) {
                             var outgoingPalletID = $('#outgoingPalletSelect').val();
-                            if (outgoingPalletID != null) finalSubmit(outgoingPalletID);
+                            if (outgoingPalletID != null) addToPalletSubmit(outgoingPalletID);
                         }
                      });
                 }
             }
         });
     }
-    function finalSubmit(outgoingPalletID)
+    function addToPalletSubmit(outgoingPalletID)
     {
         $('#outgoingPalletID').attr('value', outgoingPalletID);
         $('#palletAddBtn').attr("disabled", true);
