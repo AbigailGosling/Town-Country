@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\InternalCache;
 use App\Models\Cut;
 use App\Models\DocType;
 use App\Models\Product;
@@ -7,8 +8,7 @@ use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 	include('includes/frontHeader.php');
     ini_set('memory_limit','15M'); //this might kill the process - keep in mind
@@ -107,7 +107,10 @@ use Illuminate\Support\Facades\Log;
 		}
         if ($intakeid != "" && $intakeid != null)
         {
-            $rowId = prepareExecuteQuery("INSERT INTO `debug_logging` (`page`,`request`,`user_id`,`session_id`,`body`) VALUES (?,?,?,?,?)",'sssss',['intake.php',$intakeid,Auth::id(),session()->getId(),json_encode($cacheArray)],true);
+            $rowId = Str::random(50);
+            array_unshift($cacheArray,$intakeid);
+            array_unshift($cacheArray,Auth::id());
+            InternalCache::put($rowId, $cacheArray, Auth::id());
             pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:pricechangeemail '.$rowId.' >NUL 2>NUL"', 'r'));
         }
  	}

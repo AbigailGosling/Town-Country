@@ -38,16 +38,17 @@ class PriceChangeEmail extends Command
     public function handle()
     {
         $cacheKey = $this->argument('cacheKey');
-        $cacheRow = InternalCache::get($cacheKey);
         /** @var Product[] $cacheArray */
-        $cacheArray = json_decode($cacheRow->body, true);
+        $cacheArray = InternalCache::get($cacheKey);
         /** @var User $user */
-        $user = User::find($cacheRow->user_id);
+        $user = User::find(array_shift($cacheArray));
         /** @var Intake $intake */
-        $intake = Intake::find($cacheRow->request);
+        $intake = Intake::find(array_shift($cacheArray));
         $tableBody = "";
+        Log::debug(json_encode($cacheArray));
         foreach ($cacheArray as $oldProduct) {
             $toOutput = [];
+            Log::debug(json_encode($oldProduct));
             /** @var Product $newProduct */
             $newProduct = Product::find($oldProduct['id']);
             /** @var Cut $cut */
@@ -66,10 +67,11 @@ class PriceChangeEmail extends Command
         }
         if ($tableBody != "") {
             $emailBody = "<p>The following price changes were made to the Intake {$intake->id} by {$user->name}:</p><table border='1' cellpadding='5' cellspacing='0'><thead><tr><th>Product Name</th><th>Change Type</th><th>Old Value</th><th>New Value</th></tr></thead><tbody>{$tableBody}</tbody></table>";
-            $u = ['Hannah.Hodgkins@townandcountrymeats.co.uk','Tarsem@townandcountrymeats.co.uk','Bridget@townandcountrymeats.co.uk'];
+            //$u = ['Hannah.Hodgkins@townandcountrymeats.co.uk','Tarsem@townandcountrymeats.co.uk','Bridget@townandcountrymeats.co.uk'];
+            $u = ['abigail.gosling@tang.solutions'];
             SLabsEmailer::send_email(-1,SLabsEmailerType::PrceChnge,$u,"Price Change: Intake {$intake->id}","<html><body>{$emailBody}</body></html>");
         }
-        DB::connection('tandc_live')->table('debug_logging')->where('id', $cacheKey)->delete(); // Clean up the debug log entry after retrieving the data
+        InternalCache::forget($cacheKey);
         return Command::SUCCESS;
     }
 }

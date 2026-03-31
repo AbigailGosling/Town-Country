@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\InternalCache;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
 use App\Models\OutgoingPalletType;
@@ -11,7 +12,27 @@ use Carbon\Carbon;
 	$id = request()->input('id');
 	$pickersheet_id = request()->input('id');
 	$type = request()->input('sheet_type');
+    $transactionId = request()->input('transaction_id');
 
+    if (empty($transactionId)) {
+    ?>
+        <script>
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
+        </script>
+    <?php
+        exit();
+    }
+
+    $transactionCacheKey = 'build_out_pallet_transaction:' . $transactionId;
+    if (InternalCache::has($transactionCacheKey)) {
+    ?>
+        <script>
+            window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
+        </script>
+    <?php
+        exit();
+    }
+    InternalCache::put($transactionCacheKey, true, now()->addHours(12));
 	/* START - Get all product IDs on the picksheet */
 	$product_ids = array();
 	$result_product = prepareExecuteQuery("SELECT `product_id` FROM `pickerItems` WHERE pickersheet_id=? GROUP BY `product_id`",'i',[$pickersheet_id]);
