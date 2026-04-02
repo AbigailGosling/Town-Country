@@ -59,18 +59,22 @@ use Carbon\Carbon;
         ]);
     }
     else $op = OutgoingPallet::find($outgoingPalletID);
-    $oppw = OutgoingPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first() ?? OutgoingPalletPickWeight::create([
-        'outgoing_pallet_id' => $op->id,
-        'pickWeightOut_id' => PickWeightOut::create([
-            'pickersheet_id' => $pickersheet_id,
-            'weight_ids' => '',
-            'picker_ids' => '',
-        ])->id,
-    ]);
+    $oppw = OutgoingPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first();
+    if ($oppw == null) {
+        $tmp = new PickWeightOut();
+        $tmp->pickersheet_id = $pickersheet_id;
+        $tmp->weight_ids = '';
+        $tmp->picker_ids = '';
+        $tmp->save();
+        $oppw = new OutgoingPalletPickWeight();
+        $oppw->outgoing_pallet_id = $op->id;
+        $oppw->pickWeightOut_id = $tmp->id;
+        $oppw->save();
+    }
     $pw = PickWeightOut::find($oppw->pickWeightOut_id);
  	$x = "SELECT * FROM pickWeightOut WHERE `id` = ? ORDER BY `id` DESC LIMIT 1";
     $y = prepareExecuteQuery($x,'s',[$pw->id]);
-    $exists = mysqli_num_rows($y);
+    $exists = mysqli_num_rows($y)>0;
     $outPallet = mysqli_fetch_array($y);
     $outPalletID = $outPallet['id'];
     $grossTareArray = array_filter(explode(',', $outPallet['weight_ids']));
@@ -127,14 +131,15 @@ if(!empty($grossTareArray)){
     $pickers = array_unique($pickers);
     $pickers = implode(",",$pickers);
     $weightString = implode(',', $grossTareArray);
-    $x = "UPDATE `pickWeightOut` SET weight_ids = ?, picker_ids = ? WHERE id = ?";
-    $y = prepareExecuteQuery($x,'ssi',[$weightString,$pickers,$outPalletID]);
+    $dupCheck = "SELECT * FROM `pickWeightOut` WHERE weight_ids = ? AND picker_ids = ? AND pickersheet_id = ?";
+    $dupCheckResult = prepareExecuteQuery($dupCheck,'ssi',[$weightString,$pickers,$pickersheet_id]);
+    if(mysqli_num_rows($dupCheckResult) == 0){ # only update if the exact same data doesn't already exist for this pallet, to avoid race conditions
+
+        $x = "UPDATE `pickWeightOut` SET weight_ids = ?, picker_ids = ? WHERE id = ?";
+        $y = prepareExecuteQuery($x,'ssi',[$weightString,$pickers,$outPalletID]);
+    }
 }
 # END NORMAL WEIGHT
-
-
-
-
     ?>
 <script>
 	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
