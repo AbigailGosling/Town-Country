@@ -577,6 +577,7 @@ class OutgoingPalletsLoadingController extends Controller
     public function commitAllocations(Request $request): JsonResponse
     {
         $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
         $outgoingPalletIds = $request->input('outgoingPalletIds', []);
 
         if ($reg === '') {
@@ -585,6 +586,10 @@ class OutgoingPalletsLoadingController extends Controller
 
         if (!is_array($outgoingPalletIds) || empty($outgoingPalletIds)) {
             return response()->json(['error' => 'outgoingPalletIds must be a non-empty array'], 400);
+        }
+
+        if ($dueDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+            return response()->json(['error' => 'dueDate is required and must be in Y-m-d format'], 400);
         }
 
         $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
@@ -611,12 +616,19 @@ class OutgoingPalletsLoadingController extends Controller
         $committedByUserId = $authUser ? (int) $authUser->id : null;
         $committedByName = $authUser ? (string) $authUser->name : null;
 
-        DB::connection('tandc_live')->transaction(function () use ($allocations, $committedAt, $committedByUserId, $committedByName) {
+        DB::connection('tandc_live')->transaction(function () use ($allocations, $committedAt, $committedByUserId, $committedByName, $dueDate) {
             foreach ($allocations as $allocation) {
                 $allocation->committed_by_user_id = $committedByUserId;
                 $allocation->committed_by_name = $committedByName;
                 $allocation->committed_at = $committedAt;
                 $allocation->save();
+
+                $pallet = $allocation->outgoingPallet;
+                if ($pallet) {
+                    $pallet->dispatched = true;
+                    $pallet->estimated_delivery_date = $dueDate;
+                    $pallet->save();
+                }
             }
         });
 

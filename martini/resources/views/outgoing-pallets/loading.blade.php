@@ -1890,6 +1890,12 @@
       }
 
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
+      const dueDate = document.getElementById("deliveryDate").value || "";
+
+      if (!dueDate) {
+        window.alert("Select a delivery date before completing the load.");
+        return;
+      }
 
       // Collect outgoing pallet IDs from allocated orders
       const outgoingPalletIds = orders
@@ -1906,7 +1912,7 @@
         const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
           method: "POST",
           headers: jsonHeaders(),
-          body: JSON.stringify({ reg, outgoingPalletIds })
+          body: JSON.stringify({ reg, outgoingPalletIds, dueDate })
         });
         if (!response.ok) {
           const errorText = await response.text();
