@@ -911,7 +911,6 @@
           ["Type", overview.palletType || ""],
           ["Temperature", overview.temperature || ""],
           ["Total Weight", `${Number(overview.totalWeightKg || 0)} kg`],
-          ["Total items", `${Number(overview.totalItems || 0)}`],
           ["Content Summary", modalContentSummary || "No cut/picksheet summary available."],
           ["PickWeightOuts", `${Number(overview.pickWeightOutCount || 0)}`],
         ];

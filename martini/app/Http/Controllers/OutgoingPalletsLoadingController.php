@@ -89,28 +89,6 @@ class OutgoingPalletsLoadingController extends Controller
         return $lines;
     }
 
-    private function getPalletOverallItemCount(OutgoingPallet $pallet): int
-    {
-        $pallet->loadMissing('pickWeightOuts.pickWeightOut');
-
-        $totalCount = 0;
-        foreach ($pallet->pickWeightOuts as $link) {
-            $pickWeightOut = $link->pickWeightOut;
-            if (!$pickWeightOut) {
-                continue;
-            }
-
-            foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
-                $quantity = (int) ($cutLine['quantity'] ?? 0);
-                if ($quantity > 0) {
-                    $totalCount += $quantity;
-                }
-            }
-        }
-
-        return $totalCount;
-    }
-
     public function view()
     {
         return view('outgoing-pallets.loading');
@@ -351,12 +329,7 @@ class OutgoingPalletsLoadingController extends Controller
                 return response()->json(['orders' => []]);
         }
 
-        $pallets = OutgoingPallet::with('pickWeightOuts.pickWeightOut', 'customer', 'outgoingPalletType')
-            ->where(function ($query) use ($dueDate) {
-                $query->where('estimated_delivery_date', $dueDate)
-                    ->orWhereNull('estimated_delivery_date');
-            })
-            ->get();
+        $pallets = OutgoingPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
         $allocations = VehicleOutgoingPalletAllocation::with('vehicle')
             ->get()
@@ -381,13 +354,7 @@ class OutgoingPalletsLoadingController extends Controller
                 continue;
             }
 
-            $contentsSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
-            $overallItemCount = $this->getPalletOverallItemCount($pallet);
-            $contentsPreviewLines = $contentsSummaryLines;
-            if ($overallItemCount > 0) {
-                $contentsPreviewLines[] = 'Total items: ' . $overallItemCount;
-            }
-            $contentsPreview = implode("\n", $contentsPreviewLines);
+            $contentsPreview = implode("\n", $this->getPicksheetCutSummaryLines($pallet));
 
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
@@ -509,7 +476,6 @@ class OutgoingPalletsLoadingController extends Controller
         $pickWeightOutIds = $pickLinks->pluck('pickWeightOut_id')->map(fn ($id) => (int) $id)->filter()->values()->all();
         $picksheetIds = $this->getPicksheetIdsForPallet($pallet);
         $contentSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
-        $totalItems = $this->getPalletOverallItemCount($pallet);
 
         $cutTotals = [];
         foreach ($pickLinks as $link) {
@@ -548,7 +514,6 @@ class OutgoingPalletsLoadingController extends Controller
                 'palletType' => $pallet->outgoingPalletType->name ?? '',
                 'temperature' => $pallet->getTemperatureCategory() ?? '',
                 'totalWeightKg' => (int) ($pallet->getTotalWeight() ?? 0),
-                'totalItems' => $totalItems,
                 'pickWeightOutCount' => count($pickWeightOutIds),
                 'pickWeightOutIds' => $pickWeightOutIds,
                 'picksheetIds' => $picksheetIds,
@@ -691,10 +656,7 @@ class OutgoingPalletsLoadingController extends Controller
 
         if ($dueDate !== '') {
             $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
-                $q->where(function ($dateQuery) use ($dueDate) {
-                    $dateQuery->where('estimated_delivery_date', $dueDate)
-                        ->orWhereNull('estimated_delivery_date');
-                });
+                $q->where('estimated_delivery_date', $dueDate);
             });
         }
 
@@ -725,11 +687,7 @@ class OutgoingPalletsLoadingController extends Controller
 
             $weightKg = (int) ($pallet->getTotalWeight() ?? 0);
             $deliveryNoteNumber = implode('-', $this->getPicksheetIdsForPallet($pallet));
-            $contentsSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
-            $overallItemCount = $this->getPalletOverallItemCount($pallet);
-            $contentsPreviewLines = $contentsSummaryLines;
-            $contentsPreviewLines[] = 'Total items: ' . $overallItemCount;
-            $contentsPreview = implode("\n", $contentsPreviewLines);
+            $contentsPreview = implode("\n", $this->getPicksheetCutSummaryLines($pallet));
 
             $loadRows[] = [
                 'row' => $row,
