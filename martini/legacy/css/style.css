@@ -4,20 +4,20 @@
 }
 
 *{
-
+    
     color-adjust: exact;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 
-}
-.flex{ display:flex; }
+} 
+.flex{ display:flex; } 
 .space-between{ justify-content: space-between; }
 .space-evenly { justify-content: space-evenly; }
 .v-center{ align-items:center; }
 html {height: 100%;margin: 0;padding: 0;position: relative;}
 html.int {height: 100%;}
 body {height: 100%;margin: 0;padding: 0; font-family: 'Roboto', sans-serif !important;}
-body.menu {background: #c41b1b;}
+body.menu {background: #3faddd;}
 
 
 
@@ -46,7 +46,7 @@ main h1 {
 	line-height: 40px;
 	font-weight: normal;
 	text-align: center;
-	text-transform: uppercase;
+	text-transform: uppercase; 
 }
 main h1.int {color: #fff;}
 
@@ -118,7 +118,7 @@ div#login div#remember {
 	font-family: 'OpenSans_Semibold';
 }
 div#top {
-	background: #c41b1b;
+	background: #3faddd;
 	width: 100%;
 	height: 70px;
 	margin: 0;
@@ -171,14 +171,14 @@ div#menu_wrap a {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
 	text-decoration: none;
  	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #c41b1b solid;
+	border: 1px #3faddd solid;
 	padding-left: 20px;
     box-sizing: border-box;
 	text-align:left;
@@ -187,7 +187,7 @@ span.small {
     font-size: 12px;
 }
 
-div#menu_wrap a:hover {background: #c41b1b;color: #fff;border: 1px #fff solid;}
+div#menu_wrap a:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
 
 
 /* Product */
@@ -223,7 +223,7 @@ asdf.div#product_options a {
 	padding: 0;
 	display: block;
 	float: left;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 18px;
 	line-height: 40px;
 	font-weight: normal;
@@ -324,11 +324,11 @@ div#product_list::-webkit-scrollbar-track {
 }
 /* Handle */
 div#product_list::-webkit-scrollbar-thumb {
-    background: #c41b1b;
+    background: #3faddd;
 }
 /* Handle on hover */
 div#product_list::-webkit-scrollbar-thumb:hover {
-    background: #c41b1b;
+    background: #3faddd;
 }
 
 .overview {
@@ -424,7 +424,7 @@ a.print_intake {
 }
 @font-face {
   font-family: 'OpenSans_Bold';
-  src: url('../fonts/OpenSans-Bold.ttf') format('truetype');
+  src: url('../fonts/OpenSans-Bold.ttf') format('truetype'); 
 }
 
 a.edit_row {
@@ -545,7 +545,7 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
@@ -553,11 +553,11 @@ a.delete_row {
 	text-transform: uppercase;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #c41b1b solid;
+	border: 1px #3faddd solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #c41b1b;color: #fff;border: 1px #fff solid;}
+#box form input[type="submit"]:hover, #box2 form input[type="submit"]:hover, #editBox form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
 #intakelist {
 	width: 100%;
 	max-width: 100%;
@@ -634,7 +634,7 @@ a.delete_row {
 	padding: 0;
 	display: block;
 	clear: both;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 20px;
 	line-height: 50px;
 	text-align: center;
@@ -642,11 +642,11 @@ a.delete_row {
 	text-transform: uppercase;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #c41b1b solid;
+	border: 1px #3faddd solid;
 	cursor: pointer;
 	-webkit-appearance: none;
 }
-#intakelist form input[type="submit"]:hover {background: #c41b1b;color: #fff;border: 1px #fff solid;}
+#intakelist form input[type="submit"]:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
 .intake {
 	background: #fff;
 	margin: 0 auto;
@@ -654,7 +654,7 @@ a.delete_row {
 	padding: 0 10px 0 10px;
 	display: block;
 	clear: both;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 14px;
 	line-height: 40px;
 	text-align: left;
@@ -662,11 +662,11 @@ a.delete_row {
 	text-transform: capitalize;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #c41b1b solid;
+	border: 1px #3faddd solid;
 	cursor: pointer;
 	position: relative;
 }
-.intake:hover {background: #c41b1b;color: #fff;border: 1px #fff solid;}
+.intake:hover {background: #3faddd;color: #fff;border: 1px #fff solid;}
 td.pos {position: relative;}
 a#delete_intake {
 	margin: 0;
@@ -692,20 +692,20 @@ a#delete_intake {
 	/* padding-bottom:10px; */
 	width:100%;
 	display: inline-block;
-
+	
 	position:relative;
 }
 
 .buttonsContainer{
 	/* display:block; */
 	/* float:right; */
-
+	
 	display: block;
     float: right;
     position: absolute;
     right: 0px;
     top: 0px;
-
+	
 }
 
 .buttonsContainer a i.fa{
@@ -753,7 +753,7 @@ a#delete_intake {
 	padding: 10px 8px 8px 8px;
     display: block;
     clear: both;
-    color: #c41b1b;
+    color: #3faddd;
     font-size: 14px;
     line-height: 40px;
     text-align: left;
@@ -761,7 +761,7 @@ a#delete_intake {
     text-transform: uppercase;
     font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #c41b1b solid;
+    border: 1px #3faddd solid;
     cursor: pointer;
     position: relative;
 	line-height: 22px;
@@ -786,7 +786,7 @@ a i.fa-pencil{
 
 
 .picksheetType{
-	background:#c41b1b;
+	background:#3faddd;
 	padding:8px;
 	margin-top:10px;
 	color:#fff;
@@ -823,7 +823,7 @@ a#delete_intake {
 }
 
 
-#best_by, #best_by2, #best_by3,#kill_date,#best_by_range_extension{
+#best_by, #best_by2, #best_by3{
 	display:inline-block !important;
 	width:calc(100% - 98px) !important;
 	margin-right:0px !important;
@@ -843,7 +843,7 @@ a#delete_intake {
 }
 
 .loadPalletBtn{
-	background:#c41b1b;
+	background:#3faddd;
     display: inline-block;
     margin: 0 auto;
     padding: 10px;
@@ -861,7 +861,7 @@ a#delete_intake {
 	top:220px;
 	left:calc(50% - 150px);
 	padding:35px;
-	background:#c41b1b;
+	background:#3faddd;
 	text-align:center;
 	color:#fff;
 	font-weight:700;
@@ -907,7 +907,7 @@ a#delete_intake {
 	position:absolute;
 	top:0px;
 	left:0px;
-	background:#c41b1b;
+	background:#3faddd;
 	z-index:1000;
 	padding:10px;
 }
@@ -989,14 +989,14 @@ select.producttext{
 }
 
 .bluebtn{
-	background: #c41b1b !important;
+	background: #3faddd !important;
     border: 0px !important;
     padding: 15px !important;
     color: #fff !important;
 }
 
 .viewpurchase{
-	background: #c41b1b !important;
+	background: #3faddd !important;
     border: 0px !important;
     position: absolute;
     padding: 10px !important;
@@ -1007,12 +1007,12 @@ select.producttext{
 
 .calendar_blank_box, .calendar_head_box, .calendar_box{
 	height:100px;
-	width:500px;
+	width:130px;
 	text-align:center !important;
 	color:#333;
 }
 
-.calendar_head_box { background:#c41b1b; height:40px; color:#fff; border:1px solid #c41b1b; }
+.calendar_head_box { background:#3faddd; height:40px; color:#fff; border:1px solid #3faddd; }
 .calendar_blank_box { background:#ddd; border:1px solid #a1a1a1; }
 .calendar_box { background:#ddd; border:1px solid #a1a1a1;}
 
@@ -1026,12 +1026,12 @@ select.producttext{
 }
 
 .calendar_box.event_here span{
-	background: #c41b1b;
+	background: #3faddd;
     padding: 15px;
     border-radius: 100%;
     color: #fff;
 	cursor:pointer;
-
+	
 	width: 20px;
     height: 20px;
     display: inline-block;
@@ -1048,7 +1048,7 @@ select.producttext{
 	cursor:pointer;
 	text-decoration:none;
 	font-weight:700;
-	color:#c41b1b;
+	color:#3faddd;
 	font-size:22px;
 }
 
@@ -1090,7 +1090,7 @@ select.producttext{
 
 .deliveryBox a.btn{
 	margin-right: 10px;
-    background: #c41b1b;
+    background: #3faddd;
     padding: 10px;
     font-size: 14px;
     color: #fff;
@@ -1131,10 +1131,10 @@ span.add-on{
 .intakeNotes{
 	min-width:425px;
 	min-height:80px;
-
+	
 	width:425px;
 	height:80px;
-
+	
 	max-width:425px;
 	max-height:120px;
 }
@@ -1181,12 +1181,12 @@ span.add-on{
 	border:2px solid #cacaca;
 	box-sizing:border-box;
 	cursor:pointer;
-	margin:5px;
+	margin:5px; 
 	text-align:center;
 	height: 30px;
 }
-
-.activeWeight { background:#c41b1b !important; color:#fff !important}
+	
+.activeWeight { background:#3faddd !important; color:#fff !important}
 .weightbox:hover{ background:#cacaca; }
 
 .backbtn{
@@ -1238,7 +1238,7 @@ span.add-on{
 	position: absolute;
 	right: 4px;
 	top: -9px;
-	background: #c41b1b;
+	background: #3FADDD;
 	height: 36px;
 	width: 37px;
 	text-align: center;
@@ -1342,7 +1342,7 @@ span.add-on{
     padding: 5px;
     border-radius: 4px;
 	background:#f1c40f;
-
+	
 	margin-top:5px;
 	margin-bottom:5px;
 	text-align:center;
@@ -1412,7 +1412,7 @@ span.add-on{
     width: 410px;
     margin: 12px;
     text-align: center;
-    background: #c41b1b;
+    background: #3faddd;
     color: #fff;
 	cursor:pointer;
 }
@@ -1457,7 +1457,7 @@ span.add-on{
 .returnStockBtn{
     width: 160px;
     height: 40px;
-    background: #c41b1b;
+    background: #3faddd;
     line-height: 40px;
     text-align: center;
     margin: 20px;
@@ -1569,7 +1569,7 @@ span.add-on{
 	background-color:#ffa50017;
 	width:100%;
  	margin-bottom:13px;
-
+	
 	display:flex;
 	justify-content:space-between;
 	align-items:center;
@@ -1607,7 +1607,7 @@ span.add-on{
 #print .payvalue{
 	width: 150px;
     display: inline-block;
-    text-align: right;
+    text-align: right;	
 }
 
 #print .bankcircle{
@@ -1720,7 +1720,7 @@ span.add-on{
 	font-size:18px;
 }
 
-#print .po{
+#print .po{ 
 	text-align:right;
 	font-size:13px;
 	color:#8c8c8c;
@@ -1737,7 +1737,7 @@ span.add-on{
 	display: flex;
     justify-content: space-between;
     width: 145px;
-    align-items: flex-end;
+    align-items: flex-end;	
 }
 
 #print .footerlogo img.one{
@@ -1814,16 +1814,16 @@ td span.chilled{
 .menuItem{
     width: 100%;
     background: white;
-
+   
     line-height: 50px;
     height: 50px;
     margin-bottom: 10px;
-    color: #c41b1b;
+    color: #3faddd;
     font-size: 14px;
     text-transform: capitalize;
     font-family: 'OpenSans_Semibold';
     transition: all .15s ease-in-out;
-    border: 1px #c41b1b solid;
+    border: 1px #3faddd solid;
     cursor: pointer;
     position: relative;
     text-align:center;
@@ -1838,7 +1838,7 @@ td span.chilled{
 
 .menuItem a.icon{
     font-size:22px;
-    color: #c41b1b;
+    color: #3faddd;
 
     margin-left:50px;
 }
@@ -1863,7 +1863,7 @@ td span.chilled{
 }
 
 .sendcontainer .active.sel{
-
+    
 }
 
 .fa.fa-check{
@@ -1871,7 +1871,7 @@ td span.chilled{
 }
 
 .completedby-tag{
-    background: #c41b1b;
+    background: #3faddd;
     padding: 8px 20px;
     border-radius: 20px;
     color: #fff;
@@ -1888,18 +1888,18 @@ td span.chilled{
     display: block;
     padding: 10px;
     margin-right: 12px;
-    color: #c41b1b;
+    color: #3faddd;
     font-weight: bold;
 }
 
 
-@page
-{
-    size: auto;   /* auto is the initial value */
+@page  
+{ 
+    size: auto;   /* auto is the initial value */ 
 
-    /* this affects the margin in the printer settings */
-    margin: 10mm 10mm 10mm 10mm;
-}
+    /* this affects the margin in the printer settings */ 
+    margin: 10mm 10mm 10mm 10mm;  
+} 
 
 .form-control {
   width: 100%;
@@ -1965,7 +1965,7 @@ textarea {
 	text-decoration: none;
 	padding:0px 10px;
 }
-
+ 
 
 .searchAccordTitle.locked{
 	opacity:0.7;
@@ -1987,7 +1987,7 @@ textarea {
 	padding-right:10px;
 }
 
-
+ 
 .customer_info{
 	display:flex;
 	justify-content: space-between;
@@ -2030,7 +2030,7 @@ textarea {
 .loadMoreBtn{
 	width:100%;
 	background:#fff;
-	color: #c41b1b;
+	color: #3faddd;
 	text-align:center;
 	cursor:pointer;
 	font-size:18px;
@@ -2040,7 +2040,7 @@ textarea {
 }
 
 .soa_cr_label{
-	background: #c41b1b;
+	background: #3faddd;
     display: inline-block;
     color: #fff;
     border-radius: 100%;
@@ -2052,11 +2052,11 @@ textarea {
     margin-left: 4px;
 }
 .sticky-header{
-	position: sticky;
+	position: sticky; 
 	background: #e2e2e2;
 }
 .sticky-footer{
-	position: sticky;
+	position: sticky; 
 	background: #e2e2e2;
 }
 .mail-selector{
@@ -2066,7 +2066,7 @@ textarea {
 	padding: 0 10px 0 10px;
 	display: block;
 	clear: both;
-	color: #c41b1b;
+	color: #3faddd;
 	font-size: 14px;
 	line-height: 40px;
 	text-align: left;
@@ -2074,12 +2074,12 @@ textarea {
 	text-transform: capitalize;
 	font-family: 'OpenSans_Semibold';
 	transition: all .15s ease-in-out;
-	border: 1px #c41b1b solid;
+	border: 1px #3faddd solid;
 	cursor: pointer;
 	position: relative;
 }
 .custom-warning-box{
-	width: 100%;
-	padding: 15px;
+	width: 100%; 
+	padding: 15px; 
 	border-radius: 15px;
 }
