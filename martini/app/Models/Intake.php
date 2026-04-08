@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
  * @property string|null $user_id
  * @property string|null $product_temperature
  * @property string|null $vehicle_temperature
- * @property string|null $date_received
+ * @property Carbon|null $date_received
  * @property string|null $security_id
  * @property string|null $notes
  * @property Carbon|null $date_paid
