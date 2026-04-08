@@ -51,7 +51,7 @@ Route::get('/', function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(function () {
 
     Route::get('/dashboard', function () {
         return redirect()->intended(RouteServiceProvider::HOME);

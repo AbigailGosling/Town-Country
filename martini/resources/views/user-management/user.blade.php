@@ -59,6 +59,12 @@
                     <x-input-label for="hidden" value="User Hidden"/>
                 </div>
                 @can('admin', Auth::user())
+                    <div class="mt-4" for="use_two_factor" style="display: flex; padding-bottom: 1em;">
+                        <input type="checkbox" id="use_two_factor" name="use_two_factor"
+                               @if ($user->use_two_factor) checked @endif />
+                        <div style="width: 1em;" @if ($user->id == Auth::id()) disabled @endif></div>
+                        <x-input-label for="use_two_factor" value="Use Two Factor Authentication"/>
+                    </div>
                     <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
                         <input type="checkbox" id="disabled" name="disabled"
                                @if ($user->disabled) checked @endif />

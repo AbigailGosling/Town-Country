@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Notifications\TwoFactorCode;
 use App\Providers\RouteServiceProvider;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,13 +30,24 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         $request->authenticate();
-        if (Auth::user()) 
-        {         
-            $request->session()->regenerate();
-            session_start();
-            $_SESSION['USER'] = Auth::user()->id;
-            session_write_close();
-            return redirect()->intended(RouteServiceProvider::HOME);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if ($user && $user->disabled == 0)
+        {
+            if ($user->use_two_factor == 0)
+            {
+                $request->session()->regenerate();
+                session_start();
+                $_SESSION['USER'] = $user->id;
+                session_write_close();
+                return redirect()->intended(RouteServiceProvider::HOME);
+            }
+            else
+            {
+                $user->generateTwoFactorCode();
+                $user->notify(new TwoFactorCode());
+                return redirect()->route('verify.index');
+            }
         }
         else
         {
