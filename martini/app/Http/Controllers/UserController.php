@@ -116,9 +116,16 @@ class UserController extends Controller
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        if ($request->has('actual_email') && !empty($request->input('actual_email'))) {
+            $status = Password::sendResetLink(
+                $request->only('actual_email')
+            );
+        }
+        else {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
+        }
         return redirect()->route('users.show',['user'=>$user]);
     }
 
@@ -204,6 +211,7 @@ class UserController extends Controller
         $user->actual_email = $input['actual_email'] ?? "";
         $user->disabled = array_key_exists("disabled", $input);
         $user->is_hidden = array_key_exists("hidden", $input);
+        $user->use_two_factor = array_key_exists("use_two_factor", $input);
         $user->override_saledate_check = array_key_exists("override_saledate_check", $input);
 
         if (isset($input['perms']) && is_array($input['perms']) && count($input['perms']) > 0) {

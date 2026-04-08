@@ -8,17 +8,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use Exception;
-use Illuminate\Auth\Access\Response;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * Class User
@@ -28,6 +27,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property bool $use_two_factor
+ * @property string|null $two_factor_secret
+ * @property string|null $two_factor_recovery_codes
+ * @property Carbon|null $two_factor_confirmed_at
+ * @property Carbon|null $two_factor_expires_at
  * @property bool $disabled
  * @property string|null $remember_token
  * @property Carbon|null $created_at
@@ -53,7 +57,13 @@ class User extends Authenticatable
         'email',
         'password',
         'disabled',
-        'is_hidden'
+        'is_hidden',
+        'use_two_factor',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'two_factor_expires_at',
+        'actual_email',
     ];
 
     /**
@@ -78,9 +88,32 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'disabled' => 'bool',
-        'is_hidden' => 'bool'
+        'is_hidden' => 'bool',
+        'use_two_factor' => 'bool',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_expires_at' => 'datetime',
     ];
-
+    public function generateTwoFactorCode()
+    {
+        $this->timestamps = false;
+        $this->two_factor_secret = strtoupper(Str::random(5));
+        $this->two_factor_expires_at = now()->addMinutes(10);
+        $this->save();
+    }
+    public function resetTwoFactorCode()
+    {
+        $this->timestamps = false;
+        $this->two_factor_secret = null;
+        $this->two_factor_expires_at = null;
+        $this->save();
+    }
+    public function routeNotificationForMail(){
+        $email = "";
+        if ($this->actual_email && filter_var($this->actual_email, FILTER_VALIDATE_EMAIL)) $email = $this->actual_email;
+        else $email = $this->email;
+        Log::debug("Routing email notification for user ".$this->id." to email ".$email);
+        return $email;
+    }
     public function permissions()
     {
         return $this->belongsToMany(Permission::class,'user_permission');

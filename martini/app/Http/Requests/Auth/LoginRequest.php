@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\Intake;
+use App\Notifications\TwoFactorCode;
+
 class LoginRequest extends FormRequest
 {
     /**

@@ -18,6 +18,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShortPickReportController;
 use App\Http\Controllers\ShortStockController;
+use App\Http\Controllers\ReturnedStockReportController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
 use App\Http\Controllers\OutgoingPalletController;
@@ -51,7 +52,7 @@ Route::get('/', function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(function () {
 
     Route::get('/dashboard', function () {
         return redirect()->intended(RouteServiceProvider::HOME);
@@ -128,6 +129,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
     Route::get('/shortpick', [ShortPickReportController::class, 'index'])->name('shortpick.index');
+
+    Route::get('/returnedstock', [ReturnedStockReportController::class, 'index'])->name('returnedstock.index');
+    Route::get('/returnedstock/download', [ReturnedStockReportController::class, 'download'])->name('returnedstock.download');
 
     Route::get('/outgoing-pallets', [OutgoingPalletController::class, 'index'])->name('outgoing-pallets.index');
     Route::get('/outgoing-pallets/details', [OutgoingPalletController::class, 'details'])->name('outgoing-pallets.details');
