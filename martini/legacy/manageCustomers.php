@@ -135,14 +135,17 @@ use Illuminate\Support\Facades\Log;
 					foreach ($cas as $i=>$ca)
 					{
 						if (($ca->address_id == null && $i>0) || ($ca->address_id > 1 && $ca->address_1==""))$style1 = "display:none;";
-                        $u = $i + 1;
+                        if ($i == 0) {
+                            $u = 0;
+                        }
+                        $u = $ca->address_id ?? $u + 1;
 				?>
 				<tr style="vertical-align: top;">
-					<td class="label"><label>Delivery Address <?php echo $ca->address_id ?? $u; ?></label></td>
+					<td class="label"><label>Delivery Address <?php echo $u; ?></label></td>
 					<td>
-						<input type="text" class="input" id="address<?php echo $ca->address_id ?? $u; ?>" name="address_1[]" value="<?php echo $ca->address_1; ?>">
-                        <input type="hidden" name="address_id[]" value="<?php echo $ca->address_id ?? $u; ?>">
-						<div style="<?php echo $style1; ?>" id="address<?php echo $ca->address_id ?? $u; ?>container">
+						<input type="text" class="input" id="address<?php echo $u; ?>" name="address_1[]" value="<?php echo $ca->address_1; ?>">
+                        <input type="hidden" name="address_id[]" value="<?php echo $u; ?>">
+						<div style="<?php echo $style1; ?>" id="address<?php echo $u; ?>container">
  							<input type="text" class="input" name="address_2[]" value="<?php echo $ca->address_2; ?>"><br/>
 							<input type="text" class="input" name="address_3[]" value="<?php echo $ca->address_3; ?>"><br/>
 							<input type="text" class="input" name="address_4[]" value="<?php echo $ca->address_4; ?>">

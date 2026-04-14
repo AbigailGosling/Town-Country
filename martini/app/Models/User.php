@@ -111,7 +111,6 @@ class User extends Authenticatable
         $email = "";
         if ($this->actual_email && filter_var($this->actual_email, FILTER_VALIDATE_EMAIL)) $email = $this->actual_email;
         else $email = $this->email;
-        Log::debug("Routing email notification for user ".$this->id." to email ".$email);
         return $email;
     }
     public function permissions()
