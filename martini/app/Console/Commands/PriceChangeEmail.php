@@ -40,6 +40,11 @@ class PriceChangeEmail extends Command
         $cacheKey = $this->argument('cacheKey');
         /** @var Product[] $cacheArray */
         $cacheArray = InternalCache::get($cacheKey);
+        if ($cacheArray == null)
+        {
+            InternalCache::forget($cacheKey);
+            return Command::SUCCESS;
+        }
         /** @var User $user */
         $user = User::find(array_shift($cacheArray));
         /** @var Intake $intake */
@@ -67,8 +72,8 @@ class PriceChangeEmail extends Command
         }
         if ($tableBody != "") {
             $emailBody = "<p>The following price changes were made to the Intake {$intake->id} by {$user->name}:</p><table border='1' cellpadding='5' cellspacing='0'><thead><tr><th>Product Name</th><th>Change Type</th><th>Old Value</th><th>New Value</th></tr></thead><tbody>{$tableBody}</tbody></table>";
-            //$u = ['Hannah.Hodgkins@townandcountrymeats.co.uk','Tarsem@townandcountrymeats.co.uk','Bridget@townandcountrymeats.co.uk'];
-            $u = ['abigail.gosling@tang.solutions'];
+            $u = ['Hannah.Hodgkins@townandcountrymeats.co.uk','Tarsem@townandcountrymeats.co.uk','Bridget@townandcountrymeats.co.uk'];
+            //$u = ['abigail.gosling@tang.solutions'];
             SLabsEmailer::send_email(-1,SLabsEmailerType::PrceChnge,$u,"Price Change: Intake {$intake->id}","<html><body>{$emailBody}</body></html>");
         }
         InternalCache::forget($cacheKey);
