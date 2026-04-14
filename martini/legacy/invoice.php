@@ -297,7 +297,7 @@ use App\Models\ClientType;
 
                 while($outpallet = mysqli_fetch_array($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
-
+                    if (count($weightids)==0) continue;
                     $productIDArray = array();
 
                     foreach($weightids as $weightid){
@@ -311,6 +311,7 @@ use App\Models\ClientType;
 
                         $queryBits .= ' id = ' . $weightid . ' || ';
                     }
+                    if (count($productIDArray)==0) continue;
                     foreach($productIDArray as $productID){
                          $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);

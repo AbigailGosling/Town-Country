@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 $showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
-ini_set('memory_limit', '1G');
+ini_set('memory_limit', '2G');
 $timeStamp = microtime(true);
 $cutgroup_id = request()->input('cutgroup_id');
 $species_id = request()->input('species');
@@ -179,8 +179,10 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $products = [];
     $knownCombo = [];
     $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
+    $minIntake= min($intakeIDsToCheck);
+    $maxIntake= max($intakeIDsToCheck);
     if (count($products2) > 0 && count($intakeIDsToCheck) > 0)
-        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".min($intakeIDsToCheck)." AND ".max($intakeIDsToCheck)." AND (`approved` = 1 OR `container_id` IS NULL)")->fetch_all(MYSQLI_ASSOC),"id");
+        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".$minIntake." AND ".$maxIntake." AND (`approved` = 1 OR `container_id` IS NULL)")->fetch_all(MYSQLI_ASSOC),"id");
         foreach ($products2 as $productRow)
         {
             if (!in_array($productRow['intake_id'],$intakeIDsToCheck)) continue;

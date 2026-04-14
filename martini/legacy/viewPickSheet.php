@@ -15,12 +15,12 @@ use Illuminate\Support\Str;
 	$x = "SELECT * FROM `pickerSheets` WHERE id =?";
 	$y = prepareExecuteQuery($x,'i',[$picksheetid]);
 
-	$pickerSheet = mysqli_fetch_array($y);
+	$pickerSheet = mysqli_fetch_assoc($y);
     if($pickerSheet['addressid'] == ''){ $pickerSheet['addressid'] = 1; }
 	if ($pickerSheet['is_return_to_supplier']==0)
     {
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE id=?",'i',[$pickerSheet['customer_id']]);
-        $customer = mysqli_fetch_array($customerResult);
+        $customer = mysqli_fetch_assoc($customerResult);
 
         $recieverName = $customer['businessname'];
         $recieverTA = 't/a '.$customer['tradingas'];
@@ -33,7 +33,7 @@ use Illuminate\Support\Str;
     else
     {
         $customerResult = prepareExecuteQuery("SELECT * FROM `supplier` WHERE id=?",'i',[$pickerSheet['customer_id']]);
-        $customer = mysqli_fetch_array($customerResult);
+        $customer = mysqli_fetch_assoc($customerResult);
 
         $recieverName = $customer['name'];
         $recieverTA = "";
@@ -195,17 +195,17 @@ use Illuminate\Support\Str;
 		$x = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? GROUP BY product_id";
 		$y = prepareExecuteQuery($x,'i',[$picksheetid]);
 
-		$productids = '';
+		$productids = [];
 
-		while($row = mysqli_fetch_array($y)){ $productids .= '(id = ' . $row['product_id'] . ' && cooling_id IN ('. $type_value .')) ||'; }
-		$productids = rtrim($productids," ||");
-		if($productids == '') return;
+		while($row = mysqli_fetch_assoc($y)){ $productids[]=$row['product_id']; }
+
+		if(count($productids) == 0) return;
 		##########################
 
-		$productsQuery = "SELECT * FROM `product` WHERE $productids";
+		$productsQuery = "SELECT * FROM `product` WHERE `cooling_id` IN (".$type_value.") AND `id` IN (".implode(",",$productids).")";
 		$productsResult = prepareExecuteQuery($productsQuery);
 
-		while($product = mysqli_fetch_array($productsResult)){
+		while($product = mysqli_fetch_assoc($productsResult)){
 		$palletID = $product['pallet_id'];
 
 		$productID = $product['id'];
@@ -215,11 +215,11 @@ use Illuminate\Support\Str;
 		# PALLET START
 		$xPallet = "SELECT * FROM `pallet` WHERE id=? LIMIT 1";
 		$yPallet = prepareExecuteQuery($xPallet,'i',[$palletID]);
-		$pallet = mysqli_fetch_array($yPallet);
+		$pallet = mysqli_fetch_assoc($yPallet);
 		# PALLET END
 
 		$pickerItemsResult = prepareExecuteQuery("SELECT id,target_weight FROM `pickerItems` WHERE pickersheet_id=? && product_id=?",'ii',[$picksheetid,$productID]);
-		$pickerItemsData = mysqli_fetch_array($pickerItemsResult);
+		$pickerItemsData = mysqli_fetch_assoc($pickerItemsResult);
 
 		$target_weight = $pickerItemsData['target_weight'];
 		$numRequired = mysqli_num_rows($pickerItemsResult);
@@ -287,7 +287,7 @@ use Illuminate\Support\Str;
 						$w1 = "SELECT * FROM `weights` WHERE product_id=?";
 						$w2 = prepareExecuteQuery($w1,'i',[$thisproductid]);
 
-						$thisweight = mysqli_fetch_array($w2);
+						$thisweight = mysqli_fetch_assoc($w2);
 					?>
 						<input type="text" name="dolavs[]" value="<?php echo $thisweight['id']; ?>" style="display:none;">
 						<div style="padding:10px;"><input type="number" name="dolav_<?php echo $thisweight['id']; ?>"><span> / <?php echo $product['akg']; ?></span></div>
@@ -304,14 +304,14 @@ use Illuminate\Support\Str;
 
 					$count=0;
 
-					while($weights = mysqli_fetch_array($weightsResult)){
+					while($weights = mysqli_fetch_assoc($weightsResult)){
 						$count++;
 
 						$weightgross = $weights['weight_gross'];
 
 						// $weightsQuery2 = "SELECT id FROM `weights` WHERE product_id='$productID' && weight_gross='$weightgross'";
 						// $weightsResult2 = prepareExecuteQuery($mysqli, $weightsQuery2);
-						// $weightsRow = mysqli_fetch_array($weightsResult2);
+						// $weightsRow = mysqli_fetch_assoc($weightsResult2);
 						// $ccount = mysqli_num_rows($weightsResult2);
 
 
@@ -402,7 +402,7 @@ use Illuminate\Support\Str;
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
 
-                while($outpallet = mysqli_fetch_array($outpalletResult2)){
+                while($outpallet = mysqli_fetch_assoc($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
                     ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['outgoing_pallet_id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
 
@@ -411,7 +411,7 @@ use Illuminate\Support\Str;
                     foreach($weightids as $weightid){
                         $x = "SELECT * FROM `weights` WHERE id=?";
                         $y = prepareExecuteQuery($x,'i',[$weightid]);
-                        $weight = mysqli_fetch_array($y);
+                        $weight = mysqli_fetch_assoc($y);
 
                         if(!in_array($weight['product_id'], $productIDArray)){
                             array_push($productIDArray, $weight['product_id']);
@@ -424,7 +424,7 @@ use Illuminate\Support\Str;
 
                         $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);
-                        $product = mysqli_fetch_array($y1);
+                        $product = mysqli_fetch_assoc($y1);
 
 
                         if($product['unit'] == 'PPC'){
@@ -458,7 +458,7 @@ use Illuminate\Support\Str;
                         <?php
                         $k = 0;
 
-                        while($weight = mysqli_fetch_array($y2)){
+                        while($weight = mysqli_fetch_assoc($y2)){
 
                             if($weight['weight_tear'] == $weight['weight_gross']){
                                 (double)$w = (double)$weight['weight_gross'];

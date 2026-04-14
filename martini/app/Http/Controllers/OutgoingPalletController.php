@@ -10,6 +10,7 @@ use App\Models\OutgoingPalletPickWeight;
 use App\Models\OutgoingPalletType;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
+use App\Models\VehicleOutgoingPalletAllocation;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -220,8 +221,12 @@ class OutgoingPalletController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $pallet = OutgoingPallet::findOrFail($id);
+        if ($pallet->dispatched == 1) return response()->json(['error' => 'Cannot Delete Pallet after dispatch']);
+        foreach (VehicleOutgoingPalletAllocation::where("outgoing_pallet_id",$pallet)->get() as $vopa)
+        {
+            $vopa->delete();
+        }
         $pallet->delete();
-
         return response()->json(['message' => 'Outgoing pallet deleted successfully']);
     }
     public function createPallet(Request $request): JsonResponse

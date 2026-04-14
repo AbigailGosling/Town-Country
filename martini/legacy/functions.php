@@ -78,8 +78,16 @@ use Ramsey\Uuid\Type\Decimal;
 		$res = null;
 		try
 		{
-            if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
-            $stmt = $knownStatements[$sql."_".$varTypes];
+            if ($store)
+            {
+                if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
+                $stmt = $knownStatements[$sql."_".$varTypes];
+            }
+            else
+            {
+                $stmt = $mysqli->prepare($sql);
+            }
+
 			if ($varTypes != null && $vars != null) $stmt->bind_param($varTypes,...$vars);
 			$s = time();
 			$d = date('Y-m-d H:i:s');
@@ -1674,7 +1682,7 @@ use Ramsey\Uuid\Type\Decimal;
 		global $mysqli;
 
 		$price = 0;
-		$creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id =?",'i',[$invoice_payment_id]);
+		$creditNoteResult = prepareExecuteQuery("SELECT product_id,price,quantity FROM `credit_note_items` WHERE payment_id =?",'i',[$invoice_payment_id]);
 
 		while($creditNoteItem = $creditNoteResult->fetch_assoc()){
 			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product

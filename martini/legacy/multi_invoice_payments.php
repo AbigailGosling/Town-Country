@@ -40,12 +40,21 @@ $customer = getCustomer($customerID);
                     <label for="invoices">Select Invoices</label>
                     <select class="form-control" id="invoices" name="invoices">
                         <?php
-                        $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id",'i',[$customerID]);
-
+                        $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid, GROUP_CONCAT(invoice_payments.id) as payment_ids FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.is_return_to_supplier = 0 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id",'i',[$customerID]);
+                        ini_set('memory_limit',($customerPicksheets->num_rows*0.125)."M");
                         while ($picksheet = mysqli_fetch_array($customerPicksheets)) {
                             $this_price = invoiceTotal($picksheet['id']);
+                            $creditVal = 0;
+                            if ($picksheet['payment_ids']!="")
+                            {
+                                $pickSheetCredits = prepareExecuteQuery("SELECT payment_id FROM credit_note_items WHERE payment_id IN (".$picksheet['payment_ids'].")");
+                                while ($credit = $pickSheetCredits->fetch_assoc())
+                                {
+                                    $creditVal = $creditVal + creditNoteTotal($credit['payment_id']);
+                                }
+                            }
                             $epsilon = 0.00001;
-                            if(($this_price - $picksheet['paid']) > $epsilon){
+                            if(($this_price - ($picksheet['paid'] + $creditVal)) > $epsilon){
                                 echo '<option id="' . $picksheet['id'] . '" data-tot-val="' . $this_price . '" value="' . $picksheet['id'] . '">' . $picksheet['id'] . '</option>';
                             }
                         }
