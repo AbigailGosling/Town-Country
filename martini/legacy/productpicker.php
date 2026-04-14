@@ -1,5 +1,6 @@
 <?php
 use App\Models\Permission;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Str;
 include('includes/frontHeader.php');
@@ -694,23 +695,18 @@ function cancelSale()
                     lowestPrice = tPrice;
                 }
             });
-            var targetCost;
-            if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
-                console.log("Using RRP3", rrp3);
-                targetCost = rrp3;
-            }
-            else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
-                console.log("Using RRP2", rrp2);
-                targetCost = rrp2;
-            }
-            else if (isNumActuallyNum(rrp1) && count < 11){
-                console.log("Using RRP1", rrp1);
-                targetCost = rrp1;
-            }
-            else {
-                console.log("Using Cost", cost);
-                targetCost = cost;
-                strict = false;
+            var targetCost = cost;
+            strict = false;
+            if(GLOBAL_RRP_FUNCTION == 1){
+                if (isNumActuallyNum(rrp3) && (count >= 35 || isGT == true)){
+                    targetCost = rrp3;
+                }
+                else if (isNumActuallyNum(rrp2) && count >= 11 && count < 35){
+                    targetCost = rrp2;
+                }
+                else if (isNumActuallyNum(rrp1) && count < 11){
+                    targetCost = rrp1;
+                }
             }
             doneOnce = true;
             var showRed = false;
@@ -948,6 +944,9 @@ function cancelSale()
 		}
 		return (allPass && checkNextDayCutoff(siteid));
 	}
+    const GLOBAL_RRP_FUNCTION = <?php echo SystemSetting::where('key_name','RRP_FUNCTION_ENABLED')->first()->key_value; ?>;
+    const GLOBAL_CREDIT_CHECK = <?php echo SystemSetting::where('key_name','CREDIT_CHECK_FUNCTION_ENABLED')->first()->key_value; ?>;
+    const GLOBAL_DELIVERY_DAY = <?php echo SystemSetting::where('key_name','DELIVERY_DAY_FUNCTION_ENABLED')->first()->key_value; ?>;
     const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
     const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
     function checkNextDayCutoff(siteid) {
