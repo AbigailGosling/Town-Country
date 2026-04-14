@@ -7,12 +7,11 @@
 	require('config.php');
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 
-use App\Models\User;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+    use App\Models\User;
+    use Carbon\Carbon;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Log;
 	use Illuminate\Support\Facades\File;
-use Ramsey\Uuid\Type\Decimal;
 	global $mysqli;
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName);
 
@@ -1959,6 +1958,30 @@ use Ramsey\Uuid\Type\Decimal;
 		}
 		return ($lastUpdated)?DateTime::createFromFormat("U",$lastUpdated)->format('Y-m-d H:i:s'):'';
 	}
+    function didProductMeetRRP($product_id,$sellPrice,$qty):bool
+    {
+        $prod = prepareExecuteQuery("SELECT `rrp1`,`rrp2`,`rrp3` FROM `product` WHERE `id` = ?",'i',[$product_id])->fetch_assoc();
+        $rrp1 = $prod['rrp1'];
+        $rrp2 = $prod['rrp2'];
+        $rrp3 = $prod['rrp3'];
+        $targetCost = null;
+        if ($rrp3 && $qty >= 35){// || $isGT == true
+            $targetCost = $rrp3;
+        }
+        else if ($rrp2 && $qty >= 11 && $qty < 35){
+            $targetCost = $rrp2;
+        }
+        else if ($rrp1 && $qty < 11){
+            $targetCost = $rrp1;
+        }
+        if ($targetCost == null) {
+            return true;
+        }
+        else {
+            $meetsRRP = ((double)$sellPrice >= (double)$targetCost);
+            return $meetsRRP;
+        }
+    }
     function custom_intersect(array $arrayOne, array $arrayTwo):array
     {
         //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
