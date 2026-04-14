@@ -769,6 +769,8 @@ class ReportHelper
             $workingResult = [];
             $col = "pickerSheets.id";
             $workingResult['internal_id'] = $dbRow->$col;
+            $col2= "pickerItems.product_id";
+            $workingResult['product_id'] = $dbRow->$col2;
             foreach ($reportTable->getColumns() as $reportColumn)
             {
                 $workingResult[$reportColumn->getLabel($mode)] = "";

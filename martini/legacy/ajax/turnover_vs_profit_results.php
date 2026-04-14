@@ -151,8 +151,14 @@ use Illuminate\Support\Facades\Auth;
             echo '<tr class="result">';
             foreach($garyCols as $garyCol)
             {
-                if ($index % 2 == 0) echo "<td style='".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
-                else echo "<td style='color:red;".$cellFormat." font-size:15px;'><div style='".$divFormat." font-size:15px;'>";
+                $cellBackgroundColour = "";
+                if ($garyCol == "Sell/Unit") {
+                    if (!didProductMeetRRP($row["product_id"], $row["Sell/Unit"], $qty)) {
+                        $cellBackgroundColour = "background-color:yellow;";
+                    }
+                }
+                if ($index % 2 == 0) echo "<td style='".$cellFormat." font-size:15px;".$cellBackgroundColour."'><div style='".$divFormat." font-size:15px;'>";
+                else echo "<td style='color:red;".$cellFormat." font-size:15px;".$cellBackgroundColour."'><div style='".$divFormat." font-size:15px;'>";
                 if ($garyCol == "qty")
                 {
                     $qty = "";
