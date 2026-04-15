@@ -30,7 +30,7 @@ $isDelete ??= false;
         @endif
             @csrf
             <x-form>
-                <x-form-section columns="2">
+                <x-form-section columns="1">
                     <!-- Nationality -->
                     <div>
                         <x-input-label for="nationality" :value="__('Nationality')" />

@@ -18,7 +18,7 @@
     @endif
     @csrf
         <x-form>
-            <x-form-section title="Health Mark" columns="2">
+            <x-form-section title="Health Mark" columns="1">
 
                 <div>
                     <x-input-label for="name" :value="__('Name')"/>

@@ -11,7 +11,7 @@
             @csrf
 
             <x-form>
-                <x-form-section title="Approval Details" columns="2">
+                <x-form-section title="Approval Details" columns="1">
                     <!-- Approved -->
                     <div>
                         <x-input-label for="approved" :value="__('Approve Container?')" />

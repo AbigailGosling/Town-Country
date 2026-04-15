@@ -14,11 +14,11 @@
             {{ method_field('POST') }}
             @else
             <form method="POST" action="{{route('holidays.update', ['holiday' => $hc->id] ) }}">
-            {{ method_field('PUT') }}        
+            {{ method_field('PUT') }}
             @endif
     @csrf
         <x-form>
-            <x-form-section title="Personal Information" columns="2">
+            <x-form-section title="Personal Information" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="absentee" :value="__('Who Is Absent?')"/>

@@ -18,7 +18,7 @@
             @endif
     @csrf
         <x-form>
-            <x-form-section title="Location Details" columns="2">
+            <x-form-section title="Location Details" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="name" :value="__('Name')"/>
@@ -45,11 +45,11 @@
                     <div style="width: 1em;" @if ($location->id == Auth::id()) disabled @endif></div>
                     <x-input-label for="disabled" value="User Disabled"/>
                 </div>
-                <x-form-section title="Other Locations" columns="2">
+                <x-form-section title="Other Locations" columns="1">
                 <x-input-label/>
                 <x-transfer-list>
                     @foreach($otherLocations as $oloc)
-                        <x-form-section columns="2">
+                        <x-form-section columns="1">
                             <div class="mt-4" for="locs[{{$oloc->id }}]"
                                     style="display: flex; padding-bottom: 1em;">
                                 <input type="checkbox" id="rules[{{$oloc->id }}]" name="rules[{{$oloc->id }}]"
