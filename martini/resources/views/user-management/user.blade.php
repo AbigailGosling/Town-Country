@@ -18,7 +18,7 @@
             @endif
     @csrf
         <x-form>
-            <x-form-section title="Personal Information" columns="2">
+            <x-form-section title="Personal Information" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="name" :value="__('Name')"/>
@@ -87,12 +87,12 @@
                 </x-text-input>
             </x-form-section>
             @endif
-            <x-form-section title="Permissions" columns="2">
+            <x-form-section title="Permissions" columns="1">
                 <x-input-label/>
                 <x-transfer-list>
                     @foreach($permissions as $perm_category)
                         <x-transfer-list-section title="{{$perm_category->name}}">
-                            <x-form-section columns="2">
+                            <x-form-section columns="1">
                                 @foreach ($perm_category->permissions as $perm)
                                     <div class="mt-4" for="perms[{{ $perm->name }}]"
                                          style="display: flex; padding-bottom: 1em;">

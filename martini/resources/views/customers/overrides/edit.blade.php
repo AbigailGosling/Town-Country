@@ -9,7 +9,7 @@
     {{ method_field('POST') }}
     @csrf
         <x-form>
-            <x-form-section title="Credit Check" columns="2">
+            <x-form-section title="Credit Check" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="credit_comment" :value="__('Reason')"/>
@@ -35,7 +35,7 @@
     {{ method_field('POST') }}
     @csrf
         <x-form>
-            <x-form-section title="Delivery Days" columns="2">
+            <x-form-section title="Delivery Days" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="del_comment" :value="__('Reason')"/>

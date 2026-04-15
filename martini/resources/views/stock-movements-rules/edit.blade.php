@@ -18,7 +18,7 @@
     @endif
     @csrf
         <x-form>
-            <x-form-section title="Movement Details" columns="2">
+            <x-form-section title="Movement Details" columns="1">
                 <!-- Name Field -->
                 <div>
                     <x-input-label for="origin" :value="__('Origin')"/>

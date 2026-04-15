@@ -18,7 +18,7 @@
             @endif
     @csrf
         <x-form>
-            <x-form-section title="Cut Group Rule" columns="2">
+            <x-form-section title="Cut Group Rule" columns="1">
 
                 <div>
                     <x-input-label for="nationality_id" :value="__('Nationality')"/>
@@ -102,6 +102,6 @@
                     }
                 });
             });
-  
+
         });
     </script>

@@ -28,7 +28,7 @@ $isDelete ??= false;
         @endif
             @csrf
             <x-form>
-                    <x-form-section title="Container Details" columns="2">
+                    <x-form-section title="Container Details" columns="1">
 
                     <!-- Internal Number -->
                     <div>

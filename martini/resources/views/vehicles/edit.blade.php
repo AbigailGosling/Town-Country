@@ -18,7 +18,7 @@
     @endif
     @csrf
         <x-form>
-            <x-form-section title="Details" columns="2">
+            <x-form-section title="Details" columns="1">
                 <div>
                     <x-input-label for="reg" :value="__('Registration')"/>
                     <x-text-input id="reg" class="block mt-1 w-full" type="text" name="reg"
