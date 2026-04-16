@@ -279,6 +279,7 @@ class InboundContainerController extends Controller
             'akg'         => 'required|numeric',
             'rrp'         => 'required|numeric',
             'cost'        => 'required|numeric',
+            'actual_cost' => 'required|numeric',
         ]);
         $product = (!$containerProduct->exists)?new Product():Product::find($containerProduct->product_id);
         $product->pallet_id      = -2;
@@ -288,12 +289,13 @@ class InboundContainerController extends Controller
         $product->unit           = $validated['unit'];
         $product->quantity       = $validated['qty'];
         $product->akg            = $validated['akg'];
-        $product->cost           = $validated['cost'];
+        $product->cost           = $validated['actual_cost'];
         $product->save();
 
         $containerProduct->container_id = $container->id;
         $containerProduct->product_id = $product->id;
         $containerProduct->rrp = $validated['rrp'];
+        $containerProduct->cost = $validated['cost'];
         $containerProduct->save();
         return redirect()->route('containers.show',[$containerProduct->container_id]);
     }

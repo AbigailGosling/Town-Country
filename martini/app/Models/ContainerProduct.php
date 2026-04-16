@@ -19,11 +19,13 @@ class ContainerProduct extends Model
     protected $fillable = [
         'container_id',
         'product_id',
+        'cost',
         'rrp',
     ];
     protected $casts = [
 		'container_id' => 'int',
 		'product_id' => 'int',
+        'cost' => 'double',
         'rrp' => 'double',
     ];
     public function container():BelongsTo

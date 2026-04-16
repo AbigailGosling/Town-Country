@@ -52,7 +52,7 @@ $isDelete ??= false;
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('brand')" class="mt-2" />
-                        </div>
+                    </div>
 
                     <!-- Species -->
                     <div>
@@ -124,8 +124,16 @@ $isDelete ??= false;
                     <div>
                         <x-input-label for="cost" :value="__('Cost')" />
                         <x-text-input id="cost" class="block mt-1 w-full" type="number" step="0.001"
-                            name="cost" value="{{ old('cost', $containerProduct->getProduct()?->cost) }}" required />
+                            name="cost" value="{{ old('cost', $containerProduct->cost) }}" required />
                         <x-input-error :messages="$errors->get('cost')" class="mt-2" />
+                    </div>
+
+                    <!-- Actual Cost -->
+                    <div>
+                        <x-input-label for="actual_cost" :value="__('Actual Cost')" />
+                        <x-text-input id="actual_cost" class="block mt-1 w-full" type="number" step="0.001"
+                            name="actual_cost" value="{{ old('actual_cost', $containerProduct->getProduct()?->cost) }}" required />
+                        <x-input-error :messages="$errors->get('actual_cost')" class="mt-2" />
                     </div>
                 </x-form-section>
 
@@ -153,6 +161,7 @@ $isDelete ??= false;
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
+        $('#site').on('change', loadLocations);
         $('#species').on('change', loadCutGroups);
         $('#cutgroup').on('change', loadCuts);
         if (1 == <?php echo ($containerProduct->exists)?"1":"0"; ?>)
@@ -160,6 +169,37 @@ $isDelete ??= false;
             loadCutGroups();
         }
     });
+    function loadLocations() {
+        let siteId = $('#site').val();
+
+            resetSelect($('#location'), 'Select Location');
+            if (!siteId) return;
+
+            $.ajax({
+                url: '/locations/' + siteId,
+                type: 'GET',
+                dataType: 'json',
+                success: function(locations) {
+                    if (locations.length>1) {
+                        $.each(locations, function(index, location) {
+                            if (location.id == {{$containerProduct->location_id ?? "0"}}){
+                                $('#location').append( $('<option>', { value: location.id, text: location.name, selected:true }));
+                            }
+                            else{
+                                $('#location').append( $('<option>',  { value: location.id, text: location.name }));
+                            }
+                        });
+                    }
+                    else
+                    {
+                         $('#location').append( $('<option>', { value: locations[0].id, text: locations[0].name, selected:true }));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX error:', status, error);
+                }
+            });
+    }
     function loadCutGroups() {
         let speciesId = $('#species').val();
 

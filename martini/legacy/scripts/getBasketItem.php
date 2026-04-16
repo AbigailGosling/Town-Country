@@ -52,7 +52,8 @@ use App\Models\InboundContainer;
         $customer = Customer::find($customer_id);
         $overidePriceCheck = $customer->override_cost_check;
     }
- $isGT = ($row['grosspallet'] == 1);
+    $qWeightLookup = prepareExecuteQuery("SELECT `grosspallet` FROM `weights` WHERE product_id = ?",'i',[$product_id])->fetch_assoc()['grosspallet'];
+ $isGT = ($qWeightLookup['grosspallet'] == 1);
 
 	$smallestDate = ($row['range_extension']!= null && $row['range_extension']!= '')?$row['range_extension']:$row['range_from'];
 	$largestDate = ($row['range_extension']!= null && $row['range_extension']!= '')?$row['range_extension']:$row['range_to'];
@@ -94,7 +95,7 @@ use App\Models\InboundContainer;
 	<td id="ubDate"><?php echo $smallestDate; ?></td>
 	<td name="volume"><?php echo $q; ?></td>
 	<td>
-		<input type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;">
+		<input <?php if (!$isGT) echo 'hidden'; ?> type="number" value="" name="target_weight_<?php echo $product_id; ?>" class="weightnote overviewcomment" style="border:1px solid #f2f2f2;width:70px;text-align:center;height:30px;">
 	</td>
     <?php
             if ($overidePriceCheck == false)
