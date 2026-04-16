@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Auth;
 <table width="100%" class="slim searchRContent"   style="display:table;">
     <thead>
         <tr class="searchRContent__head">
-	        <th class="searchRContent__location">Container ID</th>
+	        <th class="searchRContent__id">Container ID</th>
             <th class="searchRContent__dropdown"></th>
+            <th class="searchRContent__location">Location</th>
 	        <th class="searchRContent__unit">Units</th>
 	        <th class="searchRContent__product">Product</th>
 	        <th>Nationality</th>
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 	        <th class="searchRContent__date-range">ETA</th>
 	        <th>Expected KG</th>
             <th>MSP</th>
+            <th>Cost</th>
             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight: normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th>
         </tr>
@@ -147,6 +149,9 @@ use Illuminate\Support\Facades\Auth;
                             </td>
                             <td></td>
                             <td colspan="1">
+                            <?php echo $container->site->name;?>
+                            </td>
+                            <td colspan="1">
                                 <select class="quantitybox" id="quantity-<?php echo $productsRow2['productid']; ?>-<?php echo $productsRow2['pallet_id']; ?>">
                                     <?php for($i=1;$i<$productsRow2['quantity'] - $alreadyReserved+1;$i++){?>
                                         <option value="<?php echo $i; ?>" selected><?php echo $i; ?></option>
@@ -178,6 +183,7 @@ use Illuminate\Support\Facades\Auth;
                             $prodMod = Product::find($containerProduct->product_id);
                             ?></td>
                             <td><?php echo '£' . number_format($containerProduct->rrp, 2, '.', ''); ?></td>
+                            <td><?php echo '£' . number_format($containerProduct->cost, 2, '.', ''); ?></td>
                             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($prodMod->cost){ echo '£' . number_format((float)$prodMod->cost, 2, '.', ''); } ?></td><?php } ?>
                             <td>
                                 <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
