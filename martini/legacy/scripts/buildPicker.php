@@ -92,9 +92,7 @@ use App\Models\Product;
 
 			$target_weight = (int) request('target_weight_' . $product_id);
 
-			if(empty($target_weight)){ $target_weight = 0; }
-
-			if(!is_int($target_weight)){ $target_weight = 0; }
+			if(empty($target_weight) || !is_int($target_weight)){ $target_weight = 0; }
 
 			$price = request('price_' . $product_id);
 			$price_type = $priceTypeSorted[$product_id];
