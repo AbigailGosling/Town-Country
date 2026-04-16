@@ -66,12 +66,8 @@ protected $connection = 'tandc_live';
 		$total = 0;
 
 		foreach ($weights as $weight) {
-            if($weight->weight_tear == $weight->weight_gross){
-                (double)$netWeight = (double)$weight->weight_gross;
-            }else{
-                (double)$netWeight = (double)$weight->weight_gross - (double)$weight->weight_tear;
-            }
-			$total += $netWeight;
+
+			$total += $weight->getNetWeight();
 		}
 		return round($total, 3);
 	}
@@ -93,9 +89,7 @@ protected $connection = 'tandc_live';
 		foreach ($weightIds as $wid) {
 			if (!isset($weights[$wid])) continue;
 			$weight = $weights[$wid];
-			$netWeight = ($weight->weight_tear == $weight->weight_gross)
-				? (double)$weight->weight_gross
-				: (double)$weight->weight_gross - (double)$weight->weight_tear;
+			$netWeight = $weight->getNetWeight();
 			if ($sum + $netWeight > $targetWeight) {
 				break;
 			}
@@ -152,9 +146,7 @@ protected $connection = 'tandc_live';
                 continue;
             }
 
-            $netWeight = ((float) $weight->weight_tear === (float) $weight->weight_gross)
-                ? (float) $weight->weight_gross
-                : (float) $weight->weight_gross - (float) $weight->weight_tear;
+            $netWeight = $weight->getNetWeight();
 
             if (!isset($summary[$cutId])) {
                 $summary[$cutId] = [

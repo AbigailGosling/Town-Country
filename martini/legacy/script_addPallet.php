@@ -19,6 +19,7 @@
 
 	$original_intake_id = request()->input('original_intake_id');
 	$original_pallet_id = request()->input('original_pallet_id');
+    $original_product_id = request()->input('original_product_id');
 
 
 	$pallet_tare = request()->input('pallet_tare');
@@ -76,8 +77,8 @@
 		# # #
 
 		# # # Create Product
-		$vars = [$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by,$kill_date];
-		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by,kill_date) VALUES
+		$vars = [$akg,$quantity,$pallet_id,$status,$note_units,$note_weight,$original_intake_id,$original_pallet_id,$original_product_id,$cut_id,$product_temp,$brand_id,$nationality_id,$temperature_id,$range_from,$range_to,$range_extension,$ubbb,$unit,$best_by,$kill_date];
+		$x = "INSERT INTO `product` (akg,quantity,pallet_id,status,note_units,note_weight,original_intake_id,original_pallet_id,original_product_id,cut_id,product_temp,brand_id,nationality_id,cooling_id,range_from,range_to,range_extension,ubbb,unit,best_by,kill_date) VALUES
 		(".implode(",",array_fill(0,count($vars),"?")).")";
 		$product_id = prepareExecuteQuery($x,str_repeat("s",count($vars)),$vars,true);
 		# # #

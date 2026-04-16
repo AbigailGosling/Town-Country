@@ -62,4 +62,12 @@ protected $connection = 'tandc_live';
     public function product():BelongsTo{
         return $this->belongsTo(Product::class,"id","product_id");
     }
+    public function getNetWeight(){
+        if($this->weight_tear == $this->weight_gross){
+            (double)$netWeight = (double)$this->weight_gross;
+        }else{
+            (double)$netWeight = (double)$this->weight_gross - (double)$this->weight_tear;
+        }
+        return $netWeight;
+    }
 }

@@ -1,11 +1,16 @@
 <?php
 
+use App\Models\Product;
 use App\Models\Site;
 
 	require(__DIR__.'/../functions.php');
 
-	$intake_id = request()->input('intake_id');
-
+        $intake_id = request()->input('intake_id');
+    $product_id = request()->input('product_id', null);
+    $cases = request()->input('cases', null);
+    if ($product_id != null && $cases != null) {
+        $productToDupe = Product::find($product_id);
+    }
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);
 	$intake = mysqli_fetch_array($y);
@@ -14,6 +19,9 @@ use App\Models\Site;
 <h1 class="int">Add a Pallet</h1>
 <form method="POST" id="addPalletForm" action="script_addPallet.php" autocomplete="off">
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
+<?php if(isset($productToDupe)){ ?>
+    <input type="hidden" name="original_product_id" value="<?php echo $productToDupe->id; ?>">
+<?php } ?>
     <div id="msgNotice2" style="color:white;padding: 0 0 0 20px;"></div>
 	<div class="float">
 
@@ -27,23 +35,23 @@ use App\Models\Site;
 		</div>
 
         <label>Kill Date</label>
-		<input name="kill_date" id="kill_date" type="text" onfocus="blur()">
+		<input name="kill_date" id="kill_date" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->kill_date . '"'; } ?>>
 		<div onclick="killDateNA()" id="bestbyBtn">SET N/A</div>
 		<div class="clearfix"></div>
 
 		<label>Pack Date</label>
-		<input name="best_by" id="best_by" type="text" onfocus="blur()">
+		<input name="best_by" id="best_by" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->best_by . '"'; } ?>>
 		<div onclick="bestByNA()" id="bestbyBtn">SET N/A</div>
 		<div class="clearfix"></div>
 
 		<label>UB/ BB</label>
 		<select name="ubbb" id="ubbb">
-			<option value="0">UB</option>
-			<option value="1">BB</option>
-			<option value="2" hidden>N/A</option>
-			<option value="3">Process By</option>
-			<option value="4">Expiry</option>
-			<option value="5">Open By</option>
+			<option value="0" <?php if(isset($productToDupe) && $productToDupe->ubbb == 0){ echo 'selected'; } ?>>UB</option>
+			<option value="1" <?php if(isset($productToDupe) && $productToDupe->ubbb == 1){ echo 'selected'; } ?>>BB</option>
+			<option value="2" hidden <?php if(isset($productToDupe) && $productToDupe->ubbb == 2){ echo 'selected'; } ?>>N/A</option>
+			<option value="3" <?php if(isset($productToDupe) && $productToDupe->ubbb == 3){ echo 'selected'; } ?>>Process By</option>
+			<option value="4" <?php if(isset($productToDupe) && $productToDupe->ubbb == 4){ echo 'selected'; } ?>>Expiry</option>
+			<option value="5" <?php if(isset($productToDupe) && $productToDupe->ubbb == 5){ echo 'selected'; } ?>>Open By</option>
 		</select>
 
 		<div onclick="ubbbyNA()" id="ubbbBtn">SET N/A</div>
@@ -51,16 +59,16 @@ use App\Models\Site;
 
 		<div id="best_by_range_from_container">
 		<label>From</label>
-		<input name="best_by_range_from" id="best_by_range_from" type="text" onfocus="blur()">
+		<input name="best_by_range_from" id="best_by_range_from" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_from . '"'; } ?>>
 		</div>
 
 		<div id="best_by_range_to_container">
 		<label>To</label>
-		<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()">
+		<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_to . '"'; } ?>>
 		</div>
 		<div id="best_by_range_extension_container">
 			<label>Extension</label>
-			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()"><div onclick="clearEx()" id="bestbyBtn">Clear</div>
+			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_extension . '"'; } ?>><div onclick="clearEx()" id="bestbyBtn">Clear</div>
 		</div>
 		<label>Chilled/Frozen</label>
 		<select name="temperature_id">
@@ -80,11 +88,11 @@ use App\Models\Site;
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<?php echo Site::generateOldHTMLList();?>
+				<?php echo Site::generateOldHTMLList($productToDupe->storage_location ?? null);?>
 		</select>
 
 		<label>comments</label>
-		<textarea name="comments"></textarea>
+		<textarea name="comments"><?php if(isset($productToDupe)){ echo $productToDupe->comments; } ?></textarea>
 
 
 
@@ -97,17 +105,17 @@ use App\Models\Site;
 			$x = "SELECT * FROM nationality ORDER BY `name` ASC";
 			$y = prepareExecuteQuery($x);
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['nationality_id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['nationality_id'] || (isset($productToDupe) && $row['id'] == $productToDupe->nationality_id)){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 		</select>
 
 		<label>Brand Search</label>
-		<input name="brand_search" id="brand_search" type="text">
+		<input name="brand_search" id="brand_search" type="text" <?php if(isset($productToDupe) && $productToDupe->brand_id != null){ echo 'value="' . $productToDupe->brand->name . '"'; } ?>>
 		<div id="brand_search_results">
 			asdf
 		</div>
-		<input name="brand_id" id="brand_id" type="text" style="display:none;">
+		<input name="brand_id" id="brand_id" type="text" style="display:none;" <?php if(isset($productToDupe) && $productToDupe->brand_id != null){ echo 'value="' . $productToDupe->brand_id . '"'; } ?>>
 
 		<label>species</label>
 		<select name="species_id" id="species_id">
@@ -116,7 +124,7 @@ use App\Models\Site;
 				$x = "SELECT * FROM species ORDER BY `name` ASC";
 				$y = prepareExecuteQuery($x);
 				while($row = mysqli_fetch_array($y)){
-				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['species_id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['species_id'] || (isset($productToDupe) && $row['id'] == $productToDupe->cut->species_id)){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 				}
 			?>
 		</select>
@@ -125,12 +133,12 @@ use App\Models\Site;
 
 
 		<label>cuts</label>
-		<input name="cut_search" id="cut_search" type="text">
+		<input name="cut_search" id="cut_search" type="text" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->cut->name . '"'; } ?>>
 		<div id="cut_search_results">
 			asdf
 		</div>
 
-		<input name="cut_id" id="cut_id" type="text" style="display:none;">
+		<input name="cut_id" id="cut_id" type="text" style="display:none;" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->cut_id . '"'; } ?>>
 		<div style="display:none;">
 			<select name="cut_ids" id="cut_id">
 			<option value="--">--</option>
@@ -139,27 +147,27 @@ use App\Models\Site;
 
 		<label>Units of measurement</label>
 		<select name="unit" id="unit">
- 			<option value="C">Case</option>
-			<option value="PPC">Purchase Per Case</option>
-			<option value="P">Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
-			<option value="DS">Direct to store/customer</option>
+ 			<option value="C" <?php if(isset($productToDupe) && $productToDupe->unit == 'C'){ echo 'selected'; } ?>>Case</option>
+			<option value="PPC" <?php if(isset($productToDupe) && $productToDupe->unit == 'PPC'){ echo 'selected'; } ?>>Purchase Per Case</option>
+			<option value="P" <?php if(isset($productToDupe) && $productToDupe->unit == 'P'){ echo 'selected'; } ?>>Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
+			<option value="DS" <?php if(isset($productToDupe) && $productToDupe->unit == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
  		</select>
 
 
 		<div class="quantityWeightContainer">
 		<label class="howManyUnitsDiv">HOW MANY UNITS</label>
-		<input type="number" class="quantityWeight" onChange="updateForm()" id="quantityWeight" name="quantity">
+		<input type="number" class="quantityWeight" onChange="updateForm()" id="quantityWeight" name="quantity" max="<?php echo $cases; ?>">
 		</div>
 
 		<?php if($intake['returned'] == 1){ ?>
 		<div>
 			<label>Original Intake ID</label>
-			<input type="number" name="original_intake_id">
+			<input type="number" name="original_intake_id" value="<?php echo $productToDupe->pallet->intake_id; ?>">
 		</div>
 
 		<div>
 			<label>Original Pallet ID</label>
-			<input type="number" name="original_pallet_id">
+			<input type="number" name="original_pallet_id" value="<?php echo $productToDupe->pallet_id; ?>">
 		</div>
 		<?php } ?>
 

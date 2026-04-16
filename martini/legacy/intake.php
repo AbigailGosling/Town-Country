@@ -1,19 +1,26 @@
 <?php
 
 use App\Helpers\InternalCache;
+use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\DocType;
+use App\Models\Intake;
+use App\Models\Nationality;
+use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\Species;
 use App\Models\User;
+use App\Models\PickWeightOut;
+use App\Models\Supplier;
+use App\Models\Weight;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 	include('includes/frontHeader.php');
     ini_set('memory_limit','15M'); //this might kill the process - keep in mind
 	$id = request()->input('id');
-	$intake_id = request()->input('id');
+	$current_intake_id = request()->input('id');
 
 	$intake = getIntake($id);
 	$dateCreated = $intake['created_at'];
@@ -189,7 +196,7 @@ use Illuminate\Support\Str;
         <?php
         }?>
 	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
-		<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
+		<input type="text" name="intakeid" value="<?php echo $current_intake_id; ?>" style="display:none;">
 		<select name="state">
             <option value="0">Mark as unsold</option>
 			<option value="1">Mark as sold</option>
@@ -211,7 +218,7 @@ use Illuminate\Support\Str;
                 <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
                 <select id="changeIntakeSupplier" style="height:30px;outline:none;border:0px;width: 100%;" name="supplier_id">
                     <?php
-                        $y = prepareExecuteQuery("SELECT * FROM `customers` WHERE `disabled`=0 OR `id` = ? ORDER BY `businessname` ASC",'s',[$intake['supplier_id']]);
+                        $y = prepareExecuteQuery("SELECT `id`,`businessname` FROM `customers` WHERE `id` = ? ORDER BY `businessname` ASC",'s',[$intake['supplier_id']]);
 
                         while($customer = mysqli_fetch_array($y)){
                         ?><option value="<?php echo $customer['id']; ?>" <?php if($customer['id'] == $intake['supplier_id']){ echo 'selected'; } ?>><?php echo $customer['businessname']; ?></option>
@@ -261,17 +268,12 @@ use Illuminate\Support\Str;
 		</div>
 
 		<div class="overview_block">
-			<label>Delivery Note Number</label>
+
 			<?php if($intake['returned'] == 1){ ?>
-			<form method="POST" action="scripts/changeIntakeDeliveryNoteNumber.php" class="flex">
-				<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
-				<input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
-				<input type="text" name="delivery_note_number" value="<?php echo $intake['delivery_note_number']; ?>" style="width:140px;">
-				<input type="submit" value="Save">
-			</form>
-			<?php }else{
-				echo $intake['delivery_note_number'];
-			} ?>
+            <label>Original Invoice</label>
+			<?php }else{ ?>
+            <label>Delivery Note Number</label> <?php } ?>
+            <?php echo $intake['delivery_note_number']; ?>
 		</div>
 
 		<div class="overview_block">
@@ -400,7 +402,7 @@ use Illuminate\Support\Str;
 
     <?php
         $x = "SELECT `id` FROM `intakeDocs` WHERE `intakeid`=?";
-		$y = prepareExecuteQuery($x,'i',[$intake_id]);
+		$y = prepareExecuteQuery($x,'i',[$current_intake_id]);
         $count = mysqli_num_rows($y);
 
     ?>
@@ -429,7 +431,7 @@ use Illuminate\Support\Str;
     </div>
     <?php
         $x = "SELECT * FROM `intakeDocs` WHERE intakeid=?";
-		$y = prepareExecuteQuery($x,'s',[$intake_id]);
+		$y = prepareExecuteQuery($x,'s',[$current_intake_id]);
 		$count = mysqli_num_rows($y);
 
 		if($count > 0){
@@ -438,13 +440,13 @@ use Illuminate\Support\Str;
 			while($row = mysqli_fetch_array($y)){
                 if ($row['new_file_system']==0) {
 			?>
-			<a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $intake_id; ?>&docid=<?php echo $row['id']; ?>">
+			<a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $current_intake_id; ?>&docid=<?php echo $row['id']; ?>">
 				<i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
 			</a> &nbsp;&nbsp;&nbsp; <a target="_blank" href="./docs/<?php echo $row['dfile']; ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
 			<?php
                 } else {
             ?>
-            <a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $intake_id; ?>&docid=<?php echo $row['id']; ?>">
+            <a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $current_intake_id; ?>&docid=<?php echo $row['id']; ?>">
                 <i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
             </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['file' => $row['file_id']]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
 			<?php
@@ -513,9 +515,9 @@ use Illuminate\Support\Str;
 
 		if($user['view_intake_prices'] == 1){
 	?>
-	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $intake_id; ?>">
+	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $current_intake_id; ?>">
 	<input type="hidden" name="_token" value="<?php echo csrf_token();?>">
-	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
+	<input type="text" name="intakeid" value="<?php echo $current_intake_id; ?>" style="display:none;">
 		<table border="1" cellpadding="5" width="100%">
 			<tr>
 				<td colspan="11" align="center"><b>Overview</b></td>
@@ -539,7 +541,7 @@ use Illuminate\Support\Str;
 			<?php
 
 				$x = "SELECT id FROM `pallet` WHERE intake_id=?";
-				$y = prepareExecuteQuery($x,'i',[$intake_id]);
+				$y = prepareExecuteQuery($x,'i',[$current_intake_id]);
 				$countPallets = mysqli_num_rows($y);
 
 				$qPallets = '';
@@ -749,7 +751,7 @@ use Illuminate\Support\Str;
 			<?php
 
 				$x = "SELECT id FROM `pallet` WHERE intake_id=?";
-				$y = prepareExecuteQuery($x,'i',[$intake_id]);
+				$y = prepareExecuteQuery($x,'i',[$current_intake_id]);
 				$countPallets = mysqli_num_rows($y);
 
 				$qPallets = '';
@@ -878,7 +880,7 @@ use Illuminate\Support\Str;
 
 	<?php
 		$xk = "SELECT * FROM product WHERE original_intake_id=?";
-		$yk = prepareExecuteQuery($xk,'s',[$intake_id]);
+		$yk = prepareExecuteQuery($xk,'s',[$current_intake_id]);
 
 		$counting = mysqli_num_rows($yk);
 
@@ -902,7 +904,7 @@ use Illuminate\Support\Str;
 
 				$x = "SELECT * FROM product WHERE original_intake_id=?";
 
-				$y = prepareExecuteQuery($x,'s',[$intake_id]);
+				$y = prepareExecuteQuery($x,'s',[$current_intake_id]);
 				$count = $counting;
 
 				$totalCases = 0;
@@ -1019,9 +1021,63 @@ use Illuminate\Support\Str;
 			<?php } ?>
 
 		</table>
- 	<?php } ?>
+        <br/>
+ 	<?php } if ($intake['returned']==1) { ?>
+    <br/>
+     <table border="1" cellpadding="5" width="100%">
+        <tr>
+            <td colspan="10" align="center"><b>Stock on Original Invoice</b></td>
+        </tr>
+        <tr>
+            <th></th>
+            <th>Intake</th>
+            <th>Pallet</th>
+            <th>Supplier</th>
+            <th>Nat</th>
+            <th>Brand</th>
+            <th>Species</th>
+            <th>Cut</th>
+            <th>Cases</th>
+            <th>Weight</th>
+        </tr>
+        <?php
+            $pickedWeightsID = explode(',', implode(',', PickWeightOut::where('pickersheet_id', $intake['delivery_note_number'])->get()->pluck('weight_ids')->toArray()));
+            $pickedProducts = Product::whereIn('id', Weight::whereIn('id', $pickedWeightsID)->pluck('product_id'))->get();
+            foreach ($pickedProducts as $row) {
+                $cut = Cut::find($row->cut_id);
+                $species = Species::find($cut->species_id)->name;
+                $cutname = $cut->name;
+                $thisWeights = Weight::where('product_id', $row->id)->whereIn('id', $pickedWeightsID)->get();
+                $cases = sizeof($thisWeights);
+                $weight = 0;
+                $pallet = Pallet::find($row->pallet_id);
+                $old_intake_id = $pallet->intake_id;
+                $supplier = Supplier::find(Intake::find($old_intake_id)->supplier_id);
+                $brand = Brand::find($row->brand_id);
+                $nationality = Nationality::find($row->nationality_id);
+                foreach ($thisWeights as $w) {
+                    $weight += $w->getNetWeight();
+                }
 
+                ?>
+                <tr>
+                    <td style="width: 200px;"><a href="javascript:;" class="add_product" style="margin: 0;" onclick="openAddPallet(<?php echo $current_intake_id; ?>,<?php echo $row->id; ?>,<?php echo $cases; ?>);">Add to Return</a></td>
+                    <td><a href="intake.php?id=<?php echo $old_intake_id; ?>"><?php echo $old_intake_id; ?></a></td>
+                    <td><?php echo $row->pallet_id; ?></td>
+                    <td><?php echo $supplier->name; ?></td>
+                    <td><?php echo $nationality->name; ?></td>
+                    <td><?php echo $brand->name; ?></td>
+                    <td><?php echo $species; ?></td>
+                    <td><?php echo $cutname; ?></td>
+                    <td><?php echo $cases; ?></td>
+                    <td><?php echo $weight; ?> kg</td>
+                </tr>
+                <?php
+            } ?>
+    </table>
 	<br/>
+    <?php } ?>
+
 	<div id="printShow">
 		<table style="height:100px;width:100%;">
 			<tr>
@@ -1032,9 +1088,9 @@ use Illuminate\Support\Str;
 			</tr>
 		</table>
 	</div>
-	<a href="javascript:;" class="add_product" onclick="openAddPallet(<?php echo $intake_id; ?>);">Add a Pallet</a>
- 	<a href="printIntake.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print Intake</a>
-	 <a href="printAllPallets.php?intake_id=<?php echo $intake_id; ?>" class="print_intake" >Print all pallets</a>
+	<?php if ($intake['returned']==0) { ?><a href="javascript:;" class="add_product" onclick="openAddPallet(<?php echo $current_intake_id; ?>);">Add a Pallet</a><?php } ?>
+ 	<a href="printIntake.php?intake_id=<?php echo $current_intake_id; ?>" class="print_intake" >Print Intake</a>
+	 <a href="printAllPallets.php?intake_id=<?php echo $current_intake_id; ?>" class="print_intake" >Print all pallets</a>
 
 	<center id="hidePalletBtnContainer"><br/><br/><br/><br/><br/><div class="loadPalletBtn" id="loadPalletBtn">Load Pallets</div></center>
 	<div id="ajaxContent">
@@ -1076,7 +1132,7 @@ use Illuminate\Support\Str;
     });
 	$('.loadPalletBtn').click(function(){
 		$('#ajaxContent').html('<center><img src="https://i.gifer.com/7plQ.gif"></center>');
-		$.get( "ajax/loadPallets.php?intake_id=<?php echo $intake_id; ?> ", function( data ) {
+		$.get( "ajax/loadPallets.php?intake_id=<?php echo $current_intake_id; ?> ", function( data ) {
 			$('#ajaxContent').html(data);
 			$('#hidePalletBtnContainer').fadeOut();
 		});
@@ -1250,9 +1306,9 @@ use Illuminate\Support\Str;
 		$('.palletDetail-' + id).toggle();
 	}
 
-	function openAddPallet(intake_id){
+	function openAddPallet(intake_id, original_product_id = null, original_cases = null){
 
-		$.get( "ajax/addPalletForm.php?intake_id=" + intake_id, function( data ) {
+		$.get( "ajax/addPalletForm.php?intake_id=" + intake_id + "&product_id=" + original_product_id + "&cases=" + original_cases, function( data ) {
 			// console.log(data);
 			// $('#cut_id').html('<option></option>');
 			$('#box').html(data);

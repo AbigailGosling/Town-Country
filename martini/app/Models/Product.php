@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $product_temp
  * @property string|null $original_intake_id
  * @property string|null $original_pallet_id
+ * @property string|null $original_product_id
  * @property string|null $note_units
  * @property string|null $note_weight
  * @property string|null $akg
@@ -86,6 +87,7 @@ protected $connection = 'tandc_live';
 		'product_temp',
 		'original_intake_id',
 		'original_pallet_id',
+        'original_product_id',
 		'note_units',
 		'note_weight',
 		'akg',
@@ -94,7 +96,8 @@ protected $connection = 'tandc_live';
 		'kill_date',
         'old_akg',
         'rrp1',
-        'rrp2'
+        'rrp2',
+        'rrp3'
 	];
 	public function cut():BelongsTo
 	{
