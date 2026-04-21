@@ -55,6 +55,9 @@ use App\Models\ClientType;
 	$colNames[] = "`credit_rating`";
 	$colValue[] = request()->input('credit_rating');
 
+    $colNames[] = "`insured_credit`";
+	$colValue[] = request()->input('insured_credit');
+
 	$colNames[] = "`flaguplimit`";
 	$colValue[] = request()->input('flaguplimit');
 
