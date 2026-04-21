@@ -371,6 +371,10 @@ use Illuminate\Support\Facades\Log;
 					<td class="label"><label>Credit Rating</label></td>
 					<td><input type="text" class="input" name="credit_rating" value="<?php echo number_format((double)$data['credit_rating'], 2, '.', ''); ?>"></td>
 				</tr>
+                <tr>
+					<td class="label"><label>Insured Rating</label></td>
+					<td><input type="text" class="input" name="insured_rating" value="<?php echo number_format((double)$data['insured_rating'], 2, '.', ''); ?>"></td>
+				</tr>
 				<tr>
 					<td class="label"><label>Close to limit alert</label></td>
 					<td><input type="text" class="input" name="flaguplimit" value="<?php echo number_format((double)$data['flaguplimit'], 2, '.', ''); ?>"></td>

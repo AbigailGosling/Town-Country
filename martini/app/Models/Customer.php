@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $credit_grace
  * @property string|null $pricedefault
  * @property float|null $credit_rating
+ * @property float|null $insured_credit
  * @property float|null $flaguplimit
  * @property float|null $current_outstanding
  * @property string|null $address1_number
