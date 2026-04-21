@@ -41,7 +41,7 @@ $customer = getCustomer($customerID);
                     <select class="form-control" id="invoices" name="invoices">
                         <?php
                         $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid, GROUP_CONCAT(invoice_payments.id) as payment_ids FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.is_return_to_supplier = 0 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id",'i',[$customerID]);
-                        ini_set('memory_limit',($customerPicksheets->num_rows*0.125)."M");
+                        ini_set('memory_limit',($customerPicksheets->num_rows*0.25)."M");
                         while ($picksheet = mysqli_fetch_array($customerPicksheets)) {
                             $this_price = invoiceTotal($picksheet['id']);
                             $creditVal = 0;
