@@ -145,6 +145,7 @@ abstract class SLabsEmailerType
     const Reservatin= 'RESERVATION';
     const ShortPick = 'SHORT_PICK';
     const PrceChnge = 'PRICE_CHANGE';
+    const TwoFactor = 'TWO_FACTOR_CODE';
 }
 abstract class SLabsEmailerStatus
 {

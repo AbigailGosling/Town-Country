@@ -96,11 +96,11 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
              * @var Carbon $sitesCutOffToday
              */
             $sitesCutOffToday = Carbon::now()->hour($siteCutOffHoursAndMinutes[0])->minute($siteCutOffHoursAndMinutes[1])->second(0)->micro(0);
-            $targetDate = ($reservation->eta->greaterThan(Carbon::now()))?$reservation->eta:Carbon::now();
+            $targetDate = ($reservation->eta->timestamp > Carbon::now()->timestamp)?$reservation->eta:Carbon::now();
             if ($targetDate->dayOfWeek == Carbon::FRIDAY || $targetDate->dayOfWeek == Carbon::SATURDAY || $targetDate->dayOfWeek == Carbon::SUNDAY){
                 $targetDate->next(Carbon::MONDAY);
             }
-            if ($targetDate>$sitesCutOffToday->timestamp){
+            if ($targetDate->timestamp > $sitesCutOffToday->timestamp){
                 $delDate =  $targetDate->copy();
             }
             else {

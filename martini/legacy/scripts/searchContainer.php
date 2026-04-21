@@ -183,7 +183,7 @@ use Illuminate\Support\Facades\Auth;
                             $prodMod = Product::find($containerProduct->product_id);
                             ?></td>
                             <td><?php echo '£' . number_format($containerProduct->rrp, 2, '.', ''); ?></td>
-                            <td><?php echo '£' . number_format($containerProduct->cost, 2, '.', ''); ?></td>
+                            <td><?php if ($containerProduct->cost) echo '£' . number_format($containerProduct->cost, 2, '.', ''); ?></td>
                             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($prodMod->cost){ echo '£' . number_format((float)$prodMod->cost, 2, '.', ''); } ?></td><?php } ?>
                             <td>
                                 <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>

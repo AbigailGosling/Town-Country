@@ -770,7 +770,8 @@ class ReportHelper
             $col = "pickerSheets.id";
             $workingResult['internal_id'] = $dbRow->$col;
             $col2= "pickerItems.product_id";
-            $workingResult['product_id'] = $dbRow->$col2;
+            if (!property_exists($dbRow,$col2)) $col2 = "credit_note_items.product_id";
+            if (property_exists($dbRow,$col2)) $workingResult['product_id'] = $dbRow->$col2;
             foreach ($reportTable->getColumns() as $reportColumn)
             {
                 $workingResult[$reportColumn->getLabel($mode)] = "";
