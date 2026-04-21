@@ -52,7 +52,7 @@ use App\Models\InboundContainer;
         $customer = Customer::find($customer_id);
         $overidePriceCheck = $customer->override_cost_check;
     }
-    $qWeightLookup = prepareExecuteQuery("SELECT `grosspallet` FROM `pallet` WHERE product_id = ?",'i',[$row['pallet_id']])->fetch_assoc()['grosspallet'];
+    $qWeightLookup = prepareExecuteQuery("SELECT `grosspallet` FROM `pallet` WHERE `id` = ?",'i',[$row['pallet_id']])->fetch_assoc()['grosspallet'];
  $isGT = ($qWeightLookup['grosspallet'] == 1);
 
 	$smallestDate = ($row['range_extension']!= null && $row['range_extension']!= '')?$row['range_extension']:$row['range_from'];
