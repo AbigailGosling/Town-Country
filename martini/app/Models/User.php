@@ -38,6 +38,9 @@ use Illuminate\Support\Str;
  * @property Carbon|null $updated_at
  * @property string $hash_method
  * @property bool $override_saledate_check
+ * @property string|null $actual_email
+ * @property bool $is_hidden
+ * @property bool $receive_short_stock
  *
  * @property Collection|Permission[] $permissions
  *
@@ -64,6 +67,7 @@ class User extends Authenticatable
         'two_factor_confirmed_at',
         'two_factor_expires_at',
         'actual_email',
+        'receive_short_stock',
     ];
 
     /**
