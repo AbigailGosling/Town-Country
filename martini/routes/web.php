@@ -15,6 +15,7 @@ use App\Http\Controllers\InboundContainerController;
 use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\InsuredCreditReportController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShortPickReportController;
 use App\Http\Controllers\ShortStockController;
@@ -129,6 +130,8 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/shortstock', [ShortStockController::class, 'index'])->name('shortstock.index');
     Route::get('/shortstock/download', [ShortStockController::class, 'download'])->name('shortstock.download');
     Route::get('/shortpick', [ShortPickReportController::class, 'index'])->name('shortpick.index');
+
+    Route::get('/insuredcreditreport', [InsuredCreditReportController::class, 'index'])->name('insuredcreditreport.index');
 
     Route::get('/returnedstock', [ReturnedStockReportController::class, 'index'])->name('returnedstock.index');
     Route::get('/returnedstock/download', [ReturnedStockReportController::class, 'download'])->name('returnedstock.download');
