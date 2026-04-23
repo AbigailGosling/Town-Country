@@ -26,8 +26,8 @@ class OutgoingPalletController extends Controller
     public function index(): View
     {
 
-        $startDate = Carbon::today()->addDays(-1);
-        $endDate = Carbon::today()->addDays(4);
+        $startDate = Carbon::today()->addDays();
+        $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()
             ->select([
@@ -41,6 +41,7 @@ class OutgoingPalletController extends Controller
             ])
             ->join('customers', 'pickerSheets.customer_id', '=', 'customers.id')
             ->where('pickerSheets.deleted', 0)
+            ->where('pickerSheets.completed', 1)
             ->whereRaw(
                 "STR_TO_DATE(pickerSheets.estimated_delivery_date, '%d/%m/%Y') BETWEEN ? AND ?",
                 [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]
@@ -53,11 +54,8 @@ class OutgoingPalletController extends Controller
             return $sheet->customer_id.'|'.$sheet->addressid;
         });
 
-
         $mapped = collect();
         foreach ($deliveryGroups as $key => $sheets) {
-
-
 
             $first = $sheets->first();
             $customerName = $first->businessname ?: ($first->tradingas ?: '');
