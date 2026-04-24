@@ -28,12 +28,12 @@ include('includes/frontHeader.php');
 
 	<div class="row" id="address"></div>
 
-	<div class="row">
-		<div class="col">
+	<div class="row" style="position: relative;">
+		<div class="col" style="width: 48%; max-width: 48%; flex: 0 0 48%;">
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
-		<div class="col"></div>
+		<div class="col" id="previous_sales" style="position: absolute; top: 0; right: 0; width: 48%; max-width: 48%; flex: 0 0 48%;"></div>
 	</div>
 
     <div class="row">
@@ -613,7 +613,7 @@ function cancelSale()
 		if (customerID == null) checkUBDates(dateText);
 		else
 		{
-			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false'+'&address_id=' + addressID, function(data){
+			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false'+'&address_id=' + addressID+'&src=sales', function(data){
 				getCustomResult = data;
 				setCustomerCreditFeedback(data);
 			});
@@ -755,7 +755,7 @@ function cancelSale()
 	function setCustomerDetails(customer_id, empty='false'){
 		customerID = customer_id;
         addressID=1;
-		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty+'&address_id=' + addressID, function( data ) {
+		$.get( "ajax/getCustomerAddress.php?id=" + customer_id + '&empty=' + empty+'&address_id=' + addressID+'&src=sales', function( data ) {
 			getCustomResult = data;
 			setCustomerCreditFeedback(data);
 		});
@@ -1202,7 +1202,7 @@ function cancelSale()
 
 		$('#addressid').val(address_id);
         addressID=address_id
-		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id, function(data, status){
+		$.get("ajax/getCustomerAddress.php?id=" + customer_id + '&address_id=' + address_id+'&src=sales', function(data, status){
 			$('#address').html(data);
 			$('.lity-close').trigger('click');
 		});

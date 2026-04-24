@@ -2,7 +2,11 @@
 
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\Cut;
+use App\Models\PickerSheet;
+use App\Models\Product;
 use App\Models\Site;
+use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,21 +34,21 @@ use Illuminate\Support\Facades\Auth;
 </script>
 <div class="col">
 	<div class="row">
-	<div class="col">
+        <div class="col">
 
 
-	<input class="form-control" type="text" id="customer_id" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
+        <input class="form-control" type="text" id="customer_id" name="customer_id" value="<?php echo $row['id']; ?>" style="display:none;">
 
-	<div>
-		<label>Contact Number</label><br/>
-		<input class="form-control input box" type="text" id="contactnumber" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
-	</div>
+        <div>
+            <label>Contact Number</label><br/>
+            <input class="form-control input box" type="text" id="contactnumber" name="contactnumber" value="<?php echo $row['tel_number']; ?>" disabled>
+        </div>
 
-	<div>
-		<label>Billing Address</label><br/>
-		<textarea class="form-control" name="billingaddress" style="height:155px;padding:10px;resize:none;"disabled><?php echo $row['accounts_address_1']; ?>,&#13;<?php echo $row['accounts_address_2']; ?>,&#13;<?php echo $row['accounts_address_3']; ?><?php if($row['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $row['accounts_address_4']; ?></textarea class="form-control">
-	</div>
-</div>
+        <div>
+            <label>Billing Address</label><br/>
+            <textarea class="form-control" name="billingaddress" style="height:155px;padding:10px;resize:none;"disabled><?php echo $row['accounts_address_1']; ?>,&#13;<?php echo $row['accounts_address_2']; ?>,&#13;<?php echo $row['accounts_address_3']; ?><?php if($row['accounts_address_3'] != ''){ echo ',&#13;'; } ?><?php echo $row['accounts_address_4']; ?></textarea>
+        </div>
+    </div>
 
 
 <?php
@@ -143,8 +147,6 @@ use Illuminate\Support\Facades\Auth;
 
  	</div>
 </div>
-<div class="col"></div>
-</div>
 <div id="changeAddress" class="row lity-hide">
 	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
 	<div class="addresses">
@@ -186,6 +188,62 @@ use Illuminate\Support\Facades\Auth;
 	?>
     $('#served_by').val("<?php echo Site::find($site_id)->name; ?>");
     var served_by = <?php echo $site_id; ?>
+
+    <?php
+        if(request()->input('src') == 'sales'){
+            $previousSales = PickerSheet::where('customer_id', $customer_id)->orderBy('created_at', 'desc')->limit(16)->get();
+            ?>
+            setTimeout(function() {
+            var html = '<label>Previous Sales</label>';
+            html += '<table style="width:100%;border-collapse:collapse;" border="1">';
+            html += '<thead>';
+            html += '<tr>';
+			html += '<th style="padding:2px;font-weight:normal;">Date Booked</th>';
+			html += '<th style="padding:2px;font-weight:normal;">Del Date</th>';
+			html += '<th style="padding:2px;font-weight:normal;" colspan="3">Products</th>';
+            html += '</tr>';
+            html += '</thead>';
+            html += '<tbody>';
+            <?php
+                $maxLines = 16;
+                $lines = 0;
+                foreach($previousSales as $sale){
+                    if($lines >= $maxLines) break;
+                    $pi = $sale->pickerItems->groupBy('product_id')->map(function($items) { return ['product_id' => $items->first()->product_id, 'count' => $items->count(), 'price' => $items->first()->price]; })->values();
+                    $grouped_by_cut = [];
+                    foreach($pi as $product){
+                        $p = Product::find($product['product_id']);
+                        $cut = Cut::find($p->cut_id);
+                        $cut_key = $cut->id;
+                        if(!isset($grouped_by_cut[$cut_key])){
+                            $grouped_by_cut[$cut_key] = ['cut' => $cut, 'species' => Species::find($cut->species_id), 'total_count' => 0, 'price' => $product['price']];
+                        }
+                        $grouped_by_cut[$cut_key]['total_count'] += $product['count'];
+                    }
+                    foreach($grouped_by_cut as $cut_group){
+						if($lines >= $maxLines) break;
+                        ?>
+						html += '<tr>';
+						html += '<td style="padding:2px;"><?php echo date('d/m/Y', strtotime($sale->created_at)); ?></td>';
+						html += '<td style="padding:2px;"><?php echo $sale->estimated_delivery_date; ?></td>';
+						html += '<td style="padding:2px;"><?php echo $cut_group['total_count']; ?></td>';
+                        html += '<td style="padding:2px;"><?php echo $cut_group["species"]->name." ".$cut_group["cut"]->name; ?></td>';
+                        html += '<td style="padding:2px;">£<?php echo number_format($cut_group['price'], 3); ?></td>';
+						html += '</tr>';
+                        <?php
+                        $lines++;
+                    }
+				}
+            ?>
+            html += '</tbody>';
+            html += '</table>';
+            console.log("ping");
+
+                $('#previous_sales').html(html);
+            }, 100);
+            <?php
+        }
+    ?>
     </script>
 
 	<style>
@@ -195,3 +253,4 @@ use Illuminate\Support\Facades\Auth;
 	</style>
 </div>
 </div>
+
