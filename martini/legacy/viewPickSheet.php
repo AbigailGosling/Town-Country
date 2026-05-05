@@ -22,25 +22,25 @@ use Illuminate\Support\Str;
         $customerResult = prepareExecuteQuery("SELECT * FROM `customers` WHERE id=?",'i',[$pickerSheet['customer_id']]);
         $customer = mysqli_fetch_assoc($customerResult);
 
-        $recieverName = $customer['businessname'];
-        $recieverTA = 't/a '.$customer['tradingas'];
+        $receiverName = $customer['businessname'];
+        $receiverTA = 't/a '.$customer['tradingas'];
         $ca = ClientAddress::where('client_id', $pickerSheet['customer_id'])->where('address_id', $pickerSheet['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
-        $recieverAddress1 = $ca->address_1 . '<br/>';
-        $recieverAddress2 = $ca->address_2 . '<br/>';
-        $recieverAddress3 = $ca->address_3 . '<br/>';
-        $recieverPostCode = $ca->postcode . '<br/>';
+        $receiverAddress1 = $ca->address_1 . '<br/>';
+        $receiverAddress2 = $ca->address_2 . '<br/>';
+        $receiverAddress3 = $ca->address_3 . '<br/>';
+        $receiverPostCode = $ca->postcode . '<br/>';
     }
     else
     {
         $customerResult = prepareExecuteQuery("SELECT * FROM `supplier` WHERE id=?",'i',[$pickerSheet['customer_id']]);
         $customer = mysqli_fetch_assoc($customerResult);
 
-        $recieverName = $customer['name'];
-        $recieverTA = "";
-        $recieverAddress1 = $customer['address_1'] . '<br/>';
-        $recieverAddress2 = $customer['address_2'] . '<br/>';
-        $recieverAddress3 = $customer['address_3'] . '<br/>';
-        $recieverPostCode = $customer['postcode'] . '<br/>';
+        $receiverName = $customer['name'];
+        $receiverTA = "";
+        $receiverAddress1 = $customer['address_1'] . '<br/>';
+        $receiverAddress2 = $customer['address_2'] . '<br/>';
+        $receiverAddress3 = $customer['address_3'] . '<br/>';
+        $receiverPostCode = $customer['postcode'] . '<br/>';
     }
 
 
@@ -150,7 +150,7 @@ use Illuminate\Support\Str;
 		<?php } ?><br/>
 		<div class="customer_info" style="flex-wrap: wrap;">
 			<div style="padding-bottom:10px;font-size: 18px;width: 50%;">
-				<label><b>Customer Name:</b> <?php echo $recieverName; ?></label><br/>
+				<label><b>Customer Name:</b> <?php echo $receiverName; ?></label><br/>
 				<label><b>Order Number:</b> <?php echo $pickerSheet['id']; ?></label>
 			</div>
 
@@ -162,16 +162,16 @@ use Illuminate\Support\Str;
 				<label><b>Delivery Address:</b>
 			<div class="deliverybox">
 				<p>
- 					<?php echo $recieverName; ?><br/>
-					<?php echo $recieverTA; ?><br/>
+ 					<?php echo $receiverName; ?><br/>
+					<?php echo $receiverTA; ?><br/>
 					<?php
 
 
 
-						echo $recieverAddress1 . '<br/>';
-						echo $recieverAddress2 . '<br/>';
-						echo $recieverAddress3 . '<br/>';
-						echo $recieverPostCode . '<br/>';
+						echo $receiverAddress1 . '<br/>';
+						echo $receiverAddress2 . '<br/>';
+						echo $receiverAddress3 . '<br/>';
+						echo $receiverPostCode . '<br/>';
 					?>
 
 				</p>
