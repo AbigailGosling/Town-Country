@@ -140,16 +140,16 @@ use Illuminate\Support\Facades\Auth;
             $disabledUsers = [];
             $sellPermission = Permission::find(1);
 			foreach ($users as $row){
-                if ($row->disabled == false && $row->hasPermission($sellPermission)){
+                if ($row->disabled == false && $row->is_hidden == false && $row->hasPermission($sellPermission)){
                     ?><option value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
                 }
                 else $disabledUsers[] = $row;
 			}
             ?>
-            <option value="" disabled>Other Users</option>
+            <option value="" disabled><span style="color:gray">Historic Users</span></option>
             <?php
             foreach ($disabledUsers as $row){
-                ?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+                ?><option style="color:gray" value="<?php echo $row['id']; ?>" <?php if(request()->input('user_id') == $row['id']){ echo 'selected'; } ?>><span style="color:gray;"><s><?php echo $row['name']; ?></s></span></option><?php
             }
 		?>
 	</select>

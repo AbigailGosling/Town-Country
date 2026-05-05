@@ -101,7 +101,7 @@ class User extends Authenticatable
     {
         $this->timestamps = false;
         $this->two_factor_secret = strtoupper(Str::random(5));
-        $this->two_factor_expires_at = now()->addMinutes(10);
+        $this->two_factor_expires_at = now()->addMinutes(20);
         $this->save();
     }
     public function resetTwoFactorCode()

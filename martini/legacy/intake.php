@@ -814,13 +814,14 @@ use Illuminate\Support\Str;
 					<td><?php
 
 							$cut_id = $row['cut_id'];
+                            if ($qAppend2 != ''){
+                                $xk = "SELECT * FROM `weights` WHERE " . $qAppend2;
+                                $yk = prepareExecuteQuery($xk);
 
-							$xk = "SELECT * FROM `weights` WHERE " . $qAppend2;
-							$yk = prepareExecuteQuery($xk);
-							// $ykRow = mysqli_fetch_array($yk);
-
-							$qAppend2 = '';
-							echo $count = mysqli_num_rows($yk);
+                                $qAppend2 = '';
+                                echo $count = mysqli_num_rows($yk);
+                            }
+                            else echo $count = 0;
 
 
 							$totalCases = $totalCases + $count;
