@@ -37,9 +37,9 @@ class CheckShortPick extends Command
      */
     public function handle()
     {
-        $pick = PickerSheet::with(["pickWeightOut","pickerItems"])->find($this->argument('id'));
+        $pick = PickerSheet::with(["pickWeightOuts","pickerItems"])->find($this->argument('id'));
         $weightIDs = [];
-        foreach ($pick->pickWeightOut as $palletOut){
+        foreach ($pick->pickWeightOuts as $palletOut){
             $weightIDs[] = $palletOut->weight_ids;
         }
         $weightIDs = implode(",",$weightIDs);
