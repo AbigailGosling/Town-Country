@@ -209,6 +209,7 @@ class UserController extends Controller
         $user->name = $input['name'];
         $user->email = $input['email'];
         $user->actual_email = $input['actual_email'] ?? "";
+        $user->receive_short_stock = array_key_exists("receive_short_stock", $input);
         $user->disabled = array_key_exists("disabled", $input);
         $user->is_hidden = array_key_exists("hidden", $input);
         $user->use_two_factor = array_key_exists("use_two_factor", $input);

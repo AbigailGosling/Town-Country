@@ -14,7 +14,7 @@
                 @else
                     @foreach($deliveries as $delivery)
                         @php
-                            $pickWeightOut = $delivery->pickWeightOut->first();
+                            $pickWeightOut = $delivery->pickWeightOuts->first();
                         @endphp
                         <x-draggable-pick :pickWeightOut="$pickWeightOut" :pickerSheet="$delivery"/>
                     @endforeach

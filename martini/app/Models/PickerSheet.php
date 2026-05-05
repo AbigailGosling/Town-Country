@@ -8,6 +8,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -98,12 +99,20 @@ protected $connection = 'tandc_live';
 		'is_return_to_supplier',
 		'goods_out_notes'
 	];
-    public function pickWeightOut():HasMany
+    public function pickWeightOuts():HasMany
     {
         return $this->hasMany(PickWeightOut::class,"pickersheet_id","id");
     }
     public function pickerItems():HasMany
     {
         return $this->hasMany(PickerItem::class,"pickersheet_id","id");
+    }
+    public function customer():BelongsTo
+    {
+        return $this->belongsTo(Customer::class,"customer_id","id");
+    }
+    public function getAddress():ClientAddress
+    {
+        return ClientAddress::where([["address_id",$this->addressid],["client_id",$this->customer_id],["client_type","customer"]])->first();
     }
 }

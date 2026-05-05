@@ -136,6 +136,7 @@ class OutgoingPalletsLoadingController extends Controller
 
         // Compose response with related info
         $data = [
+            'id' => (int) $vehicle->id,
             'reg' => $vehicle->reg,
             'type' => $vehicle->vehicleType ? $vehicle->vehicleType->name : null,
             'make' => $vehicle->make,
@@ -552,26 +553,29 @@ class OutgoingPalletsLoadingController extends Controller
                 ]
         ];
 
-        try {
-                $client = new \GuzzleHttp\Client([
-                        'verify' => 'C:\\inetpub\\intakemaster\\certs\\cacert.pem',
-                ]);
-                $response = $client->post('https://api.openai.com/v1/chat/completions', [
-                        'headers' => [
-                                'Content-Type' => 'application/json',
-                                'Authorization' => 'Bearer ' . $apiKey,
-                        ],
-                        'json' => $payload,
-                ]);
-                $data = json_decode($response->getBody(), true);
-                $itinerary = $data['choices'][0]['message']['content'] ?? '';
-                return response()->json(['itinerary' => $itinerary]);
-        } catch (\Exception $e) {
-                return response()->json([
-                        'error' => 'OpenAI request failed',
-                        'detail' => $e->getMessage(),
-                ], 500);
-        }
+        // try {
+        //         $client = new \GuzzleHttp\Client([
+        //                 'verify' => 'C:\\inetpub\\intakemaster\\certs\\cacert.pem',
+        //         ]);
+        //         $response = $client->post('https://api.openai.com/v1/chat/completions', [
+        //                 'headers' => [
+        //                         'Content-Type' => 'application/json',
+        //                         'Authorization' => 'Bearer ' . $apiKey,
+        //                 ],
+        //                 'json' => $payload,
+        //         ]);
+        //         $data = json_decode($response->getBody(), true);
+        //         $itinerary = $data['choices'][0]['message']['content'] ?? '';
+        //         return response()->json(['itinerary' => $itinerary]);
+        // } catch (\Exception $e) {
+        //         return response()->json([
+        //                 'error' => 'OpenAI request failed',
+        //                 'detail' => $e->getMessage(),
+        //         ], 500);
+        // }
+        return response()->json([
+                'error' => 'OpenAI integration is currently disabled in this environment.',
+        ], 503);
     }
 
     public function commitAllocations(Request $request): JsonResponse

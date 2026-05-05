@@ -5,7 +5,6 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class OutgoingPallet extends Model
 {
@@ -21,6 +20,7 @@ class OutgoingPallet extends Model
         'address_id',
         'estimated_delivery_date',
         'dispatched',
+        'pod_sent',
     ];
 
     protected $casts = [
@@ -29,6 +29,7 @@ class OutgoingPallet extends Model
         'outgoing_pallet_type_id' => 'integer',
         'estimated_delivery_date' => 'date',
         'dispatched' => 'boolean',
+        'pod_sent' => 'boolean',
     ];
 
     public function customer()
