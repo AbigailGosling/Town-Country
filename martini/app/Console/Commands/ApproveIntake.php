@@ -159,8 +159,9 @@ class ApproveIntake extends Command
         InternalCache::forget("approve_intake_start_".$intake->id);
         return Command::SUCCESS;
     }
-    private function loggedDataChange(int $user_id, string $type, int $id, string $body = "")
+    private function loggedDataChange(int $user_id, string $type, int $id, ?string $body = "")
     {
+        if ($body == null) $body = "";
         $log = new CommentLogging();
         $log->entity_id = $id;
         $log->type = $type;
