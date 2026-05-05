@@ -123,8 +123,8 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false)
                 abort(500);
                 die();
             }
-            loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
-            loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
+            loggedDataChange("picksheet_note",$pickersheet_id,$reservation->picksheet_note);
+            loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$reservation->order_reference_number);
 
             foreach (ReservationProduct::where([["reservation_id",$reservation->id],["deleted",0]])->get() as $resProduct)
             {
