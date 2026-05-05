@@ -191,7 +191,7 @@ use Illuminate\Support\Facades\Auth;
 
     <?php
         if(request()->input('src') == 'sales'){
-            $previousSales = PickerSheet::where('customer_id', $customer_id)->orderBy('created_at', 'desc')->limit(16)->get();
+            $previousSales = PickerSheet::where('customer_id', $customer_id)->orderBy('date', 'desc')->limit(14)->get();
             ?>
             setTimeout(function() {
             var html = '<label>Previous Sales</label>';
@@ -205,7 +205,7 @@ use Illuminate\Support\Facades\Auth;
             html += '</thead>';
             html += '<tbody>';
             <?php
-                $maxLines = 16;
+                $maxLines = 14;
                 $lines = 0;
                 foreach($previousSales as $sale){
                     if($lines >= $maxLines) break;
@@ -224,7 +224,7 @@ use Illuminate\Support\Facades\Auth;
 						if($lines >= $maxLines) break;
                         ?>
 						html += '<tr>';
-						html += '<td style="padding:2px;"><?php echo date('d/m/Y', strtotime($sale->created_at)); ?></td>';
+						html += '<td style="padding:2px;"><?php echo date('d/m/Y', strtotime($sale->date)); ?></td>';
 						html += '<td style="padding:2px;"><?php echo $sale->estimated_delivery_date; ?></td>';
 						html += '<td style="padding:2px;"><?php echo $cut_group['total_count']; ?></td>';
                         html += '<td style="padding:2px;"><?php echo $cut_group["species"]->name." ".$cut_group["cut"]->name; ?></td>';

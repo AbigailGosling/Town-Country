@@ -34,20 +34,23 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         if ($user && $user->disabled == 0)
         {
-            if ($user->use_two_factor == 0)
-            {
-                $request->session()->regenerate();
-                session_start();
-                $_SESSION['USER'] = $user->id;
-                session_write_close();
-                return redirect()->intended(RouteServiceProvider::HOME);
-            }
-            else
+            /**
+            *    COMMENT THIS OUT TO DISABLE TFA - ABBY
+            */
+            if ($user->use_two_factor == 1)
             {
                 $user->generateTwoFactorCode();
                 $user->notify(new TwoFactorCode());
                 return redirect()->route('verify.index');
             }
+            /**
+            *    END OF COMMENT
+            */
+            $request->session()->regenerate();
+            session_start();
+            $_SESSION['USER'] = $user->id;
+            session_write_close();
+            return redirect()->intended(RouteServiceProvider::HOME);
         }
         else
         {
