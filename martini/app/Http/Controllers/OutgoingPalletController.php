@@ -26,7 +26,7 @@ class OutgoingPalletController extends Controller
     public function index(): View
     {
 
-        $startDate = Carbon::today()->addDays();
+        $startDate = Carbon::today()->addDays(0);
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()
@@ -96,7 +96,7 @@ class OutgoingPalletController extends Controller
         $addressId = $request->query('address_id');
 
         // Find all pickersheets for this customer/address in the next 3 days
-        $startDate = Carbon::today()->addDays();
+        $startDate = Carbon::today()->addDays(0);
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()

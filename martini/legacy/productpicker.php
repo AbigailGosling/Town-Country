@@ -33,7 +33,7 @@ include('includes/frontHeader.php');
 			<label>Picksheet Notes</label><br/>
 			<textarea class="form-control" name="picksheet_note" style="height:85px;padding:10px;resize:none;"></textarea>
 		</div>
-		<div class="col" id="previous_sales" style="position: absolute; top: 0; right: 0; width: 48%; max-width: 48%; flex: 0 0 48%;"></div>
+		<div class="col" id="previous_sales" style="position: absolute; top: 0; right: 0; width: 48%; max-width: 48%; flex: 0 0 48%; overflow:auto; max-height:400px;"></div>
 	</div>
 
     <div class="row">
