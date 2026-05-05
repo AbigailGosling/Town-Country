@@ -1,15 +1,12 @@
 <?php
 
-use App\Models\Customer;
-use App\Models\InboundContainer;
+use App\Helpers\InternalCache;
 use App\Models\Intake;
 use App\Models\Pallet;
 use App\Models\Product;
-use App\Models\Reservation;
-use App\Models\ReservationProduct;
-use App\Models\Site;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
 require(__DIR__.'/../functions.php');
@@ -33,6 +30,24 @@ if ($intake->pallets->count() == 0)
 <script>
 	window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=1';
 </script> <?php exit;
+}
+$transaction_id = "approve_intake_start_".$intake->id;
+if ($transaction_id == null || $transaction_id == "")
+{
+    ?>
+    <script>
+        window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=4';
+    </script> <?php exit;
+}
+else if (InternalCache::has($transaction_id))
+{
+    ?>
+    <script>
+        window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=5';
+    </script> <?php exit;
+}
+else {
+    InternalCache::put($transaction_id, getmypid(), 3600);
 }
 /**
 * @var Pallet $pallet
@@ -58,97 +73,15 @@ foreach ($intake->pallets as $pallet)
         }
     }
 }
-if ($user->hasPermission("approve_intake") && $intake->approved == false)
+if ($user->hasPermission("approve_intake") && $intake->approved == false && InternalCache::get($transaction_id) == getmypid())
 {
     $intake->approving_start = Carbon::now();
     $intake->approved_by = Auth::id();
     $intake->save();
-    if (isset($intake->container_id)) {
-        $container = InboundContainer::find($intake->container_id);
-        $products = $container->getProducts();
-        /**
-         * @var ContainerProduct $containerProduct
-        */
-        foreach ($products as $containerProduct)
-        {
-            if ($containerProduct->deleted == 1) continue;
-            $prod = Product::find($containerProduct->product_id);
-            if ($prod == null) continue;
-            $pallet=Pallet::find($prod->pallet_id);
-            $pallet->user_id = Auth::id();
-            $pallet->save();
-        }
-        $products = $products->pluck("product_id")->toArray();
-        $reservationProducts = ReservationProduct::whereIn("product_id",$products)->where("deleted",0)->groupBy("reservation_id")->pluck("reservation_id")->toArray();
-        $reservations = Reservation::whereIn("id",$reservationProducts)->where([["deleted",0],["processed",0]])->get();
-        $today = date('Y-m-d');
-        /**
-         * @var Reservation $reservation
-         */
-        foreach ($reservations as $reservation)
-        {
-            $customer = Customer::find($reservation->customer_id);
-            $site = Site::find($customer->site_id);
-            $siteCutOffHoursAndMinutes = explode(":",$site->cutoff);
-            /**
-             * @var Carbon $targetDate
-             * @var Carbon $delDate
-             * @var Carbon $sitesCutOffToday
-             */
-            $sitesCutOffToday = Carbon::now()->hour($siteCutOffHoursAndMinutes[0])->minute($siteCutOffHoursAndMinutes[1])->second(0)->micro(0);
-            $targetDate = ($reservation->eta->timestamp > Carbon::now()->timestamp)?$reservation->eta:Carbon::now();
-            if ($targetDate->dayOfWeek == Carbon::FRIDAY || $targetDate->dayOfWeek == Carbon::SATURDAY || $targetDate->dayOfWeek == Carbon::SUNDAY){
-                $targetDate->next(Carbon::MONDAY);
-            }
-            if ($targetDate->timestamp > $sitesCutOffToday->timestamp){
-                $delDate =  $targetDate->copy();
-            }
-            else {
-                $delDate = $sitesCutOffToday->copy();
-                $delDate->addDay();
-            }
-            $weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
-            $weekdayInt = $weekdayLookup[$delDate->dayOfWeek];
-
-            while ($customer->delivery_day_checking == 1 && ($weekdayInt & $customer->delivery_days) == 0) {
-                $delDate->addDay();
-                $weekdayInt = $weekdayLookup[$delDate->dayOfWeek];
-            }
-            $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id) VALUES (?,?,?,?,?,NOW(),?,?,?)";
-            $y = prepareExecuteQuery($x,'iiisssss',[$picker_id,$reservation->user_id,$reservation->customer_id,$delDate->format("d/m/Y"),$reservation->order_reference_number,$reservation->address_id,$reservation->picksheet_note,null],true);
-            $pickersheet_id = $y;
-
-            if ((int)$pickersheet_id !== $pickersheet_id)
-            {
-                abort(500);
-                die();
-            }
-            loggedDataChange("picksheet_note",$pickersheet_id,$reservation->picksheet_note);
-            loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$reservation->order_reference_number);
-
-            foreach (ReservationProduct::where([["reservation_id",$reservation->id],["deleted",0]])->get() as $resProduct)
-            {
-                $product_id = $resProduct->product_id;
-                $quantity = $resProduct->target_count;
-                $target_weight = 0;
-
-
-                $price = $resProduct->price;
-                $price_type = null;
-                for($i=0;$i<$quantity;$i++){
-                    $x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-                    $y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
-                }
-            }
-            $reservation->pickersheet_id = $pickersheet_id;
-            $reservation->processed = true;
-            $reservation->save();
-            pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
-        }
-
-    }
-    $x = "UPDATE `intake` SET `approved` = 1, `approved_by` = ?, `approved_date` = CURRENT_TIMESTAMP() WHERE id = ?";
-    $y = prepareExecuteQuery($x,'ii',[$user->id,$intake->id]);
+    $cacheKey = 'approve_intake_' . Str::uuid();
+    InternalCache::put($cacheKey, $intake->id, 3600);
+    pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:approve_intake '.$cacheKey.' >NUL 2>NUL"', 'r'));
+    sleep(1);
 }
 ?>
 <script>
