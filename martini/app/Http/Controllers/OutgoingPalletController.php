@@ -100,7 +100,7 @@ class OutgoingPalletController extends Controller
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()
-            ->with('pickWeightOut')
+            ->with('pickWeightOuts')
             ->where('customer_id', $customerId)
             ->where('addressid', $addressId)
             ->where('deleted', 0)
