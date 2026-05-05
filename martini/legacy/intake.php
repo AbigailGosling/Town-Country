@@ -5,6 +5,7 @@ use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\DocType;
 use App\Models\Intake;
+use App\Models\IntakeScanningFile;
 use App\Models\Nationality;
 use App\Models\Pallet;
 use App\Models\Product;
@@ -501,7 +502,9 @@ use Illuminate\Support\Str;
 		<tr>
 		<?php if ($intake['approved']==1) {?>
 			<td style="width:33%"><b style="color:green">Intake Approved</b></td><td align="center" style="width:33%"><?php echo ($intake['approved_by'] && $intake['approved_by']>-1)?User::find($intake['approved_by'])->name:"Unknown";?></td><td align="right" style="width:33%"><?php echo DateTime::createFromFormat('Y-m-d H:i:s',$intake['approved_date'])->format('d/m/Y H:i:s');?></td>
-		<?php } else {?>
+		<?php } else if ($intake['approving_start'] != null) {?>
+			<td><b style="color:orange">Intake Approval In Progress</b></td><td align="center" style="width:33%"><?php echo ($intake['approved_by'] && $intake['approved_by']>-1)?User::find($intake['approved_by'])->name:"Unknown";?></td><td align="right" style="width:33%"><?php echo DateTime::createFromFormat('Y-m-d H:i:s',$intake['approving_start'])->format('d/m/Y H:i:s');?></td>
+        <?php } else {?>
 			<td><b style="color:red">Intake Not Yet Approved</b></td><?php if (User::find(Auth::id())->hasPermission("approve_intake")) {?><td style="width:50%" align="right"><form id="approveIntake" name="approveIntake" method="POST" action="scripts/approveIntake.php"><input type="hidden" name="_token" value="<?php echo csrf_token();?>"><input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>"><input id="appButton" name="appButton" type="button" onclick="approvingIntake();" value="Approve Intake"></form></td><?php }?>
 		<?php } ?>
 		</tr>
@@ -1023,8 +1026,69 @@ use Illuminate\Support\Str;
 
 		</table>
         <br/>
- 	<?php } if ($intake['returned']==1) { ?>
-    <br/>
+	<?php }
+		$acceptedScanningResults = IntakeScanningFile::query()
+			->with('sourceFileRecord.file')
+			->where('intake_id', $current_intake_id)
+			->where('deleted', false)
+			->where('file_role', IntakeScanningFile::ROLE_JSON)
+			->where(function ($query) {
+				$query->where('accepted', true)
+					->orWhereHas('sourceFileRecord', function ($sourceQuery) {
+						$sourceQuery->where('accepted', true)
+							->where('deleted', false);
+					});
+			})
+			->orderBy('sequence')
+			->orderBy('id')
+			->get();
+
+		if ($acceptedScanningResults->isNotEmpty()) { ?>
+	<br/>
+	<table border="1" cellpadding="5" width="100%">
+		<tr>
+			<td colspan="11" align="center"><b>Accepted Intake Scanning Results</b></td>
+		</tr>
+		<tr>
+			<th></th>
+			<th></th>
+			<th>Kill Date</th>
+			<th>Pack Date</th>
+			<th>Best Before</th>
+			<th>Storage Temp</th>
+			<th>Country</th>
+			<th>Species</th>
+			<th>Cut</th>
+			<th>Net Weight</th>
+			<th>Fresh/Frozen</th>
+		</tr>
+		<?php foreach ($acceptedScanningResults as $scanResult) {
+			$payload = is_array($scanResult->json_payload) ? $scanResult->json_payload : [];
+			$displayValue = static function (array $data, string $key): string {
+				$value = trim((string) ($data[$key] ?? ''));
+
+				return $value !== '' ? $value : '?';
+			};
+			$imageFileId = $scanResult->sourceFileRecord?->file?->id;
+			?>
+			<tr>
+				<td style="width: 100px;"><a href="javascript:;" class="add_product" style="margin: 0;" onclick="openAddPalletFromScan(<?php echo $current_intake_id; ?>,<?php echo $scanResult->id; ?>);">Add</a></td>
+				<td><?php if ($imageFileId !== null) { ?><a href="<?php echo route('files.view', ['file' => $imageFileId]); ?>" target="_blank">View Image</a><?php } ?></td>
+				<td><?php echo e($displayValue($payload, 'killDate')); ?></td>
+				<td><?php echo e($displayValue($payload, 'packDate')); ?></td>
+				<td><?php echo e($displayValue($payload, 'bestBeforeDate')); ?></td>
+				<td><?php echo e($displayValue($payload, 'storageTemperature')); ?></td>
+				<td><?php echo e($displayValue($payload, 'countryOfOrigin')); ?></td>
+				<td><?php echo e($displayValue($payload, 'species')); ?></td>
+				<td><?php echo e($displayValue($payload, 'cuts')); ?></td>
+				<td><?php echo e($displayValue($payload, 'netWeight')); ?></td>
+				<td><?php echo e($displayValue($payload, 'freshFrozen')); ?></td>
+			</tr>
+		<?php } ?>
+	</table>
+	<br/>
+	<?php }
+		if ($intake['returned']==1) { ?>
      <table border="1" cellpadding="5" width="100%">
         <tr>
             <td colspan="10" align="center"><b>Stock on Original Invoice</b></td>
@@ -1320,6 +1384,15 @@ use Illuminate\Support\Str;
 		$('#box').fadeIn();
 	}
 
+	function openAddPalletFromScan(intake_id, intake_scanning_file_id){
+
+		$.get( "ajax/addPalletForm.php?intake_id=" + intake_id + "&intake_scanning_file_id=" + intake_scanning_file_id, function( data ) {
+			$('#box').html(data);
+		});
+
+		$('#box').fadeIn();
+	}
+
 
 	function openAddtoPallet(intake_id, pallet_id){
 
@@ -1463,6 +1536,16 @@ use Illuminate\Support\Str;
             case 3:
                 {
                     $errorMessage = "Cannot Approve: Products are missing information";
+                    break;
+                }
+            case 4:
+                {
+                    $errorMessage = "Cannot Approve: Invalid Transaction";
+                    break;
+                }
+            case 5:
+                {
+                    $errorMessage = "Cannot Approve: Transaction Already In Progress";
                     break;
                 }
         }
