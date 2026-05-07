@@ -682,6 +682,8 @@ class OutgoingPalletsLoadingController extends Controller
 
         foreach ($allocations as $allocation) {
             $pallet = $allocation->outgoingPallet;
+            $pallet->dispatched = true;
+            $pallet->save();
             if (!$pallet) {
                 continue;
             }
