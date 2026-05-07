@@ -205,6 +205,17 @@ if (!isset($dateType)) $dateType = "assembled";
                     $data = $dataRanges[$index];
                     $tablenameSimplified = preg_replace("/\W|_/", '', strtolower($table->name));
                     if(count($data)==0 && $index!=0)continue;
+
+                    // Pre-compute column metadata to avoid repeated string operations
+                    $columnMetadata = [];
+                    foreach($columns as $column) {
+                        $colLabel = $column->getLabel($table->mode);
+                        $columnMetadata[$colLabel] = [
+                            'isProfitColumn' => stripos($colLabel, 'Profit') !== false,
+                            'isActualProfit' => stripos($colLabel, 'Actual') !== false,
+                            'columnSimplified' => preg_replace("/\W|_/", '', strtolower($colLabel))
+                        ];
+                    }
                 ?>
                 @if ($index%2==0)
                 <thead class="bg-sky-200" style="position: sticky; top: 0;"><tr>
@@ -221,14 +232,14 @@ if (!isset($dateType)) $dateType = "assembled";
                     <tr>
                         @foreach($columns as $column)
                         <?php
-                        $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
                         $col = $column->getLabel($table->mode);
+                        $t = App\Helpers\ReportHelper::finaliseCell($column,$row,$table->mode);
                         $d->$col = preg_replace("/[£,]/", '', $t);
-                        $columnNameSimplified = preg_replace("/\W|_/", '', strtolower($column->getLabel($table->mode)));
-                        $fieldName = $tablenameSimplified . '_' .$columnNameSimplified . '_' .$row['internal_id'];
-                        if (stripos($col,"Profit")!==false)
+                        $metadata = $columnMetadata[$col];
+                        $fieldName = $tablenameSimplified . '_' . $metadata['columnSimplified'] . '_' .$row['internal_id'];
+                        if ($metadata['isProfitColumn'])
                         {
-                            $target = (stripos($col,"Actual"))?"Actual Cost Value":"Cost Value";
+                            $target = $metadata['isActualProfit'] ? "Actual Cost Value" : "Cost Value";
                             $rollingProfit = filter_var($d->$col, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
                             $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                             $rollingCost = filter_var($d->$target, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
@@ -265,11 +276,12 @@ if (!isset($dateType)) $dateType = "assembled";
                     $h = App\Helpers\ReportHelper::resolveHeader($column,$table->mode);
                     $t = App\Helpers\ReportHelper::resolveFooter($column,$processed[$table->name],$footerResults,$table->mode);
                     $footerResult[$h] = preg_replace("/[£,]/", '',$t);
+                    $footerMetadata = $columnMetadata[$h] ?? ['isProfitColumn' => false, 'isActualProfit' => false];
                     ?>
                     <x-data-table-header>{{$t}}
-                    @if (stripos($h,"Profit")!==false)
+                    @if ($footerMetadata['isProfitColumn'])
                     <?php
-                        $target = (stripos($h,"Actual"))?"Actual Cost Value":"Cost Value";
+                        $target = $footerMetadata['isActualProfit'] ? "Actual Cost Value" : "Cost Value";
                         $rollingProfit = filter_var($footerResult[$h], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
                         $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                         $rollingCost = filter_var($footerResult[$target], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
