@@ -125,10 +125,18 @@ use Illuminate\Support\Facades\Auth;
 	$generalFormat = "word-wrap: break-all; overflow:hidden;";
 	$divFormat =  "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
 	$cellFormat = "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
+    $firstTable = $report->getTables()[0];
     foreach ($report->getTables() as $index=>$table){
         if ($table->name == "Supplier Returns") continue;
         $processed[$table->name] = [];
         $reportColumns =$table->getColumns();
+
+        // Build column lookup map for O(1) access instead of O(n) search
+        $columnLookup = [];
+        foreach($reportColumns as $reportCol) {
+            $label = $reportCol->getLabel($firstTable);
+            $columnLookup[$label] = $reportCol;
+        }
         ?>
 		<table style="table-layout:fixed;" id="resultsTable">
 		<thead style="position: sticky; top: 0; background-color: white;"><tr><th align="left"colspan="<?php echo count($garyCols); ?>"><?php echo $table->name; ?></th></tr>
@@ -186,21 +194,18 @@ use Illuminate\Support\Facades\Auth;
                 {
                     echo $unitlable;
                 }
-                else foreach($reportColumns as $reportCol)
+                else if (isset($columnLookup[$garyCol]))
                 {
-                    if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
-                    {
-                        $t = ReportHelper::finaliseCell($reportCol,$row,$table->mode);
+                    $reportCol = $columnLookup[$garyCol];
+                    $t = ReportHelper::finaliseCell($reportCol,$row,$table->mode);
 						$col = $reportCol->getLabel($table->mode);
 						$d->$col = preg_replace("/[£,]/", '', $t);
-                        if ($garyCol == "Invoice")
-                        {
-                            $t = '<a style="'.$divFormat.' font-size:15px;" href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
-                        }
-						$kgS=($garyCol=="kg")?" kg":"";
-                        echo $t.$kgS;
-                        break;
+                    if ($garyCol == "Invoice")
+                    {
+                        $t = '<a style="'.$divFormat.' font-size:15px;" href="invoice.php?id='.$t.'" target="_blank">'.$t.'</a>';
                     }
+						$kgS=($garyCol=="kg")?" kg":"";
+                    echo $t.$kgS;
                 }
                 echo "</div></td>";
                 if ($index % 2 == 1 && (strpos($garyCol,"Profit") == false && floatval($d->$col) > 0)) $d->$col = -$d->$col;
@@ -223,16 +228,13 @@ use Illuminate\Support\Facades\Auth;
 		{
 			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">';
 		}
-		else foreach($reportColumns as $reportCol)
+		else if (isset($columnLookup[$garyCol]))
 		{
-			if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
-			{
-				$col = $reportCol->getLabel($table->mode);
-				$re = ReportHelper::resolveFooter($reportCol,[],$processed[$table->name],$table->mode);
-				$kgS=($garyCol=="kg")?" kg":"";
-				echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$re.$kgS;
-				break;
-			}
+			$reportCol = $columnLookup[$garyCol];
+			$col = $reportCol->getLabel($table->mode);
+			$re = ReportHelper::resolveFooter($reportCol,[],$processed[$table->name],$table->mode);
+			$kgS=($garyCol=="kg")?" kg":"";
+			echo '<td style="'.$cellFormat.' font-size:12px;"><div class="" style="'.$divFormat.' font-size:12px;">'.$re.$kgS;
 		}
 		$summary->$garyCol = preg_replace("/[£,]/", '', $re);
 		if ($garyCol == "Profit" || $garyCol == "Actual Profit")
@@ -293,16 +295,13 @@ foreach($garyCols as $garyCol=>$discard)
 				$rolling = floorDec(floatval($rolling)*$magShift,0);
 				$result += $rolling;
 			}
-			foreach($reportColumns as $reportCol)
+			if (isset($columnLookup[$garyCol]))
 			{
-				if ($reportCol->getLabel($report->getTables()[0]) == $garyCol)
-				{
-					$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
-					$col = $reportCol->getLabel($table->mode);
-					$kgS=($garyCol=="kg")?" kg":"";
-					echo $t.$kgS;
-					break;
-				}
+				$reportCol = $columnLookup[$garyCol];
+				$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
+				$col = $reportCol->getLabel($table->mode);
+				$kgS=($garyCol=="kg")?" kg":"";
+				echo $t.$kgS;
 			}
 		}
 		$summary->$garyCol = preg_replace("/[£,]/", '', $t);
