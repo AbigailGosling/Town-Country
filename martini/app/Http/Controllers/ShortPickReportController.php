@@ -30,7 +30,7 @@ class ShortPickReportController extends Controller
         $hasDateRange = $request->filled('start_date') && $request->filled('end_date');
 
         if ($hasPicksheetId) {
-            $pick = PickerSheet::with(['pickWeightOut', 'pickerItems'])->find((int) $request->input('picksheet_id'));
+            $pick = PickerSheet::with(['pickWeightOuts', 'pickerItems'])->find((int) $request->input('picksheet_id'));
             if ($pick !== null) {
                 $row = $this->buildShortPickRow($pick);
                 if ($row !== null) {
@@ -41,7 +41,7 @@ class ShortPickReportController extends Controller
             $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
             $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
 
-            $picks = PickerSheet::with(['pickWeightOut', 'pickerItems'])
+            $picks = PickerSheet::with(['pickWeightOuts', 'pickerItems'])
                 ->where('completed', true)
                 ->whereBetween('date', [$startDate, $endDate])
                 ->get();
@@ -66,7 +66,7 @@ class ShortPickReportController extends Controller
 
     private function buildShortPickRow(PickerSheet $pick): ?array
     {
-        $weightIds = $pick->pickWeightOut
+        $weightIds = $pick->pickWeightOuts
             ->flatMap(function ($palletOut) {
                 return explode(',', (string) $palletOut->weight_ids);
             })
