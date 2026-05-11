@@ -226,7 +226,7 @@ use Illuminate\Support\Str;
 
 		$temp_id = $product['cooling_id'];
 	?>
-	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" >
+	<div class="productGroup <?php if($temp_id == 1){ echo 'fresh'; }else{ echo 'frozen'; } ?>" id="topform<?php echo $product['id']; ?>" targetamount="<?php echo $numRequired; ?>" dolav="<?php echo ($product['akg'] != '')?"y":""; ?>">
 	<?php
 
 		$smallestDate = $product['range_from'];
@@ -667,9 +667,10 @@ function mainFormSucess(){
 
 		$('.productGroup.<?php echo request()->input('type'); ?>').each(function(){
 
+            var isDolav = ($(this).attr('dolav')=="y");
 			var numRequired = $(this).attr('targetamount');
 			var selectedWeightsCount = parseInt($(this).find('.picksheetType').find('.counter').val());
-			if(selectedWeightsCount)
+			if(selectedWeightsCount || isDolav)
 			{
 				shouldSubmit = true;
 			}

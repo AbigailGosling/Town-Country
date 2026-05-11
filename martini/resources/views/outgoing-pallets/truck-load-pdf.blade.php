@@ -320,6 +320,9 @@
                 <tr>
                     <td style="border: 1px solid #000000; padding: 6px; font-weight: 700;">Please collect any empty pallets and trays from customers. Please ensure that lorries are returned at the end of the day with a full tank of fuel and AdBlue is filled up on return to the yard.</td>
                 </tr>
+                <tr>
+                    <td style="border: 1px solid #000000; padding: 6px; font-weight: bold; color:red;">No driver is to change their route to anything other than what is on the load sheet. Runs can only be adjusted if instructed by a manager.</td>
+                </tr>
             </table>
         </div>
         <div>
