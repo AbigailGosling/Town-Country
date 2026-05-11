@@ -166,11 +166,11 @@ use Illuminate\Support\Facades\Auth;
 			while($item = mysqli_fetch_array($y)){
 				$vars[]=$item['product_id'];
 			}
-			$query = "SELECT * FROM `product` WHERE id IN (".implode(",",array_fill(0,count($vars),"?")).")";
+			$query = "SELECT * FROM `product` WHERE id IN (".implode(",",$vars).")";
 
- 			$yproduct = prepareExecuteQuery($query,str_repeat('i',count($vars)),$vars);
+ 			$yproduct = (count($vars)>0)?prepareExecuteQuery($query)->fetch_all(MYSQLI_ASSOC):[];
 
-			while($product = mysqli_fetch_array($yproduct)){
+			foreach ($yproduct as $product){
 			?>
 			<tr class="productsRow">
 					<?php
