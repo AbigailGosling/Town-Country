@@ -669,8 +669,9 @@ use Illuminate\Support\Str;
 
 								$countQuery = prepareExecuteQuery("SELECT * FROM product WHERE " . $qPallets);
 
-								while($countRow = mysqli_fetch_array($countQuery)){
-									$t_count += $countRow['akg'];
+								while($countRow = mysqli_fetch_assoc($countQuery)){
+
+									$t_count += ($countRow['akg'] !== null && $countRow['akg'] !== "")?$countRow['akg']:0;
 								}
 
 								echo $t_count . ' kg';
