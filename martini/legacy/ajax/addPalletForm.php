@@ -1,19 +1,187 @@
 <?php
 
+use App\Models\Cut;
+use App\Models\IntakeScanningFile;
+use App\Models\Nationality;
 use App\Models\Product;
 use App\Models\Site;
+use App\Models\Species;
 
 	require(__DIR__.'/../functions.php');
 
-        $intake_id = request()->input('intake_id');
+	$intake_id = request()->input('intake_id');
     $product_id = request()->input('product_id', null);
     $cases = request()->input('cases', null);
+	$intakeScanningFileId = request()->input('intake_scanning_file_id', null);
     if ($product_id != null && $cases != null) {
         $productToDupe = Product::find($product_id);
     }
 	$x = "SELECT * FROM intake WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$intake_id]);
 	$intake = mysqli_fetch_array($y);
+
+	$temperatureRows = [];
+	$temperatureQuery = prepareExecuteQuery("SELECT * FROM temperature");
+	while ($row = mysqli_fetch_array($temperatureQuery)) {
+		$temperatureRows[] = $row;
+	}
+
+	$scanDefaults = [];
+	if (is_numeric($intakeScanningFileId)) {
+		$scanRecord = IntakeScanningFile::with(['sourceFileRecord', 'responseFileRecord'])
+			->find((int) $intakeScanningFileId);
+
+		if ($scanRecord !== null) {
+			if ($scanRecord->file_role === IntakeScanningFile::ROLE_JSON) {
+				$scanPayload = is_array($scanRecord->json_payload) ? $scanRecord->json_payload : [];
+			} else {
+				$responseRecord = $scanRecord->responseFileRecord;
+				$scanPayload = is_array($responseRecord?->json_payload) ? $responseRecord->json_payload : [];
+			}
+
+			$readPayloadValue = static function (array $payload, string $key): ?string {
+				$value = trim((string) ($payload[$key] ?? ''));
+
+				return $value !== '' && $value !== '?' ? $value : null;
+			};
+
+			$extractNumericValue = static function (?string $value): ?string {
+				if ($value === null) {
+					return null;
+				}
+
+				if (preg_match('/-?[0-9]+(?:\.[0-9]+)?/', $value, $match) === 1) {
+					return $match[0];
+				}
+
+				return null;
+			};
+
+			$resolveTemperatureId = static function (array $rows, ?string $freshFrozen, ?string $storageTemperature): ?int {
+				$candidates = array_values(array_filter([$freshFrozen, $storageTemperature]));
+				if ($candidates === []) {
+					return null;
+				}
+
+				$aliases = [
+					'fresh' => ['fresh', 'chilled'],
+					'chilled' => ['chilled', 'fresh'],
+					'frozen' => ['frozen'],
+				];
+
+				foreach ($candidates as $candidate) {
+					$normalizedCandidate = strtolower(preg_replace('/[^a-z0-9]+/', '', $candidate) ?? '');
+					$terms = $aliases[$normalizedCandidate] ?? [$normalizedCandidate];
+
+					foreach ($rows as $row) {
+						$rowLabel = strtolower(preg_replace('/[^a-z0-9]+/', '', (string) ($row['temperature'] ?? '')) ?? '');
+						foreach ($terms as $term) {
+							if ($term !== '' && ($rowLabel === $term || str_contains($rowLabel, $term) || str_contains($term, $rowLabel))) {
+								return (int) $row['id'];
+							}
+						}
+					}
+				}
+
+				return null;
+			};
+
+			$killDate = $readPayloadValue($scanPayload, 'killDate');
+			$packDate = $readPayloadValue($scanPayload, 'packDate');
+			$bestBeforeDate = $readPayloadValue($scanPayload, 'bestBeforeDate');
+			$countryOfOrigin = $readPayloadValue($scanPayload, 'countryOfOrigin');
+			$speciesName = $readPayloadValue($scanPayload, 'species');
+			$cutName = $readPayloadValue($scanPayload, 'cuts');
+			$netWeight = $extractNumericValue($readPayloadValue($scanPayload, 'netWeight'));
+			$storageTemperature = $readPayloadValue($scanPayload, 'storageTemperature');
+			$freshFrozen = $readPayloadValue($scanPayload, 'freshFrozen');
+
+			$scannedSpecies = null;
+			if ($speciesName !== null) {
+				$scannedSpecies = Species::query()->where('name', $speciesName)->first();
+				if ($scannedSpecies === null) {
+					$scannedSpecies = Species::query()->where('name', 'like', '%' . $speciesName . '%')->first();
+				}
+			}
+
+			$scannedCut = null;
+			if ($cutName !== null) {
+				$scannedCut = Cut::query()->where('name', $cutName)->first();
+				if ($scannedCut === null) {
+					$scannedCut = Cut::query()->where('name', 'like', '%' . $cutName . '%')->first();
+				}
+			}
+
+			$scannedNationality = null;
+			if ($countryOfOrigin !== null) {
+				$scannedNationality = Nationality::query()->where('name', $countryOfOrigin)->first();
+				if ($scannedNationality === null) {
+					$scannedNationality = Nationality::query()->where('name', 'like', '%' . $countryOfOrigin . '%')->first();
+				}
+			}
+
+			if ($killDate !== null) {
+				$scanDefaults['kill_date'] = $killDate;
+			}
+			if ($packDate !== null) {
+				$scanDefaults['best_by'] = $packDate;
+			}
+			if ($bestBeforeDate !== null) {
+				$scanDefaults['ubbb'] = '1';
+				$scanDefaults['best_by_range_from'] = $bestBeforeDate;
+				$scanDefaults['best_by_range_to'] = $bestBeforeDate;
+			}
+			if ($scannedNationality !== null) {
+				$scanDefaults['nationality_id'] = (int) $scannedNationality->id;
+			}
+			if ($scannedSpecies !== null) {
+				$scanDefaults['species_id'] = (int) $scannedSpecies->id;
+			}
+			if ($scannedCut !== null) {
+				$scanDefaults['cut_id'] = (int) $scannedCut->id;
+				$scanDefaults['cut_search'] = $scannedCut->name;
+			} elseif ($cutName !== null) {
+				$scanDefaults['cut_search'] = $cutName;
+			}
+
+			$temperatureId = $resolveTemperatureId($temperatureRows, $freshFrozen, $storageTemperature);
+			if ($temperatureId !== null) {
+				$scanDefaults['temperature_id'] = $temperatureId;
+			}
+
+			$productTemp = $extractNumericValue($storageTemperature);
+			if ($productTemp !== null) {
+				$scanDefaults['product_temp'] = $productTemp;
+			}
+
+			if ($netWeight !== null) {
+				$scanDefaults['individualweights'] = 'AKG';
+				$scanDefaults['akg'] = $netWeight;
+				$scanDefaults['quantity'] = '1';
+			}
+		}
+	}
+
+	$killDateValue = $productToDupe->kill_date ?? ($scanDefaults['kill_date'] ?? '');
+	$packDateValue = $productToDupe->best_by ?? ($scanDefaults['best_by'] ?? '');
+	$selectedUbbb = isset($productToDupe) ? (string) $productToDupe->ubbb : ($scanDefaults['ubbb'] ?? '0');
+	$bestByRangeFromValue = $productToDupe->range_from ?? ($scanDefaults['best_by_range_from'] ?? '');
+	$bestByRangeToValue = $productToDupe->range_to ?? ($scanDefaults['best_by_range_to'] ?? '');
+	$bestByRangeExtensionValue = $productToDupe->range_extension ?? '';
+	$selectedTemperatureId = $pallet['temperature_id'] ?? ($scanDefaults['temperature_id'] ?? null);
+	$productTempValue = $scanDefaults['product_temp'] ?? '';
+	$selectedStorageLocation = $productToDupe->storage_location ?? null;
+	$commentsValue = $productToDupe->comments ?? '';
+	$selectedNationalityId = $pallet['nationality_id'] ?? ($productToDupe->nationality_id ?? ($scanDefaults['nationality_id'] ?? null));
+	$brandSearchValue = isset($productToDupe) && $productToDupe->brand_id != null ? $productToDupe->brand->name : '';
+	$brandIdValue = isset($productToDupe) && $productToDupe->brand_id != null ? $productToDupe->brand_id : '';
+	$selectedSpeciesId = $pallet['species_id'] ?? (isset($productToDupe) ? $productToDupe->cut->species_id : ($scanDefaults['species_id'] ?? null));
+	$cutSearchValue = isset($productToDupe) ? $productToDupe->cut->name : ($scanDefaults['cut_search'] ?? '');
+	$cutIdValue = isset($productToDupe) ? $productToDupe->cut_id : ($scanDefaults['cut_id'] ?? '');
+	$selectedUnit = isset($productToDupe) ? $productToDupe->unit : 'C';
+	$quantityValue = $scanDefaults['quantity'] ?? '';
+	$selectedIndividualweights = $scanDefaults['individualweights'] ?? 'C';
+	$akgValue = $scanDefaults['akg'] ?? '';
 ?>
 <a href="javascript:;" class="close closeAddPallet"></a>
 <h1 class="int">Add a Pallet</h1>
@@ -21,6 +189,9 @@ use App\Models\Site;
 <input autocomplete="off" name="hidden" type="text" style="display:none;">
 <?php if(isset($productToDupe)){ ?>
     <input type="hidden" name="original_product_id" value="<?php echo $productToDupe->id; ?>">
+<?php } ?>
+<?php if (is_numeric($intakeScanningFileId)) { ?>
+	<input type="hidden" name="intake_scanning_file_id" value="<?php echo (int) $intakeScanningFileId; ?>">
 <?php } ?>
     <div id="msgNotice2" style="color:white;padding: 0 0 0 20px;"></div>
 	<div class="float">
@@ -35,23 +206,23 @@ use App\Models\Site;
 		</div>
 
         <label>Kill Date</label>
-		<input name="kill_date" id="kill_date" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->kill_date . '"'; } ?>>
+		<input name="kill_date" id="kill_date" type="text" onfocus="blur()" value="<?php echo htmlspecialchars((string) $killDateValue); ?>">
 		<div onclick="killDateNA()" id="bestbyBtn">SET N/A</div>
 		<div class="clearfix"></div>
 
 		<label>Pack Date</label>
-		<input name="best_by" id="best_by" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->best_by . '"'; } ?>>
+		<input name="best_by" id="best_by" type="text" onfocus="blur()" value="<?php echo htmlspecialchars((string) $packDateValue); ?>">
 		<div onclick="bestByNA()" id="bestbyBtn">SET N/A</div>
 		<div class="clearfix"></div>
 
 		<label>UB/ BB</label>
 		<select name="ubbb" id="ubbb">
-			<option value="0" <?php if(isset($productToDupe) && $productToDupe->ubbb == 0){ echo 'selected'; } ?>>UB</option>
-			<option value="1" <?php if(isset($productToDupe) && $productToDupe->ubbb == 1){ echo 'selected'; } ?>>BB</option>
-			<option value="2" hidden <?php if(isset($productToDupe) && $productToDupe->ubbb == 2){ echo 'selected'; } ?>>N/A</option>
-			<option value="3" <?php if(isset($productToDupe) && $productToDupe->ubbb == 3){ echo 'selected'; } ?>>Process By</option>
-			<option value="4" <?php if(isset($productToDupe) && $productToDupe->ubbb == 4){ echo 'selected'; } ?>>Expiry</option>
-			<option value="5" <?php if(isset($productToDupe) && $productToDupe->ubbb == 5){ echo 'selected'; } ?>>Open By</option>
+			<option value="0" <?php if($selectedUbbb === '0'){ echo 'selected'; } ?>>UB</option>
+			<option value="1" <?php if($selectedUbbb === '1'){ echo 'selected'; } ?>>BB</option>
+			<option value="2" hidden <?php if($selectedUbbb === '2'){ echo 'selected'; } ?>>N/A</option>
+			<option value="3" <?php if($selectedUbbb === '3'){ echo 'selected'; } ?>>Process By</option>
+			<option value="4" <?php if($selectedUbbb === '4'){ echo 'selected'; } ?>>Expiry</option>
+			<option value="5" <?php if($selectedUbbb === '5'){ echo 'selected'; } ?>>Open By</option>
 		</select>
 
 		<div onclick="ubbbyNA()" id="ubbbBtn">SET N/A</div>
@@ -59,40 +230,38 @@ use App\Models\Site;
 
 		<div id="best_by_range_from_container">
 		<label>From</label>
-		<input name="best_by_range_from" id="best_by_range_from" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_from . '"'; } ?>>
+		<input name="best_by_range_from" id="best_by_range_from" type="text" onfocus="blur()" value="<?php echo htmlspecialchars((string) $bestByRangeFromValue); ?>">
 		</div>
 
 		<div id="best_by_range_to_container">
 		<label>To</label>
-		<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_to . '"'; } ?>>
+		<input name="best_by_range_to" id="best_by_range_to" type="text" onfocus="blur()" value="<?php echo htmlspecialchars((string) $bestByRangeToValue); ?>">
 		</div>
 		<div id="best_by_range_extension_container">
 			<label>Extension</label>
-			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->range_extension . '"'; } ?>><div onclick="clearEx()" id="bestbyBtn">Clear</div>
+			<input name="best_by_range_extension" id="best_by_range_extension" type="text" onfocus="blur()" value="<?php echo htmlspecialchars((string) $bestByRangeExtensionValue); ?>"><div onclick="clearEx()" id="bestbyBtn">Clear</div>
 		</div>
 		<label>Chilled/Frozen</label>
 		<select name="temperature_id">
 			<option selected="true" disabled></option>
 			<?php
-				$x = "SELECT * FROM temperature";
-				$y = prepareExecuteQuery($x);
-				while($row = mysqli_fetch_array($y)){
-				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['temperature_id']){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
+				foreach ($temperatureRows as $row) {
+				?><option value="<?php echo $row['id']; ?>" <?php if((int) $row['id'] === (int) $selectedTemperatureId){ echo 'selected'; } ?>><?php echo $row['temperature']; ?></option><?php
 				}
 			?>
 		</select>
 		<div>
 		<label>Product Temp (°C)</label>
-		<input name="product_temp" id="product_temp" type="text" required>
+		<input name="product_temp" id="product_temp" type="text" required value="<?php echo htmlspecialchars((string) $productTempValue); ?>">
 		</div>
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<?php echo Site::generateOldHTMLList($productToDupe->storage_location ?? null);?>
+				<?php echo Site::generateOldHTMLList($selectedStorageLocation);?>
 		</select>
 
 		<label>comments</label>
-		<textarea name="comments"><?php if(isset($productToDupe)){ echo $productToDupe->comments; } ?></textarea>
+		<textarea name="comments"><?php echo htmlspecialchars((string) $commentsValue); ?></textarea>
 
 
 
@@ -105,17 +274,17 @@ use App\Models\Site;
 			$x = "SELECT * FROM nationality ORDER BY `name` ASC";
 			$y = prepareExecuteQuery($x);
 			while($row = mysqli_fetch_array($y)){
-			?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['nationality_id'] || (isset($productToDupe) && $row['id'] == $productToDupe->nationality_id)){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+			?><option value="<?php echo $row['id']; ?>" <?php if((int) $row['id'] === (int) $selectedNationalityId){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 			}
 		?>
 		</select>
 
 		<label>Brand Search</label>
-		<input name="brand_search" id="brand_search" type="text" <?php if(isset($productToDupe) && $productToDupe->brand_id != null){ echo 'value="' . $productToDupe->brand->name . '"'; } ?>>
+		<input name="brand_search" id="brand_search" type="text" value="<?php echo htmlspecialchars((string) $brandSearchValue); ?>">
 		<div id="brand_search_results">
 			asdf
 		</div>
-		<input name="brand_id" id="brand_id" type="text" style="display:none;" <?php if(isset($productToDupe) && $productToDupe->brand_id != null){ echo 'value="' . $productToDupe->brand_id . '"'; } ?>>
+		<input name="brand_id" id="brand_id" type="text" style="display:none;" value="<?php echo htmlspecialchars((string) $brandIdValue); ?>">
 
 		<label>species</label>
 		<select name="species_id" id="species_id">
@@ -124,7 +293,7 @@ use App\Models\Site;
 				$x = "SELECT * FROM species ORDER BY `name` ASC";
 				$y = prepareExecuteQuery($x);
 				while($row = mysqli_fetch_array($y)){
-				?><option value="<?php echo $row['id']; ?>" <?php if($row['id'] == $pallet['species_id'] || (isset($productToDupe) && $row['id'] == $productToDupe->cut->species_id)){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
+				?><option value="<?php echo $row['id']; ?>" <?php if((int) $row['id'] === (int) $selectedSpeciesId){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 				}
 			?>
 		</select>
@@ -133,12 +302,12 @@ use App\Models\Site;
 
 
 		<label>cuts</label>
-		<input name="cut_search" id="cut_search" type="text" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->cut->name . '"'; } ?>>
+		<input name="cut_search" id="cut_search" type="text" value="<?php echo htmlspecialchars((string) $cutSearchValue); ?>">
 		<div id="cut_search_results">
 			asdf
 		</div>
 
-		<input name="cut_id" id="cut_id" type="text" style="display:none;" <?php if(isset($productToDupe)){ echo 'value="' . $productToDupe->cut_id . '"'; } ?>>
+		<input name="cut_id" id="cut_id" type="text" style="display:none;" value="<?php echo htmlspecialchars((string) $cutIdValue); ?>">
 		<div style="display:none;">
 			<select name="cut_ids" id="cut_id">
 			<option value="--">--</option>
@@ -147,16 +316,16 @@ use App\Models\Site;
 
 		<label>Units of measurement</label>
 		<select name="unit" id="unit">
- 			<option value="C" <?php if(isset($productToDupe) && $productToDupe->unit == 'C'){ echo 'selected'; } ?>>Case</option>
-			<option value="PPC" <?php if(isset($productToDupe) && $productToDupe->unit == 'PPC'){ echo 'selected'; } ?>>Purchase Per Case</option>
-			<option value="P" <?php if(isset($productToDupe) && $productToDupe->unit == 'P'){ echo 'selected'; } ?>>Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
-			<option value="DS" <?php if(isset($productToDupe) && $productToDupe->unit == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
+	 		<option value="C" <?php if($selectedUnit == 'C'){ echo 'selected'; } ?>>Case</option>
+			<option value="PPC" <?php if($selectedUnit == 'PPC'){ echo 'selected'; } ?>>Purchase Per Case</option>
+			<option value="P" <?php if($selectedUnit == 'P'){ echo 'selected'; } ?>>Gross-Tare &nbsp;&nbsp;&nbsp;&nbsp; Dolav/Cases</option>
+			<option value="DS" <?php if($selectedUnit == 'DS'){ echo 'selected'; } ?>>Direct to store/customer</option>
  		</select>
 
 
 		<div class="quantityWeightContainer">
 		<label class="howManyUnitsDiv">HOW MANY UNITS</label>
-		<input type="number" class="quantityWeight" onChange="updateForm()" id="quantityWeight" name="quantity" max="<?php echo $cases; ?>">
+		<input type="number" class="quantityWeight" onChange="updateForm()" id="quantityWeight" name="quantity" max="<?php echo $cases; ?>" value="<?php echo htmlspecialchars((string) $quantityValue); ?>">
 		</div>
 
 		<?php if($intake['returned'] == 1){ ?>
@@ -175,16 +344,16 @@ use App\Models\Site;
 			<div class="indiweights">
 			<label class="standardcatchtext">Standard or catch weights?</label>
 			<select name="individualweights" id="individualweights">
- 				<option value="C">Catch Weights</option>
-				<option value="S">Standard Weight</option>
-				<option value="D">Dolav/Cases</option>
- 				<option value="AKG">Advised kg</option>
+	 			<option value="C" <?php if($selectedIndividualweights === 'C'){ echo 'selected'; } ?>>Catch Weights</option>
+				<option value="S" <?php if($selectedIndividualweights === 'S'){ echo 'selected'; } ?>>Standard Weight</option>
+				<option value="D" <?php if($selectedIndividualweights === 'D'){ echo 'selected'; } ?>>Dolav/Cases</option>
+	 			<option value="AKG" <?php if($selectedIndividualweights === 'AKG'){ echo 'selected'; } ?>>Advised kg</option>
 			</select>
 			</div>
 
 			<div id="akgDiv" style="display:none;">
 				<label>Net Weight</label>
-				<input type="number" name="akg" id="akg">
+				<input type="number" name="akg" id="akg" value="<?php echo htmlspecialchars((string) $akgValue); ?>">
 			</div>
 
 			<div id="SingleWeightDiv" style="display:none;">
@@ -357,6 +526,8 @@ use App\Models\Site;
 			xhttp.send("searchterm=" + val);
 
 		});
+
+		updateForm();
 
 	});
 
