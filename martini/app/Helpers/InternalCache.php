@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 class InternalCache
 {
-    public static function put($key, $value, int|Carbon|null $expiration)
+    public static function put(string $key, mixed $value, int|Carbon|null $expiration): void
     {
         self::cleanExpired();
         if ($expiration === null) {
@@ -21,7 +21,7 @@ class InternalCache
         $c->expiration = $expiration;
         $c->save();
     }
-    public static function get($key)
+    public static function get(string $key): mixed
     {
         self::cleanExpired();
         if (self::has($key)) {
@@ -30,7 +30,7 @@ class InternalCache
         }
         return null;
     }
-    public static function has($key)
+    public static function has(string $key): bool
     {
         self::cleanExpired();
         $cacheEntry = Cache::where('key', $key)->first();
@@ -40,13 +40,13 @@ class InternalCache
         }
         return $ret;
     }
-    public static function forget($key)
+    public static function forget(string $key): void
     {
         self::cleanExpired();
         Cache::where('key', $key)->delete();
     }
     private static $_hasRunCleanExpired = false;
-    private static function cleanExpired()
+    private static function cleanExpired(): void
     {
         if (self::$_hasRunCleanExpired) {
             return;

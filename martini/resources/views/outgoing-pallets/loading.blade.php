@@ -1908,20 +1908,51 @@
         return;
       }
 
+      let commitResult = null;
+
       try {
-        const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
+        const commitResponse = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
           method: "POST",
           headers: jsonHeaders(),
           body: JSON.stringify({ reg, outgoingPalletIds, dueDate })
         });
-        if (!response.ok) {
-          const errorText = await response.text();
+        if (!commitResponse.ok) {
+          const errorText = await commitResponse.text();
           throw new Error(errorText || "Commit failed");
         }
-        const data = await response.json();
-        window.alert(`Load committed (${data.committedCount || 0} allocations).`);
+        commitResult = await commitResponse.json();
+
+        let selectedVehicleId = Number(vehicleInfo?.id || 0);
+        if (!selectedVehicleId && reg) {
+          const details = await loadVehicleDetails(reg);
+          selectedVehicleId = Number(details?.id || 0);
+        }
+        if (!selectedVehicleId) {
+          throw new Error("Vehicle ID unavailable for POD dispatch");
+        }
+
+        const podsResponse = await fetch("{{ route('pods.send') }}", {
+          method: "POST",
+          headers: jsonHeaders(),
+          body: JSON.stringify({
+            outgoing_pallets: outgoingPalletIds,
+            vehicle: selectedVehicleId
+          })
+        });
+
+        if (!podsResponse.ok) {
+          const errorText = await podsResponse.text();
+          throw new Error(errorText || "POD dispatch failed");
+        }
+
+        const podsData = await podsResponse.json();
+        window.alert(`Load committed (${commitResult.committedCount || 0} allocations). POD dispatch queued${podsData.process_id ? ` (PID ${podsData.process_id})` : ""}.`);
       } catch (error) {
-        window.alert("Load commit failed. Check server logs.");
+        if (commitResult) {
+          window.alert("Load committed, but POD dispatch failed. Check server logs.");
+        } else {
+          window.alert("Load commit failed. Check server logs.");
+        }
         console.error(error);
       }
     });

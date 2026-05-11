@@ -78,9 +78,9 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false && Inte
     $intake->approving_start = Carbon::now();
     $intake->approved_by = Auth::id();
     $intake->save();
-    $cacheKey = 'approve_intake_' . Str::uuid();
-    InternalCache::put($cacheKey, $intake->id, 3600);
-    pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:approve_intake '.$cacheKey.' >NUL 2>NUL"', 'r'));
+    $command_key = 'approve_intake_' . Str::uuid();
+    InternalCache::put($command_key, $intake->id, 3600);
+    pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:approve_intake '.$command_key.' >NUL 2>NUL"', 'r'));
     sleep(1);
 }
 ?>

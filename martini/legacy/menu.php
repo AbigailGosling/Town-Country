@@ -56,6 +56,11 @@ use App\Models\User;
 				?><div class="col"><h1>Goods in/out</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn2)){
 					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+                    if($page['file'] == 'newDelivery.php'){
+                        ?><a href="../intake-scanner">Intake Scanning</a><?php
+                        ?><a href="../intake-scanner-monitor">Intake Monitoring</a><?php
+                        ?><a href="../intake-scanner-review">Intake Review</a><?php
+                    }
 				}
 
 				?>
