@@ -237,7 +237,6 @@ use Illuminate\Support\Facades\Auth;
             ?>
             html += '</tbody>';
             html += '</table>';
-            console.log("ping");
 
                 $('#previous_sales').html(html);
             }, 100);

@@ -235,8 +235,9 @@ use App\Models\User;
 				e.preventDefault()
 				changePage($(this).attr('id'))
 			}
-		})
+		});
         $( "#eta" ).datepicker({
+			onSelect: ddChanged,
 			dateFormat: 'dd/mm/yy'
 		});
         $( "#dateFrom" ).datepicker({
@@ -270,7 +271,16 @@ use App\Models\User;
 		checkUBDates();
 		document.cookie = COOKIE_NAME + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 	}
-
+    function ddChanged(dateText, inst){
+		if (customerID == null) checkUBDates(dateText);
+		else
+		{
+			$.get("ajax/getCustomerAddress.php?id=" + customerID  + '&empty=false'+'&address_id=' + addressID+'&src=sales', function(data){
+				getCustomResult = data;
+				setCustomerCreditFeedback(data);
+			});
+		}
+    }
 
 function checkStock(){
 	modalDialog.showMask();
@@ -285,18 +295,6 @@ function checkStock(){
 		var bits = value.split('-');
 		var product_id = bits[0];
 		var quantity_wanted = bits[1];
-
-		/*$.get("ajax/checkProductStockQuantity.php?product_id=" + product_id, function(num, status){
-			var product_stock_count = parseInt(num);
-
-			if(quantity_wanted <= product_stock_count){
-
-			}else{
-				allPass = false;
-				$('.product' + product_id).css('background-color','red');
-			}
-			target--;
-		});*/
 	});
 
 	var intervalPoll = setInterval(function() {
@@ -410,10 +408,10 @@ function cancelSale()
 		}
         if (eta != '') {
 			dateEntered = true;
-			$('#estimated_delivery_date').css('border-color', '#f2f2f2');
+			$('#eta').css('border-color', '#f2f2f2');
 		} else{
 			dateEntered = false;
- 			$('#estimated_delivery_date').css('border','1px solid red');
+ 			$('#eta').css('border','1px solid red');
 		}
 		var priceEntered = true;
 		var pricedCorrectly = true;
@@ -506,6 +504,22 @@ function cancelSale()
         else $('#sendfake').attr('disabled', true);
     }
     function checkAllowedDay(){
+        var dateObj = $('#eta').datepicker('getDate');
+        if (dateObj != null && delCheckingOn){
+            var daySelected = dateObj.getDay();
+            var weekday = 		["Sunday"	,"Monday"	,"Tuesday"	,"Wednesday","Thursday"	,"Friday"	,"Saturday"	];
+            var weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
+            var weekdayInt = weekdayLookup[daySelected];
+        }
+        if (dateObj != null && delCheckingOn && (weekdayInt & delDays) == 0)
+        {
+            day = weekday[daySelected];
+            $('#warning').css('background', "#ff6666");
+            $('#warning').css('border', "2px solid #ff0000");
+            $('#warning').css('display', "inline-block");
+            $('#warning').html("<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>We do not deliver to this customer on "+day+"s</td>");
+            return false;
+        }
         return true;
     }
 	function checkUBDates(){
