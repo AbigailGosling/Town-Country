@@ -35,7 +35,9 @@ class InsuredCreditReportController extends Controller
                 'Difference' => $difference,
             ];
         })->values();
-
+        $data = $data->sortByDesc(function ($customer){
+            return $customer['Outstanding Balance'];
+        })->values();
         $totals = [
             'customer_count' => $data->count(),
             'insured_credit' => (float) $customers->sum(function ($customer) {
