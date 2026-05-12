@@ -4,19 +4,19 @@ namespace App\Exports;
 
 use App\Models\Brand;
 use App\Models\Cut;
-use App\Models\CutGroup;
 use App\Models\Intake;
+use App\Models\Location;
 use App\Models\Nationality;
 use App\Models\Pallet;
 use App\Models\PickerItem;
 use App\Models\Product;
+use App\Models\Site;
 use App\Models\Species;
 use App\Models\Weight;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -27,6 +27,8 @@ class ShortStockExport implements FromCollection
     private Collection $species;
     private Collection $nationalities;
     private Collection $brands;
+    private Collection $locations;
+    private Collection $sites;
     private int $_dayRange;
     function __construct(int $dayRange = +9)
     {
@@ -36,6 +38,8 @@ class ShortStockExport implements FromCollection
         $this->species = Species::all()->keyBy('id');
         $this->nationalities = Nationality::all()->keyBy('id');
         $this->brands = Brand::all()->keyBy('id');
+        $this->locations = Location::all()->keyBy('id');
+        $this->sites = Site::all()->keyBy('id');
     }
     private Collection $_collection;
     /**
@@ -104,6 +108,8 @@ class ShortStockExport implements FromCollection
         $r['Intake']=$pallet->intake_id;
         $r['Date']=Intake::find($pallet->intake_id)->date_received->format("d/m/Y");
         $r['Pallet']=$product->pallet_id;
+        $loc = $this->locations[$pallet->storage_location]??null;
+        $r['Location']=$this->sites[$loc?->site_id]->abbreviation??"";
         $kg = (double)0;
         $count = 0;
         foreach ($thisweights as $weight)

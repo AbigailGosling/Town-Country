@@ -159,6 +159,22 @@ $s = (int)(microtime(true));
 				<span style="display:none;">Account No: 1123ml</span>
 			</div>
 		</div>
+        <div class="printshow">
+            <table border="1" height="100%" width="200px" cellpadding="5" style="display:inline-block;">
+                    <tr>
+                        <td colspan="2" align="center"><b>Checked By</b></td>
+                    </tr>
+                    <tr><td style="padding-bottom:4.3rem" colspan="2">&nbsp;</td></tr>
+                    <tr>
+                        <td >Print</td>
+                        <td width="80%"></td>
+                    </tr>
+                    <tr>
+                        <td >Date</td>
+                        <td width="80%"></td>
+                    </tr>
+            </table>
+		</div>
 
         <!-- <div class="invoice">
 
@@ -798,6 +814,7 @@ $s = (int)(microtime(true));
 
 	function hideItemsPrint(){
 		$('#top').hide();
+        $('.printshow').show();
 		$('.printhide').hide();
 		$('.formBackButton').hide();
 		$('.backbtn').hide();
@@ -816,6 +833,7 @@ $s = (int)(microtime(true));
 	function printCompleted() {
 		$('#top').show();
 		$('.printhide').show();
+        $('.printshow').hide();
 		$('.formBackButton').show();
 		$('.backbtn').show();
 		$('main').removeAttr("style")
@@ -913,6 +931,9 @@ if($customerRow['pricedefault'] == '0'){
 	a{
 		text-decoration:none !important;
 	}
+    .printshow{
+        display:none;
+    }
 </style>
 </body>
 </html>

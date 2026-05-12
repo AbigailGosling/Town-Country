@@ -29,7 +29,7 @@ function get_customer_soa_results($customer_id,$adv)
         foreach($invoiceLastPaidQ as $invoiceLastPaid){
             $invoicesLastPaid[$invoiceLastPaid['invoice_id']]=DateTime::createFromFormat("Y-m-d H:i:s",$invoiceLastPaid['created_at'])->getTimestamp();
         }
-        $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).")");
+        $customerReturns = prepareExecuteQuery("SELECT `delivery_note_number`,count(id) AS `count` FROM `intake` WHERE `returned`=1 && `delivery_note_number` IN (".implode(",",$knownPickIDs).") GROUP BY `delivery_note_number`");
         $customerReturns = mysqli_fetch_all($customerReturns,MYSQLI_ASSOC);
     }
     else $customerReturns = [];
