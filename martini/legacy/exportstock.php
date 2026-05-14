@@ -1,51 +1,59 @@
 <?php
 
+use App\Models\Brand;
+use App\Models\Intake;
 use App\Models\Location;
+use App\Models\Nationality;
+use App\Models\Temperature;
 
     require('functions.php');
+
+    $brands = Brand::all()->keyBy('id');
+    $locations = Location::all()->keyBy('id');
+    $nationalities = Nationality::all()->keyBy('id');
+    $temperatures = Temperature::all()->keyBy('id');
+    $intakes = [];
+
     $headings = array();
-   
-    array_push($headings, 'Intake ID');
-    array_push($headings, 'Pallet ID');
-    array_push($headings, 'Storage Location');
-    array_push($headings, 'Unit');
-    array_push($headings, 'Chill/Frz');
-    array_push($headings, 'Species');
-    array_push($headings, 'Cut Group');
-    array_push($headings, 'Product Name');
-    array_push($headings, 'Nationalities');
-    array_push($headings, 'Brands');
-    array_push($headings, 'Date');
-    array_push($headings, 'Range');
-    array_push($headings, '');
-    array_push($headings, 'Volume');
-    array_push($headings, 'Cost Per Unit');
+
+    $headings[] = 'Intake ID';
+    $headings[] = 'Pallet ID';
+    $headings[] = 'Storage Location';
+    $headings[] = 'Unit';
+    $headings[] = 'Chill/Frz';
+    $headings[] = 'Species';
+    $headings[] = 'Cut Group';
+    $headings[] = 'Product Name';
+    $headings[] = 'Nationalities';
+    $headings[] = 'Brands';
+    $headings[] = 'Received Date';
+    $headings[] = 'Date';
+    $headings[] = 'Range';
+    $headings[] = '';
+    $headings[] = 'Volume';
+    $headings[] = 'Cost Per Unit';
     $final_array = array();
     $final_array[] = $headings;
 
-    $productsX = "SELECT *, product.range_from, product.range_to, product.range_extension, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, brands.name as brandname, nationality.name as local FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
+    $productsX = "SELECT *, product.range_from, product.range_to, product.range_extension, product.brand_id, species.id as species_id, product.comments as productcomments, product.id as productid, cuts.name as cutname, cutgroups.name as cutgroup, species.name as species_name FROM `product` INNER JOIN `pallet` ON product.pallet_id=pallet.id
     INNER JOIN `weights` ON product.id = weights.product_id
     JOIN `cuts` ON product.cut_id = cuts.id
     JOIN `cutgroups` ON cuts.cutgroup_id = cutgroups.id
-    JOIN `nationality` ON product.nationality_id = nationality.id
-    JOIN `brands` ON product.brand_id = brands.id
     JOIN `species` ON cuts.species_id = species.id
     WHERE weights.status_id != 1 GROUP BY product.id
     ORDER BY species.name, cuts.name ASC";
-    
+
     $productsY = prepareExecuteQuery($productsX);
-    
-    $productsCount = $productsY->fetch_assoc();
-     
+
     $totalW = 0;
-    
+
     $TOTAL_QUANTITY = 0;
     $TOTAL_COST = 0;
     $TOTAL_PRICE = 0;
 
     $types = Array('UB','BB','N/A','PB','EX');
     //$products = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
-    
+
     while($productsRow = $productsY->fetch_assoc()){
         $single_row = array();
 
@@ -56,66 +64,51 @@ use App\Models\Location;
 
         $intake_id = $productsRow['intake_id'];
         $nationality_id = $productsRow['nationality_id'];
-        $local = $productsRow['local'];
-        $brandname = $productsRow['brandname'];
+        $local = $nationalities[$nationality_id]->name;
+        $brandname = $brands[$productsRow['brand_id']]->name;
         $cut = $productsRow['cutname'];
         $cutgroup = $productsRow['cutgroup'];
-        $species_name = getSpecies($productsRow['species_id']);
+        $species_name = $productsRow['species_name'];
 
         $ubtext = $ubbb;
 
-        $product2_palletids = array();
-        $product2_cutids = array();
-        $product2_productids = array();
-        $product2_brands = array();
-        $product2_nationalities = array();
-        $product2_temperatures = array();
-        $product2_dateranges = array();
-        
-        $uniqueBrands = count(array_unique($product2_brands));
-        $uniqueNationalities = count(array_unique($product2_nationalities));
-        $uniqueTemperatures = count(array_unique($product2_temperatures));
-        $uniqueDateranges = count(array_unique($product2_dateranges));
-
         $quantityTotal = numWeightsAvailableFromProductID($productsRow['productid']);
-        
+
         if($quantityTotal < 1){continue;}
         ###
-          
-        array_push($single_row, $intake_id);
-        array_push($single_row, $pallet_id);
-        array_push($single_row, Location::find($productsRow['storage_location'])->name);
-        array_push($single_row, $quantityTotal);
+
+        $single_row[] = $intake_id;
+        $single_row[] = $pallet_id;
+        $single_row[] = $locations[$productsRow['storage_location']]->name;
+        $single_row[] = $quantityTotal;
 
 
-        array_push($single_row, getTemp($productsRow['cooling_id']));
+        $single_row[] = $temperatures[$productsRow['cooling_id']]->name;
 
 
-        array_push($single_row, $species_name);
-        array_push($single_row, $cutgroup);
-        array_push($single_row, $cut);
+        $single_row[] = $species_name;
+        $single_row[] = $cutgroup;
+        $single_row[] = $cut;
 
-        if($uniqueNationalities > 1){
-            array_push($single_row, 'Various');
-        }else{
-            array_push($single_row, $local);
+        $single_row[] = $local;
+
+        $single_row[] = $brandname;
+
+        if (!in_array($intake_id, $intakes)) {
+            $intakes[$intake_id] = Intake::find($intake_id)->date_received->format('d/m/Y') ?? 'N/A';
         }
+        $single_row[] = $intakes[$intake_id];
 
-        if($uniqueBrands > 1){
-            array_push($single_row, 'Various');
-        }else{
-            array_push($single_row, $brandname);
-        }
         $range_from = ($productsRow['range_from'] != '')?$productsRow['range_from']:'N/A';
         $range_to = ($productsRow['range_to'] != '')?$productsRow['range_to']:'N/A';
         if ($productsRow['range_extension'] != null && $productsRow['range_extension'] != '')$range_from = $range_to = $productsRow['range_extension'];
-        array_push($single_row, $ubtext);
-        array_push($single_row, $range_from);
-        array_push($single_row, $range_to);
+        $single_row[] = $ubtext;
+        $single_row[] = $range_from;
+        $single_row[] = $range_to;
 
         if($productsRow['unit'] == 'PPC'){
             $this_total_cost = (double)$productsRow['cost']*$quantityTotal;
-            array_push($single_row, 'PPC');
+            $single_row[] = 'PPC';
         }else{
             if($productsRow['akg'] != ''){
                 $weight_value = totalWeightOfAdvisedKGProduct($intake_id, $productsRow['nationality_id']);
@@ -125,7 +118,7 @@ use App\Models\Location;
             if ($weight_value > 0.9)
             {
                 $this_total_cost = (double)$productsRow['cost']*$weight_value;
-                array_push($single_row, $weight_value . 'kg');
+                $single_row[] = $weight_value . 'kg';
                 $TOTAL_WEIGHT += $weight_value;
                 $TOTAL_QUANTITY += $quantityTotal;
             }
@@ -134,27 +127,28 @@ use App\Models\Location;
                 continue;
             }
         }
-        array_push($single_row, "£" . number_format((double)$productsRow['cost'], 2, '.', ','));
+        $single_row[] = "£" . number_format((double)$productsRow['cost'], 2, '.', ',');
         $TOTAL_COST += $this_total_cost;
         $final_array[] = $single_row;
     }
 
     $final_row = array();
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, $TOTAL_QUANTITY);
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, '');
-    array_push($final_row, number_format((double)$TOTAL_WEIGHT, 3, '.', ',') . 'kg');
-    array_push($final_row, "£" . number_format((double)floorDec($TOTAL_COST), 2, '.', ','));
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = $TOTAL_QUANTITY;
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = '';
+    $final_row[] = number_format((double)$TOTAL_WEIGHT, 3, '.', ',') . 'kg';
+    $final_row[] = "£" . number_format((double)floorDec($TOTAL_COST), 2, '.', ',');
     $final_array[] = $final_row;
 
     require('../../vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');
