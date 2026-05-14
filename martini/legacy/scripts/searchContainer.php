@@ -59,13 +59,7 @@ use Illuminate\Support\Facades\Auth;
     $totalW = 0;
 
 
-        if($ubbb == 0){
-            $ubtext = 'UB';
-        }else if($ubbb == 1){
-            $ubtext = 'BB';
-        }else{
-            $ubtext = 'N/A';
-        }
+        $ubtext = 'N/A';
         $ARRAY_CUTS = array();
 
         // ??: Gets the same cuts twice here #1
@@ -91,8 +85,8 @@ use Illuminate\Support\Facades\Auth;
 
         array_push($whereArray, "product.pallet_id = -2");
 
-        if ($brand != '' && $brand != null && $brand != 'null'){
-            array_push($whereArray, "product.brand_id = ". $brand ."");
+        if ($brand_id != '' && $brand_id != null && $brand_id != 'null'){
+            array_push($whereArray, "product.brand_id = ". $brand_id ."");
         }
         if ($nationality_id != '' && $nationality_id != null && $nationality_id != 'null'){
             array_push($whereArray, "product.nationality_id = ". $nationality_id ."");
@@ -131,7 +125,7 @@ use Illuminate\Support\Facades\Auth;
                             $pallet_comments = $productsRow2['productcomments'];
                             if ($pallet_comments==""){
                                 $pallet_comments_query_sql = "SELECT `body` FROM `comment_logging` WHERE `type` = 'pallet' AND `entity_id` = $pallet_id ORDER BY `id` DESC LIMIT 1";
-                                $pallet_comments_query = mysqli_query($mysqli,$pallet_comments_query_sql);
+                                $pallet_comments_query = prepareExecuteQuery($pallet_comments_query_sql);
 
                                 if (mysqli_num_rows($pallet_comments_query) > 0)
                                 {
@@ -140,7 +134,7 @@ use Illuminate\Support\Facades\Auth;
                                 }
                             }
                             $this_row_weight = $productsRow2['akg'];
-                            if ($productsRow2['quantity'] - $alreadyReserved == 0) continue;
+                            if ($productsRow2['quantity'] - $alreadyReserved < 1) continue;
 
                         ?>
                         <tr class="subrow <?php echo $class; ?>">
@@ -186,7 +180,7 @@ use Illuminate\Support\Facades\Auth;
                             <td><?php if ($containerProduct->cost) echo '£' . number_format($containerProduct->cost, 2, '.', ''); ?></td>
                             <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($prodMod->cost){ echo '£' . number_format((float)$prodMod->cost, 2, '.', ''); } ?></td><?php } ?>
                             <td>
-                                <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $largestDate; ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
+                                <a href="javascript:;" class="plusButton" onclick="addToSheet('<?php echo $productsRow2['productid']; ?>','<?php echo $productsRow2['pallet_id']; ?>','<?php echo $productsRow2['cut_id']; ?>','<?php echo $class; ?>','<?php echo $container->eta->format("d/m/Y"); ?>');"><i class="fa fa-plus" style="font-size:24px;color:#000;"></i></a>
                             </td>
                         </tr>
                         <?php
