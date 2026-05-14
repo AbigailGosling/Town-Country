@@ -172,7 +172,7 @@ class UserController extends Controller
             'confirm_password' => ['sometimes', 'string', 'nullable', Rules\Password::defaults()]
         ]);
         $input = $request->all();
-
+        Log::error("",$input);
         //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
         //to change their password.
         if((isset($input['new_password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
