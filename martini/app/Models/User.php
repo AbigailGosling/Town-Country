@@ -96,6 +96,7 @@ class User extends Authenticatable
         'use_two_factor' => 'bool',
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_expires_at' => 'datetime',
+        'receive_short_stock' => 'bool'
     ];
     public function generateTwoFactorCode()
     {

@@ -48,12 +48,14 @@
                     <x-input-error :messages="$errors->get('actual_email')" class="mt-2"/>
                 </div>
                 <div class="mt-4" for="receive_short_stock" style="display: flex; padding-bottom: 1em;">
-                    <input type="checkbox" id="receive_short_stock" name="receive_short_stock" />
+                    <input type="checkbox" id="receive_short_stock" name="receive_short_stock"
+                    @if ($user->receive_short_stock) checked @endif />
                     <div style="width: 1em;"></div>
                     <x-input-label for="receive_short_stock" value="Receive Short Stock Notifications"/>
                 </div>
                 <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
-                    <input type="checkbox" id="override_saledate_check" name="override_saledate_check" />
+                    <input type="checkbox" id="override_saledate_check" name="override_saledate_check"
+                    @if ($user->override_saledate_check) checked @endif />
                     <div style="width: 1em;"></div>
                     <x-input-label for="override_saledate_check" value="Override Next Day and Reservation Control"/>
                 </div>
