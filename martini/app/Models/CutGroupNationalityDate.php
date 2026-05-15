@@ -63,24 +63,41 @@ class CutGroupNationalityDate extends Model
 	{
 		return (int)$this->cutgroup()->get()->first()['species_id'];
 	}
-    static $STORED_RESULTS = array();
+    static $STORED_BY_PROD = array();
+    static $STORED_BY_CUT_NAT=array();
+    static $STORED_BY_CUTGROUP_NAT=array();
 	static function lookupFromProductID(int $id):CutGroupNationalityDate|null
 	{
-
-        if (array_key_exists($id,static::$STORED_RESULTS)) return static::$STORED_RESULTS[$id];
-		else
+        if (!array_key_exists($id,static::$STORED_BY_PROD))
         {
-            $result = static::lookupFromProduct(Product::find($id));
-            $STORED_RESULTS[$id] = $result;
-            return $result;
+            /** @var Product $p */
+            $p = Product::find($id);
+            static::$STORED_BY_PROD[$id] = static::lookupFromCutNationalityIDs($p->cut_id,$p->nationality_id);
         }
+
+        return static::$STORED_BY_PROD[$id];
 	}
-	static function lookupFromProduct(Product $product):CutGroupNationalityDate|null
+	static function lookupFromCutNationalityIDs(?int $cut_id,?int $nationality_id):CutGroupNationalityDate|null
 	{
-		/** @var Cut $cut */
-		$cut = Cut::find($product->cut_id);
-		$r = static::where(['cutgroup_id'=>$cut->cutgroup_id,'nationality_id'=>$product->nationality_id]);
-		$re = $r->first();
-		return $re;
+        if (!array_key_exists($cut_id."_".$nationality_id,static::$STORED_BY_CUT_NAT))
+        {
+            /** @var Cut $cut */
+		    $cut = Cut::find($cut_id);
+            static::lookupFromCutGroupNationalityIDs($cut->cutgroup_id,$nationality_id);
+        }
+		return static::$STORED_BY_CUT_NAT[$cut_id."_".$nationality_id];
 	}
+    static function lookupFromCutGroupNationalityIDs(?int $cutgroup_id,?int $nationality_id):CutGroupNationalityDate|null
+    {
+        if (!array_key_exists($cutgroup_id."_".$nationality_id,static::$STORED_BY_CUTGROUP_NAT))
+        {
+            static::$STORED_BY_CUTGROUP_NAT[$cutgroup_id."_".$nationality_id] = static::where(['cutgroup_id'=>$cutgroup_id,'nationality_id'=>$nationality_id])->first();
+            /** @var Cut $cut */
+            foreach (Cut::where('cutgroup_id',$cutgroup_id)->get() as $cut)
+            {
+                static::$STORED_BY_CUT_NAT[$cut->id."_".$nationality_id] = static::$STORED_BY_CUTGROUP_NAT[$cutgroup_id."_".$nationality_id];
+            }
+        }
+		return static::$STORED_BY_CUTGROUP_NAT[$cutgroup_id."_".$nationality_id];
+    }
 }

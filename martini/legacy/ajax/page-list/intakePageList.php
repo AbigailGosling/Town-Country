@@ -93,13 +93,13 @@ use Illuminate\Support\Facades\Log;
                         ?>
                         <td width="30%" align="left">
                             ID: I-<?php echo $intake['id'];?></td>
-                        <td align="left" style="font-size: 18px;" class="<?php if($r == 1){ echo 'flex space-between v-center'; } ?>">
+                        <td align="left" style="font-size: 18px;">
                             <?php
 
                                 if($intake['returned'] == '1'){
-                                    $cusDetails =  getCustomer($intake['supplier_id']);
-                                    if(!empty($cusDetails) && isset($cusDetails['businessname'])){
-                                        echo $cusDetails['businessname'];
+                                    $cusDetails = customerName($intake['supplier_id']);
+                                    if(!empty($cusDetails)){
+                                        echo $cusDetails;
                                     }else{
                                         echo 'No Customer Data';
                                     }
