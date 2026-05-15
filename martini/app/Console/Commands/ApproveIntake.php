@@ -84,9 +84,7 @@ class ApproveIntake extends Command
                  */
                 $sitesCutOffToday = Carbon::now()->hour($siteCutOffHoursAndMinutes[0])->minute($siteCutOffHoursAndMinutes[1])->second(0)->micro(0);
                 $targetDate = ($reservation->eta->timestamp > Carbon::now()->timestamp)?$reservation->eta:Carbon::now();
-                if ($targetDate->dayOfWeek == Carbon::FRIDAY || $targetDate->dayOfWeek == Carbon::SATURDAY || $targetDate->dayOfWeek == Carbon::SUNDAY){
-                    $targetDate->next(Carbon::MONDAY);
-                }
+
                 if ($targetDate->timestamp > $sitesCutOffToday->timestamp){
                     $delDate =  $targetDate->copy();
                 }

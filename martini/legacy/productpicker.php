@@ -128,7 +128,7 @@ include('includes/frontHeader.php');
 					</select>
 				</td>
 				<td style="width:20%"><select id="SearchCutgroups" name="cutgroup_id" style="min-width:100px;width:100%;height:40px;text-overflow: ellipsis; border-radius: 0;">
-						<option sid="<?php echo $rand; ?>" class="header" value="<?php echo $rand; ?>" selected>Select subcat...</option>
+						<option sid="" class="header" value="" selected>Select subcat...</option>
 						<?php
 							$x = "SELECT * FROM `cutgroups`";
 							$y = prepareExecuteQuery($x);
@@ -140,7 +140,6 @@ include('includes/frontHeader.php');
 								$thisid = $row['species_id'];
 								$y2 = prepareExecuteQuery("SELECT * FROM species WHERE id=?",'i',[$thisid]);
 								$species = mysqli_fetch_array($y2);
-								$rand = 'z' . rand(6000,12212);
 									?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption s<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"<?php if(request()->input('acutgroup_id') == $row['id']){ echo 'selected'; } ?>><?php echo $row['name']; ?></option><?php
 								}
 						?>
@@ -173,7 +172,6 @@ include('includes/frontHeader.php');
 								$thisid = $row['site_id'];
 								$y2 = prepareExecuteQuery("SELECT * FROM `site` WHERE id=?",'i',[$thisid]);
 								$species = mysqli_fetch_array($y2);
-								$rand = 'z' . rand(6000,12212);
 									?><option style="display:none;" sid="<?php echo $row['id']; ?>" class="allsoption l<?php echo $species['id']; ?>" value="<?php echo $row['id']; ?>"><?php echo $row['name']; ?></option><?php
 								}
 						?>

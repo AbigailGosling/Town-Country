@@ -13,8 +13,8 @@
     use Illuminate\Support\Facades\Log;
 	use Illuminate\Support\Facades\File;
 	global $mysqli;
+    /** @disregard  P1008 */
 	$mysqli = new mysqli($dbHost,$dbUser,$dbPass,$dbName);
-
 
 	error_reporting(0);
 
@@ -55,21 +55,21 @@
 		$rollingError = new \Exception;
 		$rollingTimestamp = (int)(microtime(true)*1000);
 	}
-	function loggedQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
+	function loggedQuery(string $sql, ?string $varTypes = null,?array $vars = null, bool $returnInsert = false, bool $store = true)
 	{
-        if (Auth::id()!=54)return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert);
+        if (Auth::id()!=54)return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert,$store);
 		$e = new \Exception;
-		$s = (int)(microtime(true)*1000);
+		$s = microtime(true)*1000;
 		$r = finalExecuteQuery($sql, $varTypes, $vars, $returnInsert);
-		Log::error($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . ((int)(microtime(true)*1000)-$s),[$sql, $varTypes, $vars ,$returnInsert]);
+		Log::error($e->getTrace()[0]['file']."(".$e->getTrace()[0]['line']."):ET:" . (microtime(true)*1000-$s),[$sql, $varTypes, $vars ,$returnInsert]);
 		return $r;
 	}
 	global $knownStatements;
-	function prepareExecuteQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
+	function prepareExecuteQuery(string $sql, ?string $varTypes = null,?array $vars = null, bool $returnInsert = false, bool $store = true)
 	{
 		return finalExecuteQuery($sql, $varTypes, $vars, $returnInsert,$store);
 	}
-    function finalExecuteQuery(string $sql, $varTypes = null, $vars = null,$returnInsert = false,$store = true)
+    function finalExecuteQuery(string $sql, ?string $varTypes = null,?array $vars = null, bool $returnInsert = false, bool $store = true)
 	{
 		global $mysqli;
 		global $knownStatements;
@@ -77,7 +77,7 @@
 		$res = null;
 		try
 		{
-            if ($store)
+            if ($store && (!str_contains($sql,"WHERE") || ($varTypes !== null && $vars !== null)))
             {
                 if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
                 $stmt = $knownStatements[$sql."_".$varTypes];
@@ -741,9 +741,18 @@
         $x = "SELECT * FROM `weights` WHERE status_id != '1' && product_id IN (" . implode(",",array_fill(0,count($productIDS),"?")) . ")";
 		$y = prepareExecuteQuery($x,str_repeat('i',count($productIDS)),$productIDS);
 
-		$weight = (double)0;
+		$weights = [];
 
 		while($row = $y->fetch_assoc()){
+			$weights[]=$row;
+		}
+		return _totalWeightOfProduct($weights);
+    }
+    function _totalWeightOfProduct(array $weights)
+    {
+        $weight = (double)0;
+        foreach ($weights as $row)
+        {
 			if($row['weight_tear'] == $row['weight_gross']){
 				$w = (double)$row['weight_gross'];
 			}else{
@@ -1019,26 +1028,12 @@
 
 	# Get Supplier name from id
 	function supplierName($id){
-		global $mysqli;
-
-		$x = "SELECT * FROM supplier WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row['name'];
+		return getSupplier($id)['name'];
 	}
 
 
 	function customerName($id){
-		global $mysqli;
-
-		$x = "SELECT * FROM customers WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row['businessname'];
+		return getCustomer($id)['businessname'];
 	}
 
 
@@ -1055,28 +1050,29 @@
 
 	}
 
+    global $_CUSTOMER_CACHE;
+    $_CUSTOMER_CACHE = [];
 	# Get Supplier - expects 1 param, supplier_id
 	function getCustomer($id){
-		global $mysqli;
-
-		$x = "SELECT * FROM `customers` WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row;
+        global $_CUSTOMER_CACHE;
+        if (!array_key_exists($id,$_CUSTOMER_CACHE))
+        {
+            $x = "SELECT * FROM `customers` WHERE `id` = ?";
+            $_CUSTOMER_CACHE[$id] = prepareExecuteQuery($x,'i',[$id])->fetch_assoc();
+        }
+		return $_CUSTOMER_CACHE[$id];
 	}
-
+    global $_SUPPLIER_CACHE;
+    $_SUPPLIER_CACHE = [];
 	# Get Supplier - expects 1 param, supplier_id
 	function getSupplier($id){
-		global $mysqli;
-
-		$x = "SELECT * FROM `supplier` WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row;
+		global $_SUPPLIER_CACHE;
+        if (!array_key_exists($id,$_SUPPLIER_CACHE))
+        {
+            $x = "SELECT * FROM `supplier` WHERE `id` = ?";
+		    $_SUPPLIER_CACHE[$id] = prepareExecuteQuery($x,'i',[$id])->fetch_assoc();
+        }
+		return $_SUPPLIER_CACHE[$id];
 	}
 
 	# Get Count Customer Sales By Salesman - expects 2 param, customer_id, user_id
@@ -1535,18 +1531,31 @@
         return $y->num_rows;
 
     }
-
-	function productCountOnIntakeNotCosted($intake_id){
-        global $mysqli;
+    global $cut_species_lookup;
+    $cut_species_lookup = [];
+	function productCountOnIntakeNotCosted(int $intake_id){
+        global $cut_species_lookup;
 
 		$palletResult = prepareExecuteQuery("SELECT GROUP_CONCAT(id) AS ids FROM pallet WHERE intake_id=?",'i',[$intake_id]);
 		$palletData = $palletResult->fetch_assoc();
 		$pallet_ids = $palletData['ids'];
 		if (!$pallet_ids || strlen($pallet_ids) == 0) return 0;
         $prodCount = 0;
-		$productResult = prepareExecuteQuery("SELECT * FROM `product` WHERE `pallet_id` IN ($pallet_ids)");
-        while($row = $productResult->fetch_assoc()){
-             $species_id = prepareExecuteQuery("SELECT `species_id` FROM `cuts` WHERE id=?",'i',[$row['cut_id']])->fetch_assoc()['species_id'];
+		$productResult = prepareExecuteQuery("SELECT `id`,`cut_id`,`created_at`,`cost`,`rrp1`,`rrp2`,`rrp3` FROM `product` WHERE `pallet_id` IN ($pallet_ids)",null,null,false,false);
+        $products = $productResult->fetch_all(MYSQLI_ASSOC);
+
+        $cut_ids = array_filter(array_unique(array_column($products,"cut_id")));
+        $cut_ids = array_diff($cut_ids,array_keys($cut_species_lookup));
+        if (count($cut_ids)>0)
+        {
+            $cut_ids = prepareExecuteQuery("SELECT `id`,`species_id` FROM `cuts` WHERE id IN (".implode(",",$cut_ids).")",null,null,false,false)->fetch_all(MYSQLI_ASSOC);
+            foreach ($cut_ids as $cut)
+            {
+                $cut_species_lookup[$cut['id']] = $cut['species_id'];
+            }
+        }
+        foreach($products as $row){
+            $species_id = $cut_species_lookup[$row['cut_id']];
             $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $row['created_at']);
             $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
             if($row['cost'] == '0.00' || $row['cost'] == '' ||
@@ -1555,6 +1564,7 @@
                 $prodCount++;
             }
         }
+        unset($products);
 		return $prodCount;
 	}
 
@@ -1698,23 +1708,22 @@
 	function weightCountOfProductOnPicksheet($pick_id, $productID){
 		global $mysqli;
 
-		$outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
-        	$outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pick_id]);
+		$outpalletQuery = "SELECT GROUP_CONCAT(weight_ids) FROM `pickWeightOut` WHERE pickersheet_id=?";
+        $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pick_id]);
 
 		$total_count = 0;
 
-    		while($outpallet = mysqli_fetch_array($outpalletResult2)){
-            		$weightids = explode(',', $outpallet['weight_ids']);
+        while($outpallet = $outpalletResult2->fetch_assoc())
+        {
+                $weightids = array_filter(array_unique(explode(',', $outpallet['weight_ids'])));
 
-            		$x2 = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).") && status_id='1' && product_id=?";
+                $x2 = "SELECT * FROM `weights` WHERE id IN (".implode(",",$weightids).") && status_id='1' && product_id=?";
 
-            		$y2 = prepareExecuteQuery($x2,'i',[$productID]);
+                $y2 = prepareExecuteQuery($x2,'i',[$productID],false,false);
 
-			$count = mysqli_num_rows($y2);
-			$total_count += $count;
+                $count = mysqli_num_rows($y2);
+                $total_count += $count;
         }
-
-
 		return $total_count;
 	}
 

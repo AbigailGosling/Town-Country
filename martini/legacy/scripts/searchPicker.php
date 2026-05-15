@@ -7,8 +7,10 @@ use App\Models\Species;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
-$showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 ini_set('memory_limit', '2G');
+require(__DIR__.'/../functions.php');
+
+$showEditIntake = (User::find(Auth::id())->hasPermission("intakeList.php"));
 $timeStamp = microtime(true);
 $cutgroup_id = request()->input('cutgroup_id');
 $species_id = request()->input('species');
@@ -21,6 +23,8 @@ $customer_id =  request()->input('customerID') ??request()->input('supplierID');
 $site_id =request()->input('siteID',null);
 $loc_id =request()->input('locID',null);
 $timeSensitivityStatus = (int)request()->input('time',0);
+$speciesToShowComments = Species::where("show_comments",1)->get()->pluck("id")->toArray();
+$canViewCosts = User::find(Auth::id())->hasPermission("viewcosts");
 if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
 ?>
@@ -66,12 +70,11 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             <th>1-10 C/S</th>
             <th>11-35 C/S</th>
             <th>35+ C/S</th>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><th style="color: #cacaca;font-weight:normal;font-size:12px;">Actual Cost</th><?php } ?>
+            <?php if ($canViewCosts) { ?><th style="color: #cacaca;font-weight:normal;font-size:12px;">Actual Cost</th><?php } ?>
 	        <th class="searchRContent__plus"></th>
         </tr>
     </thead>
 <?php
-	require(__DIR__.'/../functions.php');
 
     $ARRAY_CUTS = array();
 
@@ -179,9 +182,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $products = [];
     $knownCombo = [];
     $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
-    $minIntake= min($intakeIDsToCheck);
-    $maxIntake= max($intakeIDsToCheck);
-    if (count($products2) > 0 && count($intakeIDsToCheck) > 0)
+    if (count($products2) > 0 && count($intakeIDsToCheck) > 0){
+        $minIntake= min($intakeIDsToCheck);
+        $maxIntake= max($intakeIDsToCheck);
         $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".$minIntake." AND ".$maxIntake." AND (`approved` = 1 OR `container_id` IS NULL)")->fetch_all(MYSQLI_ASSOC),"id");
         foreach ($products2 as $productRow)
         {
@@ -193,16 +196,64 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                 $products[] = $productRow;
             }
         }
-    usort($products, function ($item1,$item2){
-        return $item2['cut_id'] <=> $item1['cut_id'];
-    });
+        usort($products, function ($item1,$item2){
+            return $item2['cut_id'] <=> $item1['cut_id'];
+        });
+    }
     $products2 = null;
     $productsCount = count($products);
     $overallQuantity =0;
     $overallWeight =0;
+
+    $product_weight_lookup = [];
+    $rough_product_ids = array_column($products,"productid");
+    if (count($rough_product_ids)>0)
+    {
+        $rough_prod_min = min($rough_product_ids);
+        $rough_prod_max = max($rough_product_ids);
+        $prod_search_text = " AND `product_id` BETWEEN $rough_prod_min AND $rough_prod_max";
+    }
+    else $prod_search_text = "";
+
+    $rough_weights = loggedQuery("SELECT * FROM `weights` WHERE `status_id` = 0$prod_search_text")->fetch_all(MYSQLI_ASSOC);
+    foreach ($rough_weights as $rough_weight)
+    {
+        if (!array_key_exists($rough_weight["product_id"],$product_weight_lookup))$product_weight_lookup[$rough_weight["product_id"]] = [];
+        $product_weight_lookup[$rough_weight["product_id"]][] = $rough_weight;
+    }
+    $rough_product_ids = array_keys($product_weight_lookup);
+    if (count($rough_product_ids)>0)
+    {
+        $rough_prod_min = min($rough_product_ids);
+        $rough_prod_max = max($rough_product_ids);
+        $prod_search_text = " AND `product_id` BETWEEN $rough_prod_min AND $rough_prod_max";
+    }
+    unset($rough_product_ids);
+    unset($rough_weights);
+
+    $prod_reserved_for_pick_lookup = [];
+    $rough_pickItems = prepareExecuteQuery("SELECT count(*) as `sum`,`product_id` FROM `pickeritems` WHERE `status` = 0 AND `deleted` = 0$prod_search_text GROUP BY `product_id`")->fetch_all(MYSQLI_ASSOC);
+    foreach ($rough_pickItems as $rough_pickItem)
+    {
+        $prod_reserved_for_pick_lookup[$rough_pickItem['product_id']] = $rough_pickItem['sum'];
+    }
+    unset($rough_pickItems);
+
+    $cut_species_lookup = [];
+    $rough_cut_ids = implode(",",array_unique(array_column($products,"cut_id")));
+    if (strlen($rough_cut_ids)>0) $rough_cuts = prepareExecuteQuery("SELECT `id`,`species_id` FROM `cuts` WHERE `id` IN (".$rough_cut_ids.")")->fetch_all(MYSQLI_ASSOC);
+    else $rough_cuts = [];
+    foreach ($rough_cuts as $rough_cut)
+    {
+        $cut_species_lookup[$rough_cut["id"]] = $rough_cut["species_id"];
+    }
+    unset($rough_cut_ids);
+    unset($rough_cuts);
+
     foreach($products as $productsRow){
-        $thisclass = 'thisclass'.rand(1,999999);
-        $class = 'KIS'.rand(1,999999);
+        $uuid = uniqid();
+        $thisclass = 'thisclass'.$uuid;
+        $class = 'KIS'.$uuid;
         $pallet_id = $productsRow['pallet_id'];
         $cut_id = $productsRow['cut_id'];
         $temp_id = $productsRow['cooling_id'];
@@ -215,7 +266,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $local = $productsRow['local'];
         //$cut = getCut($productsRow['cut_id']);
         $cut = $productsRow['cutname'];
-        $showComments = Species::find($productsRow['species_id'])->show_comments;
+        $showComments = in_array($productsRow['species_id'],$speciesToShowComments);
         if($ubbb == 0){
             $ubtext = 'UB';
         }else if($ubbb == 1){
@@ -251,7 +302,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             ORDER BY product.cut_id DESC";
             $pX2d = [$intake_id,$cut_id,$nationality_id];
         }
-        $productsY2 = prepareExecuteQuery($productsX2,'iss',$pX2d);
+        $productsY2 = prepareExecuteQuery($productsX2,'iii',$pX2d);
         $products2Count = mysqli_num_rows($productsY2);
 
 
@@ -266,6 +317,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $product2_temperatures = array();
         $product2_dateranges = array();
         $product2_quantity = 0;
+        $product2_reserved = 0;
+        $product2_weights = array();
+        $product2_weights_sorted = array();
         $startdates = array();
         $enddates = array();
         foreach ($products2 as $product2)
@@ -273,11 +327,18 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $product2_palletids[]= $product2['pallet_id'];
             $product2_cutids[]= $product2['cut_id'];
             $product2_productids[]= $product2['productid'];
-            $numOfWeights = numWeightsAvailableFromProductID($product2['productid']);
+            if (!array_key_exists($product2['productid'],$product_weight_lookup))
+            {
+                $product_weight_lookup[$product2['productid']] = prepareExecuteQuery("SELECT * FROM `weights` WHERE `status_id` = 0 AND `product_id`= ".$product2['productid'])->fetch_all(MYSQLI_ASSOC);
+                $prod_reserved_for_pick_lookup[$product2['productid']] =prepareExecuteQuery("SELECT count(*) as `sum`,`product_id` FROM `pickeritems` WHERE `status` = 0 AND `deleted` = 0 AND `product_id` = ".$product2['productid']." GROUP BY `product_id`")->fetch_assoc()['sum'];
+            }
+            $thisWeights = $product_weight_lookup[$product2['productid']];
+            $numOfWeights = count($thisWeights) - $prod_reserved_for_pick_lookup[$product2['productid']];
+            Log::debug("Product ID ".$product2['productid']." has ".count($thisWeights)." weights and ".$prod_reserved_for_pick_lookup[$product2['productid']]." reserved for pick, resulting in $numOfWeights available weights.");
             if($product2['akg'] != ''){
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
             }else{
-                $this_row_weight = weightSoldFromProductID($product2['productid']);
+                $this_row_weight = _totalWeightOfProduct($thisWeights);
             }
             if($product2['grosspallet'] == 1){
                 if($this_row_weight != 0){
@@ -285,6 +346,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     }
             }
             if ($numOfWeights == 0) continue;
+            $product2_weights = array_merge($product2_weights,$thisWeights);
+            $product2_reserved += $prod_reserved_for_pick_lookup[$product2['productid']];;
             if($numOfWeights > 0){
                 $product2_brands[]= $product2['brand_id'];
                 $product2_nationalities[]= $product2['nationality_id'];
@@ -350,7 +413,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $toDate = DateTime::createFromFormat('d/m/Y',$earliestStartDate)->getTimestamp();
             $toDate2 = DateTime::createFromFormat('d/m/Y',$latestEndDate)->getTimestamp();
             if ($toDate2 < $toDate) $toDate = $toDate2;
-            $cutResult= CutGroupNationalityDate::lookupFromProductID($product2_productids[0]);
+            $cutResult= CutGroupNationalityDate::lookupFromCutNationalityIDs($product2_cutids[0],$product2_nationalities[0]);
 
             if ($temp_id == 1)
             {
@@ -383,18 +446,20 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             }
         }
         if ($timeSensitivityStatus > 0 &&  $state != $timeSensitivityStatus) continue;
-        if($product2_quantity != 0) $quantityTotal = $product2_quantity;
-        else  $quantityTotal = countNumProductsForCutOnPalletArrays(array_unique($product2_palletids), [$product2_cutids[0]], $nationality_id);
+
+        $quantityTotal = count($product2_weights)-$product2_reserved;
 
         if($quantityTotal < 1){continue;}
         ###
 
         $totalW += $this_row_weight;
-        $totalProducts = weightsAvailableOnProduct($productsRow['productid']);
+        $totalProducts = count($product2_weights);
         //$numOfWeights = countNumProductsForCutOnPalletThatIsntPicked($pallet_id, $cut_id);
 
-        $totalWeightOfProduct = totalWeightOfProduct($product2_productids);
-        $species_id = prepareExecuteQuery("SELECT `species_id` FROM `cuts` WHERE id=?",'i',[$productsRow['cut_id']])->fetch_assoc()['species_id'];
+        $totalWeightOfProduct = _totalWeightOfProduct($product2_weights);
+        if (!array_key_exists($productsRow['cut_id'],$cut_species_lookup))
+             $cut_species_lookup[$productsRow['cut_id']] = prepareExecuteQuery("SELECT `species_id` FROM `cuts` WHERE id=?",'i',[$productsRow['cut_id']])->fetch_assoc()['species_id'];
+        $species_id = $cut_species_lookup[$productsRow['cut_id']];
         //If product was created after 04/03/2026 and has no RRP's and no cost, lock it.
         $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $productsRow['created_at']);
         $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
@@ -526,7 +591,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
                     echo '£' . number_format((float)$productsRow['rrp3'], 2, '.', '');
                 } ?>
             </td>
-            <?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
+            <?php if ($canViewCosts) { ?><td class="bold" style="font-weight:normal;font-size:10px;"><?php if($productsRow['price']){ echo '£' . number_format((float)$productsRow['price'], 2, '.', ''); } ?></td><?php } ?>
             <td></td>
         </tr>
     <?php  ?>

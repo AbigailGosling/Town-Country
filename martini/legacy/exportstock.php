@@ -83,7 +83,7 @@ use App\Models\Temperature;
         $single_row[] = $quantityTotal;
 
 
-        $single_row[] = $temperatures[$productsRow['cooling_id']]->name;
+        $single_row[] = trim($temperatures[$productsRow['cooling_id']]->temperature);
 
 
         $single_row[] = $species_name;

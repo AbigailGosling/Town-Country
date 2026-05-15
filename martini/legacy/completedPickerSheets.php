@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Auth;
 		<input type="text" id="instantSearch" placeholder="Search.." style="width:260px;height:28px;padding-left:10px;display:none;" enterkeyhint="go">
 		<table id="mainTable" width="100%" border="0" cellpadding="0" cellspacing="0" class="intakeAjax">
 			<?php
-
+                global $mysqli;
 				session_start();session_write_close();
 
 				$userid = $_SESSION['USER'];
