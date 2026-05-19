@@ -2,7 +2,7 @@
 	require(__DIR__.'/../functions.php');
 
 	$delivery_note_number = request()->input('delivery_note_number');
-    $supplier_id = loggedQuery("SELECT `customer_id` FROM `pickersheets` WHERE id = ?","i", [$delivery_note_number]);
+    $supplier_id = prepareExecuteQuery("SELECT `customer_id` FROM `pickersheets` WHERE id = ?","i", [$delivery_note_number]);
     if ($supplier_id->num_rows > 0) {
         $supplier_id = $supplier_id->fetch_assoc()['customer_id'];
     } else {

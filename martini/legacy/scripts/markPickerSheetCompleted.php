@@ -1,12 +1,7 @@
 <?php
 
 use App\Helpers\InternalCache;
-use App\Models\OutgoingPallet;
-use App\Models\OutgoingPalletPickWeight;
-use App\Models\OutgoingPalletType;
-use App\Models\PickerSheet;
-use App\Models\PickWeightOut;
-use Carbon\Carbon;
+use App\Helpers\ProcessHelper;
 
 	require(__DIR__.'/../functions.php');
 	$id = request()->input('id');
@@ -117,8 +112,8 @@ use Carbon\Carbon;
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
 
 	}
-    pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:checkshortpick '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
-    pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:credit_precheck '.$customer_id.' >NUL 2>NUL"', 'r'));
+    ProcessHelper::runInBackground('run:checkshortpick '.$pickersheet_id);
+    ProcessHelper::runInBackground('run:credit_precheck '.$customer_id);
 ?>
 <script>
 	alert("Picking Sheet Submitted!");

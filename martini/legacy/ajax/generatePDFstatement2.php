@@ -5,7 +5,7 @@ require_once(__DIR__.'/../config.php');
 require_once(__DIR__.'/../scripts/PDFRenderer.php');
 require_once(__DIR__.'/../scripts/SLabsEmailer.php');
 
-use Illuminate\Support\Facades\Log;
+use App\Helpers\ProcessHelper;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\PDFRenderer;
 //This function renders a PDF document from a string using mPDF
@@ -51,6 +51,6 @@ if (mysqli_num_rows($customerQueryResult) > 0)
 	$result = renderPDF($customerID);
 	prepareExecuteQuery("DELETE FROM `mail_queue` WHERE `customer_id` = ?",'i',[$customerID]);
     if ($result == "error") prepareExecuteQuery("INSERT INTO `mail_queue` (`customer_id`) VALUES (?)",'i',[$customerID]);//move error to back of the queue
-    pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:statements_queue >NUL 2>NUL"', 'r'));
+    ProcessHelper::runInBackground('run:statements_queue');
 }
 ?>

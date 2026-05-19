@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\InternalCache;
+use App\Helpers\ProcessHelper;
 use App\Models\Intake;
 use App\Models\Pallet;
 use App\Models\Product;
@@ -80,7 +81,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false && Inte
     $intake->save();
     $command_key = 'approve_intake_' . Str::uuid();
     InternalCache::put($command_key, $intake->id, 3600);
-    pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:approve_intake '.$command_key.' >NUL 2>NUL"', 'r'));
+    ProcessHelper::runInBackground('run:approve_intake '.$command_key);
     sleep(1);
 }
 ?>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\InternalCache;
+use App\Helpers\ProcessHelper;
 use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\DocType;
@@ -121,7 +122,7 @@ use Illuminate\Support\Str;
             array_unshift($cacheArray,$intakeid);
             array_unshift($cacheArray,Auth::id());
             InternalCache::put($rowId, $cacheArray, Auth::id());
-            pclose(popen('start /B cmd /C "php '.$artisanLocation.' run:pricechangeemail '.$rowId.' >NUL 2>NUL"', 'r'));
+            ProcessHelper::runInBackground('run:pricechangeemail '.$rowId);
         }
  	}
 
