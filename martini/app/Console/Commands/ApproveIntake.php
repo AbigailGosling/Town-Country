@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Helpers\InternalCache;
+use App\Helpers\ProcessHelper;
 use App\Models\CommentLogging;
 use App\Models\ContainerProduct;
 use App\Models\Customer;
@@ -15,10 +16,12 @@ use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\ReservationProduct;
 use App\Models\Site;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use InternalScripts\SLabsEmailer;
+use InternalScripts\SLabsEmailerType;
 
 class ApproveIntake extends Command
 {
@@ -44,6 +47,7 @@ class ApproveIntake extends Command
     public function handle()
     {
         $cachedID = InternalCache::get($this->argument('key'));
+        /** @var Intake $intake */
         $intake = Intake::find($cachedID);
         if ($intake == null || $intake->approved == true || $intake->approving_start == null || $intake->approved_by == null) {
             Log::error("Invalid or already processed intake approval attempted.", ['intake_id' => $cachedID]);
@@ -145,8 +149,7 @@ class ApproveIntake extends Command
                 $reservation->pickersheet_id = $pickersheet_id;
                 $reservation->processed = true;
                 $reservation->save();
-                $artisanLocation = base_path('artisan');
-                pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_sale_confirmation '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
+                ProcessHelper::runInBackground('run:send_sale_confirmation '.$pickersheet_id);
             }
 
         }

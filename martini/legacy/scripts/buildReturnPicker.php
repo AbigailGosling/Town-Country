@@ -1,9 +1,9 @@
 <?php
 
+use App\Helpers\ProcessHelper;
 use App\Models\Location;
 use App\Models\Pallet;
 use App\Models\Product;
-use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../functions.php');
 
@@ -106,12 +106,12 @@ use Illuminate\Support\Facades\Log;
 			$price_type = $priceTypeSorted[$product_id];
 			for($i=0;$i<$quantity;$i++){
 				$x = "INSERT into `pickerItems` (pickersheet_id,product_id,price,price_type,comment,target_weight) VALUES (?,?,?,?,?,?)";
-				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,$comment,$target_weight]);
+				$y = prepareExecuteQuery($x,'iissss',[$pickersheet_id,$product_id,$price,$price_type,"",$target_weight]);
 			}
             $x = "INSERT into `supplier_return_items` (supplier_return_id,product_id,cases) VALUES (?,?,?)";
             $y = prepareExecuteQuery($x,'iii',[$return_id,$product_id,$quantity]);
 		}
-        pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_supplier_return '.$pickersheet_id.' >NUL 2>NUL"', 'r'));
+        ProcessHelper::runInBackground('run:send_supplier_return '.$pickersheet_id);
 	}
 
 ?>

@@ -1,14 +1,13 @@
 <?php
 
+use App\Helpers\ProcessHelper;
 use App\Models\ContainerProduct;
 use App\Models\Customer;
 use App\Models\Location;
-use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\ReservationProduct;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 
 	require(__DIR__.'/../functions.php');
 	$orderReferenceNumber = request()->input('orderReferenceNumber');
@@ -113,7 +112,7 @@ use Illuminate\Support\Facades\Auth;
                 ]
             );
 		}
-        pclose(popen('start /B cmd /C "php '.$artisanLocation.'  run:send_reservation '.$reservation->id.' >NUL 2>NUL"', 'r'));
+        ProcessHelper::runInBackground('run:send_reservation '.$reservation->id);
 	}
 	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);

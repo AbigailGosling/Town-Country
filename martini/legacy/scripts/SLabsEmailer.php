@@ -26,7 +26,7 @@ class SLabsEmailer {
             mt_rand( 0, 0xff4B )
         );
     }
-    public static function send_email($customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile = '',$fileName = '',$document_id =null,$isAbsolPath = false) {
+    public static function send_email(int $customerID, string $type, array $toEmails, string $subject, string $htmlBody, string $pathToFile = '', string $fileName = '', $document_id = null, bool $isAbsolPath = false) {
         global $mysqli;
         if (env("APP_DEBUG",true)==true) $toEmails = [env("MAIL_TEST_ADDRESS")];
         if ($document_id == null) $document_id = "NULL";
@@ -67,7 +67,7 @@ class SLabsEmailer {
             }
             //Generate a Unique Identifier for this Email
             $mid = self::generate_uuid();
-            $message->messageId = $mid;
+            $message->mailingId = $message->messageId = $mid;
 
             $sql = "INSERT INTO `tandc_live`.`mail_tracking` (`customer_id`, `document_id`, `addressee`, `message_id`, `type`, `status`, `attachments`, `date_sent`) VALUES ($customerID, $document_id, '$trimmed', '$mid', '$type', '".SLabsEmailerStatus::Sending."', ?, NOW())";
             prepareExecuteQuery($sql,'s',[$fullExplainedPath]);
@@ -77,7 +77,7 @@ class SLabsEmailer {
                 $message->addToAddress(new BulkRecipient($trimmed));
                 $response = $client->send($message);
                 if ($response->result != "Success") {
-                    Log::error(new \Exception(json_encode(['response'=>$response,'customerID'=>$customerID,'type'=>$type,'toEmails'=>$toEmails,'subject'=>$subject,'htmlBody'=>$htmlBody,'pathToFile'=>$pathToFile,'fileName'=>$fileName,'document_id'=>$document_id,'message_id'=>$mid])));
+                    Log::error(new \Exception(json_encode(['response'=>$response,'customerID'=>$customerID,'type'=>$type,'toEmails'=>$toEmails,'subject'=>$subject,'htmlBody'=>$htmlBody,'pathToFile'=>$pathToFile,'fileName'=>$fileName,'document_id'=>$document_id])));
                 }
             }
             catch (\Exception $e)

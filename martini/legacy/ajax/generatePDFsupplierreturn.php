@@ -22,9 +22,9 @@ function renderPDF($saleID){
 
 	$customer_id = $picksheet['customer_id'];
 
-	$customerQueryResult = prepareExecuteQuery("SELECT `name`,email FROM `supplier` WHERE id = ?",'i',[$customer_id]);
+	$customerQueryResult = prepareExecuteQuery("SELECT `name`,`email` FROM `supplier` WHERE id = ?",'i',[$customer_id]);
 	$customer = mysqli_fetch_assoc($customerQueryResult);
-	$customer_emails = $customer['email'];
+	$customer_emails = [$customer['email'],"reena.sangha@townandcountrymeats.co.uk"];
 	$subject = "Supplier Return ".$saleID." from Town and Country Meats";
 	$htmlBody = "<html>Please find attached a supplier return from Town and Country Meats Group for ".$customer['name']." No: ".$saleID.".</html>";
 
