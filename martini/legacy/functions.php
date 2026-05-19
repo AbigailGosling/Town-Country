@@ -1931,12 +1931,12 @@
 	}
 	function loggedDataChange($type,$entity_id,$body){
 		if (!$body) $body = "";
-		$check = loggedQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
+		$check = prepareExecuteQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
 		if ((!$check && $body != "") || ($check['body'] != $body))
 		{
 			$userid = $_SESSION['USER'];
 			$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";
-			loggedQuery($x,'siis',[$type,$userid,$entity_id,$body]);
+			prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
 		}
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];

@@ -26,9 +26,11 @@ use Illuminate\Support\Str;
 	$dateCreated = $intake['created_at'];
 	$lastUpdated = getIntakeLastUpdated($id);
 	$userX = "SELECT * FROM `users` WHERE id=?";
-	$userY = prepareExecuteQuery($userX,'i',[$userid]);
+	$userY = prepareExecuteQuery($userX,'i',[Auth::id()]);
 	$user = mysqli_fetch_array($userY);
-    $userCanChangeRRP = User::find(Auth::id())->hasPermission("update_rrp");
+    $usermodel = User::find(Auth::id());
+    $userCanChangeRRP = $usermodel->hasPermission("update_rrp");
+    $userViewCosts = $usermodel->hasPermission("viewcosts");
 
 	$supplier = getSupplier($intake['supplier_id']);
 
@@ -83,7 +85,7 @@ use Illuminate\Support\Str;
             }
 
 			if($product_id != '' && $intake['approved']==1){
-				if (User::find(Auth::id())->hasPermission("viewcosts"))
+				if ($userViewCosts)
 				{
 					$x = "UPDATE `product` SET cost=?, price=?, rrp1=?, rrp2=?, rrp3=?, weightnote=? WHERE id IN $product_id";
  					$y = prepareExecuteQuery($x,'ssssss',[$cost,$price,$rrp1,$rrp2,$rrp3,$weightnote]);
@@ -97,7 +99,7 @@ use Illuminate\Support\Str;
 				{
 					loggedDataChange('product_note',$iProdID,$weightnote);
 					loggedDataChange('product_cost',$iProdID,$cost);
-					if (User::find(Auth::id())->hasPermission("viewcosts"))
+					if ($userViewCosts)
                     {
                         loggedDataChange('product_actual_cost',$iProdID,$price);
                         loggedDataChange('product_rrp1',$iProdID,$rrp1);
@@ -510,11 +512,6 @@ use Illuminate\Support\Str;
 	</table>
 	<br/>
 	<?php
-		$x = "SELECT * FROM `users` WHERE id=?";
-		$y = prepareExecuteQuery($x,'i',[$userid]);
-		$user = mysqli_fetch_array($y);
-
-
 		if($user['view_intake_prices'] == 1){
 	?>
 	<form method="POST" action="intake.php?savePrices=true&id=<?php echo $current_intake_id; ?>">
@@ -527,12 +524,13 @@ use Illuminate\Support\Str;
 			<tr>
 				<th style="background:#3faddd;">Species</th>
 				<th style="background:#3faddd;">Cut</th>
+                <th style="background:#3faddd;">Brand</th>
 				<th style="background:#3faddd;">Cases</th>
 				<th style="background:#3faddd;">Comments</th>
  				<th style="background:#3faddd;">Total Weight</th>
 				<?php if ($intake['approved']==1) {?>
  				<th style="background:#3faddd;">Cost</th>
-				<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+				<?php if ($userViewCosts) { ?>
                 <th style="background:#3faddd;">Actual Cost</th>
                 <th style="background:#3faddd;">1-10</th>
                 <th style="background:#3faddd;">10-35</th>
@@ -546,19 +544,13 @@ use Illuminate\Support\Str;
 				$y = prepareExecuteQuery($x,'i',[$current_intake_id]);
 				$countPallets = mysqli_num_rows($y);
 
-				$qPallets = '';
-
-				while($row = mysqli_fetch_array($y)){
-					$rowid = $row['id'];
-
-					$qPallets .= " pallet_id = '$rowid' OR";
- 				}
-
-				$qPallets = substr($qPallets, 0, -2);
-
+				$qPallets = $y->fetch_all(MYSQLI_ASSOC);
 				if($countPallets >= 1){
-					$x = "SELECT * FROM product WHERE " . $qPallets . " GROUP BY cut_id";
+                    $qPallets = array_filter(array_column($qPallets,"id"));
+                    $qPallets = "`pallet_id` IN (".implode(',',$qPallets).")";
+					$x = "SELECT * FROM product WHERE " . $qPallets . " GROUP BY cut_id,brand_id";
 				}else{
+                    $qPallets = "";
 					$x = "SELECT * FROM product WHERE id = 0";
 				}
 
@@ -575,42 +567,48 @@ use Illuminate\Support\Str;
 					$product_id = $row['id'];
 
 					$rowcutid = $row['cut_id'];
+                    $rowbrandid = $row['brand_id'];
 
 					if($countPallets >= 1){
-						$x2 = "SELECT id FROM product WHERE (" . $qPallets . ") AND cut_id='$rowcutid'";
+						$x2 = "SELECT `id` FROM product WHERE (" . $qPallets . ") AND `cut_id` = $rowcutid AND `brand_id` = $rowbrandid";
 					}else{
 						// ??: What does this do?
-						$x2 = "SELECT id FROM product WHERE id = 0";
+						$x2 = "SELECT `id` FROM product WHERE id = 0";
 					}
 
 					$y2 = prepareExecuteQuery($x2);
-
 
 					$weightthing = 0;
 
 					// used as a reference for updating the costs
 					$productIDs = [];
 
-					while($row2 = mysqli_fetch_array($y2)){
+					while($row2 = mysqli_fetch_assoc($y2)){
 						$rowid = $row2['id'];
 						$productIDs[] = $rowid;
-						$weightthing += weightFromProductID($rowid);
-						$totalWeight += weightFromProductID($rowid);
-						$qAppend2 .= " product_id = '$rowid' OR";
+                        $thisW =  weightFromProductID($rowid);
+						$weightthing += $thisW;
+						$totalWeight +=  $thisW;
 					}
 
-					$qAppend2 = substr($qAppend2, 0, -2);
-					$count2 = mysqli_num_rows($y2);
+
+					$count2 = count($productIDs);
+                    if ($count2>0)
+                        $qAppend2 = "`product_id` IN (".implode(",",$productIDs).")";
+                    else
+                        $qAppend2 = "";
 
 				?>
 				<tr>
                     <?php
                     $cut = Cut::find($row["cut_id"]);
                     $species = Species::find($cut->species_id);
+                    $brand = Brand::find($row["brand_id"]);
                     $showComments = $species->show_comments;
                     ?>
 					<td><?php echo $species->name; ?></td>
 					<td><?php echo $cut->name;?></td>
+                    <td><?php echo $brand->name;?></td>
 					<td align="center"><?php
 							$cut_id = $row['cut_id'];
 							$xk = "SELECT id FROM `weights` WHERE weight_gross > 0 AND (" . $qAppend2 . ")";
@@ -693,32 +691,32 @@ use Illuminate\Support\Str;
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
 						<?php } ?>
-						<input type="text" style="width: 90px;" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
+						<input type="text" style="width: 65px;" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
 					</td>
-					<?php if (User::find(Auth::id())->hasPermission("viewcosts")) { ?>
+					<?php if ($userViewCosts) { ?>
 					<td style="width: 1px;">
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-						<input style="width: 90px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
+						<input style="width: 65px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp2[]" <?php echo $rrp2Change; ?> value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" name="rrp2[]" <?php echo $rrp2Change; ?> value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 90px;" type="text" name="rrp3[]" <?php echo $rrp3Change; ?> value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" name="rrp3[]" <?php echo $rrp3Change; ?> value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
                     </td>
 					<?php } ?>
 					<?php } ?>
@@ -726,6 +724,7 @@ use Illuminate\Support\Str;
 			<?php } ?>
 			<tr>
 				<td colspan="2">Total</td>
+                <td></td>
 				<td align="center"><?php echo $totalCases; ?></td>
 				<?php if ($intake['approved']==1) {?>
 				<td></td>
@@ -984,7 +983,7 @@ use Illuminate\Support\Str;
 					<td align="right">
                     <?php
                         $productid = $row['id'];
-						$stmt = $mysqli->prepare("select * from `weights` WHERE product_id = ?");
+						$stmt = prepareExecuteQuery("select * from `weights` WHERE `product_id` = ?");
 						$stmt->bind_param('i', $productid);
                         $stmt->execute();
                         $result = $stmt->get_result();
