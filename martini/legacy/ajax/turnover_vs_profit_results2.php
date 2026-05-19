@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use App\Helpers\ReportHelper;
 use App\Models\Report;
 use App\Models\User;
@@ -117,7 +118,7 @@ function renderHTMLReport($reportData, $width) {
                         $internalValue = '<a style="'.$divFormat.' font-size:15px;" href="invoice.php?id='.$internalValue.'" target="_blank">'.$internalValue.'</a>';
                         break;
                     case "kg":
-                        $internalValue = number_format(floorDec(floatval($internalValue),3),3)." kg";
+                        $internalValue = number_format(FuncHelper::floorDec(floatval($internalValue),3),3)." kg";
                         break;
                     case "Cost":
                     case "Act Cost":
@@ -126,7 +127,7 @@ function renderHTMLReport($reportData, $width) {
                     case "Profit":
                     case "Act Profit":
                         $salePointer = ($displayedCol=="Profit")?"Cost Value":"Actual Cost Value";
-                        $rollingCost = floorDec(floatval($row[$salePointer])*$magShift,0)/$magShift;
+                        $rollingCost = FuncHelper::floorDec(floatval($row[$salePointer])*$magShift,0)/$magShift;
                         $internalValue = currencyCleanUp($internalValue,$rollingCost,$noPercentShow);
                         $noPercentShow = false;
                         break;
@@ -270,20 +271,20 @@ function currencyCleanUp($startingProfit,$startingSale,$noPercentShow)
     if ($noPercentShow == false)
     {
 
-        $rollingCost = floorDec(floatval($startingSale)*$magShift,0)/$magShift;
+        $rollingCost = FuncHelper::floorDec(floatval($startingSale)*$magShift,0)/$magShift;
         if ($rollingCost == 0)
         {
             $percent = "<br/>0.000%";
         }
         else
         {
-            $rollingProfit = floorDec(floatval($startingProfit)*$magShift,0)/$magShift;
+            $rollingProfit = FuncHelper::floorDec(floatval($startingProfit)*$magShift,0)/$magShift;
             $profitRatio = $rollingProfit/$rollingCost;
-            $percentage = floorDec($profitRatio*100,3);
+            $percentage = FuncHelper::floorDec($profitRatio*100,3);
             $percent = "<br/>{$negPercent}{$percentage}%";
         }
     }
-    return $currency . number_format(floorDec(floatval($startingProfit)),2).$percent;
+    return $currency . number_format(FuncHelper::floorDec(floatval($startingProfit)),2).$percent;
 }
 $request = request();
 $reportData = calculateReport($request);

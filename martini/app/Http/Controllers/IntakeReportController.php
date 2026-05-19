@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FuncHelper;
 use App\Helpers\ReportHelper;
 use App\Models\Brand;
 use App\Models\CreditNoteItem;
@@ -712,7 +713,7 @@ class IntakeReportController extends Controller
         foreach ($rows as $row) {
             foreach ($fields as $field) {
                 $value = (float) ($row->{$field} ?? 0);
-                $totals[$field] += $floorDecimals ? ReportHelper::floorDec($value, 3) : $value;
+                $totals[$field] += $floorDecimals ? FuncHelper::floorDec($value, 3) : $value;
             }
         }
 
@@ -1015,6 +1016,6 @@ class IntakeReportController extends Controller
         $i = 1000 * 1000;
         $val1 *= 1000;
         $val2 *= 1000;
-        return ReportHelper::floorDec(($val1 * $val2) / $i, $percision);
+        return FuncHelper::floorDec(($val1 * $val2) / $i, $percision);
     }
 }

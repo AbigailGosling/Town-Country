@@ -86,7 +86,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -104,7 +104,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -121,7 +121,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -138,7 +138,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -149,7 +149,7 @@ class ReportHelper
             if (count($ids)>0)
             {
                 if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
             }
         }
 
@@ -167,7 +167,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -182,7 +182,7 @@ class ReportHelper
                 if (count($ids)>0)
                 {
                     if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                    else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                    else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                 }
             }
         }
@@ -195,7 +195,7 @@ class ReportHelper
             {
                 $filters['product.cooling_id'] = $COOLING_ID;
                 if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
             }
         }
 
@@ -206,7 +206,7 @@ class ReportHelper
             {
                 $filters['brands.id'] = $BRAND_ID;
                 if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
             }
         }
 
@@ -217,7 +217,7 @@ class ReportHelper
             {
                 $filters['nationality.id'] = $NATIONALITY_ID;
                 if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
             }
         }
 
@@ -234,7 +234,7 @@ class ReportHelper
                     if (count($ids)>0)
                     {
                         if (count($INTERESTED_PRODUCTIDS)==0) $INTERESTED_PRODUCTIDS = $ids;
-                        else $INTERESTED_PRODUCTIDS = static::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
+                        else $INTERESTED_PRODUCTIDS = FuncHelper::custom_intersect($INTERESTED_PRODUCTIDS,$ids);
                     }
                 }
             }
@@ -249,7 +249,7 @@ class ReportHelper
         }
         if (count($INTERESTED_PRODUCTIDS)>0)
         {
-            $INTERESTED_PRODUCTIDS = static::custom_unique($INTERESTED_PRODUCTIDS);
+            $INTERESTED_PRODUCTIDS = FuncHelper::custom_unique($INTERESTED_PRODUCTIDS);
             $total = count($INTERESTED_PRODUCTIDS);
             $increment = 100;
             for ($i=0;$i<$total;$i+=$increment)
@@ -269,7 +269,7 @@ class ReportHelper
         }
         if (count($INTERESTED_PICKS)>0)
         {
-            $INTERESTED_PICKS = static::custom_unique($INTERESTED_PICKS);
+            $INTERESTED_PICKS = FuncHelper::custom_unique($INTERESTED_PICKS);
             sort($INTERESTED_PICKS,SORT_NUMERIC);
         }
         return $filters;
@@ -557,10 +557,10 @@ class ReportHelper
                 {
                     $rowCountPointer = "weight_tear";
                 }
-                $rollingTotal += static::floorDec(($weight->$rowCountPointer*$price),2);
-                $rollingCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
-                if ($product->price && $product->price > 0)$rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->price),2);
-                else $rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                $rollingTotal += FuncHelper::floorDec(($weight->$rowCountPointer*$price),2);
+                $rollingCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                if ($product->price && $product->price > 0)$rollingActCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->price),2);
+                else $rollingActCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->cost),2);
             }
             if ($rollingItem == null) continue;
             static::row_merge($result,$rollingItem,"weights.");
@@ -652,10 +652,10 @@ class ReportHelper
                 {
                     $rowCountPointer = "weight_tear";
                 }
-                $rollingTotal += static::floorDec(($weight->$rowCountPointer*$price),2);
-                $rollingCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
-                if ($product->price && $product->price > 0)$rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->price),2);
-                else $rollingActCost += static::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                $rollingTotal += FuncHelper::floorDec(($weight->$rowCountPointer*$price),2);
+                $rollingCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->cost),2);
+                if ($product->price && $product->price > 0)$rollingActCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->price),2);
+                else $rollingActCost += FuncHelper::floorDec(($weight->$rowCountPointer*$product->cost),2);
             }
             if ($rollingItem == null) continue;
             static::row_merge($result,$rollingItem,"weights.");
@@ -721,7 +721,7 @@ class ReportHelper
             for($i=0;$i<count($columnData);$i++)
             {
                 $rolling = filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-                $rolling = static::floorDec(floatval($rolling)*$magShift,0);
+                $rolling = FuncHelper::floorDec(floatval($rolling)*$magShift,0);
 
                 switch($function)
                 {
@@ -737,7 +737,7 @@ class ReportHelper
                     }
                 }
             }
-            $result = static::finaliseItem($reportColumn,static::floorDec($result/$magShift,$percision));
+            $result = static::finaliseItem($reportColumn,FuncHelper::floorDec($result/$magShift,$percision));
         }
         else if (in_array($function,$rowFuncs))
         {
@@ -843,10 +843,6 @@ class ReportHelper
         else $t = "";
         return $left.$t;
     }
-    private static function array_search_multidim($array, $column, $key)
-    {
-        return $array[array_search($key, array_column($array, $column))];
-    }
     private static function row_merge(&$to, $from, $prefix="")
     {
         if ($from === null) throw new \Exception(json_encode($to));
@@ -874,11 +870,11 @@ class ReportHelper
     private static function bulkMergeIn(&$result,$full = true):bool {
 
         $col = "pickerSheets.customer_id";
-        $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
+        $item = FuncHelper::array_search_multidim(static::$customers,"customers.id",$result->$col);
         static::row_merge($result,$item);
 
         $col = "pickerSheets.user_from_id";
-        $item = static::array_search_multidim(static::$users,"users.id",$result->$col);
+        $item = FuncHelper::array_search_multidim(static::$users,"users.id",$result->$col);
         if ($item!==null) static::row_merge($result,$item);
 
         if ($full)
@@ -897,11 +893,11 @@ class ReportHelper
                     $col2 = "intake.returned";
                     if ($result->$col2!=1)
                     {
-                        $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+                        $item = FuncHelper::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
                     }
                     else
                     {
-                        $item = static::array_search_multidim(static::$customers,"customers.id",$result->$col);
+                        $item = FuncHelper::array_search_multidim(static::$customers,"customers.id",$result->$col);
                         $item2 = new stdClass();
                         $k1 = "customers.id";
                         $k2 = "supplier.id";
@@ -915,44 +911,44 @@ class ReportHelper
                     static::row_merge($result,$item);
 
                     $col = "product.brand_id";
-                    $item = static::array_search_multidim(static::$brands,"brands.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$brands,"brands.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "product.nationality_id";
-                    $item = static::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$nationalities,"nationality.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "product.cooling_id";
-                    $item = static::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$temperatures,"temperature.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "product.cut_id";
-                    $item = static::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$cuts,"cuts.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "cuts.cutgroup_id";
-                    $item = static::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$cutgroups,"cutgroups.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "cuts.species_id";
-                    $item = static::array_search_multidim(static::$species,"species.id",$result->$col);
+                    $item = FuncHelper::array_search_multidim(static::$species,"species.id",$result->$col);
                     static::row_merge($result,$item);
 
                     $col = "intake.health_id";
                     if ($result->$col!=-1)
                     {
-                        $item = static::array_search_multidim(static::$health_marks,"health_mark.id",$result->$col);
+                        $item = FuncHelper::array_search_multidim(static::$health_marks,"health_mark.id",$result->$col);
                         static::row_merge($result,$item);
                     }
                     $col = "pallet.storage_location";
                     if ($result->$col!=-1)
                     {
-                        $item = static::array_search_multidim(static::$locations,"location.id",$result->$col);
+                        $item = FuncHelper::array_search_multidim(static::$locations,"location.id",$result->$col);
                         static::row_merge($result,$item);
                         $col = "location.site_id";
                         if ($result->$col!=-1)
                         {
-                            $item = static::array_search_multidim(static::$sites,"site.id",$result->$col);
+                            $item = FuncHelper::array_search_multidim(static::$sites,"site.id",$result->$col);
                             static::row_merge($result,$item);
                         }
                     }
@@ -964,7 +960,7 @@ class ReportHelper
         if ($result->$col==1)
         {
             $col = "pickerSheets.customer_id";
-            $item = static::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
+            $item = FuncHelper::array_search_multidim(static::$suppliers,"supplier.id",$result->$col);
             $col = "customers.businessname";
             $col2 = "supplier.name";
             $result->$col = $item->$col2;
@@ -1033,7 +1029,7 @@ class ReportHelper
                 }
             }
         }
-        return static::floorDec($result,3);
+        return FuncHelper::floorDec($result,3);
     }
     private static function getValue(string $colString,$workingResult,$dbRow):string|null
     {
@@ -1076,15 +1072,15 @@ class ReportHelper
                     $negMarker = "-";
                     $workingVal *= -1;
                 }
-                return $negMarker . "£" . number_format(static::floorDec($workingVal,2),2);
+                return $negMarker . "£" . number_format(FuncHelper::floorDec($workingVal,2),2);
             }
             case "double":
             {
-                return number_format((double)static::floorDec($workingVal,3),3);
+                return number_format((double)FuncHelper::floorDec($workingVal,3),3);
             }
             case "int":
             {
-                return number_format((int)static::floorDec($workingVal,0));
+                return number_format((int)FuncHelper::floorDec($workingVal,0));
             }
             case "id":
             {
@@ -1112,29 +1108,10 @@ class ReportHelper
             //PDO has limits on the number of vars we can submit in a prepare and a string length limit so we need to shrink the set
             $pw = static::$conn->table("weights")->selectRaw("GROUP_CONCAT(id) as ids")->where("product_id",$productid)->first()->ids;
             $pw = explode(",",$pw);
-            $weightids = static::custom_intersect($pw,$weightids);
+            $weightids = FuncHelper::custom_intersect($pw,$weightids);
         }
         $weightQB->whereIn("weights.id",$weightids);
     }
-    public static function custom_intersect(array $arrayOne, array $arrayTwo):array
-    {
-        //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
-        $first = array_flip($arrayOne);
-        $second = array_flip($arrayTwo);
-
-        $x = array_intersect_key($first, $second);
-
-        return array_flip($x);
-    }
-	public static function custom_unique(array $array):array
-    {
-		$x = array();
-		foreach ($array as $item)
-		{
-			if ($item !== null && $item !== "")$x[$item] = true;
-		}
-		return array_keys($x);
-	}
     private static function applyDateRange(Builder &$resultQB, string $dateType, Carbon $start, Carbon $end)
     {
         switch ($dateType)
@@ -1159,13 +1136,5 @@ class ReportHelper
             }
         }
     }
-    public static function floorDec($val, $precision = 2) {
-		if ($precision < 0) { $precision = 0; }
-		$numPointPosition = intval(strpos($val, '.'));
-		if ($numPointPosition === 0) { //$val is an integer
-			return $val;
-		}
-		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
-	}
 }
 ?>

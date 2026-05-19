@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use App\Models\Brand;
 use App\Models\Intake;
 use App\Models\Location;
@@ -148,7 +149,7 @@ use App\Models\Temperature;
     $final_row[] = '';
     $final_row[] = '';
     $final_row[] = number_format((double)$TOTAL_WEIGHT, 3, '.', ',') . 'kg';
-    $final_row[] = "£" . number_format((double)floorDec($TOTAL_COST), 2, '.', ',');
+    $final_row[] = "£" . number_format((double)FuncHelper::floorDec($TOTAL_COST), 2, '.', ',');
     $final_array[] = $final_row;
 
     require('../../vendor/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php');

@@ -7,7 +7,8 @@
 	require('config.php');
 	require_once(__DIR__.'/../vendor/laravel/framework/src/Illuminate/Support/Facades/Log.php');
 
-    use App\Models\User;
+use App\Helpers\FuncHelper;
+use App\Models\User;
     use Carbon\Carbon;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\Log;
@@ -672,7 +673,7 @@
         foreach ($palletIDS as $palletID)
         {
             $check = "SELECT GROUP_CONCAT(DISTINCT `cut_id`) as `cuts` FROM `product` WHERE `pallet_id` = ?";
-            $cr = custom_intersect($cutIDS,explode(",",prepareExecuteQuery($check,'i',[$palletID])->fetch_assoc()['cuts']));
+            $cr = FuncHelper::custom_intersect($cutIDS,explode(",",prepareExecuteQuery($check,'i',[$palletID])->fetch_assoc()['cuts']));
 
             foreach ($cr as $cutID)
             {
@@ -961,16 +962,9 @@
 		return null;
 	}
 
-	function searchInNestedArray($array, $field, $value)
+	function searchInNestedArray(array $array, string|int $field, mixed $value):mixed
 	{
-		$result = null;
-
-		foreach ($array as $val) {
-			if ($val[$field] == $value) {
-				$result = $val;
-				return $result;
-			}
-		}
+		return FuncHelper::array_search_multidim($array, $field, $value);
 	}
 
 	# weight of product
@@ -1702,7 +1696,7 @@
 			}
 		}
 
-		return ceilDec($price,2);
+		return FuncHelper::ceilDec($price,2);
 	}
 
 	function weightCountOfProductOnPicksheet($pick_id, $productID){
@@ -1764,7 +1758,7 @@
 		{
 			$price = $price + (double)creditNoteTotal($paymentData['id']);
 		}
-		return ceilDec($price,2);
+		return FuncHelper::ceilDec($price,2);
  	}
 
 	function doesInvoiceHaveReturns($invoice_id){
@@ -1835,10 +1829,10 @@
 				while ($cnr = $cnq->fetch_assoc())
 				{
 					if($cnr['product_id'] == 0 || weightTypeOfProduct($cnr['product_id']) == 'PPC'){ # bespoke credit note, not attached product
-						$cnr['finalValue'] = (double)floorDec((double) $cnr['credit_note_items_price'] * (double) $cnr['credit_note_items_quantity']);
+						$cnr['finalValue'] = (double)FuncHelper::floorDec((double) $cnr['credit_note_items_price'] * (double) $cnr['credit_note_items_quantity']);
 					}else{
 						$weight = (double)weightFromProductIDArray([$cnr['product_id']]);
-						$cnr['finalValue'] = (double)floorDec(((double)$cnr['credit_note_items_price'] * (double)$weight));
+						$cnr['finalValue'] = (double)FuncHelper::floorDec(((double)$cnr['credit_note_items_price'] * (double)$weight));
 					}
 					$row['noteItems'][] = $cnr;
 				}
@@ -1846,21 +1840,6 @@
 		}
 
    		return $array;
-	}
-	function floorDec($val, $precision = 2) {
-		if ($precision < 0) { $precision = 0; }
-		$numPointPosition = intval(strpos($val, '.'));
-		if ($numPointPosition === 0) { //$val is an integer
-			return $val;
-		}
-		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
-	}
-	function ceilDec ( $value, $precision = 2 ) {
-		$offset = 0.5;
-		if ($precision !== 0)
-			$offset /= pow(10, $precision);
-		$final = round($value + $offset, $precision, PHP_ROUND_HALF_DOWN);
-		return ($final == -0 ? 0 : $final);
 	}
 	function fuzzyCustomerSearch($name,$creditSearch=false,$disabledSearch=false,$isSaleScreen=false,$isReservationScreen=false)
 	{
@@ -1929,15 +1908,8 @@
 		$percent = $customerEntry['markup_amount'] / 100;
 		return $price*$percent;
 	}
-	function loggedDataChange($type,$entity_id,$body){
-		if (!$body) $body = "";
-		$check = prepareExecuteQuery("SELECT * FROM `comment_logging` WHERE `type` = ? AND `entity_id` = ? ORDER BY `id` DESC LIMIT 1",'si',[$type,$entity_id])->fetch_assoc();
-		if ((!$check && $body != "") || ($check['body'] != $body))
-		{
-			$userid = $_SESSION['USER'];
-			$x = "INSERT INTO `comment_logging` (`type`,`user_id`,`entity_id`,`body`) VALUES (?,?,?,?)";
-			prepareExecuteQuery($x,'siis',[$type,$userid,$entity_id,$body]);
-		}
+	function loggedDataChange(string $type,int $entity_id,?string $body){
+		FuncHelper::loggedDataChange($_SESSION['USER'],$type,$entity_id,$body);
 	}
 	CONST PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','CREDIT_NOTE'];
     CONST SUPPLIER_PAYMENT_METHODS = ['CHEQUE', 'BACS', 'CASH','SUPPLIER_CREDIT_NOTE'];
@@ -1990,15 +1962,5 @@
             $meetsRRP = ((double)$sellPrice >= (double)$targetCost);
             return $meetsRRP;
         }
-    }
-    function custom_intersect(array $arrayOne, array $arrayTwo):array
-    {
-        //Fastest array intersect https://stackoverflow.com/a/53203232/1856411
-        $first = array_flip($arrayOne);
-        $second = array_flip($arrayTwo);
-
-        $x = array_intersect_key($first, $second);
-
-        return array_flip($x);
     }
 ?>

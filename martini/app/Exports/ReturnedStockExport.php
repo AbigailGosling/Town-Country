@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Helpers\FuncHelper;
 use App\Models\Brand;
 use App\Models\Customer;
 use App\Models\Cut;
@@ -140,7 +141,7 @@ class ReturnedStockExport implements FromCollection
                 }
                 $count++;
             }
-            $r['kg']=$this->floorDec($kg,3);
+            $r['kg']=FuncHelper::floorDec($kg,3);
             $r['Cases']=$count;
             if ($r['Cases'] < 1 && $product->unit != 'PPC') continue;
             if ($product->unit == 'PPC') $r['kg']=$thisweights->count();
@@ -151,12 +152,4 @@ class ReturnedStockExport implements FromCollection
         if (empty($output)) return null;
         return $output;
     }
-    private function floorDec($val, $precision = 2) {
-		if ($precision < 0) { $precision = 0; }
-		$numPointPosition = intval(strpos($val, '.'));
-		if ($numPointPosition === 0) { //$val is an integer
-			return $val;
-		}
-		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
-	}
 }

@@ -230,13 +230,13 @@ if (!isset($dateType)) $dateType = "assembled";
                         {
                             $target = (stripos($col,"Actual"))?"Actual Cost Value":"Cost Value";
                             $rollingProfit = filter_var($d->$col, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-                            $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+                            $rollingProfit = App\Helpers\FuncHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                             $rollingCost = filter_var($d->$target, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-                            $rollingCost = App\Helpers\ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+                            $rollingCost = App\Helpers\FuncHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
                             if ($rollingProfit!=0 && $rollingCost!=0)
                             {
                                 $profitRatio = $rollingProfit/$rollingCost;
-                                $percentage = App\Helpers\ReportHelper::floorDec($profitRatio*100,3);
+                                $percentage = App\Helpers\FuncHelper::floorDec($profitRatio*100,3);
                             }
                             else
                             {
@@ -271,13 +271,13 @@ if (!isset($dateType)) $dateType = "assembled";
                     <?php
                         $target = (stripos($h,"Actual"))?"Actual Cost Value":"Cost Value";
                         $rollingProfit = filter_var($footerResult[$h], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-                        $rollingProfit = App\Helpers\ReportHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+                        $rollingProfit = App\Helpers\FuncHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
                         $rollingCost = filter_var($footerResult[$target], FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-			            $rollingCost = App\Helpers\ReportHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+			            $rollingCost = App\Helpers\FuncHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
                         if ($rollingProfit!=0 && $rollingCost!=0)
                         {
                             $profitRatio = $rollingProfit/$rollingCost;
-                            $percentage = App\Helpers\ReportHelper::floorDec($profitRatio*100,3);
+                            $percentage = App\Helpers\FuncHelper::floorDec($profitRatio*100,3);
                         }
                         else
                         {
