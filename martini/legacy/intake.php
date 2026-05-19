@@ -985,11 +985,7 @@ use Illuminate\Support\Str;
 					<td align="right">
                     <?php
                         $productid = $row['id'];
-						$stmt = prepareExecuteQuery("select * from `weights` WHERE `product_id` = ?");
-						$stmt->bind_param('i', $productid);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-						$weightt = $result->fetch_assoc();
+						$weightt = prepareExecuteQuery("select * from `weights` WHERE `product_id` = ?",'i',[$productid])->fetch_assoc();
 
                         $original_gross = number_format($weightt['original_gross'], 2, '.', '');
                         $num_cartons = number_format($weightt['number_of_cartons'], 2, '.', '');
