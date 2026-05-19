@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Helpers\FuncHelper;
 use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\Intake;
@@ -125,7 +126,7 @@ class ShortStockExport implements FromCollection
             }
             $count++;
         }
-        $r['kg']=$this->floorDec($kg,3);
+        $r['kg']=FuncHelper::floorDec($kg,3);
         $r['Cases']=$count - PickerItem::where([["product_id",$product->id],["deleted",0],['status','0']])->get()->count();
         if ($r['Cases'] < 1 && $product->unit != 'PPC') return null;
         if ($product->unit == 'PPC') $r['kg']=$thisweights->count();
@@ -141,12 +142,4 @@ class ShortStockExport implements FromCollection
         $r['d']=$shortestDate->timestamp;
         return $r;
     }
-    private function floorDec($val, $precision = 2) {
-		if ($precision < 0) { $precision = 0; }
-		$numPointPosition = intval(strpos($val, '.'));
-		if ($numPointPosition === 0) { //$val is an integer
-			return $val;
-		}
-		return floatval(substr($val, 0, $numPointPosition + $precision + 1));
-	}
 }

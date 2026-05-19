@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\FuncHelper;
 use App\Helpers\InternalCache;
 use App\Helpers\ProcessHelper;
 use App\Models\CommentLogging;
@@ -122,8 +123,8 @@ class ApproveIntake extends Command
                     abort(500);
                     die();
                 }
-                $this->loggedDataChange($reservation->user_id,"picksheet_note",$pickersheet_id,$reservation->picksheet_note);
-                $this->loggedDataChange($reservation->user_id,"picksheet_orderReferenceNumber",$pickersheet_id,$reservation->order_reference_number);
+                FuncHelper::loggedDataChange($reservation->user_id,"picksheet_note",$pickersheet_id,$reservation->picksheet_note);
+                FuncHelper::loggedDataChange($reservation->user_id,"picksheet_orderReferenceNumber",$pickersheet_id,$reservation->order_reference_number);
 
                 foreach (ReservationProduct::where([["reservation_id",$reservation->id],["deleted",0]])->get() as $resProduct)
                 {
@@ -159,15 +160,5 @@ class ApproveIntake extends Command
         InternalCache::forget($this->argument('key'));
         InternalCache::forget("approve_intake_start_".$intake->id);
         return Command::SUCCESS;
-    }
-    private function loggedDataChange(int $user_id, string $type, int $id, ?string $body = "")
-    {
-        if ($body == null) $body = "";
-        $log = new CommentLogging();
-        $log->entity_id = $id;
-        $log->type = $type;
-        $log->body = $body;
-        $log->user_id = $user_id;
-        $log->save();
     }
 }

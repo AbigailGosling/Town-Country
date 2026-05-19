@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use App\Models\CutGroupNationalityDate;
 use App\Models\Location;
 use App\Models\Site;
@@ -334,7 +335,6 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             }
             $thisWeights = $product_weight_lookup[$product2['productid']];
             $numOfWeights = count($thisWeights) - $prod_reserved_for_pick_lookup[$product2['productid']];
-            Log::debug("Product ID ".$product2['productid']." has ".count($thisWeights)." weights and ".$prod_reserved_for_pick_lookup[$product2['productid']]." reserved for pick, resulting in $numOfWeights available weights.");
             if($product2['akg'] != ''){
                     $this_row_weight = totalWeightOfAdvisedKGProduct($intake_id,$product2['nationality_id']);
             }else{
@@ -620,8 +620,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     <td>
     </td>
     <td></td>
-    <td class="bold"><?php echo number_format(floorDec($overallWeight,3),3,".",",") . "kg"; ?></td>
-    <td class="bold"><?php echo "£".number_format(floorDec($overallCost,2),2,".",","); ?></td>
+    <td class="bold"><?php echo number_format(FuncHelper::floorDec($overallWeight,3),3,".",",") . "kg"; ?></td>
+    <td class="bold"><?php echo "£".number_format(FuncHelper::floorDec($overallCost,2),2,".",","); ?></td>
     <td class="bold"></td>
     <td></td>
 </tr>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use App\Helpers\InternalCache;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
@@ -138,8 +139,8 @@ function processGrossDolav(array $workingSet,string $key):array
 
             $product_id = $weight['product_id'];
 
-            $weightOne = ceilDec(min($tare,request($key . $weightID)),3);
-            $weightTwo = ceilDec(max(0,(float) $tare - (float) $weightOne),3);
+            $weightOne = FuncHelper::ceilDec(min($tare,request($key . $weightID)),3);
+            $weightTwo = FuncHelper::ceilDec(max(0,(float) $tare - (float) $weightOne),3);
 
             # START UPDATE CURRENT WEIGHT INFO
             $x2 = "UPDATE `weights` SET weight_gross = ?, weight_tear = ?, grosstare='0', status_id='1' WHERE id = ?";

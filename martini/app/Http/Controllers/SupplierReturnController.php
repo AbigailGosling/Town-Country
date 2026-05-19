@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FuncHelper;
 use App\Helpers\ReportHelper;
 use App\Models\InvoicePayment;
 use App\Models\PickerItem;
@@ -68,9 +69,9 @@ class SupplierReturnController extends Controller
     {
         $supplierL = $this->processSupplier($supplier);
         $output = new stdClass();
-        $output->outstanding = ReportHelper::floorDec($supplierL->sum("outstanding"));
-        $output->value = ReportHelper::floorDec($supplierL->sum("value"));
-        $output->paid = ReportHelper::floorDec($supplierL->sum("paid"));
+        $output->outstanding = FuncHelper::floorDec($supplierL->sum("outstanding"));
+        $output->value = FuncHelper::floorDec($supplierL->sum("value"));
+        $output->paid = FuncHelper::floorDec($supplierL->sum("paid"));
         $output->trans= $supplierL->count();
         $output->supplier=$supplier;
         $output->items=$supplierL;
@@ -93,21 +94,21 @@ class SupplierReturnController extends Controller
                 if ( $internalProduct == null) continue;
                 if ($internalProduct->unit=="PPC")
                 {
-                    $itemCost = ReportHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $returnProduct->count,3);
+                    $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $returnProduct->count,3);
 
                 }
                 else
                 {
                     $q = Weight::where("product_id",$returnProduct->product_id)->whereIn("id",$quickWeightLookup);
-                    $tear = ReportHelper::floorDec($q->get()->sum("weight_tear"),3);
-                    $itemCost = ReportHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $tear,3);
+                    $tear = FuncHelper::floorDec($q->get()->sum("weight_tear"),3);
+                    $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $tear,3);
                 }
                 $line->value += $itemCost;
                 $line->items[] = [$internalProduct,$returnProduct,$quickWeightLookup];
             }
-            $line->paid = ReportHelper::floorDec(InvoicePayment::where("invoice_id",$pick->id)->get()->sum("amount"),3);
+            $line->paid = FuncHelper::floorDec(InvoicePayment::where("invoice_id",$pick->id)->get()->sum("amount"),3);
             if ($line->paid==null)$line->paid=0;
-            $line->outstanding = ReportHelper::floorDec($line->value - $line->paid,3);
+            $line->outstanding = FuncHelper::floorDec($line->value - $line->paid,3);
             $returnCol->add($line);
         }
         return $returnCol;

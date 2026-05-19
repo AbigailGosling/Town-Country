@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use App\Helpers\ReportHelper;
 use App\Models\Report;
 use App\Models\User;
@@ -123,8 +124,8 @@ use Illuminate\Support\Facades\Auth;
         $dataRanges2[] = [];
     }
 	$generalFormat = "word-wrap: break-all; overflow:hidden;";
-	$divFormat =  "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
-	$cellFormat = "width:100% max-width: ".floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
+	$divFormat =  "width:100% max-width: ".FuncHelper::floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
+	$cellFormat = "width:100% max-width: ".FuncHelper::floorDec((request()->input('width')/(count($garyCols)-1)))."px; ".$generalFormat;
     $firstTable = $report->getTables()[0];
     foreach ($report->getTables() as $index=>$table){
         if ($table->name == "Supplier Returns") continue;
@@ -242,7 +243,7 @@ use Illuminate\Support\Facades\Auth;
 			$costpointer = (strpos($garyCol,"Actual")===false)?"Cost Value":"Actual Cost Value";
 			$profitpointer = (strpos($garyCol,"Actual")===false)?"Profit":"Actual Profit";
 			$rollingCost = filter_var($summary->$costpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-			$rollingCost = floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+			$rollingCost = FuncHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
 			if ($rollingCost == 0)
 			{
 				echo "<br/>0.000%";
@@ -250,9 +251,9 @@ use Illuminate\Support\Facades\Auth;
 			else
 			{
 				$rollingProfit = filter_var($summary->$profitpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-				$rollingProfit = floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+				$rollingProfit = FuncHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
 				$profitRatio = $rollingProfit/$rollingCost;
-				$percentage = floorDec($profitRatio*100,3);
+				$percentage = FuncHelper::floorDec($profitRatio*100,3);
 				echo "<br/>".$percentage."%";
 			}
 
@@ -292,13 +293,13 @@ foreach($garyCols as $garyCol=>$discard)
 			for($i=0;$i<count($columnData);$i++)
 			{
 				$rolling = filter_var(str_replace("£","",$columnData[$i]), FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-				$rolling = floorDec(floatval($rolling)*$magShift,0);
+				$rolling = FuncHelper::floorDec(floatval($rolling)*$magShift,0);
 				$result += $rolling;
 			}
 			if (isset($columnLookup[$garyCol]))
 			{
 				$reportCol = $columnLookup[$garyCol];
-				$t = ReportHelper::finaliseItem($reportCol,floorDec($result/$magShift,$percision));
+				$t = ReportHelper::finaliseItem($reportCol,FuncHelper::floorDec($result/$magShift,$percision));
 				$col = $reportCol->getLabel($table->mode);
 				$kgS=($garyCol=="kg")?" kg":"";
 				echo $t.$kgS;
@@ -310,7 +311,7 @@ foreach($garyCols as $garyCol=>$discard)
 			$costpointer = (strpos($garyCol,"Actual")===false)?"Cost Value":"Actual Cost Value";
 			$profitpointer = (strpos($garyCol,"Actual")===false)?"Profit":"Actual Profit";
 			$rollingCost = filter_var($summary->$costpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-			$rollingCost = floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
+			$rollingCost = FuncHelper::floorDec(floatval($rollingCost)*$magShift,0)/$magShift;
 			if ($rollingCost == 0)
 			{
 				echo "<br/>0.000%";
@@ -318,9 +319,9 @@ foreach($garyCols as $garyCol=>$discard)
 			else
 			{
 				$rollingProfit = filter_var($summary->$profitpointer, FILTER_VALIDATE_FLOAT, FILTER_FLAG_ALLOW_THOUSAND);
-				$rollingProfit = floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
+				$rollingProfit = FuncHelper::floorDec(floatval($rollingProfit)*$magShift,0)/$magShift;
 				$profitRatio = $rollingProfit/$rollingCost;
-				$percentage = floorDec($profitRatio*100,3);
+				$percentage = FuncHelper::floorDec($profitRatio*100,3);
 				echo "<br/>".$percentage."%";
 			}
 		}

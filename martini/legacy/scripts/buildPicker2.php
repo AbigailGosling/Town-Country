@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\FuncHelper;
 use Illuminate\Support\Facades\Log;
 
 include(__DIR__.'/../functions.php');
@@ -57,7 +58,7 @@ foreach ($items as $item){
     $weight=$item['weight'];
     $amount=$item['amount'];
     if ($name == null || $name == "" || $cost == null || $cost == "")continue;
-    $totalCost = $totalCost + (floorDec($weight,3)*floorDec($cost,3)*floorDec($amount,3));
+    $totalCost = $totalCost + (FuncHelper::floorDec($weight,3)*FuncHelper::floorDec($cost,3)*FuncHelper::floorDec($amount,3));
 
     //Cut Row
     $cutid = prepareExecuteQuery("INSERT INTO `tandc_live`.`cuts` ( `species_id`, `name`, `cutgroup_id`) VALUES (13, ?, -1)",'s',[$name],true);
