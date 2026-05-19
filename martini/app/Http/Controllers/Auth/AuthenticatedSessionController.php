@@ -35,19 +35,16 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         if ($user && $user->disabled == 0)
         {
-            $tfa = SystemSetting::where("key_name","TWO_FACTOR_ENABLED")->first();
             /**
-            *    COMMENT THIS OUT TO DISABLE TFA - ABBY
+            *    .env and db table system_setting add global toggle for 2FA
             */
+            $tfa = SystemSetting::where("key_name","TWO_FACTOR_ENABLED")->first();
             if (env("TWO_FACTOR_ENABLED",true) && $tfa->key_value == true && $user->use_two_factor == 1)
             {
                 $user->generateTwoFactorCode();
                 $user->notify(new TwoFactorCode());
                 return redirect()->route('verify.index');
             }
-            /**
-            *    END OF COMMENT
-            */
             $request->session()->regenerate();
             session_start();
             $_SESSION['USER'] = $user->id;
