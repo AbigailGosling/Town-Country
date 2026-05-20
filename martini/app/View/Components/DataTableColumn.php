@@ -2,6 +2,7 @@
 
 namespace App\View\Components;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\Component;
 
 class DataTableColumn extends Component
@@ -13,7 +14,7 @@ class DataTableColumn extends Component
      *
      * @return void
      */
-    public function __construct(bool $showOnMobile = true, String $align = "left")
+    public function __construct(bool $showOnMobile = true, string $align = "left")
     {
         $this->showOnMobile = $showOnMobile;
         $this->align = $align;

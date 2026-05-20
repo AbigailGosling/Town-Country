@@ -47,36 +47,47 @@
 
                     <x-input-error :messages="$errors->get('actual_email')" class="mt-2"/>
                 </div>
+                <div>
+                    <x-input-label for="location_id" :value="__('Location')" />
+
+                    <select id="location_id" name="location_id" class="block mt-1 w-full">
+                        @foreach($locations as $location)
+                            <option value="{{ $location->id }}" @if ($user->location_id == $location->id) selected @endif>
+                                {{ $location->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="mt-4" for="receive_short_stock" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="receive_short_stock" name="receive_short_stock"
                     @if ($user->receive_short_stock) checked @endif />
                     <div style="width: 1em;"></div>
-                    <x-input-label for="receive_short_stock" value="Receive Short Stock Notifications"/>
+                    <x-input-label for="receive_short_stock" :value="__('Receive Short Stock Notifications')"/>
                 </div>
                 <div class="mt-4" for="override_saledate_check" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="override_saledate_check" name="override_saledate_check"
                     @if ($user->override_saledate_check) checked @endif />
                     <div style="width: 1em;"></div>
-                    <x-input-label for="override_saledate_check" value="Override Next Day and Reservation Control"/>
+                    <x-input-label for="override_saledate_check" :value="__('Override Next Day and Reservation Control')"/>
                 </div>
                 <div class="mt-4" for="hidden" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="hidden" name="hidden"
                            @if ($user->is_hidden) checked @endif />
                     <div style="width: 1em;"></div>
-                    <x-input-label for="hidden" value="User Hidden"/>
+                    <x-input-label for="hidden" :value="__('User Hidden')"/>
                 </div>
                 @can('admin', Auth::user())
                     <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
                         <input type="checkbox" id="disabled" name="disabled"
                                @if ($user->disabled) checked @endif />
                         <div style="width: 1em;" @if ($user->id == Auth::id()) disabled @endif></div>
-                        <x-input-label for="disabled" value="User Disabled"/>
+                        <x-input-label for="disabled" :value="__('User Disabled')"/>
                     </div>
                     <div class="mt-4" for="use_two_factor" style="display: flex; padding-bottom: 1em;">
                         <input type="checkbox" id="use_two_factor" name="use_two_factor"
                                @if ($user->use_two_factor) checked @endif />
                         <div style="width: 1em;" @if ($user->id == Auth::id()) disabled @endif></div>
-                        <x-input-label for="use_two_factor" value="Use Two Factor Authentication"/>
+                        <x-input-label for="use_two_factor" :value="__('Use Two Factor Authentication')"/>
                     </div>
                 @endcan
 
@@ -84,12 +95,12 @@
             @if(Auth::user()->id == $user->id || Auth::user()->can('admin'))
             <x-form-section title="Change Password" columns="1">
             @if(Auth::user()->id == $user->id)
-                <x-input-label for="current-password" class="block mt-1 w-full" value="Current Password"/>
+                <x-input-label for="current-password" class="block mt-1 w-full" :value="__('Current Password')"/>
                 <x-text-input id="password" type="password" name="password"></x-text-input>
             @endif
-                <x-input-label for="new-password"  value="New Password"/>
+                <x-input-label for="new-password"  :value="__('New Password')"/>
                 <x-text-input id="new-password" type="password" name="new_password"></x-text-input>
-                <x-input-label for="confirm-password" class="block mt-1 w-full" value="Confirm Password"/>
+                <x-input-label for="confirm-password" class="block mt-1 w-full" :value="__('Confirm Password')"/>
                 <x-text-input id="confirm-password" type="password" name="confirm_password">
                 </x-text-input>
             </x-form-section>

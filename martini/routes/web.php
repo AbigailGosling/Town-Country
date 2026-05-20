@@ -14,6 +14,7 @@ use App\Http\Controllers\InboundContainerApprovalController;
 use App\Http\Controllers\InboundContainerController;
 use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\IntakeScanningController;
+use App\Http\Controllers\InternalPalletMovementController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\InsuredCreditReportController;
@@ -206,6 +207,10 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/jobs-list', [IntakeScanningController::class, 'jobsList']);
     Route::post('/jobs/{jobId}/process', [IntakeScanningController::class, 'processJob']);
     Route::post('/jobs/process-queue', [IntakeScanningController::class, 'processQueue']);
+
+    Route::get('/internal-pallet-movements', [InternalPalletMovementController::class, 'index'])->name('internal-pallet-movements.index');
+    Route::post('/internal-pallet-movements/{internalPalletMovement}/accept', [InternalPalletMovementController::class, 'accept'])->name('internal-pallet-movements.accept');
+    Route::post('/internal-pallet-movements/{internalPalletMovement}/reject', [InternalPalletMovementController::class, 'reject'])->name('internal-pallet-movements.reject');
 
 });
 Route::get('/menu.php', function () {

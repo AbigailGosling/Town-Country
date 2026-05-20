@@ -2,8 +2,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Location;
 use App\Models\Permission;
 use App\Models\PermissionsGroup;
+use App\Models\Site;
 use App\Models\User;
 use App\Models\UserPermission;
 use Exception;
@@ -81,7 +83,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user-management/user', ['user' => new User, 'isNew' => true]);
+        return $this->show(new User());
     }
 
     /**
@@ -97,11 +99,17 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'actual_email' => ['sometimes', 'string', 'email', 'max:255','nullable'],
         ]);
-
+        $input = $request->all();
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make(Str::random(40)),
+            'actual_email' => $request->input('actual_email', ''),
+            'location_id' => $request->input('location_id', -1) === -1 ? null : $request->input('location_id'),
+            'receive_short_stock' => array_key_exists("receive_short_stock", $input),
+            'disabled' => array_key_exists("disabled", $input),
+            'is_hidden' => array_key_exists("hidden", $input),
+            'use_two_factor' => array_key_exists("use_two_factor", $input),
+            'override_saledate_check' => array_key_exists("override_saledate_check", $input),
         ]);
 
         if (isset($request->perms) && is_array($request->perms) && count($request->perms) > 0) {
@@ -137,10 +145,17 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
+        $locations = [(object)["id" => -1, "name" => "No Location"]];
+        foreach (Site::where([["disabled", false],["display_on_arrivals", true]])->get() as $site) {
+            foreach ($site->locations as $location) {
+                if (!$location->disabled) $locations[] = (object)["id" => $location->id, "name" => $site->abbreviation . " - " . $location->name];
+            }
+        }
         return view('user-management/user',
             ['user' => $user,
-                'permissions' => PermissionsGroup::with('permissions')->where('id','<>',"0")->get(),
-                'isNew' => false]);
+            'permissions' => PermissionsGroup::with('permissions')->where('id','<>',"0")->get(),
+            'isNew' => $user->id === null,
+            'locations' => $locations]);
     }
 
     /**
@@ -174,6 +189,7 @@ class UserController extends Controller
         $input = $request->all();
         //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
         //to change their password.
+        /** @disregard P1013 */
         if((isset($input['new_password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
         {
             //Use correct password check for each Hash method
@@ -213,6 +229,9 @@ class UserController extends Controller
         $user->is_hidden = array_key_exists("hidden", $input);
         $user->use_two_factor = array_key_exists("use_two_factor", $input);
         $user->override_saledate_check = array_key_exists("override_saledate_check", $input);
+        if (array_key_exists('location_id', $input)) {
+            $user->location_id = $input['location_id'] === -1 ? null : $input['location_id'];
+        }
 
         if (isset($input['perms']) && is_array($input['perms']) && count($input['perms']) > 0) {
             $selectedPerms = $input['perms'];
