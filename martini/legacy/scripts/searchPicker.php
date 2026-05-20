@@ -216,7 +216,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     }
     else $prod_search_text = "";
 
-    $rough_weights = loggedQuery("SELECT * FROM `weights` WHERE `status_id` = 0$prod_search_text")->fetch_all(MYSQLI_ASSOC);
+    $rough_weights = prepareExecuteQuery("SELECT * FROM `weights` WHERE `status_id` = 0$prod_search_text")->fetch_all(MYSQLI_ASSOC);
     foreach ($rough_weights as $rough_weight)
     {
         if (!array_key_exists($rough_weight["product_id"],$product_weight_lookup))$product_weight_lookup[$rough_weight["product_id"]] = [];
