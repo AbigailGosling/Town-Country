@@ -4,13 +4,13 @@
 }
 
 *{
-    
+
     color-adjust: exact;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
 
-} 
-.flex{ display:flex; } 
+}
+.flex{ display:flex; }
 .space-between{ justify-content: space-between; }
 .space-evenly { justify-content: space-evenly; }
 .v-center{ align-items:center; }
@@ -46,7 +46,7 @@ main h1 {
 	line-height: 40px;
 	font-weight: normal;
 	text-align: center;
-	text-transform: uppercase; 
+	text-transform: uppercase;
 }
 main h1.int {color: #fff;}
 
@@ -424,7 +424,7 @@ a.print_intake {
 }
 @font-face {
   font-family: 'OpenSans_Bold';
-  src: url('../fonts/OpenSans-Bold.ttf') format('truetype'); 
+  src: url('../fonts/OpenSans-Bold.ttf') format('truetype');
 }
 
 a.edit_row {
@@ -692,20 +692,20 @@ a#delete_intake {
 	/* padding-bottom:10px; */
 	width:100%;
 	display: inline-block;
-	
+
 	position:relative;
 }
 
 .buttonsContainer{
 	/* display:block; */
 	/* float:right; */
-	
+
 	display: block;
     float: right;
     position: absolute;
     right: 0px;
     top: 0px;
-	
+
 }
 
 .buttonsContainer a i.fa{
@@ -886,7 +886,6 @@ a#delete_intake {
 
 .datesearchcontainer{
 	display:inline-block;
-    float:right;
     position:relative;
 }
 
@@ -1031,7 +1030,7 @@ select.producttext{
     border-radius: 100%;
     color: #fff;
 	cursor:pointer;
-	
+
 	width: 20px;
     height: 20px;
     display: inline-block;
@@ -1131,10 +1130,10 @@ span.add-on{
 .intakeNotes{
 	min-width:425px;
 	min-height:80px;
-	
+
 	width:425px;
 	height:80px;
-	
+
 	max-width:425px;
 	max-height:120px;
 }
@@ -1181,11 +1180,11 @@ span.add-on{
 	border:2px solid #cacaca;
 	box-sizing:border-box;
 	cursor:pointer;
-	margin:5px; 
+	margin:5px;
 	text-align:center;
 	height: 30px;
 }
-	
+
 .activeWeight { background:#3faddd !important; color:#fff !important}
 .weightbox:hover{ background:#cacaca; }
 
@@ -1342,7 +1341,7 @@ span.add-on{
     padding: 5px;
     border-radius: 4px;
 	background:#f1c40f;
-	
+
 	margin-top:5px;
 	margin-bottom:5px;
 	text-align:center;
@@ -1569,7 +1568,7 @@ span.add-on{
 	background-color:#ffa50017;
 	width:100%;
  	margin-bottom:13px;
-	
+
 	display:flex;
 	justify-content:space-between;
 	align-items:center;
@@ -1607,7 +1606,7 @@ span.add-on{
 #print .payvalue{
 	width: 150px;
     display: inline-block;
-    text-align: right;	
+    text-align: right;
 }
 
 #print .bankcircle{
@@ -1720,7 +1719,7 @@ span.add-on{
 	font-size:18px;
 }
 
-#print .po{ 
+#print .po{
 	text-align:right;
 	font-size:13px;
 	color:#8c8c8c;
@@ -1737,7 +1736,7 @@ span.add-on{
 	display: flex;
     justify-content: space-between;
     width: 145px;
-    align-items: flex-end;	
+    align-items: flex-end;
 }
 
 #print .footerlogo img.one{
@@ -1814,7 +1813,7 @@ td span.chilled{
 .menuItem{
     width: 100%;
     background: white;
-   
+
     line-height: 50px;
     height: 50px;
     margin-bottom: 10px;
@@ -1863,7 +1862,7 @@ td span.chilled{
 }
 
 .sendcontainer .active.sel{
-    
+
 }
 
 .fa.fa-check{
@@ -1893,13 +1892,13 @@ td span.chilled{
 }
 
 
-@page  
-{ 
-    size: auto;   /* auto is the initial value */ 
+@page
+{
+    size: auto;   /* auto is the initial value */
 
-    /* this affects the margin in the printer settings */ 
-    margin: 10mm 10mm 10mm 10mm;  
-} 
+    /* this affects the margin in the printer settings */
+    margin: 10mm 10mm 10mm 10mm;
+}
 
 .form-control {
   width: 100%;
@@ -1965,7 +1964,7 @@ textarea {
 	text-decoration: none;
 	padding:0px 10px;
 }
- 
+
 
 .searchAccordTitle.locked{
 	opacity:0.7;
@@ -1987,7 +1986,7 @@ textarea {
 	padding-right:10px;
 }
 
- 
+
 .customer_info{
 	display:flex;
 	justify-content: space-between;
@@ -2052,11 +2051,11 @@ textarea {
     margin-left: 4px;
 }
 .sticky-header{
-	position: sticky; 
+	position: sticky;
 	background: #e2e2e2;
 }
 .sticky-footer{
-	position: sticky; 
+	position: sticky;
 	background: #e2e2e2;
 }
 .mail-selector{
@@ -2079,7 +2078,7 @@ textarea {
 	position: relative;
 }
 .custom-warning-box{
-	width: 100%; 
-	padding: 15px; 
+	width: 100%;
+	padding: 15px;
 	border-radius: 15px;
 }
