@@ -146,6 +146,7 @@ abstract class SLabsEmailerType
     const ShortPick = 'SHORT_PICK';
     const PrceChnge = 'PRICE_CHANGE';
     const TwoFactor = 'TWO_FACTOR_CODE';
+    const ReturnAppr= 'RETURN_APPROVED';
 }
 abstract class SLabsEmailerStatus
 {

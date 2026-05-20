@@ -152,7 +152,18 @@ class ApproveIntake extends Command
                 $reservation->save();
                 ProcessHelper::runInBackground('run:send_sale_confirmation '.$pickersheet_id);
             }
-
+        }
+        if ($intake->returned == 1) {
+            $htmlbody = "<p><b><span style='font-size:14pt;'>RETURN INTAKE IS APPROVED</span></b></p>"
+                ."<p>Return from Invoice {$intake->delivery_note_number} and has been processed as Intake {$intake->id} ".
+                "has been approved by ".User::find($intake->approved_by)->name.". Please review the intake and process the return as normal.</p>"
+                ."<p><b><span style='font-size:14pt;'>PLEASE PRICE ASAP</span></b></p>";
+            SLabsEmailer::send_email(
+                $intake->supplier_id,
+                SLabsEmailerType::ReturnAppr,
+                User::where([["receive_return_intake",true],["disabled",0]])->pluck("actual_email")->toArray(),
+                "Return Intake ".$intake->id." Approved",
+                $htmlbody);
         }
         $intake->approved = 1;
         $intake->approved_date = Carbon::now();
