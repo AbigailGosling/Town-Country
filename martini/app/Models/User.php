@@ -16,7 +16,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -41,6 +40,7 @@ use Illuminate\Support\Str;
  * @property string|null $actual_email
  * @property bool $is_hidden
  * @property bool $receive_short_stock
+ * @property bool $receive_return_intake
  *
  * @property Collection|Permission[] $permissions
  *
@@ -68,6 +68,7 @@ class User extends Authenticatable
         'two_factor_expires_at',
         'actual_email',
         'receive_short_stock',
+        'receive_return_intake'
     ];
 
     /**
@@ -96,7 +97,8 @@ class User extends Authenticatable
         'use_two_factor' => 'bool',
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_expires_at' => 'datetime',
-        'receive_short_stock' => 'bool'
+        'receive_short_stock' => 'bool',
+        'receive_return_intake' => 'bool'
     ];
     public function generateTwoFactorCode()
     {
