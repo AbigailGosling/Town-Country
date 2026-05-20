@@ -302,11 +302,11 @@ use App\Models\Site;
 		<input value="Split" type="submit">
  	</div>
 </form>
-<form method="POST" action="<?php echo $domain; ?>scripts/markWeightAsSold.php" id="markWeightForm">
+<!-- <form method="POST" action="<?php //echo $domain; ?>scripts/markWeightAsSold.php" id="markWeightForm">
 	<input type="hidden" name="weightid" id="weightToMark">
-	<input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-	<input type="text" name="intakeid" value="<?php echo $intake_id; ?>" style="display:none;">
-</form>
+	<input type="hidden" name="product_id" value="<?php //echo $product_id; ?>">
+	<input type="text" name="intakeid" value="<?php //echo $intake_id; ?>" style="display:none;">
+</form> -->
 
 
 <script type="text/javascript">

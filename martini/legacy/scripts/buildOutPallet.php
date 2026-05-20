@@ -83,12 +83,13 @@ use Carbon\Carbon;
     $outPallet = mysqli_fetch_array($y);
     $outPalletID = $outPallet['id'];
     $grossTareArray = array_filter(explode(',', $outPallet['weight_ids']));
+
     if (request()->has('grossids') && is_array(request()->input('grossids')) && count(request()->input('grossids'))>0)
         $grossTareArray = array_merge($grossTareArray,processGrossDolav(request()->input('grossids'),'gross_'));
     if (is_array($dolavs) && count($dolavs)>0)
         $grossTareArray = array_merge($grossTareArray,processGrossDolav($dolavs,'dolav_'));
 
-
+    //startTransaction();
     # START NORMAL WEIGHT
     $weightids = explode(',', request()->input('weightids')) ?? [];
     foreach($weightids as $weightID){
@@ -101,21 +102,22 @@ use Carbon\Carbon;
         }
     }
 
-if(!empty($grossTareArray)){
-    $pickers = array_filter(explode(",",$outPallet['picker_ids']));
-    $pickers[] = $userid;
-    $pickers = array_unique($pickers);
-    $pickers = implode(",",$pickers);
-    $weightString = implode(',', $grossTareArray);
-    $dupCheck = "SELECT * FROM `pickWeightOut` WHERE weight_ids = ? AND picker_ids = ? AND pickersheet_id = ?";
-    $dupCheckResult = prepareExecuteQuery($dupCheck,'ssi',[$weightString,$pickers,$pickersheet_id]);
-    if(mysqli_num_rows($dupCheckResult) == 0){ # only update if the exact same data doesn't already exist for this pallet, to avoid race conditions
+    if(!empty($grossTareArray)){
+        $pickers = array_filter(explode(",",$outPallet['picker_ids']));
+        $pickers[] = $userid;
+        $pickers = array_unique($pickers);
+        $pickers = implode(",",$pickers);
+        $grossTareArray = array_filter(array_unique($grossTareArray));
+        $weightString = implode(',', $grossTareArray);
+        $dupCheck = "SELECT * FROM `pickWeightOut` WHERE weight_ids = ? AND picker_ids = ? AND pickersheet_id = ?";
+        $dupCheckResult = prepareExecuteQuery($dupCheck,'ssi',[$weightString,$pickers,$pickersheet_id]);
+        if(mysqli_num_rows($dupCheckResult) == 0){ # only update if the exact same data doesn't already exist for this pallet, to avoid race conditions
 
-        $x = "UPDATE `pickWeightOut` SET weight_ids = ?, picker_ids = ? WHERE id = ?";
-        $y = prepareExecuteQuery($x,'ssi',[$weightString,$pickers,$outPalletID]);
+            $x = "UPDATE `pickWeightOut` SET weight_ids = ?, picker_ids = ? WHERE id = ?";
+            $y = prepareExecuteQuery($x,'ssi',[$weightString,$pickers,$outPalletID]);
+        }
     }
-}
-# END NORMAL WEIGHT
+    //commitTransaction();
     ?>
 <script>
 	window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
@@ -148,6 +150,7 @@ function processGrossDolav(array $workingSet,string $key):array
             # END UPDATE CURRENT WEIGHT INFO
 
             array_push($grossTareArray, $weightID);
+            $grossTareArray = array_filter(array_unique($grossTareArray));
 
             # START CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
             $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id,grosstare) VALUES (?,?,?,'0',0)";
