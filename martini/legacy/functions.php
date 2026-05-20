@@ -74,11 +74,12 @@ use App\Models\User;
 	{
 		global $mysqli;
 		global $knownStatements;
+        global $_inTransaction;
 		if (!$knownStatements){$knownStatements = [];}
 		$res = null;
 		try
 		{
-            if ($store && (!str_contains($sql,"WHERE") || ($varTypes !== null && $vars !== null)))
+            if ($store && !$_inTransaction && (!str_contains($sql,"WHERE") || ($varTypes !== null && $vars !== null)))
             {
                 if (!array_key_exists($sql."_".$varTypes,$knownStatements))$knownStatements[$sql."_".$varTypes] = $mysqli->prepare($sql);
                 $stmt = $knownStatements[$sql."_".$varTypes];
@@ -123,12 +124,48 @@ use App\Models\User;
 		catch (Exception $e)
 		{
 			Log::error($e,["sql"=>$sql,"varTypes"=>$varTypes,"vars"=>$vars,"requestVars"=>request()->all()]);
+            if ($_inTransaction) rollbackTransaction();
 			$stmt = $mysqli->prepare("SELECT * FROM `customers` WHERE 1=0");
 			$stmt->execute();
 			$res = $stmt->get_result();
 			return $res;
 		}
 	}
+    global $_inTransaction;
+    $_inTransaction = false;
+    function startTransaction()
+    {
+        global $mysqli;
+        global $_inTransaction;
+        if (!$_inTransaction){
+            $mysqli->begin_transaction();
+        }
+        $_inTransaction = true;
+    }
+    function commitTransaction()
+    {
+        global $mysqli;
+        global $_inTransaction;
+        if ($_inTransaction){
+            if (!$mysqli->commit())
+            {
+                Log::error(new Exception("Failed to commit transaction: " . $mysqli->error));
+            }
+        }
+        $_inTransaction = false;
+    }
+    function rollbackTransaction()
+    {
+        global $mysqli;
+        global $_inTransaction;
+        if ($_inTransaction){
+            if (!$mysqli->rollback())
+            {
+                Log::error(new Exception("Failed to rollback transaction: " . $mysqli->error));
+            }
+        }
+        $_inTransaction = false;
+    }
 	function sendEmail($toArray, $mail_subject, $mail_message, $name = 'Town & Country'){
 
         $domain_email='webform@'.str_replace("www.", "", request()->server('HTTP_HOST'));

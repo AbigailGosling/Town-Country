@@ -198,15 +198,15 @@ use Illuminate\Support\Str;
 	</div>
         <?php
         }?>
-	<form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
-		<input type="text" name="intakeid" value="<?php echo $current_intake_id; ?>" style="display:none;">
+	<!-- <form style="float:right;padding-bottom:10px;display:none;" method="POST" action="markIntakeAs.php">
+		<input type="text" name="intakeid" value="<?php //echo $current_intake_id; ?>" style="display:none;">
 		<select name="state">
             <option value="0">Mark as unsold</option>
 			<option value="1">Mark as sold</option>
 		</select>
 
 		<input type="submit" value="SAVE">
-	</form>
+	</form> -->
 
 	<div class="overview">
 		<div class="overview_block">
