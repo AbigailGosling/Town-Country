@@ -30,7 +30,6 @@ class SendPods extends Command
      */
     public function handle(): int
     {
-        Log::info('pods:send command started', ['cache_key' => $this->argument('cache_key')]);
         $cacheKey = (string) $this->argument('cache_key');
         $data = InternalCache::get($cacheKey);
         InternalCache::forget($cacheKey);
@@ -66,7 +65,6 @@ class SendPods extends Command
 
         try {
             PodHelper::sendPods($outgoingPallets, $vehicle);
-            Log::info('pods:send completed successfully', ['cache_key' => $cacheKey, 'outgoing_pallet_ids' => $outgoingPalletIds, 'vehicle_id' => $vehicleId]);
             $this->info('POD send completed successfully.');
 
             return self::SUCCESS;

@@ -18,7 +18,6 @@ use App\Models\Weight;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class PodHelper
 {
@@ -31,9 +30,20 @@ class PodHelper
     {
         $processedPicks = [];
         $outgoingPallets = $outgoingPallets->reverse()->values();
+
+        $locations = Location::all()->keyBy('id');
+        $sites = Site::all()->keyBy('id');
+        $nationalities = Nationality::all()->keyBy('id');
+        $temperatures = Temperature::all()->keyBy('id');
+        $species = Species::all()->keyBy('id');
+        $brands = Brand::all()->keyBy('id');
+
+        if ($vehicle->barracuda_id === null) {
+            $vehicle = static::createUpdateVehicle($vehicle);
+        }
         foreach ($outgoingPallets as $outgoingPallet) {
             if ((bool) $outgoingPallet->pod_sent) {
-                //continue;
+                continue;
             }
             $allCallsSucceeded = true;
 
@@ -51,7 +61,7 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
-                        "TASK_MOBILE_USER_ID" => 13,//$vehicle->reg,
+                        "TASK_MOBILE_USER_ID" => $vehicle->barracuda_id ?? 13,
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],
@@ -75,7 +85,7 @@ class PodHelper
                         "INVOICE_POSTCODE"=> $pickSheet->customer->accounts_postcode,
                         "INVOICE_TELEPHONE"=> ($pickSheet->customer->contactnumber != null && $pickSheet->customer->contactnumber != "")?$pickSheet->customer->contactnumber:$pickSheet->customer->tel_number,
                         "CUSTOMER_ID"=> $pickSheet->customer->id,
-                        "SERVED_BY"=> $pickSheet->customer->site->name,
+                        "SERVED_BY"=> $sites[$pickSheet->customer->site_id]->name,
                         "PICKED_AT"=> "",
                         "RESTRICTIONS"=> $clientAddress->restrictions,
                         "ASSEMBLED"=> $pickSheet->date_completed?->format('d/m/Y'),
@@ -111,7 +121,7 @@ class PodHelper
                         }
                         $cut = Cut::find($product->cut_id);
                         $pallet = Pallet::find($product->pallet_id);
-                        $pickedAt[] = Site::find(Location::find($pallet->storage_location)->site_id)->name;
+                        $pickedAt[] = $sites[$locations[$pallet->storage_location]->site_id]->name;
                         $thisData->TASK_DATA->SUB_TASKS[] = (object)[
                             "PROJECT_GUID"=> "BB2E3D63-DEE9-EC74-9906-DB5FD2522D76",
                             "TASK_DATA"=> (object)[
@@ -122,11 +132,11 @@ class PodHelper
                                 "QUANTITY"=> $count,
                                 "PRODUCT_ID"=> $product->id,
                                 "PRODUCT"=> implode(" ", [
-                                    Nationality::find($product->nationality_id)->name,
-                                    Temperature::find($product->cooling_id)->tempurature,
-                                    Species::find($cut->species_id)->name,
+                                    $nationalities[$product->nationality_id]->name,
+                                    $temperatures[$product->cooling_id]->tempurature,
+                                    $species[$cut->species_id]->name,
                                     $cut->name,
-                                    Brand::find($product->brand_id)->name,
+                                    $brands[$product->brand_id]->name,
                                     $smallestDate.' - '.$largestDate,
                                 ]),
                                 "PRODUCT_WEIGHT_INFO"=> implode(",", $weightInfo)
@@ -148,18 +158,7 @@ class PodHelper
 
                 if (!($result['success'] ?? false)) {
                     $allCallsSucceeded = false;
-                    Log::warning('POD send failed for outgoing pallet', [
-                        'outgoing_pallet_id' => $outgoingPallet->id,
-                        'pick_sheet_id' => $pickSheet->id,
-                        'status' => $result['status'] ?? null,
-                        'error' => $result['error'] ?? null,
-                    ]);
                 }
-                Log::info('POD send succeeded for outgoing pallet', [
-                    "Key"=> env('POD_API_KEY'),
-                    "Method"=> "createTask",
-                    "Data"=> (object)$thisData
-                ]);
             }
 
             if ($allCallsSucceeded) {
@@ -167,6 +166,34 @@ class PodHelper
                 $outgoingPallet->save();
             }
         }
+    }
+    /**
+     * Create or update a vehicle in the external system and store the returned ID.
+     *
+     * @param Vehicle $vehicle
+     * @return Vehicle
+     */
+    private static function createUpdateVehicle(Vehicle $vehicle): Vehicle
+    {
+        $result = static::callExternalApi(
+            url: env('POD_API_URL'),
+            method: 'POST',
+            headers: [],
+            payload: [
+                "Key"=> env('POD_API_KEY'),
+                "Method"=>  "updateVehicle",
+                "Data"=> (object)[
+                    "USER_ID" => $vehicle->barracuda_id ?? "NEW",
+                    "VEHICLE_ID" => $vehicle->id,
+                    "REGISTRATION" => $vehicle->reg,
+                ]
+            ]
+        );
+        if (isset($result['success'])) {
+            $vehicle->barracuda_id = $result['body']['USER_ID'] ?? null;
+            $vehicle->save();
+        }
+        return $vehicle;
     }
 	/**
 	 * Send an HTTP request to an external API using Guzzle.

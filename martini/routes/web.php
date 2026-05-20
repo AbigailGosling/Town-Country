@@ -54,7 +54,7 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php';
-Route::post('/pods/return', [PodDispatchController::class, 'receive'])->name('pods.receive')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::post('/pods/return', [PodDispatchController::class, 'receive'])->name('pods.receive')->withoutMiddleware(['auth', 'verified', 'permission', 'twofactor']);
 Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(function () {
 
     Route::get('/dashboard', function () {

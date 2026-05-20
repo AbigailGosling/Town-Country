@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\InternalCache;
+use App\Helpers\ProcessHelper;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,8 +31,7 @@ class PodDispatchController extends Controller
             'outgoing_pallet_ids' => $palletIds,
             'vehicle_id'          => $vehicleId,
         ], 300);
-
-        pclose(popen('php '.base_path('artisan').' pods:send '.$cacheKey.' >NUL 2>NUL', 'r'));
+        ProcessHelper::runInBackground('pods:send '.$cacheKey);
 
         return response()->json([
             'queued'              => true,
@@ -44,28 +44,31 @@ class PodDispatchController extends Controller
     }
     public function receive(Request $request)
     {
-        if (!$request->has('Key')) {
+        $input = json_decode($request->all()[0], true);
+        if (!array_key_exists('Key', $input)) {
+            Log::error('POD receive attempt with missing API Key', $request->all());
             return response()->json(['error' => 'Missing API Key'], 400);
         }
-        if ($request->input('Key') !== env('POD_RECEIVE_KEY')) {
+        if ($input['Key'] !== env('POD_RECEIVE_KEY')) {
+            Log::error('POD receive attempt with invalid API Key', $request->all());
             return response()->json(['error' => 'Invalid API Key'], 401);
         }
-        if (!$request->has('Data')) {
+        if (!array_key_exists('Data', $input)) {
+            Log::error('POD receive attempt with missing Data parameter', $request->all());
             return response()->json(['error' => 'Missing Data parameter'], 400);
         }
         $cacheKey = 'pods_receive_' . Str::uuid();
         InternalCache::put($cacheKey, [
-            'request' => $request->all(),
+            'request' => $input['Data'],
         ], Carbon::now()->addDays(100));
-        Log::info('Received POD data', ['cmd' => 'php '.base_path('artisan').' pods:receive '.$cacheKey]);
-        //pclose(popen('php '.base_path('artisan').' pods:receive '.$cacheKey.' >NUL 2>NUL', 'r'));
+        ProcessHelper::runInBackground('pods:receive '.$cacheKey);
 
         return response()->json([
             //'queued'              => true,
             //'command'             => 'pods:receive',
             //'process_id'          => $process->getPid(),
             //'cache_key'           => $cacheKey,
-            //'request'             => $request->all(),
+            //'request'             => $input['Data'],
         ], 202);
     }
 }

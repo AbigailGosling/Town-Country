@@ -57,10 +57,10 @@ protected $connection = 'tandc_live';
 		'grosstare'
 	];
     public function pallet():BelongsTo{
-        return $this->belongsTo(Pallet::class,"id","pallet_id");
+        return $this->belongsTo(Pallet::class,"pallet_id","id");
     }
     public function product():BelongsTo{
-        return $this->belongsTo(Product::class,"id","product_id");
+        return $this->belongsTo(Product::class,"product_id","id");
     }
     public function getNetWeight(){
         if($this->weight_tear == $this->weight_gross){
