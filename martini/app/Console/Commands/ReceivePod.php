@@ -64,7 +64,7 @@ class ReceivePod extends Command
         //Partial failure - some items rejected, some accepted
         foreach ($payload["SUB_TASKS"] as $line) {
             if (isset($line["UserData"]["STATUS"]) && $line["UserData"]["STATUS"] == "REJECTED_ITEMS") {
-                $thisRejctions = explode('|', $line["UserData"]["REJECTED_PRODUCTS"]);
+                $thisRejctions = explode(',', $line["UserData"]["REJECTED_PRODUCTS"]);
                 foreach ($thisRejctions as $rej) {
                     $rejected_weight_ids[] = (int) $rej;
                     $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
@@ -112,7 +112,7 @@ class ReceivePod extends Command
         }
         $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
         $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
-        $returnIntake->date_received = Carbon::now()->format('d/m/Y');
+        $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
         $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
         $returnIntake->save();
 
@@ -129,6 +129,7 @@ class ReceivePod extends Command
             $newPallet->save();
 
             $oldProduct = $weights[0]->product;
+
             $newProduct = $oldProduct->replicate();
             $newProduct->pallet_id = $newPallet->id;
             $oldWeightNote = $oldProduct->weightnote ?? '';

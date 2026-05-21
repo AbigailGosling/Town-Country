@@ -60,7 +60,7 @@ class PodHelper
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
                         //"TASK_MOBILE_USER" => implode('', explode(' ', $vehicle->reg)).'@tc.co.uk',
-                        "TASK_MOBILE_USER" => 'abigail.gosling@tang.solutions',
+                        "TASK_MOBILE_USER_ID" => 13,
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],
