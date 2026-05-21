@@ -7,6 +7,7 @@ use App\Models\IntakeScanningFile;
 use App\Models\Location;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class IntakeScanningController extends Controller
 {
@@ -282,7 +283,6 @@ class IntakeScanningController extends Controller
         if (!is_array($job)) {
             return ['ok' => false, 'error' => 'Job not found', 'jobId' => $jobId, 'statusCode' => 404];
         }
-
         $apiKey = $this->openAiApiKey();
         if ($apiKey === null || $apiKey === '') {
             $job['status'] = 'failed';

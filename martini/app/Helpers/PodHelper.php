@@ -18,6 +18,7 @@ use App\Models\Weight;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class PodHelper
 {
@@ -39,9 +40,9 @@ class PodHelper
         $brands = Brand::all()->keyBy('id');
 
         foreach ($outgoingPallets as $outgoingPallet) {
-            if ((bool) $outgoingPallet->pod_sent) {
-                continue;
-            }
+            // if ((bool) $outgoingPallet->pod_sent) {
+            //     continue;
+            // }
             $allCallsSucceeded = true;
 
             /** @var OutgoingPalletPickWeight $oppw */
@@ -58,7 +59,8 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
-                        "TASK_MOBILE_USER" => implode('', explode(' ', $vehicle->reg)).'@tc.co.uk',
+                        //"TASK_MOBILE_USER" => implode('', explode(' ', $vehicle->reg)).'@tc.co.uk',
+                        "TASK_MOBILE_USER" => 'abigail.gosling@tang.solutions',
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],

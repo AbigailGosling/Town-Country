@@ -115,8 +115,6 @@ class ReceivePod extends Command
         $returnIntake->date_received = Carbon::now()->format('d/m/Y');
         $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
         $returnIntake->save();
-        $this->info("Created return intake with ID: " . $returnIntake->id);
-        Log::info("Created return intake with ID: " . $returnIntake->id);
 
         $site_id = null;
         foreach ($organisedByNatBrandCut as $natBrandCut => $weights) {

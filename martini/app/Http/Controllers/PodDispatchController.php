@@ -46,15 +46,12 @@ class PodDispatchController extends Controller
     {
         $input = json_decode($request->all()[0], true);
         if (!array_key_exists('Key', $input)) {
-            Log::error('POD receive attempt with missing API Key', $request->all());
             return response()->json(['error' => 'Missing API Key'], 400);
         }
         if ($input['Key'] !== env('POD_RECEIVE_KEY')) {
-            Log::error('POD receive attempt with invalid API Key', $request->all());
             return response()->json(['error' => 'Invalid API Key'], 401);
         }
         if (!array_key_exists('Data', $input)) {
-            Log::error('POD receive attempt with missing Data parameter', $request->all());
             return response()->json(['error' => 'Missing Data parameter'], 400);
         }
         $cacheKey = 'pods_receive_' . Str::uuid();

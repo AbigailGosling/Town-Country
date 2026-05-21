@@ -35,7 +35,6 @@ class ProcessIntakeScanningQueue extends Command
         $this->info('Processed jobs: ' . (int) ($result['processedCount'] ?? 0));
 
         foreach (($result['jobs'] ?? []) as $job) {
-            Log::info('Job processed', ['job' => $job]);
             $jobId = (string) ($job['jobId'] ?? 'unknown');
             $status = (string) ($job['status'] ?? ($job['ok'] ?? false ? 'completed' : 'failed'));
             $this->line($jobId . ' [' . $status . ']');
