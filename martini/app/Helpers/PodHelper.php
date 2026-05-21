@@ -38,9 +38,6 @@ class PodHelper
         $species = Species::all()->keyBy('id');
         $brands = Brand::all()->keyBy('id');
 
-        if ($vehicle->barracuda_id === null) {
-            $vehicle = static::createUpdateVehicle($vehicle);
-        }
         foreach ($outgoingPallets as $outgoingPallet) {
             if ((bool) $outgoingPallet->pod_sent) {
                 continue;
@@ -61,7 +58,7 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
-                        "TASK_MOBILE_USER" => preg_replace('/\s*\R\s*/', ' ', trim($vehicle->reg)).'@tc.co.uk',
+                        "TASK_MOBILE_USER" => implode('', explode(' ', $vehicle->reg)).'@tc.co.uk',
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],
@@ -152,16 +149,14 @@ class PodHelper
                     headers: [],
                     payload: [
                         "Key"=> env('POD_API_KEY'),
-                        "Method"=>  "createTask",
+                        "Method"=> "createTask",
                         "Data"=> (object)$thisData
                     ]
                 );
-
                 if (!($result['success'] ?? false)) {
                     $allCallsSucceeded = false;
                 }
             }
-
             if ($allCallsSucceeded) {
                 $outgoingPallet->pod_sent = true;
                 $outgoingPallet->save();
