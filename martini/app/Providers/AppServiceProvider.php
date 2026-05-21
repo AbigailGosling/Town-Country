@@ -42,8 +42,5 @@ class AppServiceProvider extends ServiceProvider
         View::share('user_agent', new Agent());
         Event::listen(NotificationSent::class,NotificationSentListener::class);
         Event::listen(NotificationSending::class,NotificationSendingListener::class);
-        /*DB::listen(function ($query) {
-            Log::info(json_encode(["query"=>$query->sql,"time"=>$query->time]));     // the query being executed
-        });*/
     }
 }

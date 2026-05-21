@@ -113,7 +113,6 @@ class IntakeScanningFile extends Model
 
         if (@file_put_contents($tmpPath, $binary) === false) {
             @unlink($tmpPath);
-
             return null;
         }
 

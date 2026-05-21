@@ -50,10 +50,8 @@ class PriceChangeEmail extends Command
         /** @var Intake $intake */
         $intake = Intake::find(array_shift($cacheArray));
         $tableBody = "";
-        Log::debug(json_encode($cacheArray));
         foreach ($cacheArray as $oldProduct) {
             $toOutput = [];
-            Log::debug(json_encode($oldProduct));
             /** @var Product $newProduct */
             $newProduct = Product::find($oldProduct['id']);
             /** @var Cut $cut */

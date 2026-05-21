@@ -64,7 +64,7 @@ class ReceivePod extends Command
         //Partial failure - some items rejected, some accepted
         foreach ($payload["SUB_TASKS"] as $line) {
             if (isset($line["UserData"]["STATUS"]) && $line["UserData"]["STATUS"] == "REJECTED_ITEMS") {
-                $thisRejctions = explode('|', $line["UserData"]["REJECTED_PRODUCTS"]);
+                $thisRejctions = explode(',', $line["UserData"]["REJECTED_PRODUCTS"]);
                 foreach ($thisRejctions as $rej) {
                     $rejected_weight_ids[] = (int) $rej;
                     $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
@@ -96,23 +96,25 @@ class ReceivePod extends Command
         $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
 
         //find the original vehicle by looking at the original pick weights and their associated outgoing pallets and vehicle allocations
-        $pwos = PickWeightOut::where('pickersheet_id', $oldPickID)->get();
-        foreach ($pwos as $pwo) {
-            $pwoWeights = explode(',', $pwo->weight_ids);
-            if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
-                $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-                $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
-                $vehicle = Vehicle::find($vopa->vehicle_id);
-                break;
+        if (array_key_exists('TC_VEHICLE_ID', $payload["PARENT_TASK"]["UserData"])) {
+            $vehicle = Vehicle::find($payload["PARENT_TASK"]["UserData"]["TC_VEHICLE_ID"]);
+        } else {
+            $pwos = PickWeightOut::where('pickersheet_id', $oldPickID)->get();
+            foreach ($pwos as $pwo) {
+                $pwoWeights = explode(',', $pwo->weight_ids);
+                if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
+                    $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $vehicle = Vehicle::find($vopa->vehicle_id);
+                    break;
+                }
             }
         }
         $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
         $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
-        $returnIntake->date_received = Carbon::now()->format('d/m/Y');
+        $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
         $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
         $returnIntake->save();
-        $this->info("Created return intake with ID: " . $returnIntake->id);
-        Log::info("Created return intake with ID: " . $returnIntake->id);
 
         $site_id = null;
         foreach ($organisedByNatBrandCut as $natBrandCut => $weights) {
@@ -127,6 +129,7 @@ class ReceivePod extends Command
             $newPallet->save();
 
             $oldProduct = $weights[0]->product;
+
             $newProduct = $oldProduct->replicate();
             $newProduct->pallet_id = $newPallet->id;
             $oldWeightNote = $oldProduct->weightnote ?? '';

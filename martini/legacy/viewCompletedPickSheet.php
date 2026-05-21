@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Carbon\Carbon;
 
 	include('includes/frontHeader.php');
@@ -80,11 +81,11 @@ use Carbon\Carbon;
         ?>
             <i class="fa fa-check" aria-hidden="true" style="margin-right:10px;"></i>
             Sale Made: <?php echo Carbon::createFromFormat('Y-m-d H:i:s',$pickerSheet['date'])->format('d/m/Y H:i') ?></br>
+            Sale Person: <?php echo User::find($pickerSheet['user_from_id'])->name ?? 'N/A'; ?></br>
             Pickers: <?php echo implode(", ",$pickersB); ?></br>
             Picksheet completed by: <?php echo getUsername($pickerSheet['completedby_userid']); ?></br>
             Pick Completed: <?php echo Carbon::createFromFormat('Y-m-d H:i:s',$pickerSheet['date_completed'])->format('d/m/Y H:i') ; ?></br>
             Estimated Delivery Date: <?php echo $pickerSheet['estimated_delivery_date']; ?></h4>
-
         <?php } ?>
     </div>
 

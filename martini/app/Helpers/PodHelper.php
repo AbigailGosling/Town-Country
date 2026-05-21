@@ -18,6 +18,7 @@ use App\Models\Weight;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class PodHelper
 {
@@ -38,13 +39,10 @@ class PodHelper
         $species = Species::all()->keyBy('id');
         $brands = Brand::all()->keyBy('id');
 
-        if ($vehicle->barracuda_id === null) {
-            $vehicle = static::createUpdateVehicle($vehicle);
-        }
         foreach ($outgoingPallets as $outgoingPallet) {
-            if ((bool) $outgoingPallet->pod_sent) {
-                continue;
-            }
+            // if ((bool) $outgoingPallet->pod_sent) {
+            //     continue;
+            // }
             $allCallsSucceeded = true;
 
             /** @var OutgoingPalletPickWeight $oppw */
@@ -61,11 +59,13 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
-                        "TASK_MOBILE_USER_ID" => $vehicle->barracuda_id ?? 13,
+                        //"TASK_MOBILE_USER" => implode('', explode(' ', $vehicle->reg)).'@tc.co.uk',
+                        "TASK_MOBILE_USER_ID" => 13,
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],
                     "TASK_DATA" => (object)[
+                        "TC_VEHICLE_ID"=> $vehicle->id,
                         "TC_DNOTE" => $pickSheet->id,
                         "TC_PO_NUMBER"=> $pickSheet->orderReferenceNumber,
                         "BUSINESS_NAME"=> $pickSheet->customer->businessname,
@@ -74,7 +74,7 @@ class PodHelper
                         "ADDR_2"=> $clientAddress->address_2,
                         "ADDR_3"=> $clientAddress->address_3,
                         "ADDR_4"=> $clientAddress->address_4,
-                        "POSTCODE"=> $clientAddress->address_postcode,
+                        "POSTCODE"=> $clientAddress->postcode,
                         "TELEPHONE"=> $clientAddress->address_number,
                         "INVOICE_BUSINESS_NAME"=> $pickSheet->customer->businessname,
                         "INVOICE_TRADING_NAME"=> $pickSheet->customer->tradingas,
@@ -151,16 +151,14 @@ class PodHelper
                     headers: [],
                     payload: [
                         "Key"=> env('POD_API_KEY'),
-                        "Method"=>  "createTask",
+                        "Method"=> "createTask",
                         "Data"=> (object)$thisData
                     ]
                 );
-
                 if (!($result['success'] ?? false)) {
                     $allCallsSucceeded = false;
                 }
             }
-
             if ($allCallsSucceeded) {
                 $outgoingPallet->pod_sent = true;
                 $outgoingPallet->save();
