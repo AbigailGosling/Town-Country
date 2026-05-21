@@ -36,13 +36,11 @@ class InternalPalletMovementController extends Controller
         if ($authorizationFailure !== null) {
             return $authorizationFailure;
         }
-
         $internalPalletMovement->update([
             'processed' => true,
             'accepted' => true,
             'movement_processed_by' => Auth::id(),
         ]);
-
         return redirect()
             ->route('internal-pallet-movements.index')
             ->with('success', 'Internal pallet movement accepted.');
@@ -54,7 +52,6 @@ class InternalPalletMovementController extends Controller
         if ($authorizationFailure !== null) {
             return $authorizationFailure;
         }
-
         $internalPalletMovement->update([
             'processed' => true,
             'accepted' => false,
@@ -68,27 +65,21 @@ class InternalPalletMovementController extends Controller
             ->with('success', 'Internal pallet movement rejected.');
     }
 
-    private function authorizeMovementProcessing(InternalPalletMovement $internalPalletMovement): ?RedirectResponse
+    private function authorizeMovementProcessing(InternalPalletMovement $ipm): ?RedirectResponse
     {
-        if ($internalPalletMovement->processed) {
+        if ($ipm->processed) {
             return redirect()
                 ->route('internal-pallet-movements.index')
                 ->with('error', 'This internal pallet movement has already been processed.');
         }
-
         $user = User::find(Auth::id());
-
         if ($user->hasPermission('view-all-internal-pallet-movement')) {
             return null;
         }
-
-        $matchesUserLocation = (int) $internalPalletMovement->from_location_id === (int) $user->location_id
-            || (int) $internalPalletMovement->to_location_id === (int) $user->location_id;
-
+        $matchesUserLocation = in_array($user->location_id, [$ipm->from_location_id, $ipm->to_location_id]);
         if ($matchesUserLocation) {
             return null;
         }
-
         return redirect()
             ->route('internal-pallet-movements.index')
             ->with('error', 'You do not have permission to process this internal pallet movement.');
