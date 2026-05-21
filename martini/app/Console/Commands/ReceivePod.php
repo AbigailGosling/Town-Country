@@ -96,14 +96,18 @@ class ReceivePod extends Command
         $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
 
         //find the original vehicle by looking at the original pick weights and their associated outgoing pallets and vehicle allocations
-        $pwos = PickWeightOut::where('pickersheet_id', $oldPickID)->get();
-        foreach ($pwos as $pwo) {
-            $pwoWeights = explode(',', $pwo->weight_ids);
-            if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
-                $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-                $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
-                $vehicle = Vehicle::find($vopa->vehicle_id);
-                break;
+        if (array_key_exists('TC_VEHICLE_ID', $payload["PARENT_TASK"]["UserData"])) {
+            $vehicle = Vehicle::find($payload["PARENT_TASK"]["UserData"]["TC_VEHICLE_ID"]);
+        } else {
+            $pwos = PickWeightOut::where('pickersheet_id', $oldPickID)->get();
+            foreach ($pwos as $pwo) {
+                $pwoWeights = explode(',', $pwo->weight_ids);
+                if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
+                    $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $vehicle = Vehicle::find($vopa->vehicle_id);
+                    break;
+                }
             }
         }
         $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';

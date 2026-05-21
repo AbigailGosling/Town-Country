@@ -61,11 +61,12 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => "10:00",
-                        "TASK_MOBILE_USER_ID" => $vehicle->barracuda_id ?? 13,
+                        "TASK_MOBILE_USER" => preg_replace('/\s*\R\s*/', ' ', trim($vehicle->reg)).'@tc.co.uk',
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
                     ],
                     "TASK_DATA" => (object)[
+                        "TC_VEHICLE_ID"=> $vehicle->id,
                         "TC_DNOTE" => $pickSheet->id,
                         "TC_PO_NUMBER"=> $pickSheet->orderReferenceNumber,
                         "BUSINESS_NAME"=> $pickSheet->customer->businessname,
@@ -74,7 +75,7 @@ class PodHelper
                         "ADDR_2"=> $clientAddress->address_2,
                         "ADDR_3"=> $clientAddress->address_3,
                         "ADDR_4"=> $clientAddress->address_4,
-                        "POSTCODE"=> $clientAddress->address_postcode,
+                        "POSTCODE"=> $clientAddress->postcode,
                         "TELEPHONE"=> $clientAddress->address_number,
                         "INVOICE_BUSINESS_NAME"=> $pickSheet->customer->businessname,
                         "INVOICE_TRADING_NAME"=> $pickSheet->customer->tradingas,
