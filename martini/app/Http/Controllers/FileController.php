@@ -65,7 +65,6 @@ class FileController extends Controller
         $uuid = (string) Str::uuid();
         $data = base64_decode(str_replace('data:image/png;base64,', '', $base64Data));
         $path = "uploads/{$uuid}";
-        Log::debug("Storing base64 image file at path: $path");
         Storage::disk('public')->put($path, $data);
 
         $file = File::create([

@@ -178,7 +178,6 @@ class PodHelper
     */
     public static function receivePod(array $payload): bool
     {
-        Log::info('Received POD data', [$payload]);
         $rejected_weight_ids = [];
         $rejected_reason = [];
 

@@ -15,7 +15,7 @@ $s = (int)(microtime(true));
 	include('includes/frontHeader.php');
 	require_once("ajax/customer_soa_results_function.php");
 	require_once("scripts/SLabsEmailer.php");
-
+    global $user;
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
@@ -320,7 +320,7 @@ $s = (int)(microtime(true));
 			</tr>
 		</table>
 		<?php
-			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE type='DELIVERY_NOTE' && pickersheet_id=? ORDER BY id DESC",'s',[$pickersheet_id]);
+			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE `type` = 'DELIVERY_NOTE' AND `pickersheet_id` = ? ORDER BY id DESC",'s',[$pickersheet_id]);
 			$internalDocCount = $internalDocResult->num_rows;
 
 			if($internalDocCount > 0){
@@ -399,7 +399,8 @@ $s = (int)(microtime(true));
 				$total_case_count = 0;
                 $allProductIDs = [];
                 $allWeightsIDs = [];
-                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs);
+                $totalPrice = 0.0;
+                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs,[], $totalPrice);
         if ($hasReturns)
         {
             $allProductIDs = array_filter(array_unique($allProductIDs));
@@ -432,7 +433,7 @@ $s = (int)(microtime(true));
                 <?php } ?>
             </tr>
             <?php
-                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs,$returnedWeights);
+                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs,$returnedWeights, $totalPrice);
             }
         }
 
@@ -509,7 +510,7 @@ $s = (int)(microtime(true));
 
 			<div class="col">
 				<div class="signbox">
-					<span>Sign <?php echo ($pickSheetRow['signature_file_id'] ? '<img style="max-width:150px;max-height:75px;" src="'. route('files.show_image', ['uuid' => File::find($pickSheetRow['signature_file_id'])->uuid]) . '" alt="Signature"/>' : '..................................'); ?></span>
+					<span>Sign <?php echo ($pickSheetRow['signature_file_id'] ? '<img style="max-width:187.5px;max-height:75px;" src="'. route('files.show_image', ['uuid' => File::find($pickSheetRow['signature_file_id'])->uuid]) . '" alt="Signature"/>' : '..................................'); ?></span>
 					<span>Print <?php echo $pickSheetRow['receiver_name'] ?? '..................................'; ?></span>
 				</div>
 			</div>
@@ -841,7 +842,7 @@ if($customerRow['pricedefault'] == '0'){
 </body>
 </html>
 <?php
-function outPalletPrinter(array $outPallets,array $customerRow,int $pickersheet_id,int &$total_qty_count,float &$total_weight_count,int &$total_case_count,int &$numOfRows,array &$allProductIDs,array &$allWeightsIDs,array $returnedWeights = []){
+function outPalletPrinter(array $outPallets,array $customerRow,int $pickersheet_id,int &$total_qty_count,float &$total_weight_count,int &$total_case_count,int &$numOfRows,array &$allProductIDs,array &$allWeightsIDs,array $returnedWeights = [],&$totalPrice){
     foreach($outPallets as $outPallet){
         $weightids = explode(',', $outPallet['weight_ids']);
 
