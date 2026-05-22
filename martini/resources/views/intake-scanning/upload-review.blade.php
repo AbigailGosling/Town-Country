@@ -333,7 +333,7 @@ foreach ($grouped as $group) {
                 $file = $item->file;
                 $responseFileRecord = $item->responseFileRecord;
                 $responseFile = $responseFileRecord?->file;
-                $imageSrc = $file ? route('files.view', ['file' => $file->id]) : null;
+                $imageSrc = $file ? route('files.view', ['uuid' => $file->uuid]) : null;
                 $data = is_array($responseFileRecord?->json_payload) ? $responseFileRecord->json_payload : [];
                 $capturedBy = $item->user?->name ?? 'Unknown';
                 $acceptedState = $item->accepted ? 'Accepted' : 'Pending review';

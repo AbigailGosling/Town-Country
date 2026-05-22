@@ -5,6 +5,7 @@ use App\Helpers\ProcessHelper;
 use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\DocType;
+use App\Models\File;
 use App\Models\Intake;
 use App\Models\IntakeScanningFile;
 use App\Models\Nationality;
@@ -452,7 +453,7 @@ use Illuminate\Support\Str;
             ?>
             <a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $current_intake_id; ?>&docid=<?php echo $row['id']; ?>">
                 <i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
-            </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['file' => $row['file_id']]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
+            </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['uuid' => File::find($row['file_id'])->uuid]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
 			<?php
 			}
             }
@@ -1070,7 +1071,7 @@ use Illuminate\Support\Str;
 			?>
 			<tr>
 				<td style="width: 100px;"><a href="javascript:;" class="add_product" style="margin: 0;" onclick="openAddPalletFromScan(<?php echo $current_intake_id; ?>,<?php echo $scanResult->id; ?>);">Add</a></td>
-				<td><?php if ($imageFileId !== null) { ?><a href="<?php echo route('files.view', ['file' => $imageFileId]); ?>" target="_blank">View Image</a><?php } ?></td>
+				<td><?php if ($imageFileId !== null) { ?><a href="<?php echo route('files.view', ['uuid' => File::find($imageFileId)->uuid]); ?>" target="_blank">View Image</a><?php } ?></td>
 				<td><?php echo e($displayValue($payload, 'killDate')); ?></td>
 				<td><?php echo e($displayValue($payload, 'packDate')); ?></td>
 				<td><?php echo e($displayValue($payload, 'bestBeforeDate')); ?></td>

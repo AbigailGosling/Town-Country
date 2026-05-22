@@ -184,8 +184,8 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/cutgroups/{speciesId}', [CutGroupController::class, 'getCutGroups']);
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);
 
-    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
-    Route::get('files/{file}/view', [FileController::class, 'view'])->name('files.view');
+    Route::get('files/{uuid}/download', [FileController::class, 'download'])->name('files.download');
+    Route::get('files/{uuid}/view', [FileController::class, 'view'])->name('files.view');
     Route::get('files/{uuid}/show_image', [FileController::class, 'showImage'])->name('files.show_image');
 
     Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");

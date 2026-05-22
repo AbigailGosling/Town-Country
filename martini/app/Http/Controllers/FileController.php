@@ -79,8 +79,9 @@ class FileController extends Controller
     /**
      * Display a specific file's metadata.
      */
-    public function show(File $file)
+    public function show(string $uuid)
     {
+        $file = File::where('uuid', $uuid)->firstOrFail();
         return view('files.show', compact('file'));
     }
     /**
@@ -99,10 +100,11 @@ class FileController extends Controller
     /**
      * Serve the file back to the user with original filename as download.
      */
-    public function download(File $file): StreamedResponse
+    public function download(string $uuid): StreamedResponse
     {
         /** @var FilesystemAdapter $fs */
         $fs = Storage::disk('public');
+        $file = File::where('uuid', $uuid)->firstOrFail();
         return $fs->download(
             'uploads/' . $file->uuid,
             $file->original_name
@@ -111,8 +113,9 @@ class FileController extends Controller
     /**
      * Display the file in a new tab (inline view).
      */
-    public function view(File $file): StreamedResponse
+    public function view(string $uuid): StreamedResponse
     {
+        $file = File::where('uuid', $uuid)->firstOrFail();
         /** @var FilesystemAdapter $fs */
         $fs = Storage::disk('public');
         return $fs->response(
@@ -123,8 +126,9 @@ class FileController extends Controller
     /**
      * Remove the file from storage & database.
      */
-    public function destroy(File $file)
+    public function destroy(string $uuid)
     {
+        $file = File::where('uuid', $uuid)->firstOrFail();
         Storage::disk('public')->delete('uploads/' . $file->uuid);
         $file->delete();
 

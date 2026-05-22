@@ -300,7 +300,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                             <td><?php echo $sra->updated_at??$sra->created_at; ?></td>
                             <td><?php echo $sra->comments; ?></td>
                             <td><?php echo ($sra->product_collected)?"Yes":"No"; ?></td>
-                            <td><a href="<?php if ($sra->file)echo route("files.download",[$sra->file->id])?>"><?php echo $sra->file->original_name; ?></a></td>
+                            <td><a href="<?php if ($sra->file)echo route("files.download",[$sra->file->uuid])?>"><?php echo $sra->file->original_name; ?></a></td>
                             <td>
                                 <a href="single_invoice_payments.php?return=y&customer_id=<?php echo $customerID;?>&invoice_id=<?php echo $invoiceID;?>&edit_comment=<?php echo $sra->id;?>">
                                     Edit
@@ -325,7 +325,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                     <td><?php echo $savedSra->updated_at??$savedSra->created_at; ?></td>
                     <td><textarea id="comments" name="comments" type="text"><?php echo $savedSra->comments; ?></textarea></td>
                     <td><input id="product_collected" name="product_collected" type="checkbox" disabled <?php ($savedSra->product_collected) ? "checked":""; ?> ></td>
-                    <td><a href="<?php if ($savedSra->file)echo route("files.download",[$savedSra->file->id])?>"><?php echo $savedSra->file->original_name; ?></a><br/>
+                    <td><a href="<?php if ($savedSra->file)echo route("files.download",[$savedSra->file->uuid])?>"><?php echo $savedSra->file->original_name; ?></a><br/>
                         Replace Uploaded File: <br/><input id="file" name="file" type="file"></td>
                     <td><input id="comment_submit" name="comment_submit" type="button" value="Save Changes" onclick="mainForm3()"></td>
                     <?php } ?>

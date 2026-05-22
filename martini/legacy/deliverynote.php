@@ -343,7 +343,7 @@ $s = (int)(microtime(true));
                             if ($internalDoc['file_id'] != null) {
                                 $file = File::find($internalDoc['file_id']);
                                 if ($file) {
-                                    ?> <a href="<?php echo route("files.download", ["file" => $file->id]); ?>" target="_blank">(View Document)</a><?php
+                                    ?> <a href="<?php echo route("files.download", ["uuid" => $file->uuid]); ?>" target="_blank">(View Document)</a><?php
                                 }
                             }
 							else if($internalDoc['dfile'] != ''){
