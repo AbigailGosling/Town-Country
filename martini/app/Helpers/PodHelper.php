@@ -1,20 +1,26 @@
 <?php
 namespace App\Helpers;
 
+use App\Http\Controllers\FileController;
 use App\Models\Brand;
 use App\Models\Cut;
+use App\Models\Intake;
 use App\Models\Location;
 use App\Models\Nationality;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletPickWeight;
 use App\Models\Pallet;
 use App\Models\PickerSheet;
+use App\Models\PickersheetDocument;
+use App\Models\PickWeightOut;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\Species;
 use App\Models\Temperature;
 use App\Models\Vehicle;
+use App\Models\VehicleOutgoingPalletAllocation;
 use App\Models\Weight;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
@@ -164,6 +170,129 @@ class PodHelper
                 $outgoingPallet->save();
             }
         }
+    }
+    /**
+    * Process received POD data from an external system or service.
+    * @param array<string, mixed> $payload
+    * @return bool
+    */
+    public static function receivePod(array $payload): bool
+    {
+        Log::info('Received POD data', [$payload]);
+        $rejected_weight_ids = [];
+        $rejected_reason = [];
+
+        $pickerSheetID = $payload["PARENT_TASK"]["UserData"]["TC_DNOTE"];
+        $pickerSheet = PickerSheet::where('id', $pickerSheetID)->first();
+        $pickerSheet->receiver_name = $payload["PARENT_TASK"]["UserData"]["SIGN_NAME"]. " ".$payload["PARENT_TASK"]["UserData"]["SIGN_SURNAME"];
+        $pickerSheet->signature_file_id = FileController::PROCESS_BASE64_IMAGE_FILE($payload["PARENT_TASK"]["UserData"]["CUSTOMER_SIGNATURE"])->id;
+        $pickerSheet->save();
+        $psd = new PickersheetDocument();
+        $psd->user_id = null;
+        $psd->pickersheet_id = $pickerSheetID;
+        $psd->message = 'POD Received. Signed By: '.$pickerSheet->receiver_name;
+        $psd->dfile = null;
+        $psd->type = 'POD_RECEIVED';
+        $psd->pod = true;
+        $psd->file_id = $pickerSheet->signature_file_id;
+        $psd->save();
+        //Process complete failure - all items rejected
+        if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "DELIVERY_REJECTED") {
+            foreach ($payload["SUB_TASKS"] as $line) {
+                $thisWeights = explode(',', $line["UserData"]["PRODUCT_WEIGHT_INFO"]);
+                foreach ($thisWeights as $weightInfo) {
+                    $weightId = (int) explode('|', $weightInfo)[0];
+                    $rejected_weight_ids[] = $weightId;
+                    $rejected_reason[$weightId] = $payload["PARENT_TASK"]["UserData"]["ALL_FAIL_REASON"] . ' - ' . $payload["PARENT_TASK"]["UserData"]["ALL_FAIL_NOTES"];
+                }
+            }
+        }
+        //Partial failure - some items rejected, some accepted
+        foreach ($payload["SUB_TASKS"] as $line) {
+            if (isset($line["UserData"]["STATUS"]) && $line["UserData"]["STATUS"] == "REJECTED_ITEMS") {
+                $thisRejctions = explode(',', $line["UserData"]["REJECTED_PRODUCTS"]);
+                foreach ($thisRejctions as $rej) {
+                    $rejected_weight_ids[] = (int) $rej;
+                    $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
+                }
+            }
+        }
+        $rejected_weights = Weight::whereIn('id', $rejected_weight_ids)->get();
+        if (count($rejected_weights) === 0) {
+            //No rejected weights, nothing to process
+            return true;
+        }
+
+        //Store rejected for return intake creation, but also organise by nationality/brand/cut for easier processing when creating new pallets/products/weights for the return intake
+        $organisedByNatBrandCut = [];
+        foreach ($rejected_weights as $weight) {
+            $natBrandCut = $weight->product->nationality_id . '-' . $weight->product->brand_id . '-' . $weight->product->cut_id;
+            if (!isset($organisedByNatBrandCut[$natBrandCut])) {
+                $organisedByNatBrandCut[$natBrandCut] = [];
+            }
+            $organisedByNatBrandCut[$natBrandCut][] = $weight;
+        }
+        $returnIntake = new Intake();
+        $returnIntake->returned = 1;
+        $returnIntake->delivery_note_number = $pickerSheetID;
+        $returnIntake->supplier_id = $pickerSheet->customer_id;
+        $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
+
+        //find the original vehicle by looking at the original pick weights and their associated outgoing pallets and vehicle allocations
+        if (array_key_exists('TC_VEHICLE_ID', $payload["PARENT_TASK"]["UserData"])) {
+            $vehicle = Vehicle::find($payload["PARENT_TASK"]["UserData"]["TC_VEHICLE_ID"]);
+        } else {
+            $pwos = PickWeightOut::where('pickersheet_id', $pickerSheetID)->get();
+            foreach ($pwos as $pwo) {
+                $pwoWeights = explode(',', $pwo->weight_ids);
+                if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
+                    $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $vehicle = Vehicle::find($vopa->vehicle_id);
+                    break;
+                }
+            }
+        }
+        $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
+        $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
+        $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
+        $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
+        $returnIntake->save();
+
+        $site_id = null;
+        foreach ($organisedByNatBrandCut as $natBrandCut => $weights) {
+            $oldPallet = $weights[0]->product->pallet;
+            if (!$site_id) {
+
+                $site_id = Location::find($oldPallet->storage_location)->site_id;
+            }
+            $newPallet = $oldPallet->replicate();
+            $newPallet->intake_id = $returnIntake->id;
+            $newPallet->comments = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldPallet->comments;
+            $newPallet->save();
+
+            $oldProduct = $weights[0]->product;
+
+            $newProduct = $oldProduct->replicate();
+            $newProduct->pallet_id = $newPallet->id;
+            $oldWeightNote = $oldProduct->weightnote ?? '';
+            $newProduct->weightnote = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldWeightNote;
+            $newProduct->original_product_id = $oldProduct->id;
+            $newProduct->original_pallet_id = $oldProduct->pallet_id;
+            $newProduct->original_intake_id = $oldPallet->intake_id;
+            $newProduct->save();
+
+            foreach ($weights as $oldWeight) {
+                $newWeight = $oldWeight->replicate();
+                $newWeight->product_id = $newProduct->id;
+                $newWeight->status_id = 0;
+                $newWeight->original_weight_id = $oldWeight->id;
+                $newWeight->save();
+            }
+        }
+        $returnIntake->site_id = $site_id ?? 1;
+        $returnIntake->save();
+        return true;
     }
     /**
      * Create or update a vehicle in the external system and store the returned ID.

@@ -31,8 +31,6 @@ use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\VehicleController;
-use App\Models\ContainerProduct;
-use App\Models\InboundContainer;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -188,6 +186,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
 
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
     Route::get('files/{file}/view', [FileController::class, 'view'])->name('files.view');
+    Route::get('files/{uuid}/show_image', [FileController::class, 'showImage'])->name('files.show_image');
 
     Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");
     Route::post('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");

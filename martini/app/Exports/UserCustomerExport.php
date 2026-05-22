@@ -2,24 +2,10 @@
 
 namespace App\Exports;
 
-use App\Models\Brand;
 use App\Models\Customer;
-use App\Models\Cut;
-use App\Models\CutGroup;
-use App\Models\Intake;
-use App\Models\Nationality;
-use App\Models\OldUser;
-use App\Models\Pallet;
-use App\Models\PickerItem;
-use App\Models\Product;
-use App\Models\Species;
-use App\Models\Weight;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Facades\Excel;
 use stdClass;

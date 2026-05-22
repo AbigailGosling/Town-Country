@@ -6,6 +6,7 @@ use App\Models\File;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -59,12 +60,42 @@ class FileController extends Controller
         $file->save();
         return $file;
     }
+    public static function PROCESS_BASE64_IMAGE_FILE(string $base64Data):File
+    {
+        $uuid = (string) Str::uuid();
+        $data = base64_decode(str_replace('data:image/png;base64,', '', $base64Data));
+        $path = "uploads/{$uuid}";
+        Log::debug("Storing base64 image file at path: $path");
+        Storage::disk('public')->put($path, $data);
+
+        $file = File::create([
+            'uuid' => $uuid,
+            'original_name' => "file_{$uuid}.png",
+            'mime_type' => 'image/png',
+            'size' => strlen($data),
+        ]);
+        $file->save();
+        return $file;
+    }
     /**
      * Display a specific file's metadata.
      */
     public function show(File $file)
     {
         return view('files.show', compact('file'));
+    }
+    /**
+     * Display the file as an image by uuid.
+     */
+    public function showImage(string $uuid): StreamedResponse
+    {
+        /** @var FilesystemAdapter $fs */
+        $fs = Storage::disk('public');
+        $file = File::where('uuid', $uuid)->firstOrFail();
+        return $fs->response(
+            'uploads/' . $file->uuid,
+            $file->original_name
+        );
     }
     /**
      * Serve the file back to the user with original filename as download.
