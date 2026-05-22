@@ -192,7 +192,7 @@ class PodHelper
         $psd->pickersheet_id = $pickerSheetID;
         $psd->message = 'POD Received. Signed By: '.$pickerSheet->receiver_name;
         $psd->dfile = null;
-        $psd->type = 'POD_RECEIVED';
+        $psd->type = 'DELIVERY_NOTE';
         $psd->pod = true;
         $psd->file_id = $pickerSheet->signature_file_id;
         $psd->save();
