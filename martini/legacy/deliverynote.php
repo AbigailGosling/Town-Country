@@ -207,6 +207,7 @@ $s = (int)(microtime(true));
             <div class="deliverydate">Picked At: <span class="date"><?php echo $location; ?></span></div>
             <div class="deliverydate">Customer Served by: <span class="date"><?php echo $custLocation; ?></span></div>
 			<div class="deliverydate">P.O. Number: <span><?php echo $pickSheetRow['orderReferenceNumber']; ?></span></div>
+            <div class="deliverydate">Salesperson: <span><?php echo User::find($pickSheetRow['user_from_id'])?->name??"Unknown"; ?></span></div>
 			<?php
 				$date = str_replace('/', '-', $pickSheetRow['date_completed']);
 				$assemblydate = date('d/m/Y', strtotime($date));
