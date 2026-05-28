@@ -67,7 +67,7 @@ use Illuminate\Support\Facades\Auth;
 	$percision = 3;
 	$magShift = pow(10,$percision);
 
-   	require(__DIR__.'/../functions.php');
+    require_once(__DIR__.'/../functions.php');
     ini_set('max_execution_time',0);
     ini_set('memory_limit', '1G');
     $filters = array();
