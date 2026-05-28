@@ -88,7 +88,7 @@ class SendFinancialOverviewEmail extends Command
             return Command::FAILURE;
         }
 
-        $targetDate = Carbon::yesterday();
+        $targetDate = Carbon::now();
         $comparisonDate = Carbon::createFromDate($targetDate->year - 1, 1, 4)
             ->setISODate($targetDate->year - 1, $targetDate->isoWeek(), $targetDate->isoWeekday());
 
@@ -100,10 +100,11 @@ class SendFinancialOverviewEmail extends Command
         $subject = 'Daily Financial Overview - ' . $targetLabel;
         $htmlBody = $this->buildEmailBody($targetDate, $targetLabel, $targetSummary, $comparisonDate, $comparisonLabel, $comparisonSummary);
 
-        $to = ["abigail.gosling@tang.solutions",
+        $to = [
             "Ross.Whetton@townandcountrymeats.co.uk",
             "gary@townandcountrymeats.co.uk",
-            "bridget@townandcountrymeats.co.uk"];
+            "bridget@townandcountrymeats.co.uk"
+        ];
         SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody);
 
         $this->info('Financial overview sent to: ' . implode(', ', $to));
