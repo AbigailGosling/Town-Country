@@ -2,28 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FuncHelper;
+use App\Helpers\GraphHopperHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\Customer;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletType;
 use App\Models\Site;
 use App\Models\Vehicle;
 use App\Models\VehicleOutgoingPalletAllocation;
 use App\Models\OutgoingPalletPickWeight;
+use App\Models\VehicleType;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Mpdf\Mpdf;
 
 class OutgoingPalletsLoadingController extends Controller
 {
-    private const DEFAULT_MAX_PALLET_ROWS = 5;
     private const PALLET_COLUMNS = 3;
+    private const PLANNING_PALLET_COLUMNS = 3;
+    private const DEPOT_LAT = 52.577817;
+    private const DEPOT_LNG = -2.107758;
 
     private function normalizeMaxPalletRows($value): int
     {
         $rows = (int) $value;
-        return $rows > 0 ? $rows : self::DEFAULT_MAX_PALLET_ROWS;
+        return $rows > 0 ? $rows : 5;
     }
 
     private function isWithinVehicleCapacity(int $row, int $column, int $maxRows): bool
@@ -93,21 +100,44 @@ class OutgoingPalletsLoadingController extends Controller
     {
         return view('outgoing-pallets.loading');
     }
+
+    public function graphhopperResultsView()
+    {
+        return view('outgoing-pallets.graphhopper-results');
+    }
+
     public function vehicle(Request $request):JsonResponse
     {
         $depotSiteId = (int) $request->input('depot', 0);
 
-        // Return all vehicle registrations as JSON using Eloquent
+        // Return all vehicle registrations plus planning metadata for route assignment filtering.
         $vehiclesQuery = Vehicle::orderBy('reg', 'asc')
             ->whereNotNull('reg')
-            ->where('reg', '<>', '');
+            ->where('reg', '<>', '')
+            ->whereNotIn('vehicle_type_id', [1,5]);
 
         if ($depotSiteId > 0) {
             $vehiclesQuery->where('site_id', $depotSiteId);
         }
 
         $vehicles = $vehiclesQuery
-            ->get(['reg'])
+            ->get()
+            ->map(function (Vehicle $vehicle) {
+                $reg = trim((string) ($vehicle->reg ?? ''));
+                if ($reg === '') {
+                    return null;
+                }
+
+                return [
+                    'reg' => $reg,
+                    'payloadKg' => GraphHopperHelper::planningPayloadForVehicle($vehicle),
+                    'palletCapacity' => GraphHopperHelper::planningCapacityForVehicle($vehicle, self::PLANNING_PALLET_COLUMNS),
+                ];
+            })
+            ->filter()
+            ->values();
+
+        $vehicleRegs = $vehicles
             ->pluck('reg')
             ->map(function ($reg) {
                 return trim((string) $reg);
@@ -116,7 +146,10 @@ class OutgoingPalletsLoadingController extends Controller
             ->unique()
             ->values();
 
-        return response()->json(['vehicles' => $vehicles]);
+        return response()->json([
+            'vehicles' => $vehicleRegs,
+            'vehicleOptions' => $vehicles,
+        ]);
     }
     public function vehicleDetails(Request $request): JsonResponse
     {
@@ -525,57 +558,539 @@ class OutgoingPalletsLoadingController extends Controller
     }
     public function aiPlan(Request $request): JsonResponse
     {
-        $startPostcode = trim((string) $request->input('startPostcode', 'WV2 2QJ'));
-        $stopMinutes = (int) $request->input('stopMinutes', 20);
-        $postcodes = $request->input('postcodes', []);
-        if (!is_array($postcodes)) {
-                $postcodes = [];
+        // Backward-compatible alias for existing frontend callers.
+        return $this->graphhopperMultiVehiclePlan($request);
+    }
+
+    public function graphhopperMultiVehiclePlan(Request $request): JsonResponse
+    {
+        $dueDate = trim((string) $request->input('dueDate', now()->format('Y-m-d')));
+        $depotSiteId = (int) $request->input('depot', 0);
+        $serviceDurationSeconds = max(60, (int) $request->input('serviceDurationSeconds', 1200));
+        $persistSuggestions = filter_var(
+            $request->input('persistSuggestions', true),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
+        $persistSuggestions = $persistSuggestions === null ? true : $persistSuggestions;
+        $dryRun = filter_var(
+            $request->input('dryRun', false),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
+        $dryRun = $dryRun === null ? false : $dryRun;
+        $shouldPersistSuggestions = $persistSuggestions && !$dryRun;
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+            return response()->json(['error' => 'dueDate must be in Y-m-d format'], 422);
         }
-        $postcodes = array_values(array_filter(array_map('trim', $postcodes)));
+        $vehicleQuery = Vehicle::whereNotIn("vehicle_type_id", [1,5])
+            ->whereNotNull('reg')
+            ->where('reg', '<>', '')
+            ->where('site_id', $depotSiteId);
 
-        if (!$postcodes) {
-                return response()->json(['error' => 'No postcodes provided'], 400);
+        if ($depotSiteId > 0) {
+            $vehicleQuery->where('site_id', $depotSiteId);
         }
-
-        $apiKey = env('OPENAI_API_KEY','');
-        if (!$apiKey) {
-                return response()->json(['error' => 'OPENAI_API_KEY is not set'], 500);
+        $vehicles = $vehicleQuery->orderBy("reg")->get();
+        if ($vehicles->isEmpty()) {
+            return response()->json(['error' => 'No vehicles available for planning'], 422);
         }
-
-        $prompt = "You are a logistics planner. Create the most cost-effective delivery order for the following UK postcodes, starting from {$startPostcode}. Assume a {$stopMinutes} minute stop at each postcode before moving to the next. Provide a clear itinerary list with numbered stops and any timing assumptions. Calculate the average time to travel between postcodes.\n\nPostcodes:\n- " . implode("\n- ", $postcodes);
-
-        $payload = [
-                'model' => 'gpt-4o-mini',
-                'temperature' => 0.2,
-                'messages' => [
-                        ['role' => 'system', 'content' => 'Return a concise itinerary only.'],
-                        ['role' => 'user', 'content' => $prompt]
+        $pallets = OutgoingPallet::with(['customer', 'outgoingPalletType'])
+            ->whereDate('estimated_delivery_date', $dueDate)
+            ->where(function ($query) {
+                //$query->whereNull('dispatched')->orWhere('dispatched', 0);
+            })
+            ->get();
+        if ($pallets->isEmpty()) {
+            return response()->json([
+                'error' => 'No outgoing pallets found for date',
+                'dueDate' => $dueDate,
+            ], 404);
+        }
+        $services = [];
+        $skipped = [];
+        $skippedAddresses = [];
+        $groups = [];
+        foreach ($pallets as $pallet) {
+            if ($pallet->pickWeightOuts->isEmpty()) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'No pick weight outs linked to pallet',];
+                continue;
+            }
+            if (in_array($pallet->customer_id.'-'.$pallet->address_id, $skippedAddresses, true)) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Previously skipped due to geocoding failure for this address',];
+                continue;
+            }
+            $address = ClientAddress::where('client_id', $pallet->customer_id)
+                ->where('address_id', $pallet->address_id)
+                ->where('client_type', ClientType::CUSTOMER->value)
+                ->where('site_id', $depotSiteId)
+                ->first();
+            if (!$address) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
+                continue;
+            }
+            if (strpos(trim(strtolower((string) $address->address_1)), 'collect') !== false) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Ignore Collections',];
+                continue;
+            }
+            if ($depotSiteId > 0 && (int) ($address->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+            $location = null;
+            $storedLat = $address->lat;
+            $storedLng = $address->lng;
+            if (is_numeric($storedLat) && is_numeric($storedLng)) {
+                $storedLat = (float) $storedLat;
+                $storedLng = (float) $storedLng;
+                $location = ['lat' => $storedLat,'lon' => $storedLng,];
+            }
+            if ($location == null) {
+                $queryAddress = GraphHopperHelper::formatAddressForGeocoding($address);
+                if ($queryAddress === '') {
+                    $skipped[] = ['outgoingPalletId' => (int) $pallet->id,'reason' => 'Address is empty',];
+                    continue;
+                }
+                $location = GraphHopperHelper::geocodeAddress($queryAddress);
+                if ($location === null) {
+                    $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
+                    $skipped[] = [
+                        'outgoingPalletId' => (int) $pallet->id,
+                        'reason' => 'Failed to geocode address',
+                        'address' => $queryAddress,
+                    ];
+                    continue;
+                }
+                $address->lat = (float) $location['lat'];
+                $address->lng = (float) $location['lon'];
+                $address->save();
+            }
+            if (!array_key_exists($address->client_id . '-' . $address->address_id, $groups)) {
+                $groups[$address->client_id . '-' . $address->address_id] = ['Fresh' => false, 'Frozen' => false,'ids' => [],];
+            }
+            $tempCategory = $pallet->getTemperatureCategory();
+            $groups[$address->client_id . '-' . $address->address_id][$tempCategory] = true;
+            $groups[$address->client_id . '-' . $address->address_id]['ids'][] = $pallet->id;
+            $customer = Customer::find($pallet->customer_id);
+            $services[] = [
+                'id' => (string)$pallet->id,
+                'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
+                'address' => [
+                    'location_id' => (string)$address->client_id . '-' . $address->address_id,
+                    'lat' => $location['lat'],
+                    'lon' => $location['lon'],
+                ],
+                'setup_time' => $serviceDurationSeconds,
+                'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
+                'group' => $address->client_id . '-' . $address->address_id . '-' .  $tempCategory,
+            ];
+        }
+        if (empty($services)) {
+            return response()->json([
+                'error' => 'No services could be created from outgoing pallets',
+                'skipped' => $skipped,
+            ], 422);
+        }
+        $generifiedVehicleTypes = GraphHopperHelper::generifyVehicleTypes($vehicles, self::PLANNING_PALLET_COLUMNS);
+        $vrcVehicleTypes = [];
+        $vrpVehicles = [];
+        $depotLocation = [
+            'location_id' => 'depot',
+            'lat' => self::DEPOT_LAT,
+            'lon' => self::DEPOT_LNG,
+        ];
+        foreach ($generifiedVehicleTypes as $type) {
+            $vrcVehicleTypes[] = [
+                'type_id' => $type['type_id'],
+                'profile' => $type['profile'],
+                'capacity' => $type['capacity'],
+            ];
+            for ($i = 0; $type['count']>$i; $i++) {
+                if (count($vrpVehicles)==20)break 2;
+                $vrpVehicles[] = [
+                    'vehicle_id' => $type['type_id'] . '-' . $i,
+                    'type_id' => $type['type_id'],
+                    'start_address' => $depotLocation,
+                    'end_address' => $depotLocation,
+                    'earliest_start' => strtotime($dueDate . ' 00:00:00'),
+                    'latest_end' => strtotime($dueDate . ' 23:00:00'),
+                    // 'shifts' => [
+                    //     [
+                    //         'shift_id' => 'morning_shift',
+                    //         'earliest_start' => strtotime($dueDate . ' 06:00:00'),
+                    //         'latest_end' => strtotime($dueDate . ' 12:00:00'),
+                    //         'start_address' => $depotLocation,
+                    //         'end_address' => $depotLocation,
+                    //     ],
+                    //     [
+                    //         'shift_id' => 'afternoon_shift',
+                    //         'earliest_start' => strtotime($dueDate . ' 14:00:00'),
+                    //         'latest_end' => strtotime($dueDate . ' 20:00:00'),
+                    //         'start_address' => $depotLocation,
+                    //         'end_address' => $depotLocation,
+                    //     ],
+                    // ],
+                ];
+            }
+        }
+        $freshGroups = [];
+        $frozenGroups = [];
+        $addressGroups = [];
+        $addressIds = [];
+        foreach ($groups as $groupId => $temps) {
+            if ($temps['Fresh']) {
+                $freshGroups[] = $groupId . '-Fresh';
+            }
+            if ($temps['Frozen']) {
+                $frozenGroups[] = $groupId . '-Frozen';
+            }
+            if ($temps['Fresh'] && $temps['Frozen']) {
+                $addressGroups[] = [$groupId . '-Fresh', $groupId . '-Frozen'];
+                //$addressIds[] = $temps['ids'];
+            }
+        }
+        $relations = [
+            [
+                'type'=> 'in_sequence',
+                'groups'=> array_merge($freshGroups, $frozenGroups),
+            ]
+        ];
+        foreach ($addressGroups as $i => $group) {
+            if (in_array($group[0], $freshGroups) && in_array($group[1], $frozenGroups)) {
+                // $relations[] = [
+                //     'type' => 'in_same_route',
+                //     'ids' => $addressIds[$i],
+                // ];
+                $relations[] = [
+                    'type' => 'in_direct_sequence',
+                    'groups' => $group,
+                ];
+            }
+        }
+        $vrpPayload = [
+            'configuration' => [
+                'routing' => [
+                    'calc_points' => true,
+                    'return_snapped_waypoints' => true,
+                    'consider_traffic' => true,
+                ],
+            ],
+            'vehicle_types' => $vrcVehicleTypes,
+            'vehicles' => $vrpVehicles,
+            'services' => $services,
+            'relations' => $relations,
+            'objectives' => [
+                [
+                    "type"=> "min",
+                    "value"=> "vehicles",
                 ]
+            ],
         ];
 
-        // try {
-        //         $client = new \GuzzleHttp\Client([
-        //                 'verify' => 'C:\\inetpub\\intakemaster\\certs\\cacert.pem',
-        //         ]);
-        //         $response = $client->post('https://api.openai.com/v1/chat/completions', [
-        //                 'headers' => [
-        //                         'Content-Type' => 'application/json',
-        //                         'Authorization' => 'Bearer ' . $apiKey,
-        //                 ],
-        //                 'json' => $payload,
-        //         ]);
-        //         $data = json_decode($response->getBody(), true);
-        //         $itinerary = $data['choices'][0]['message']['content'] ?? '';
-        //         return response()->json(['itinerary' => $itinerary]);
-        // } catch (\Exception $e) {
-        //         return response()->json([
-        //                 'error' => 'OpenAI request failed',
-        //                 'detail' => $e->getMessage(),
-        //         ], 500);
+        $graphResponse = GraphHopperHelper::vrp($vrpPayload);
+        if (!$graphResponse['ok']) {
+            return response()->json([
+                'error' => 'GraphHopper VRP request failed',
+                'detail' => $graphResponse['error'],
+                'skipped' => $skipped,
+            ], 502);
+        }
+
+        $persistence = [
+            'enabled' => $shouldPersistSuggestions,
+            'persisted' => false,
+            'assignedCount' => 0,
+            'skippedCount' => 0,
+            'reason' => $dryRun ? 'Dry run enabled; suggestions were not persisted' : null,
+        ];
+
+        // if ($shouldPersistSuggestions) {
+        //     $plannedPalletIds = array_map(static function (array $service): int {
+        //         $serviceId = (string) ($service['id'] ?? '');
+        //         if (preg_match('/^pallet-(\d+)$/', $serviceId, $matches) === 1) {
+        //             return (int) $matches[1];
+        //         }
+        //         if (preg_match('/^\d+$/', $serviceId) === 1) {
+        //             return (int) $serviceId;
+        //         }
+        //         return 0;
+        //     }, $services);
+        //     $plannedPalletIds = array_values(array_filter($plannedPalletIds));
+
+        //     $persistence = $this->persistGraphHopperAllocations(
+        //         $graphResponse['data'],
+        //         $vehicleByGraphId,
+        //         $plannedPalletIds
+        //     );
         // }
+
         return response()->json([
-                'error' => 'OpenAI integration is currently disabled in this environment.',
-        ], 503);
+            'success' => true,
+            'dryRun' => $dryRun,
+            'dueDate' => $dueDate,
+            'vehicleCount' => count($vrpVehicles),
+            'serviceCount' => count($services),
+            'skipped' => $skipped,
+            'persistence' => $persistence,
+            'request' => $vrpPayload,
+            'response' => $graphResponse['data'],
+        ]);
+    }
+    private function persistGraphHopperAllocations(array $graphData, array $vehicleByGraphId, array $plannedPalletIds): array
+    {
+        $routes = data_get($graphData, 'solution.routes', data_get($graphData, 'routes', []));
+        if (!is_array($routes) || empty($routes)) {
+            return [
+                'enabled' => true,
+                'persisted' => false,
+                'assignedCount' => 0,
+                'skippedCount' => 0,
+                'reason' => 'No routes found in GraphHopper response',
+            ];
+        }
+
+        if (empty($plannedPalletIds)) {
+            return [
+                'enabled' => true,
+                'persisted' => false,
+                'assignedCount' => 0,
+                'skippedCount' => 0,
+                'reason' => 'No planned pallet IDs available for persistence',
+            ];
+        }
+
+        $pallets = OutgoingPallet::with('outgoingPalletType')
+            ->whereIn('id', $plannedPalletIds)
+            ->get()
+            ->keyBy('id');
+
+        $assignedCount = 0;
+        $skippedCount = 0;
+
+        DB::connection('tandc_live')->transaction(function () use (
+            $plannedPalletIds,
+            $routes,
+            $vehicleByGraphId,
+            $pallets,
+            &$assignedCount,
+            &$skippedCount
+        ) {
+            VehicleOutgoingPalletAllocation::whereIn('outgoing_pallet_id', $plannedPalletIds)
+                ->whereNull('committed_at')
+                ->delete();
+
+            $vehicleIds = array_values(array_unique(array_map(
+                static fn (Vehicle $vehicle): int => (int) $vehicle->id,
+                array_values($vehicleByGraphId)
+            )));
+
+            $rowTemperatureByVehicle = [];
+            if (!empty($vehicleIds)) {
+                $existingAllocations = VehicleOutgoingPalletAllocation::with('outgoingPallet.outgoingPalletType')
+                    ->whereIn('vehicle_id', $vehicleIds)
+                    ->get();
+
+                foreach ($existingAllocations as $existingAllocation) {
+                    $vehicleId = (int) ($existingAllocation->vehicle_id ?? 0);
+                    $row = (int) ($existingAllocation->row ?? 0);
+                    if ($vehicleId <= 0 || $row <= 0) {
+                        continue;
+                    }
+
+                    $existingPallet = $existingAllocation->outgoingPallet;
+                    if (!$existingPallet) {
+                        continue;
+                    }
+
+                    $temperatureCategory = $this->normalizePlanningTemperatureCategory($existingPallet);
+                    if ($temperatureCategory === null) {
+                        continue;
+                    }
+
+                    if (!isset($rowTemperatureByVehicle[$vehicleId])) {
+                        $rowTemperatureByVehicle[$vehicleId] = [];
+                    }
+
+                    if (!isset($rowTemperatureByVehicle[$vehicleId][$row])) {
+                        $rowTemperatureByVehicle[$vehicleId][$row] = $temperatureCategory;
+                        continue;
+                    }
+
+                    if ($rowTemperatureByVehicle[$vehicleId][$row] !== $temperatureCategory) {
+                        $rowTemperatureByVehicle[$vehicleId][$row] = 'mixed';
+                    }
+                }
+            }
+
+            foreach ($routes as $route) {
+                if (!is_array($route)) {
+                    continue;
+                }
+
+                $graphVehicleId = (string) ($route['vehicle_id'] ?? $route['vehicleId'] ?? '');
+                if ($graphVehicleId === '' || !array_key_exists($graphVehicleId, $vehicleByGraphId)) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $vehicle = $vehicleByGraphId[$graphVehicleId];
+                $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
+                $slotIndex = 1;
+                $vehicleId = (int) $vehicle->id;
+                $rowTemperatureMap = $rowTemperatureByVehicle[$vehicleId] ?? [];
+
+                $routePalletIds = array_reverse($this->graphHopperServicePalletIdsForRoute($route));
+
+                foreach ($routePalletIds as $outgoingPalletId) {
+                    $pallet = $pallets->get($outgoingPalletId);
+                    if (!$pallet) {
+                        $skippedCount++;
+                        continue;
+                    }
+
+                    $temperatureCategory = $this->normalizePlanningTemperatureCategory($pallet);
+                    $slot = $this->nextSuggestedSlot(
+                        $slotIndex,
+                        $maxRows,
+                        $this->isStandardPallet($pallet),
+                        $temperatureCategory,
+                        $rowTemperatureMap
+                    );
+                    if ($slot === null) {
+                        $skippedCount++;
+                        continue;
+                    }
+
+                    VehicleOutgoingPalletAllocation::updateOrCreate(
+                        [
+                            'vehicle_id' => (int) $vehicle->id,
+                            'outgoing_pallet_id' => (int) $outgoingPalletId,
+                        ],
+                        [
+                            'row' => $slot['row'],
+                            'column' => $slot['column'],
+                            'committed_by_user_id' => null,
+                            'committed_by_name' => null,
+                            'committed_at' => null,
+                        ]
+                    );
+
+                    if ($temperatureCategory !== null) {
+                        $row = (int) $slot['row'];
+                        if (!isset($rowTemperatureMap[$row])) {
+                            $rowTemperatureMap[$row] = $temperatureCategory;
+                        } elseif ($rowTemperatureMap[$row] !== $temperatureCategory) {
+                            $rowTemperatureMap[$row] = 'mixed';
+                        }
+                    }
+
+                    $assignedCount++;
+                }
+
+                $rowTemperatureByVehicle[$vehicleId] = $rowTemperatureMap;
+            }
+        });
+
+        return [
+            'enabled' => true,
+            'persisted' => true,
+            'assignedCount' => $assignedCount,
+            'skippedCount' => $skippedCount,
+            'reason' => null,
+        ];
+    }
+
+    private function graphHopperServicePalletIdsForRoute(array $route): array
+    {
+        $activities = $route['activities'] ?? [];
+        if (!is_array($activities)) {
+            return [];
+        }
+
+        $palletIds = [];
+        foreach ($activities as $activity) {
+            if (!is_array($activity)) {
+                continue;
+            }
+
+            $type = strtolower((string) ($activity['type'] ?? ''));
+            if ($type !== 'service' && $type !== 'pickup' && $type !== 'delivery') {
+                continue;
+            }
+
+            $serviceId = (string) (
+                $activity['id']
+                ?? $activity['service_id']
+                ?? ''
+            );
+
+            if (preg_match('/^pallet-(\d+)$/', $serviceId, $matches) === 1) {
+                $palletIds[] = (int) $matches[1];
+                continue;
+            }
+            if (preg_match('/^\d+$/', $serviceId) === 1) {
+                $palletIds[] = (int) $serviceId;
+            }
+        }
+
+        return array_values(array_unique($palletIds));
+    }
+
+    private function nextSuggestedSlot(
+        int &$slotIndex,
+        int $maxRows,
+        bool $isStandard,
+        ?string $temperatureCategory = null,
+        array $rowTemperatureMap = []
+    ): ?array
+    {
+        $maxSlots = max(0, $maxRows * self::PLANNING_PALLET_COLUMNS);
+
+        while ($slotIndex <= $maxSlots) {
+            $current = $slotIndex;
+            $slotIndex++;
+
+            $row = (int) floor(($current - 1) / self::PLANNING_PALLET_COLUMNS) + 1;
+            $column = (($current - 1) % self::PLANNING_PALLET_COLUMNS) + 1;
+
+            if ($isStandard && $column === self::PALLET_COLUMNS) {
+                continue;
+            }
+
+            if (
+                $temperatureCategory !== null
+                && isset($rowTemperatureMap[$row])
+                && $rowTemperatureMap[$row] !== $temperatureCategory
+            ) {
+                continue;
+            }
+
+            if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
+                continue;
+            }
+
+            return [
+                'row' => $row,
+                'column' => $column,
+            ];
+        }
+
+        return null;
+    }
+
+    private function normalizePlanningTemperatureCategory(OutgoingPallet $pallet): ?string
+    {
+        $category = strtolower(trim((string) ($pallet->getTemperatureCategory() ?? '')));
+
+        if (str_contains($category, 'frozen')) {
+            return 'frozen';
+        }
+
+        if (str_contains($category, 'fresh')) {
+            return 'fresh';
+        }
+
+        return null;
     }
 
     public function commitAllocations(Request $request): JsonResponse

@@ -161,7 +161,9 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/outgoing-pallets-loading/pallet-overview', [OutgoingPalletsLoadingController::class, 'palletOverview'])->name('outgoing-pallets-loading.pallet-overview');
     Route::get('/outgoing-pallets-loading/orders', [OutgoingPalletsLoadingController::class, 'orders'])->name('outgoing-pallets-loading.orders');
     Route::get('/outgoing-pallets-loading/depots', [OutgoingPalletsLoadingController::class, 'depots'])->name('outgoing-pallets-loading.depots');
+    Route::get('/outgoing-pallets-loading/graphhopper-results', [OutgoingPalletsLoadingController::class, 'graphhopperResultsView'])->name('outgoing-pallets-loading.graphhopper-results');
     Route::post('/outgoing-pallets-loading/ai-plan', [OutgoingPalletsLoadingController::class, 'aiPlan'])->name('outgoing-pallets-loading.ai-plan');
+    Route::post('/outgoing-pallets-loading/graphhopper-multi-vehicle', [OutgoingPalletsLoadingController::class, 'graphhopperMultiVehiclePlan'])->name('outgoing-pallets-loading.graphhopper-multi-vehicle');
 
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
