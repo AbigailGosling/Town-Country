@@ -180,12 +180,14 @@ class GraphHopperHelper
         foreach ($vehicles as $vehicle) {
             $tc_vehicle_type = $vehicle->vehicle_type_id;
             $payload = static::planningPayloadForVehicle($vehicle);
-            if ($payload === null || $payload != 44000) continue;
             $capacity = static::planningCapacityForVehicle($vehicle, $planningPalletColumns);
+            if ($payload === null || $payload === '' || $payload <= 0 || $capacity === null || $capacity === '' || $capacity <= 0) {
+                continue;
+            }
             $ghtype_id = $tc_vehicle_type . '-'. $payload . '-' . $capacity;
             foreach ($output as &$existing) {
                 if ($existing['type_id'] === $ghtype_id) {
-                    //$existing['count']++;
+                    $existing['count']++;
                     continue 2;
                 }
             }

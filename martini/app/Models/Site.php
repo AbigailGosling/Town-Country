@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $cutoff
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property float|null $lat
+ * @property float|null $lng
  *
  * @package App\Models
  */
@@ -32,6 +34,12 @@ class Site extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'name',
+        'disabled',
+        'abbreviation',
+        'cutoff',
+        'lat',
+        'lng',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -50,6 +58,8 @@ class Site extends Model
      */
     protected $casts = [
         'disabled' => 'bool',
+        'lat' => 'float',
+        'lng' => 'float',
     ];
     public function locations():HasMany
     {

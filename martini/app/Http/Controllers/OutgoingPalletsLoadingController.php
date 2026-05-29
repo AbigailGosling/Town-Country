@@ -24,8 +24,6 @@ class OutgoingPalletsLoadingController extends Controller
 {
     private const PALLET_COLUMNS = 3;
     private const PLANNING_PALLET_COLUMNS = 3;
-    private const DEPOT_LAT = 52.577817;
-    private const DEPOT_LNG = -2.107758;
 
     private function normalizeMaxPalletRows($value): int
     {
@@ -565,7 +563,13 @@ class OutgoingPalletsLoadingController extends Controller
     public function graphhopperMultiVehiclePlan(Request $request): JsonResponse
     {
         $dueDate = trim((string) $request->input('dueDate', now()->format('Y-m-d')));
-        $depotSiteId = (int) $request->input('depot', 0);
+        $depotSite = Site::find((int) $request->input('depot', 0));
+        if (!$depotSite || $depotSite->disabled) {
+            return response()->json(['error' => 'Invalid depot site'], 400);
+        }
+        if (!$depotSite->lat || !$depotSite->lng) {
+            return response()->json(['error' => 'Depot site must have valid lat and lng'], 400);
+        }
         $serviceDurationSeconds = max(60, (int) $request->input('serviceDurationSeconds', 1200));
         $persistSuggestions = filter_var(
             $request->input('persistSuggestions', true),
@@ -587,11 +591,7 @@ class OutgoingPalletsLoadingController extends Controller
         $vehicleQuery = Vehicle::whereNotIn("vehicle_type_id", [1,5])
             ->whereNotNull('reg')
             ->where('reg', '<>', '')
-            ->where('site_id', $depotSiteId);
-
-        if ($depotSiteId > 0) {
-            $vehicleQuery->where('site_id', $depotSiteId);
-        }
+            ->where('site_id', $depotSite->id);
         $vehicles = $vehicleQuery->orderBy("reg")->get();
         if ($vehicles->isEmpty()) {
             return response()->json(['error' => 'No vehicles available for planning'], 422);
@@ -624,7 +624,7 @@ class OutgoingPalletsLoadingController extends Controller
             $address = ClientAddress::where('client_id', $pallet->customer_id)
                 ->where('address_id', $pallet->address_id)
                 ->where('client_type', ClientType::CUSTOMER->value)
-                ->where('site_id', $depotSiteId)
+                ->where('site_id', $depotSite->id)
                 ->first();
             if (!$address) {
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
@@ -634,7 +634,7 @@ class OutgoingPalletsLoadingController extends Controller
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Ignore Collections',];
                 continue;
             }
-            if ($depotSiteId > 0 && (int) ($address->site_id ?? 0) !== $depotSiteId) {
+            if ($address->site_id !== $depotSite->id) {
                 continue;
             }
             $location = null;
@@ -696,8 +696,8 @@ class OutgoingPalletsLoadingController extends Controller
         $vrpVehicles = [];
         $depotLocation = [
             'location_id' => 'depot',
-            'lat' => self::DEPOT_LAT,
-            'lon' => self::DEPOT_LNG,
+            'lat' => $depotSite->lat ?? 0,
+            'lon' => $depotSite->lng ?? 0,
         ];
         foreach ($generifiedVehicleTypes as $type) {
             $vrcVehicleTypes[] = [
@@ -746,7 +746,7 @@ class OutgoingPalletsLoadingController extends Controller
             }
             if ($temps['Fresh'] && $temps['Frozen']) {
                 $addressGroups[] = [$groupId . '-Fresh', $groupId . '-Frozen'];
-                //$addressIds[] = $temps['ids'];
+                $addressIds[] = $temps['ids'];
             }
         }
         $relations = [
@@ -757,10 +757,10 @@ class OutgoingPalletsLoadingController extends Controller
         ];
         foreach ($addressGroups as $i => $group) {
             if (in_array($group[0], $freshGroups) && in_array($group[1], $frozenGroups)) {
-                // $relations[] = [
-                //     'type' => 'in_same_route',
-                //     'ids' => $addressIds[$i],
-                // ];
+                $relations[] = [
+                    'type' => 'in_same_route',
+                    'ids' => $addressIds[$i],
+                ];
                 $relations[] = [
                     'type' => 'in_direct_sequence',
                     'groups' => $group,
