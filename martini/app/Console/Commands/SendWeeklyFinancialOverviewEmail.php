@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
 
-class SendFinancialOverviewEmail extends Command
+class SendWeeklyFinancialOverviewEmail extends Command
 {
     private const REPORT_ID = 1;
     private const REPORT_USER_ID = 54;
@@ -24,14 +24,14 @@ class SendFinancialOverviewEmail extends Command
      *
      * @var string
      */
-    protected $signature = 'run:financial_overview_email';
+    protected $signature = 'run:weekly_financial_overview_email';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Send a daily financial overview email using turnover vs profit summary logic';
+    protected $description = 'Send a weekly financial overview email using turnover vs profit summary logic';
 
     /**
      * Execute the console command.
@@ -54,9 +54,14 @@ class SendFinancialOverviewEmail extends Command
             return Command::FAILURE;
         }
 
-        $targetDate = Carbon::now();
-        $comparisonDate = Carbon::createFromDate($targetDate->year - 1, 1, 4)
-            ->setISODate($targetDate->year - 1, $targetDate->isoWeek(), $targetDate->isoWeekday());
+        $today = Carbon::now();
+        $targetWeekNumber = $today->isoWeek();
+        $targetStart = $today->copy()->startOfWeek(Carbon::SATURDAY)->startOfDay();
+        $targetEnd = $today->copy()->endOfWeek(Carbon::FRIDAY)->endOfDay();
+
+        $comparisonDate = $today->copy()->subYear();
+        $comparisonStart = $comparisonDate->copy()->startOfWeek(Carbon::SATURDAY)->startOfDay();
+        $comparisonEnd = $comparisonDate->copy()->endOfWeek(Carbon::FRIDAY)->endOfDay();
 
         $interestedPicks = [];
         $filters = ReportHelper::filterBuilder(
@@ -84,23 +89,31 @@ class SendFinancialOverviewEmail extends Command
 
         $targetSummary = FinancialOverviewSummaryHelper::buildSummaryForRange(
             $report,
-            $targetDate->copy()->startOfDay(),
-            $targetDate->copy()->endOfDay(),
+            $targetStart,
+            $targetEnd,
             $filters,
             $interestedPicks
         );
         $comparisonSummary = FinancialOverviewSummaryHelper::buildSummaryForRange(
             $report,
-            $comparisonDate->copy()->startOfDay(),
-            $comparisonDate->copy()->endOfDay(),
+            $comparisonStart,
+            $comparisonEnd,
             $filters,
             $interestedPicks
         );
 
-        $targetLabel = $targetDate->format('d/m/Y');
-        $comparisonLabel = $comparisonDate->format('d/m/Y');
-        $subject = 'Daily Financial Overview - ' . $targetLabel;
-        $htmlBody = $this->buildEmailBody($targetDate, $targetLabel, $targetSummary, $comparisonDate, $comparisonLabel, $comparisonSummary);
+        $targetLabel = $targetStart->format('d/m/Y') . ' - ' . $targetEnd->format('d/m/Y');
+        $comparisonLabel = $comparisonStart->format('d/m/Y') . ' - ' . $comparisonEnd->format('d/m/Y');
+
+        $subject = 'Weekly Financial Overview - Week ' . $targetWeekNumber . ' (' . $targetStart->format('d/m/Y') . ' to ' . $targetEnd->format('d/m/Y') . ')';
+        $htmlBody = $this->buildEmailBody(
+            $targetWeekNumber,
+            $targetLabel,
+            $targetSummary,
+            $targetWeekNumber,
+            $comparisonLabel,
+            $comparisonSummary
+        );
 
         $to = [
             "Ross.Whetton@townandcountrymeats.co.uk",
@@ -109,7 +122,7 @@ class SendFinancialOverviewEmail extends Command
         ];
         SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody);
 
-        $this->info('Financial overview sent to: ' . implode(', ', $to));
+        $this->info('Weekly financial overview sent to: ' . implode(', ', $to));
         return Command::SUCCESS;
     }
 
@@ -125,20 +138,19 @@ class SendFinancialOverviewEmail extends Command
     }
 
     private function buildEmailBody(
-        Carbon $targetDate,
+        int $targetWeekNumber,
         string $targetLabel,
         array $targetSummary,
-        Carbon $comparisonDate,
+        int $comparisonWeekNumber,
         string $comparisonLabel,
         array $comparisonSummary
     ): string
     {
         return "<html><body>"
-            . "<p>Daily financial overview comparison.</p>"
+            . "<p>Weekly financial overview comparison.</p>"
             . "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
             . "<thead><tr style='background:#f2f2f2;'>"
-            . "<th>Report Date</th>"
-            . "<th>Day</th>"
+            . "<th>Week Range</th>"
             . "<th>Week of Year</th>"
             . "<th>kg</th>"
             . "<th>Cost</th>"
@@ -151,8 +163,7 @@ class SendFinancialOverviewEmail extends Command
             . "</tr></thead><tbody>"
             . "<tr>"
             . "<td><strong>{$targetLabel}</strong></td>"
-            . "<td>{$targetDate->format('l')}</td>"
-            . "<td>Week {$targetDate->isoWeek()}</td>"
+            . "<td>Week {$targetWeekNumber}</td>"
             . "<td>{$this->formatKg($targetSummary['kg'])}</td>"
             . "<td>{$this->formatMoney($targetSummary['Cost Value'])}</td>"
             . "<td>{$this->formatMoney($targetSummary['Actual Cost Value'])}</td>"
@@ -164,8 +175,7 @@ class SendFinancialOverviewEmail extends Command
             . "</tr>"
             . "<tr>"
             . "<td><strong>{$comparisonLabel}</strong></td>"
-            . "<td>{$comparisonDate->format('l')}</td>"
-            . "<td>Week {$comparisonDate->isoWeek()}</td>"
+            . "<td>Week {$comparisonWeekNumber}</td>"
             . "<td>{$this->formatKg($comparisonSummary['kg'])}</td>"
             . "<td>{$this->formatMoney($comparisonSummary['Cost Value'])}</td>"
             . "<td>{$this->formatMoney($comparisonSummary['Actual Cost Value'])}</td>"
