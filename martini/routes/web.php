@@ -13,6 +13,7 @@ use App\Http\Controllers\HealthMarkController;
 use App\Http\Controllers\InboundContainerApprovalController;
 use App\Http\Controllers\InboundContainerController;
 use App\Http\Controllers\IntakeReportController;
+use App\Http\Controllers\IntakeScanningController;
 use App\Http\Controllers\LegacyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\InsuredCreditReportController;
@@ -24,13 +25,12 @@ use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StockMovementRuleController;
 use App\Http\Controllers\OutgoingPalletController;
 use App\Http\Controllers\OutgoingPalletsLoadingController;
+use App\Http\Controllers\PodDispatchController;
 use App\Http\Controllers\SupplierReturnAttachmentController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\VehicleController;
-use App\Models\ContainerProduct;
-use App\Models\InboundContainer;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -52,7 +52,7 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php';
-
+Route::post('/pods/return', [PodDispatchController::class, 'receive'])->name('pods.receive')->withoutMiddleware(['auth', 'verified', 'permission', 'twofactor']);
 Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(function () {
 
     Route::get('/dashboard', function () {
@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::post('/outgoing-pallets/split-pick', [OutgoingPalletController::class, 'splitPick'])->name('outgoing-pallets.split-pick');
     Route::post('/outgoing-pallets/render-pick-html', [OutgoingPalletController::class, 'renderPickHtml'])->name('outgoing-pallets.render-pick-html');
     Route::post('/outgoing-pallets/pick-pallets', [OutgoingPalletController::class, 'pickPallets'])->name('outgoing-pallets.pick-pallets');
+    Route::post('/pods/send', [PodDispatchController::class, 'send'])->name('pods.send');
 
     // Outgoing Pallets Loading endpoints
     Route::get('/outgoing-pallets-loading', [OutgoingPalletsLoadingController::class, 'view'])->name('outgoing-pallets-loading.view');
@@ -183,12 +184,27 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/cutgroups/{speciesId}', [CutGroupController::class, 'getCutGroups']);
     Route::get('/cuts/{cutGroupId}', [CutController::class, 'getCuts']);
 
-    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
-    Route::get('files/{file}/view', [FileController::class, 'view'])->name('files.view');
+    Route::get('files/{uuid}/download', [FileController::class, 'download'])->name('files.download');
+    Route::get('files/{uuid}/view', [FileController::class, 'view'])->name('files.view');
+    Route::get('files/{uuid}/show_image', [FileController::class, 'showImage'])->name('files.show_image');
 
     Route::post('/supplier-return-attachments', [SupplierReturnAttachmentController::class, 'store'])->name("supplier-return-attachment.store");
     Route::post('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'update'])->name("supplier-return-attachment.update");
     Route::delete('/supplier-return-attachments/{supplierReturnAttachment}', [SupplierReturnAttachmentController::class, 'destroy'])->name("supplier-return-attachment.destroy");
+
+    // Intake Scanning routes
+    Route::view('/intake-scanner', 'intake-scanning.index')->name('intake-scanning.index');
+    Route::view('/intake-scanner-monitor', 'intake-scanning.job-monitor')->name('intake-scanning.monitor');
+    Route::view('/intake-scanner-review', 'intake-scanning.upload-review')->name('intake-scanning.review');
+    Route::post('/intake-scanner/files/{intakeScanningFile}/accept', [IntakeScanningController::class, 'acceptFile'])->name('intake-scanning.accept');
+    Route::post('/intake-scanner/files/{intakeScanningFile}/delete', [IntakeScanningController::class, 'deleteFile'])->name('intake-scanning.delete');
+    Route::get('/depots', [IntakeScanningController::class, 'depots']);
+    Route::get('/intakes', [IntakeScanningController::class, 'intakes']);
+    Route::post('/ocr', [IntakeScanningController::class, 'ocr']);
+    Route::get('/job-status', [IntakeScanningController::class, 'jobStatus']);
+    Route::get('/jobs-list', [IntakeScanningController::class, 'jobsList']);
+    Route::post('/jobs/{jobId}/process', [IntakeScanningController::class, 'processJob']);
+    Route::post('/jobs/process-queue', [IntakeScanningController::class, 'processQueue']);
 
 });
 Route::get('/menu.php', function () {

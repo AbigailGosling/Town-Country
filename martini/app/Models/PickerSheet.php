@@ -41,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $isSupplementalCredit
  * @property bool $is_return_to_supplier
  * @property string|null $goods_out_notes
+ * @property string|null $receiver_name
+ * @property int|null $signature_file_id
  *
  * @package App\Models
  */
@@ -63,7 +65,9 @@ protected $connection = 'tandc_live';
 		'isSupplemental' => 'bool',
 		'isSupplementalCredit' => 'bool',
 		'is_return_to_supplier' => 'bool',
-		'goods_out_notes' => 'string'
+		'goods_out_notes' => 'string',
+        'signature_file_id' => 'int',
+        'receiver_name' => 'string',
 	];
 
 	protected $dates = [
@@ -97,7 +101,9 @@ protected $connection = 'tandc_live';
 		'isSupplemental',
 		'isSupplementalCredit',
 		'is_return_to_supplier',
-		'goods_out_notes'
+		'goods_out_notes',
+        'receiver_name',
+        'signature_file_id',
 	];
     public function pickWeightOuts():HasMany
     {

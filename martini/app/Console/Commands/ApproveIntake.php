@@ -51,7 +51,6 @@ class ApproveIntake extends Command
         /** @var Intake $intake */
         $intake = Intake::find($cachedID);
         if ($intake == null || $intake->approved == true || $intake->approving_start == null || $intake->approved_by == null) {
-            Log::error("Invalid or already processed intake approval attempted.", ['intake_id' => $cachedID]);
             InternalCache::forget($this->argument('key'));
             return Command::FAILURE;
         }

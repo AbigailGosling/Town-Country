@@ -21,6 +21,7 @@ class Vehicle extends Model
         'site_id',
         'driver',
         'max_pallet_rows',
+        'barracuda_id',
     ];
 
     public function site()

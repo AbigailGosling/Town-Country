@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class PickersheetDocument
- * 
+ *
  * @property int $id
  * @property int|null $user_id
  * @property string|null $pickersheet_id
  * @property string|null $message
  * @property string|null $dfile
  * @property string|null $type
+ * @property int|null $file_id
  *
  * @package App\Models
  */
@@ -35,6 +36,7 @@ protected $connection = 'tandc_live';
 		'pickersheet_id',
 		'message',
 		'dfile',
-		'type'
+		'type',
+		'file_id'
 	];
 }

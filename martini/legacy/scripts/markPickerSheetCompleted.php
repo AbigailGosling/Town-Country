@@ -112,6 +112,7 @@ use App\Helpers\ProcessHelper;
 		$y2 = prepareExecuteQuery($x2,'i',[$pickersheet_id]);
 
 	}
+    prepareExecuteQuery("DELETE FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customer_id]);
     ProcessHelper::runInBackground('run:checkshortpick '.$pickersheet_id);
     ProcessHelper::runInBackground('run:credit_precheck '.$customer_id);
 ?>

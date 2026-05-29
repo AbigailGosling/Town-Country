@@ -198,6 +198,7 @@
 			});
 		}
 		<?php
+        /** @disregard P1008 */
 		$ucheck = prepareExecuteQuery("SELECT `user_type` FROM `users` WHERE `id` = ?",'i',[$userid]);
 		$ucheck = $ucheck->fetch_assoc();
         if ($ucheck['user_type'] == "A")

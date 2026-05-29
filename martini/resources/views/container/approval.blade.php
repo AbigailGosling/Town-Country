@@ -71,7 +71,7 @@
                             </x-data-table-column>
                             <x-data-table-column>
                                 @if($approval->hasFile())
-                                    <a href="{{ route('files.download', $approval->getFile()) }}" target="_blank" class="text-blue-600 underline">
+                                    <a href="{{ route('files.download', $approval->getFile()->uuid) }}" target="_blank" class="text-blue-600 underline">
                                        {{$approval->getFile()?->original_name}}
                                     </a>
                                 @else
