@@ -15,7 +15,6 @@ $s = (int)(microtime(true));
 	include('includes/frontHeader.php');
 	require_once("ajax/customer_soa_results_function.php");
 	require_once("scripts/SLabsEmailer.php");
-    global $user;
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
