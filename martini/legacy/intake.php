@@ -51,12 +51,25 @@ use Illuminate\Support\Str;
 	if(request()->input('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request()->input('productid');
 		$size = sizeof($productids ?? []);
-
+        if ($size > 0) {
+            $varTypes = str_repeat('i', $size);
+            $placeholders = implode(',', array_fill(0, $size, '?'));
+            $picks = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `pickersheet_id`) AS `ids` FROM `pickeritems` WHERE id IN (" . $placeholders . ")", $varTypes, $productids)->fetch_assoc()['ids'] ?? '';
+            if ($picks != '') {
+                $customers = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `customer_id`) AS `ids` FROM `pickersheets` WHERE id IN ($picks)",'')->fetch_assoc()['ids'] ?? '';
+                if ($customers != '') {
+                    foreach (explode(",",$customers) as $customerId) {
+                        prepareExecuteQuery("DELETE FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customerId]);
+                        ProcessHelper::runInBackground('run:credit_precheck '.$customerId);
+                    }
+                }
+            }
+        }
 		$intakeid = request()->input('intakeid');
 		for($i=0;$i<$size;$i++){
 			$product_id = "(" . $productids[$i] . ")";
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
-			$price = number_format((double)request()->input('price')[$i],3,".",",");
+			$price= number_format((double)request()->input('price')[$i],3,".",",");
             $rrp1 = number_format((double)request()->input('rrp1')[$i],3,".",",");
             $rrp2 = number_format((double)request()->input('rrp2')[$i],3,".",",");
             $rrp3 = number_format((double)request()->input('rrp3')[$i],3,".",",");
