@@ -3,6 +3,7 @@
 use App\Models\User;
 
 	include_once('functions.php');
+    /** @disregard P1008 */
     $userModel = User::find($user['id']);
 ?>
 <!doctype html>
@@ -25,6 +26,7 @@ use App\Models\User;
 	<h1 class="int">Town &amp; Country 3</h1>
 	<div id="menu_wrap">
 		<?php
+            /** @disregard P1008 */
 			$ids = $user['pages'];
 			if(count(explode(",",$ids)) == 0){ header('location:/logout'); exit; die();}
 			$resultsColumn1 = prepareExecuteQuery("SELECT * FROM `page_permissions` WHERE `column` = 1 && `id` IN ($ids)");
@@ -33,13 +35,13 @@ use App\Models\User;
 			if($count > 0){
 				?><div class="col"><h1>Sales & Purchasing</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn1)){
-					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					?><a style="height:55px" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     if ($page['file'] =="productpicker.php") { ?>
-                    <a href="../shortstock">Short Dated Stock</a>
+                    <a style="height:55px" href="../shortstock">Short Dated Stock</a>
                     <?php
                     }
                     if ($page['file'] =="containerreservation.php") { ?>
-                        <a href="reservationList.php">Reservations</a>
+                        <a style="height:55px" href="reservationList.php">Reservations</a>
                     <?php
                     }
 				}
@@ -55,11 +57,11 @@ use App\Models\User;
 			if($count > 0){
 				?><div class="col"><h1>Goods in/out</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn2)){
-					?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+					?><a style="height:55px" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     if($page['file'] == 'newDelivery.php'){
-                        ?><a href="../intake-scanner">Intake Scanning</a><?php
-                        ?><a href="../intake-scanner-monitor">Intake Monitoring</a><?php
-                        ?><a href="../intake-scanner-review">Intake Review</a><?php
+                        ?><a style="height:55px" href="../intake-scanner">Intake Scanning</a><?php
+                        ?><a style="height:55px" href="../intake-scanner-monitor">Intake Monitoring</a><?php
+                        ?><a style="height:55px" href="../intake-scanner-review">Intake Review</a><?php
                     }
 				}
 
@@ -75,26 +77,26 @@ use App\Models\User;
 				?><div class="col"><h1>Admin. Tools</h1><?php
 				while($page = mysqli_fetch_array($resultsColumn3)){
 					if($page['file'] == 'exportstock.php'){
-						?><a onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+						?><a style="height:55px" onclick="exportstock(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
 					}else if($page['file'] == 'exportStockPDF.php'){
-						?><a onclick="exportstockPDF(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+						?><a style="height:55px" onclick="exportstockPDF(this,'<?php echo htmlspecialchars($page['name']); ?>')" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     }else{
                         if ($page['file'] == "../supplierreturnstatements/") continue;
-						?><a href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
+						?><a style="height:55px" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                         if ($userModel->hasPermission("supplierreturnstatements") && $page['file'] == "manageSuppliers.php") {
                             ?>
-                            <a href="../supplierreturnstatements/"><span class="small">Supplier</span> Rtn/Crds Statement</a>
-                            <a href="../supplierreturnstatements/?history=1"><span class="small">Supplier</span> Return History</a>
+                            <a style="height:55px" href="../supplierreturnstatements/"><span class="small">Supplier</span> Rtn/Crds Statement</a>
+                            <a style="height:55px" href="../supplierreturnstatements/?history=1"><span class="small">Supplier</span> Return History</a>
                             <?php
                         }
                         if ($page['file'] == '../users') {
-                            ?><a href="../bulkpermissions/"><span class="small">Bulk</span> Permission Management</a><?php
+                            ?><a style="height:55px" href="../bulkpermissions/"><span class="small">Bulk</span> Permission Management</a><?php
                         }
 					}
 				}
                 if (in_array($userModel->id,[54,11,99]))
                 {
-                    ?><a href="https://wolverhamptonitservices-poc.sharefile.eu/home/shared/fo850975-7286-4c8e-9850-851b58f0d8ae">Management Spreadsheet</a><?php
+                    ?><a style="height:55px" href="https://wolverhamptonitservices-poc.sharefile.eu/home/shared/fo850975-7286-4c8e-9850-851b58f0d8ae">Management Spreadsheet</a><?php
                 }
 				?></div><?php
 			}
