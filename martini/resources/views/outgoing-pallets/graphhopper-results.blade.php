@@ -267,6 +267,12 @@
             margin-left: auto;
         }
 
+        .route-breakdown-vehicle-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
         .route-breakdown-vehicle select {
             width: 100%;
             border: 1px solid var(--border);
@@ -275,6 +281,17 @@
             font-size: 0.82rem;
             color: var(--text);
             background: #fff;
+        }
+
+        .route-breakdown-commit {
+            white-space: nowrap;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .route-breakdown-commit:disabled {
+            cursor: not-allowed;
         }
 
         .route-breakdown-title {
@@ -413,6 +430,7 @@
     let availableVehicles = [];
     let latestPlanPayload = null;
     const selectedVehicleByRoute = new Map();
+    const committingRouteKeys = new Set();
 
     function ensureMap() {
         if (routeMap) {
@@ -632,6 +650,43 @@
         return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function parseRoutePalletId(activity) {
+        const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? '').trim();
+        if (!serviceId) {
+            return null;
+        }
+
+        const prefixed = serviceId.match(/^pallet-(\d+)$/i);
+        if (prefixed) {
+            return Number(prefixed[1]);
+        }
+
+        if (/^\d+$/.test(serviceId)) {
+            return Number(serviceId);
+        }
+
+        return null;
+    }
+
+    function extractRoutePalletIds(stops) {
+        const ids = [];
+        const seen = new Set();
+
+        stops.forEach(activity => {
+            const palletId = parseRoutePalletId(activity);
+            if (!Number.isFinite(palletId) || palletId <= 0) {
+                return;
+            }
+
+            if (!seen.has(palletId)) {
+                seen.add(palletId);
+                ids.push(palletId);
+            }
+        });
+
+        return ids;
+    }
+
     function renderRouteBreakdown(payload) {
         routeBreakdownEl.innerHTML = '';
 
@@ -643,46 +698,23 @@
             return;
         }
 
-        const parseOutgoingPalletId = (value, fallback = null) => {
-            const raw = String(value ?? '').trim();
-            if (raw !== '' && /^\d+$/.test(raw)) {
-                return Number(raw);
-            }
-
-            const match = raw.match(/(\d+)/);
-            if (match) {
-                return Number(match[1]);
-            }
-
-            if (fallback !== null && fallback !== undefined) {
-                const fallbackRaw = String(fallback).trim();
-                if (/^\d+$/.test(fallbackRaw)) {
-                    return Number(fallbackRaw);
-                }
-            }
-
-            return null;
-        };
-
         const serviceMeta = new Map();
-        const serviceWeightByOutgoingPalletId = new Map();
+        const serviceWeightByServiceId = new Map();
         requestServices.forEach(service => {
             const id = String(service?.id ?? '');
             if (!id) {
                 return;
             }
 
-            const outgoingPalletId = parseOutgoingPalletId(service?.name, service?.id);
             const weightKg = Number(service?.size?.[1] ?? 0);
 
-            if (outgoingPalletId !== null && Number.isFinite(weightKg)) {
-                serviceWeightByOutgoingPalletId.set(outgoingPalletId, weightKg);
+            if (Number.isFinite(weightKg)) {
+                serviceWeightByServiceId.set(id, weightKg);
             }
 
             serviceMeta.set(id, {
                 name: String(service?.name ?? id),
                 group: String(service?.group ?? '').trim(),
-                outgoingPalletId,
                 weightKg: Number.isFinite(weightKg) ? weightKg : 0,
             });
         });
@@ -754,6 +786,7 @@
                 return type === 'service' || type === 'pickup' || type === 'delivery';
             });
             const travelMetrics = computeRouteTravelMetrics(route);
+            const routePalletIds = extractRoutePalletIds(stops);
 
             const requiredPalletCount = stops.length;
             const requiredPayloadKg = stops.reduce((sum, activity) => {
@@ -764,9 +797,8 @@
                     return sum + meta.weightKg;
                 }
 
-                const outgoingPalletId = parseOutgoingPalletId(meta?.name, serviceId);
-                if (outgoingPalletId !== null && serviceWeightByOutgoingPalletId.has(outgoingPalletId)) {
-                    return sum + Number(serviceWeightByOutgoingPalletId.get(outgoingPalletId));
+                if (serviceWeightByServiceId.has(serviceId)) {
+                    return sum + Number(serviceWeightByServiceId.get(serviceId));
                 }
 
                 return sum;
@@ -787,6 +819,11 @@
 
             const selector = document.createElement('select');
             selector.setAttribute('aria-label', `Assign actual vehicle for ${vehicleId}`);
+
+            const commitButton = document.createElement('button');
+            commitButton.type = 'button';
+            commitButton.className = 'route-breakdown-commit';
+            commitButton.textContent = 'Commit';
 
             const compatibleVehicles = availableVehicles.filter(vehicle => {
                 const payloadKg = Number(vehicle?.payloadKg);
@@ -825,15 +862,104 @@
             const inferredSelection = compatibleRegs.includes(vehicleId) ? vehicleId : '';
             selector.value = storedSelection || inferredSelection;
 
+            const syncCommitButtonState = () => {
+                const selectedReg = String(selector.value || '').trim();
+                const isBusy = committingRouteKeys.has(routeKey);
+                commitButton.disabled = isBusy || !selectedReg || !routePalletIds.length;
+            };
+
             selector.addEventListener('change', event => {
                 selectedVehicleByRoute.set(routeKey, String(event.target.value || ''));
+                syncCommitButtonState();
+            });
+
+            commitButton.addEventListener('click', async () => {
+                const selectedReg = String(selector.value || '').trim();
+                const dueDate = String(document.getElementById('dueDate')?.value || '').trim();
+
+                if (!selectedReg) {
+                    setStatus('Select a vehicle before committing a route.', 'error');
+                    return;
+                }
+
+                if (!dueDate) {
+                    setStatus('Due date is required to commit route allocations.', 'error');
+                    return;
+                }
+
+                if (!routePalletIds.length) {
+                    setStatus('No outgoing pallets were found in this route.', 'error');
+                    return;
+                }
+
+                const isConfirmed = window.confirm(
+                    `Commit ${routePalletIds.length} pallet(s) from ${vehicleId} to ${selectedReg}?`
+                );
+                if (!isConfirmed) {
+                    return;
+                }
+
+                committingRouteKeys.add(routeKey);
+                const previousLabel = commitButton.textContent;
+                commitButton.textContent = 'Committing...';
+                syncCommitButtonState();
+
+                try {
+                    setStatus(`Committing ${routePalletIds.length} pallets to ${selectedReg}...`, null);
+                    const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            reg: selectedReg,
+                            dueDate,
+                            outgoingPalletIds: routePalletIds,
+                        }),
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (error) {
+                        payload = null;
+                    }
+
+                    if (!response.ok) {
+                        const message = payload?.error || payload?.message || 'Failed to commit route allocations';
+                        throw new Error(message);
+                    }
+
+                    const committedCount = Number(payload?.committedCount ?? payload?.assignedCount ?? 0);
+                    const skippedCount = Number(payload?.skippedCount ?? 0);
+                    const suffix = skippedCount > 0 ? ` (${skippedCount} skipped)` : '';
+                    setStatus(`Committed ${committedCount} pallet(s) to ${selectedReg}${suffix}.`, 'success');
+
+                    selectedVehicleByRoute.set(routeKey, selectedReg);
+                    if (latestPlanPayload) {
+                        renderRouteBreakdown(latestPlanPayload);
+                    }
+                } catch (error) {
+                    setStatus(error.message || 'Failed to commit route allocations.', 'error');
+                } finally {
+                    commitButton.textContent = previousLabel;
+                    committingRouteKeys.delete(routeKey);
+                    syncCommitButtonState();
+                }
             });
 
             if (!compatibleRegs.length) {
                 selector.disabled = true;
             }
 
-            vehicleControl.appendChild(selector);
+            const controls = document.createElement('div');
+            controls.className = 'route-breakdown-vehicle-controls';
+            controls.appendChild(selector);
+            controls.appendChild(commitButton);
+            vehicleControl.appendChild(controls);
+            syncCommitButtonState();
 
             const metrics = document.createElement('div');
             metrics.className = 'route-breakdown-metrics';
