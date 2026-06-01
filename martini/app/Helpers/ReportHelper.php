@@ -17,7 +17,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use PDO;
 use stdClass;
 
@@ -38,6 +37,7 @@ class ReportHelper
     private static array $health_marks;
     private static array $sites;
     private static array $locations;
+    private static array $clientAddresses;
 
     /** @var Connection $conn */
     private static $conn;
@@ -865,6 +865,9 @@ class ReportHelper
         static::$health_marks = static::$conn->table("health_mark")->select("health_mark.*")->get()->toArray();
         static::$sites = static::$conn->table("site")->select("site.*")->get()->toArray();
         static::$locations = static::$conn->table("location")->select("location.*")->get()->toArray();
+        static::$clientAddresses = static::$conn->table("client_addresses")->select("client_addresses.*")->get()->keyBy(function ($item) {
+            return $item->{"client_addresses.client_id"}."-".$item->{"client_addresses.address_id"}."-".$item->{"client_addresses.client_type"};
+        })->toArray();
 
     }
     private static function bulkMergeIn(&$result,$full = true):bool {
@@ -940,18 +943,13 @@ class ReportHelper
                         $item = FuncHelper::array_search_multidim(static::$health_marks,"health_mark.id",$result->$col);
                         static::row_merge($result,$item);
                     }
-                    $col = "pallet.storage_location";
-                    if ($result->$col!=-1)
-                    {
-                        $item = FuncHelper::array_search_multidim(static::$locations,"location.id",$result->$col);
-                        static::row_merge($result,$item);
-                        $col = "location.site_id";
-                        if ($result->$col!=-1)
-                        {
-                            $item = FuncHelper::array_search_multidim(static::$sites,"site.id",$result->$col);
-                            static::row_merge($result,$item);
-                        }
-                    }
+
+                    $cid = $result->{"pickerSheets.customer_id"};
+                    $aid = $result->{"pickerSheets.addressid"};
+                    $type = ($result->{"pickerSheets.is_return_to_supplier"})?"supplier":"customer";
+                    $item = static::$clientAddresses[$cid."-".$aid."-".$type]?->{"client_addresses.site_id"} ?? 1;
+                    $item = FuncHelper::array_search_multidim(static::$sites,"site.id",$item);
+                    static::row_merge($result,$item);
                 }
             }
 
