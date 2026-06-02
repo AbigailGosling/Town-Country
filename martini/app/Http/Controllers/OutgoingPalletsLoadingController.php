@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\FuncHelper;
-use App\Helpers\GraphHopperHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
-use App\Models\Customer;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletType;
 use App\Models\Site;
@@ -16,18 +13,17 @@ use App\Models\OutgoingPalletPickWeight;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Mpdf\Mpdf;
 
 class OutgoingPalletsLoadingController extends Controller
 {
+    private const DEFAULT_MAX_PALLET_ROWS = 5;
     private const PALLET_COLUMNS = 3;
-    private const PLANNING_PALLET_COLUMNS = 3;
 
     private function normalizeMaxPalletRows($value): int
     {
         $rows = (int) $value;
-        return $rows > 0 ? $rows : 5;
+        return $rows > 0 ? $rows : self::DEFAULT_MAX_PALLET_ROWS;
     }
 
     private function isWithinVehicleCapacity(int $row, int $column, int $maxRows): bool
@@ -97,44 +93,21 @@ class OutgoingPalletsLoadingController extends Controller
     {
         return view('outgoing-pallets.loading');
     }
-
-    public function graphhopperResultsView()
-    {
-        return view('outgoing-pallets.graphhopper-results');
-    }
-
     public function vehicle(Request $request):JsonResponse
     {
         $depotSiteId = (int) $request->input('depot', 0);
 
-        // Return all vehicle registrations plus planning metadata for route assignment filtering.
+        // Return all vehicle registrations as JSON using Eloquent
         $vehiclesQuery = Vehicle::orderBy('reg', 'asc')
             ->whereNotNull('reg')
-            ->where('reg', '<>', '')
-            ->whereNotIn('vehicle_type_id', [1,5]);
+            ->where('reg', '<>', '');
 
         if ($depotSiteId > 0) {
             $vehiclesQuery->where('site_id', $depotSiteId);
         }
 
         $vehicles = $vehiclesQuery
-            ->get()
-            ->map(function (Vehicle $vehicle) {
-                $reg = trim((string) ($vehicle->reg ?? ''));
-                if ($reg === '') {
-                    return null;
-                }
-
-                return [
-                    'reg' => $reg,
-                    'payloadKg' => GraphHopperHelper::planningPayloadForVehicle($vehicle),
-                    'palletCapacity' => GraphHopperHelper::planningCapacityForVehicle($vehicle, self::PLANNING_PALLET_COLUMNS),
-                ];
-            })
-            ->filter()
-            ->values();
-
-        $vehicleRegs = $vehicles
+            ->get(['reg'])
             ->pluck('reg')
             ->map(function ($reg) {
                 return trim((string) $reg);
@@ -143,10 +116,7 @@ class OutgoingPalletsLoadingController extends Controller
             ->unique()
             ->values();
 
-        return response()->json([
-            'vehicles' => $vehicleRegs,
-            'vehicleOptions' => $vehicles,
-        ]);
+        return response()->json(['vehicles' => $vehicles]);
     }
     public function vehicleDetails(Request $request): JsonResponse
     {
@@ -555,360 +525,57 @@ class OutgoingPalletsLoadingController extends Controller
     }
     public function aiPlan(Request $request): JsonResponse
     {
-        // Backward-compatible alias for existing frontend callers.
-        return $this->graphhopperMultiVehiclePlan($request);
-    }
+        $startPostcode = trim((string) $request->input('startPostcode', 'WV2 2QJ'));
+        $stopMinutes = (int) $request->input('stopMinutes', 20);
+        $postcodes = $request->input('postcodes', []);
+        if (!is_array($postcodes)) {
+                $postcodes = [];
+        }
+        $postcodes = array_values(array_filter(array_map('trim', $postcodes)));
 
-    public function graphhopperMultiVehiclePlan(Request $request): JsonResponse
-    {
-        $dueDate = trim((string) $request->input('dueDate', now()->format('Y-m-d')));
-        $depotSite = Site::find((int) $request->input('depot', 0));
-        if (!$depotSite || $depotSite->disabled) {
-            return response()->json(['error' => 'Invalid depot site'], 400);
-        }
-        if (!$depotSite->lat || !$depotSite->lng) {
-            return response()->json(['error' => 'Depot site must have valid lat and lng'], 400);
-        }
-        $serviceDurationSeconds = max(60, (int) $request->input('serviceDurationSeconds', 1200));
-        $persistSuggestions = filter_var(
-            $request->input('persistSuggestions', true),
-            FILTER_VALIDATE_BOOLEAN,
-            FILTER_NULL_ON_FAILURE
-        );
-        $persistSuggestions = $persistSuggestions === null ? true : $persistSuggestions;
-        $dryRun = filter_var(
-            $request->input('dryRun', false),
-            FILTER_VALIDATE_BOOLEAN,
-            FILTER_NULL_ON_FAILURE
-        );
-        $dryRun = $dryRun === null ? false : $dryRun;
-        $shouldPersistSuggestions = $persistSuggestions && !$dryRun;
-
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
-            return response()->json(['error' => 'dueDate must be in Y-m-d format'], 422);
-        }
-        $vehicleQuery = Vehicle::whereNotIn("vehicle_type_id", [1,5])
-            ->whereNotNull('reg')
-            ->where('reg', '<>', '')
-            ->where('site_id', $depotSite->id);
-        $vehicles = $vehicleQuery->orderBy("reg")->get();
-        if ($vehicles->isEmpty()) {
-            return response()->json(['error' => 'No vehicles available for planning'], 422);
-        }
-        $pallets = OutgoingPallet::with(['outgoingPalletType'])
-            ->whereDate('estimated_delivery_date', $dueDate)
-            ->where(function ($query) {
-                //$query->whereNull('dispatched')->orWhere('dispatched', 0);
-            })
-            ->get();
-        if ($pallets->isEmpty()) {
-            return response()->json([
-                'error' => 'No outgoing pallets found for date',
-                'dueDate' => $dueDate,
-            ], 404);
-        }
-        $customers = Customer::whereIn('id', $pallets->pluck('customer_id')->unique())->get()->keyBy('id');
-        $customerAddresses = ClientAddress::whereIn('client_id', $pallets->pluck('customer_id')->unique())
-            ->whereIn('address_id', $pallets->pluck('address_id')->unique())
-            ->where('client_type', ClientType::CUSTOMER->value)
-            ->get()
-            ->keyBy(function ($ca) {
-                return $ca->client_id . '-' . $ca->address_id;
-            });
-        $services = [];
-        $skipped = [];
-        $skippedAddresses = [];
-        $addressDelTypes = [];
-        foreach ($pallets as $pallet) {
-            if ($pallet->pickWeightOuts->isEmpty()) {
-                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'No pick weight outs linked to pallet',];
-                continue;
-            }
-            if (in_array($pallet->customer_id.'-'.$pallet->address_id, $skippedAddresses, true)) {
-                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Previously skipped due to geocoding failure for this address',];
-                continue;
-            }
-            $address = $customerAddresses[$pallet->customer_id . '-' . $pallet->address_id] ?? null;
-            if (!$address) {
-                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
-                continue;
-            }
-            if (strpos(trim(strtolower((string) $address->address_1)), 'collect') !== false) {
-                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Ignore Collections',];
-                continue;
-            }
-            if ($address->site_id !== $depotSite->id) {
-                continue;
-            }
-            $location = null;
-            $storedLat = $address->lat;
-            $storedLng = $address->lng;
-            if (is_numeric($storedLat) && is_numeric($storedLng)) {
-                $storedLat = (float) $storedLat;
-                $storedLng = (float) $storedLng;
-                $location = ['lat' => $storedLat,'lon' => $storedLng,];
-            }
-            if ($location == null) {
-                $queryAddress = GraphHopperHelper::formatAddressForGeocoding($address);
-                if ($queryAddress === '') {
-                    $skipped[] = ['outgoingPalletId' => (int) $pallet->id,'reason' => 'Address is empty',];
-                    continue;
-                }
-                $location = GraphHopperHelper::geocodeAddress($queryAddress);
-                if ($location === null) {
-                    $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
-                    $skipped[] = [
-                        'outgoingPalletId' => (int) $pallet->id,
-                        'reason' => 'Failed to geocode address',
-                        'address' => $queryAddress,
-                    ];
-                    continue;
-                }
-                $address->lat = (float) $location['lat'];
-                $address->lng = (float) $location['lon'];
-                $address->save();
-            }
-
-            $customer = $customers[$pallet->customer_id] ?? null;
-            $tempCategory = strtolower($pallet->getTemperatureCategory());
-            $thisService =[
-                'id' => (string)$pallet->id,
-                'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
-                'address' => [
-                    'location_id' => (string)$address->client_id . '-' . $address->address_id,
-                    'lat' => $location['lat'],
-                    'lon' => $location['lon'],
-                ],
-                'setup_time' => $serviceDurationSeconds,
-                'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
-                'group' => $tempCategory,
-            ];
-            $services[] = $thisService;
-            if (!array_key_exists($address->client_id . '-' . $address->address_id, $addressDelTypes)) {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id] = ['fresh' => false, 'frozen' => false];
-            }
-            if ($tempCategory === 'fresh') {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id]['fresh'] = true;
-            } elseif ($tempCategory === 'frozen') {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id]['frozen'] = true;
-            }
-        }
-        if (empty($services)) {
-            return response()->json([
-                'error' => 'No services could be created from outgoing pallets',
-                'skipped' => $skipped,
-            ], 422);
-        }
-        $ffgroups = [];
-        foreach ($services as &$service) {
-            $addrId = $service['address']['location_id'];
-            $addrDetails = $addressDelTypes[$addrId] ?? ['fresh' => false, 'frozen' => false];
-            if ($addrDetails['fresh'] && $addrDetails['frozen']) {
-                $service['group'] = $addrId . '-freshfrozen';
-                $ffgroups[] = $addrId . '-freshfrozen';
-            }
-        }
-        $ffgroups = array_values(array_unique($ffgroups));
-
-        $generifiedVehicleTypes = GraphHopperHelper::generifyVehicleTypes($vehicles, self::PLANNING_PALLET_COLUMNS);
-        $vrcVehicleTypes = [];
-        $vrpVehicles = [];
-        $depotLocation = [
-            'location_id' => 'depot',
-            'lat' => $depotSite->lat ?? 0,
-            'lon' => $depotSite->lng ?? 0,
-        ];
-        foreach ($generifiedVehicleTypes as $type) {
-            $vrcVehicleTypes[] = [
-                'type_id' => $type['type_id'],
-                'profile' => $type['profile'],
-                'capacity' => $type['capacity'],
-            ];
-            for ($i = 0; $type['count']>$i; $i++) {
-                if (count($vrpVehicles)==20)break 2;
-                $vrpVehicles[] = [
-                    'vehicle_id' => $type['type_id'] . '-' . $i,
-                    'type_id' => $type['type_id'],
-                    'start_address' => $depotLocation,
-                    'end_address' => $depotLocation,
-                    'earliest_start' => strtotime($dueDate . ' 04:00:00'),
-                    'latest_end' => strtotime($dueDate . ' 20:00:00'),
-                    // 'shifts' => [
-                    //     [
-                    //         'shift_id' => 'morning_shift',
-                    //         'earliest_start' => strtotime($dueDate . ' 05:00:00'),
-                    //         'latest_end' => strtotime($dueDate . ' 12:00:00'),
-                    //         'start_address' => $depotLocation,
-                    //         'end_address' => $depotLocation,
-                    //         'return_to_depot' => true,
-                    //     ],
-                    //     [
-                    //         'shift_id' => 'afternoon_shift',
-                    //         'earliest_start' => strtotime($dueDate . ' 14:00:00'),
-                    //         'latest_end' => strtotime($dueDate . ' 20:00:00'),
-                    //         'start_address' => $depotLocation,
-                    //         'end_address' => $depotLocation,
-                    //         'return_to_depot' => true,
-                    //     ],
-                    // ],
-                ];
-            }
+        if (!$postcodes) {
+                return response()->json(['error' => 'No postcodes provided'], 400);
         }
 
-        $allGroups = array_merge(['fresh'], $ffgroups, ['frozen']);
+        $apiKey = env('OPENAI_API_KEY','');
+        if (!$apiKey) {
+                return response()->json(['error' => 'OPENAI_API_KEY is not set'], 500);
+        }
 
-        $relations = [
-            [
-                'type'=> 'not_in_same_route',
-                'groups'=> $ffgroups,
-            ],
-            [
-                'type'=> 'in_sequence',
-                'groups'=> $allGroups,
-            ],
-        ];
-        $vrpPayload = [
-            'configuration' => [
-                'routing' => [
-                    'calc_points' => true,
-                    'return_snapped_waypoints' => true,
-                    'consider_traffic' => true,
-                    'snap_preventions' => ["motorway", "trunk", "bridge", "ford", "tunnel", "ferry"],
-                ],
-            ],
-            'vehicle_types' => $vrcVehicleTypes,
-            'vehicles' => $vrpVehicles,
-            'services' => $services,
-            'relations' => $relations,
-            // 'objectives' => [
-            //     [
-            //         "type"=> "balance",
-            //         "value"=> "completion_time",
-            //     ]
-            // ],
+        $prompt = "You are a logistics planner. Create the most cost-effective delivery order for the following UK postcodes, starting from {$startPostcode}. Assume a {$stopMinutes} minute stop at each postcode before moving to the next. Provide a clear itinerary list with numbered stops and any timing assumptions. Calculate the average time to travel between postcodes.\n\nPostcodes:\n- " . implode("\n- ", $postcodes);
+
+        $payload = [
+                'model' => 'gpt-4o-mini',
+                'temperature' => 0.2,
+                'messages' => [
+                        ['role' => 'system', 'content' => 'Return a concise itinerary only.'],
+                        ['role' => 'user', 'content' => $prompt]
+                ]
         ];
 
-        $graphResponse = GraphHopperHelper::vrp($vrpPayload);
-        if (!$graphResponse['ok']) {
-            return response()->json([
-                'error' => 'GraphHopper VRP request failed',
-                'detail' => $graphResponse['error'],
-                'skipped' => $skipped,
-            ], 502);
-        }
-
-        $persistence = [
-            'enabled' => $shouldPersistSuggestions,
-            'persisted' => false,
-            'assignedCount' => 0,
-            'skippedCount' => 0,
-            'reason' => $dryRun ? 'Dry run enabled; suggestions were not persisted' : null,
-        ];
-
+        // try {
+        //         $client = new \GuzzleHttp\Client([
+        //                 'verify' => 'C:\\inetpub\\intakemaster\\certs\\cacert.pem',
+        //         ]);
+        //         $response = $client->post('https://api.openai.com/v1/chat/completions', [
+        //                 'headers' => [
+        //                         'Content-Type' => 'application/json',
+        //                         'Authorization' => 'Bearer ' . $apiKey,
+        //                 ],
+        //                 'json' => $payload,
+        //         ]);
+        //         $data = json_decode($response->getBody(), true);
+        //         $itinerary = $data['choices'][0]['message']['content'] ?? '';
+        //         return response()->json(['itinerary' => $itinerary]);
+        // } catch (\Exception $e) {
+        //         return response()->json([
+        //                 'error' => 'OpenAI request failed',
+        //                 'detail' => $e->getMessage(),
+        //         ], 500);
+        // }
         return response()->json([
-            'success' => true,
-            'dryRun' => $dryRun,
-            'dueDate' => $dueDate,
-            'vehicleCount' => count($vrpVehicles),
-            'serviceCount' => count($services),
-            'skipped' => $skipped,
-            'persistence' => $persistence,
-            'request' => $vrpPayload,
-            'response' => $graphResponse['data'],
-        ]);
-    }
-
-    private function graphHopperServicePalletIdsForRoute(array $route): array
-    {
-        $activities = $route['activities'] ?? [];
-        if (!is_array($activities)) {
-            return [];
-        }
-
-        $palletIds = [];
-        foreach ($activities as $activity) {
-            if (!is_array($activity)) {
-                continue;
-            }
-
-            $type = strtolower((string) ($activity['type'] ?? ''));
-            if ($type !== 'service' && $type !== 'pickup' && $type !== 'delivery') {
-                continue;
-            }
-
-            $serviceId = (string) (
-                $activity['id']
-                ?? $activity['service_id']
-                ?? ''
-            );
-
-            if (preg_match('/^pallet-(\d+)$/', $serviceId, $matches) === 1) {
-                $palletIds[] = (int) $matches[1];
-                continue;
-            }
-            if (preg_match('/^\d+$/', $serviceId) === 1) {
-                $palletIds[] = (int) $serviceId;
-            }
-        }
-
-        return array_values(array_unique($palletIds));
-    }
-
-    private function nextSuggestedSlot(
-        int &$slotIndex,
-        int $maxRows,
-        bool $isStandard,
-        ?string $temperatureCategory = null,
-        array $rowTemperatureMap = []
-    ): ?array
-    {
-        $maxSlots = max(0, $maxRows * self::PLANNING_PALLET_COLUMNS);
-
-        while ($slotIndex <= $maxSlots) {
-            $current = $slotIndex;
-            $slotIndex++;
-
-            $row = (int) floor(($current - 1) / self::PLANNING_PALLET_COLUMNS) + 1;
-            $column = (($current - 1) % self::PLANNING_PALLET_COLUMNS) + 1;
-
-            if ($isStandard && $column === self::PALLET_COLUMNS) {
-                continue;
-            }
-
-            if (
-                $temperatureCategory !== null
-                && isset($rowTemperatureMap[$row])
-                && $rowTemperatureMap[$row] !== $temperatureCategory
-            ) {
-                continue;
-            }
-
-            if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
-                continue;
-            }
-
-            return [
-                'row' => $row,
-                'column' => $column,
-            ];
-        }
-
-        return null;
-    }
-
-    private function normalizePlanningTemperatureCategory(OutgoingPallet $pallet): ?string
-    {
-        $category = strtolower(trim((string) ($pallet->getTemperatureCategory() ?? '')));
-
-        if (str_contains($category, 'frozen')) {
-            return 'frozen';
-        }
-
-        if (str_contains($category, 'fresh')) {
-            return 'fresh';
-        }
-
-        return null;
+                'error' => 'OpenAI integration is currently disabled in this environment.',
+        ], 503);
     }
 
     public function commitAllocations(Request $request): JsonResponse
@@ -925,28 +592,6 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'outgoingPalletIds must be a non-empty array'], 400);
         }
 
-        // Preserve planner-provided order exactly as received.
-        // We only drop invalid ids and ignore duplicates after first appearance.
-        $deliveryOrderPalletIds = [];
-        $seenPalletIds = [];
-        foreach ($outgoingPalletIds as $rawId) {
-            $id = (int) $rawId;
-            if ($id <= 0) {
-                continue;
-            }
-
-            if (isset($seenPalletIds[$id])) {
-                continue;
-            }
-
-            $seenPalletIds[$id] = true;
-            $deliveryOrderPalletIds[] = $id;
-        }
-
-        if (empty($deliveryOrderPalletIds)) {
-            return response()->json(['error' => 'No valid outgoingPalletIds were provided'], 400);
-        }
-
         if ($dueDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
             return response()->json(['error' => 'dueDate is required and must be in Y-m-d format'], 400);
         }
@@ -957,201 +602,43 @@ class OutgoingPalletsLoadingController extends Controller
         }
 
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
-        $orderedPalletIds = array_values(array_reverse($deliveryOrderPalletIds));
 
-        Log::info('commitAllocations: id ordering', [
-            'reg' => $reg,
-            'raw_received_ids' => array_map('intval', (array) $outgoingPalletIds),
-            'delivery_order' => $deliveryOrderPalletIds,
-            'allocation_order_first_loaded' => $orderedPalletIds,
-        ]);
-
-        $pallets = OutgoingPallet::with('outgoingPalletType')
-            ->whereIn('id', $orderedPalletIds)
+        // Fetch allocations for the given vehicle and pallet IDs
+        $allocations = VehicleOutgoingPalletAllocation::with('outgoingPallet')
+            ->where('vehicle_id', $vehicle->id)
+            ->whereIn('outgoing_pallet_id', $outgoingPalletIds)
             ->get()
-            ->keyBy('id');
+            ->filter(function ($allocation) use ($maxRows) {
+                $row = (int) ($allocation->row ?? 0);
+                $column = (int) ($allocation->column ?? 0);
+                return $this->isWithinVehicleCapacity($row, $column, $maxRows);
+            })
+            ->values();
 
         $committedAt = now();
         $authUser = $request->user();
         $committedByUserId = $authUser ? (int) $authUser->id : null;
         $committedByName = $authUser ? (string) $authUser->name : null;
 
-        $assignedCount = 0;
-        try {
-            DB::connection('tandc_live')->transaction(function () use (
-                $vehicle,
-                $orderedPalletIds,
-                $pallets,
-                $maxRows,
-                $dueDate,
-                $committedAt,
-                $committedByUserId,
-                $committedByName,
-                &$assignedCount
-            ) {
-                VehicleOutgoingPalletAllocation::whereIn('outgoing_pallet_id', $orderedPalletIds)->delete();
+        DB::connection('tandc_live')->transaction(function () use ($allocations, $committedAt, $committedByUserId, $committedByName, $dueDate) {
+            foreach ($allocations as $allocation) {
+                $allocation->committed_by_user_id = $committedByUserId;
+                $allocation->committed_by_name = $committedByName;
+                $allocation->committed_at = $committedAt;
+                $allocation->save();
 
-                $existingAllocations = VehicleOutgoingPalletAllocation::with('outgoingPallet.outgoingPalletType')
-                    ->where('vehicle_id', $vehicle->id)
-                    ->lockForUpdate()
-                    ->get();
-
-                $occupiedSlots = [];
-                $rowTemperatureMap = [];
-                // Tracks standard/euro counts per row to enforce type-combination rule.
-                // Valid combinations: (2 std, 0 euro) | (1 std, 2 euro) | (0 std, 3 euro)
-                $rowTypeMap = [];
-
-                foreach ($existingAllocations as $allocation) {
-                    $row = (int) ($allocation->row ?? 0);
-                    $column = (int) ($allocation->column ?? 0);
-                    if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
-                        continue;
-                    }
-
-                    $occupiedSlots[$row . ':' . $column] = true;
-
-                    $allocatedPallet = $allocation->outgoingPallet;
-                    if (!$allocatedPallet) {
-                        continue;
-                    }
-
-                    $temperatureCategory = $this->normalizePlanningTemperatureCategory($allocatedPallet);
-                    if ($temperatureCategory !== null) {
-                        if (!isset($rowTemperatureMap[$row])) {
-                            $rowTemperatureMap[$row] = $temperatureCategory;
-                        } elseif ($rowTemperatureMap[$row] !== $temperatureCategory) {
-                            $rowTemperatureMap[$row] = 'mixed';
-                        }
-                    }
-
-                    $existingIsStandard = $this->isStandardPallet($allocatedPallet);
-                    if (!isset($rowTypeMap[$row])) {
-                        $rowTypeMap[$row] = ['standard' => 0, 'euro' => 0];
-                    }
-                    $rowTypeMap[$row][$existingIsStandard ? 'standard' : 'euro']++;
-                }
-
-                foreach ($orderedPalletIds as $palletId) {
-                    $pallet = $pallets->get($palletId);
-                    if (!$pallet) {
-                        throw new \RuntimeException('Pallet not found: ' . $palletId);
-                    }
-
-                    $isStandard = $this->isStandardPallet($pallet);
-                    $temperatureCategory = $this->normalizePlanningTemperatureCategory($pallet);
-
-                    $slot = null;
-                    for ($row = 1; $row <= $maxRows; $row++) {
-                        for ($column = 1; $column <= self::PALLET_COLUMNS; $column++) {
-                            if ($isStandard && $column === self::PALLET_COLUMNS) {
-                                continue;
-                            }
-
-                            $slotKey = $row . ':' . $column;
-                            if (isset($occupiedSlots[$slotKey])) {
-                                continue;
-                            }
-
-                            if (
-                                $temperatureCategory !== null
-                                && isset($rowTemperatureMap[$row])
-                                && $rowTemperatureMap[$row] !== $temperatureCategory
-                            ) {
-                                continue;
-                            }
-
-                            // Enforce row type-combination rule.
-                            $rowStd  = $rowTypeMap[$row]['standard'] ?? 0;
-                            $rowEuro = $rowTypeMap[$row]['euro'] ?? 0;
-                            if ($isStandard) {
-                                // Would produce (2 std, 1+ euro) — forbidden.
-                                if ($rowStd >= 2 || ($rowStd >= 1 && $rowEuro >= 1)) {
-                                    continue;
-                                }
-                            } else {
-                                // Would produce (2 std, 1+ euro) — forbidden.
-                                if ($rowStd >= 2) {
-                                    continue;
-                                }
-                            }
-
-                            $slot = [
-                                'row' => $row,
-                                'column' => $column,
-                                'key' => $slotKey,
-                            ];
-                            break 2;
-                        }
-                    }
-
-                    if ($slot === null) {
-                        throw new \RuntimeException(
-                            'No valid slot available for pallet ' . $palletId
-                            . ' on vehicle ' . $vehicle->reg
-                            . ' (maxRows=' . $maxRows . ')'
-                        );
-                    }
-
-                    VehicleOutgoingPalletAllocation::updateOrCreate(
-                        [
-                            'vehicle_id' => $vehicle->id,
-                            'outgoing_pallet_id' => $pallet->id,
-                        ],
-                        [
-                            'row' => $slot['row'],
-                            'column' => $slot['column'],
-                            'estimated_delivery_date' => $dueDate,
-                            'committed_by_user_id' => $committedByUserId,
-                            'committed_by_name' => $committedByName,
-                            'committed_at' => $committedAt,
-                        ]
-                    );
-
+                $pallet = $allocation->outgoingPallet;
+                if ($pallet) {
                     $pallet->dispatched = true;
                     $pallet->estimated_delivery_date = $dueDate;
                     $pallet->save();
-
-                    $occupiedSlots[$slot['key']] = true;
-                    if ($temperatureCategory !== null) {
-                        if (!isset($rowTemperatureMap[$slot['row']])) {
-                            $rowTemperatureMap[$slot['row']] = $temperatureCategory;
-                        } elseif ($rowTemperatureMap[$slot['row']] !== $temperatureCategory) {
-                            $rowTemperatureMap[$slot['row']] = 'mixed';
-                        }
-                    }
-                    if (!isset($rowTypeMap[$slot['row']])) {
-                        $rowTypeMap[$slot['row']] = ['standard' => 0, 'euro' => 0];
-                    }
-                    $rowTypeMap[$slot['row']][$isStandard ? 'standard' : 'euro']++;
-
-                    $assignedCount++;
                 }
-            });
-        } catch (\Throwable $exception) {
-            Log::error('Commit allocations aborted; rolled back', [
-                'reg' => $reg,
-                'vehicle_id' => (int) $vehicle->id,
-                'due_date' => $dueDate,
-                'requested_outgoing_pallet_ids' => $deliveryOrderPalletIds,
-                'delivery_order' => $deliveryOrderPalletIds,
-                'allocation_order' => $orderedPalletIds,
-                'reason' => $exception->getMessage(),
-            ]);
-
-            return response()->json([
-                'error' => 'Unable to allocate all pallets; no allocations were committed',
-                'reason' => $exception->getMessage(),
-            ], 422);
-        }
+            }
+        });
 
         return response()->json([
             'success' => true,
-            'committedCount' => $assignedCount,
-            'assignedCount' => $assignedCount,
-            'skippedCount' => 0,
-            'deliveryOrder' => $deliveryOrderPalletIds,
-            'allocationOrder' => $orderedPalletIds,
+            'committedCount' => $allocations->count(),
             'committedAt' => $committedAt,
             'committedByUserId' => $committedByUserId,
             'committedByName' => $committedByName,
