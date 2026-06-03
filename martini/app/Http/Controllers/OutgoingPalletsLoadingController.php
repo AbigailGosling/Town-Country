@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\LoadSheet;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletType;
 use App\Models\Site;
@@ -100,7 +101,8 @@ class OutgoingPalletsLoadingController extends Controller
         // Return all vehicle registrations as JSON using Eloquent
         $vehiclesQuery = Vehicle::orderBy('reg', 'asc')
             ->whereNotNull('reg')
-            ->where('reg', '<>', '');
+            ->where('reg', '<>', '')
+            ->whereNotIn('vehicle_type_id', [1, 5]);
 
         if ($depotSiteId > 0) {
             $vehiclesQuery->where('site_id', $depotSiteId);
@@ -153,6 +155,8 @@ class OutgoingPalletsLoadingController extends Controller
     public function vehicleAllocations(Request $request): JsonResponse
     {
         $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
+        $loadSheetId = (int) $request->input('loadSheetId', 0);
         if ($reg === '') {
             return response()->json(['allocations' => []]);
         }
@@ -162,14 +166,27 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['allocations' => []]);
         }
 
+        if ($loadSheetId <= 0) {
+            return response()->json(['allocations' => []]);
+        }
+
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
-        $allocations = VehicleOutgoingPalletAllocation::with([
+        $allocationsQuery = VehicleOutgoingPalletAllocation::with([
             'outgoingPallet.pickWeightOuts',
             'outgoingPallet.customer',
             'outgoingPallet.outgoingPalletType',
         ])
             ->where('vehicle_id', $vehicle->id)
+            ->where('load_sheet_id', $loadSheetId);
+
+        if ($dueDate !== '') {
+            $allocationsQuery->whereHas('outgoingPallet', function ($query) use ($dueDate) {
+                $query->whereDate('estimated_delivery_date', $dueDate);
+            });
+        }
+
+        $allocations = $allocationsQuery
             ->get()
             ->map(function ($allocation) use ($maxRows) {
                 $pallet = $allocation->outgoingPallet;
@@ -215,12 +232,70 @@ class OutgoingPalletsLoadingController extends Controller
 
         return response()->json(['allocations' => $allocations]);
     }
+
+    public function loadSheets(Request $request): JsonResponse
+    {
+        $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
+
+        if ($reg === '' || $dueDate === '') {
+            return response()->json(['loadSheets' => []]);
+        }
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+            return response()->json(['error' => 'dueDate must be in Y-m-d format'], 422);
+        }
+
+        $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
+        if (!$vehicle) {
+            return response()->json(['loadSheets' => []]);
+        }
+
+        $sheets = LoadSheet::query()
+            ->where('vehicle_id', (int) $vehicle->id)
+            ->whereDate('date', $dueDate)
+            ->orderByDesc('created_at')
+            ->get(['id', 'vehicle_id', 'date', 'created_at']);
+
+        if ($sheets->isEmpty()) {
+            return response()->json(['loadSheets' => []]);
+        }
+
+        $allocationCounts = VehicleOutgoingPalletAllocation::query()
+            ->selectRaw('load_sheet_id, COUNT(*) as pallet_count')
+            ->whereIn('load_sheet_id', $sheets->pluck('id')->all())
+            ->groupBy('load_sheet_id')
+            ->pluck('pallet_count', 'load_sheet_id');
+
+        $loadSheets = $sheets->map(function ($sheet) use ($allocationCounts) {
+            $sheetId = (int) $sheet->id;
+            $count = (int) ($allocationCounts[$sheetId] ?? 0);
+            $createdAt = $sheet->created_at ? $sheet->created_at->format('H:i') : '';
+            $label = 'Sheet #' . $sheetId;
+            if ($createdAt !== '') {
+                $label .= ' • ' . $createdAt;
+            }
+            $label .= ' • ' . $count . ' pallet' . ($count === 1 ? '' : 's');
+
+            return [
+                'id' => $sheetId,
+                'label' => $label,
+                'date' => (string) ($sheet->date ? $sheet->date->format('Y-m-d') : ''),
+                'createdAt' => $sheet->created_at,
+                'palletCount' => $count,
+            ];
+        })->values();
+
+        return response()->json(['loadSheets' => $loadSheets]);
+    }
     public function updateAllocation(Request $request): JsonResponse
     {
         $outgoingPalletId = (int) $request->input('outgoingPalletId', 0);
         $regAllocatedTo = (string) $request->input('regAllocatedTo', '');
         $palletRow = $request->input('palletRow');
         $palletColumn = $request->input('palletColumn');
+        $dueDate = trim((string) $request->input('dueDate', ''));
+        $requestedLoadSheetId = (int) $request->input('loadSheetId', 0);
 
         if ($outgoingPalletId <= 0) {
             return response()->json(['error' => 'outgoingPalletId is required'], 400);
@@ -234,7 +309,12 @@ class OutgoingPalletsLoadingController extends Controller
         $regAllocatedTo = trim($regAllocatedTo);
 
         if ($regAllocatedTo === '' || $palletRow === null || $palletColumn === null) {
-            $deleted = VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)->delete();
+            $deleteQuery = VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id);
+            if ($requestedLoadSheetId > 0) {
+                $deleteQuery->where('load_sheet_id', $requestedLoadSheetId);
+            }
+
+            $deleted = $deleteQuery->delete();
             return response()->json(['success' => true, 'affectedRows' => $deleted]);
         }
 
@@ -255,11 +335,50 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'Standard pallets cannot be allocated to column 3'], 422);
         }
 
+        $loadSheetId = null;
+        $createdNewLoadSheet = false;
+
+        if ($requestedLoadSheetId > 0) {
+            $existingLoadSheet = LoadSheet::query()
+                ->where('id', $requestedLoadSheetId)
+                ->where('vehicle_id', $vehicle->id)
+                ->first();
+
+            if (!$existingLoadSheet) {
+                return response()->json(['error' => 'Load sheet not found for vehicle'], 422);
+            }
+
+            if ($dueDate !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+                $sheetDate = $existingLoadSheet->date ? $existingLoadSheet->date->format('Y-m-d') : '';
+                if ($sheetDate !== '' && $sheetDate !== $dueDate) {
+                    return response()->json(['error' => 'Load sheet date does not match selected due date'], 422);
+                }
+            }
+
+            $loadSheetId = (int) $existingLoadSheet->id;
+        } else {
+            if ($dueDate === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+                return response()->json(['error' => 'dueDate is required and must be in Y-m-d format when creating a load sheet'], 422);
+            }
+
+            $authUser = $request->user();
+            $loadSheet = LoadSheet::create([
+                'user_id' => $authUser ? (int) $authUser->id : null,
+                'vehicle_id' => (int) $vehicle->id,
+                'date' => $dueDate,
+            ]);
+
+            $loadSheetId = (int) $loadSheet->id;
+            $createdNewLoadSheet = true;
+        }
+
         VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)
+            ->where('load_sheet_id', $loadSheetId)
             ->where('vehicle_id', '<>', $vehicle->id)
             ->delete();
 
         VehicleOutgoingPalletAllocation::where('vehicle_id', $vehicle->id)
+            ->where('load_sheet_id', $loadSheetId)
             ->where('row', $row)
             ->where('column', $column)
             ->where('outgoing_pallet_id', '<>', $pallet->id)
@@ -269,6 +388,7 @@ class OutgoingPalletsLoadingController extends Controller
             [
                 'vehicle_id' => $vehicle->id,
                 'outgoing_pallet_id' => $pallet->id,
+                'load_sheet_id' => $loadSheetId,
             ],
             [
                 'row' => $row,
@@ -279,7 +399,12 @@ class OutgoingPalletsLoadingController extends Controller
             ]
         );
 
-        return response()->json(['success' => true, 'affectedRows' => 1]);
+        return response()->json([
+            'success' => true,
+            'affectedRows' => 1,
+            'loadSheetId' => $loadSheetId,
+            'createdNewLoadSheet' => $createdNewLoadSheet,
+        ]);
     }
 
     public function updatePalletType(Request $request): JsonResponse
@@ -325,6 +450,7 @@ class OutgoingPalletsLoadingController extends Controller
         $dueDate = trim((string) $request->input('dueDate', ''));
         $depotSiteId = (int) $request->input('depot', 0);
         $reg = trim((string) $request->input('reg', ''));
+        $loadSheetId = (int) $request->input('loadSheetId', 0);
 
         if ($dueDate === '' || $depotSiteId <= 0 || $reg === '') {
                 return response()->json(['orders' => []]);
@@ -332,9 +458,32 @@ class OutgoingPalletsLoadingController extends Controller
 
         $pallets = OutgoingPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
-        $allocations = VehicleOutgoingPalletAllocation::with('vehicle')
+        $allocationsQuery = VehicleOutgoingPalletAllocation::with('vehicle');
+
+        $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
+        if ($vehicle) {
+            $allocationsQuery->where('vehicle_id', (int) $vehicle->id);
+        }
+
+        if ($loadSheetId > 0) {
+            $allocationsQuery->where('load_sheet_id', $loadSheetId);
+        } else {
+            $allocationsQuery->whereRaw('1 = 0');
+        }
+
+        $allocations = $allocationsQuery
             ->get()
             ->keyBy('outgoing_pallet_id');
+
+        $anyAllocationByPalletId = VehicleOutgoingPalletAllocation::query()
+            ->with(['vehicle', 'loadSheet'])
+            ->whereIn('outgoing_pallet_id', $pallets->pluck('id')->map(fn ($id) => (int) $id)->all())
+            ->orderByDesc('id')
+            ->get()
+            ->groupBy('outgoing_pallet_id')
+            ->map(function ($group) {
+                return $group->first();
+            });
 
         $orders = [];
         foreach ($pallets as $pallet)
@@ -344,6 +493,26 @@ class OutgoingPalletsLoadingController extends Controller
                 $regAllocatedTo = $allocation->vehicle ? trim((string)$allocation->vehicle->reg) : '';
             } else {
                 $regAllocatedTo = '';
+            }
+
+            $anyAllocation = $anyAllocationByPalletId->get($pallet->id);
+            $anyAllocatedVehicleReg = $anyAllocation && $anyAllocation->vehicle
+                ? trim((string) ($anyAllocation->vehicle->reg ?? ''))
+                : '';
+            $anyAllocatedLoadSheetId = $anyAllocation ? (int) ($anyAllocation->load_sheet_id ?? 0) : 0;
+
+            $anyAllocatedLoadSheetLabel = '';
+            if ($anyAllocation && $anyAllocation->loadSheet) {
+                $sheetId = (int) ($anyAllocation->loadSheet->id ?? 0);
+                $sheetCreated = $anyAllocation->loadSheet->created_at
+                    ? $anyAllocation->loadSheet->created_at->format('H:i')
+                    : '';
+                if ($sheetId > 0) {
+                    $anyAllocatedLoadSheetLabel = 'Sheet #' . $sheetId;
+                    if ($sheetCreated !== '') {
+                        $anyAllocatedLoadSheetLabel .= ' • ' . $sheetCreated;
+                    }
+                }
             }
             $delNoteNum = implode('-', $this->getPicksheetIdsForPallet($pallet));
             $ca = ClientAddress::where('client_id', $pallet->customer_id)
@@ -373,6 +542,10 @@ class OutgoingPalletsLoadingController extends Controller
                     'regAllocatedTo' => $regAllocatedTo ?? '',
                     'row' => $allocation ? (int) $allocation->row : null,
                     'column' => $allocation ? (int) $allocation->column : null,
+                    'isAllocatedAnywhere' => $anyAllocation ? true : false,
+                    'allocatedVehicleReg' => $anyAllocatedVehicleReg,
+                    'allocatedLoadSheetId' => $anyAllocatedLoadSheetId > 0 ? $anyAllocatedLoadSheetId : null,
+                    'allocatedLoadSheetLabel' => $anyAllocatedLoadSheetLabel,
             ];
         }
 
@@ -621,7 +794,19 @@ class OutgoingPalletsLoadingController extends Controller
         $committedByName = $authUser ? (string) $authUser->name : null;
 
         DB::connection('tandc_live')->transaction(function () use ($allocations, $committedAt, $committedByUserId, $committedByName, $dueDate) {
+            $loadSheetId = null;
+            if ($allocations->isNotEmpty()) {
+                $firstAllocation = $allocations->first();
+                $loadSheet = LoadSheet::create([
+                    'user_id' => $committedByUserId,
+                    'vehicle_id' => (int) ($firstAllocation->vehicle_id ?? 0),
+                    'date' => $dueDate,
+                ]);
+                $loadSheetId = (int) $loadSheet->id;
+            }
+
             foreach ($allocations as $allocation) {
+                $allocation->load_sheet_id = $loadSheetId;
                 $allocation->committed_by_user_id = $committedByUserId;
                 $allocation->committed_by_name = $committedByName;
                 $allocation->committed_at = $committedAt;
@@ -650,6 +835,7 @@ class OutgoingPalletsLoadingController extends Controller
         $reg = trim((string) $request->input('reg', ''));
         $dueDate = trim((string) $request->input('dueDate', ''));
         $depotSiteId = (int) $request->input('depot', 0);
+        $loadSheetId = (int) $request->input('loadSheetId', 0);
 
         if ($reg === '' || $depotSiteId <= 0) {
             return response('Missing reg or depot parameter', 400);
@@ -670,7 +856,9 @@ class OutgoingPalletsLoadingController extends Controller
             'outgoingPallet.outgoingPalletType',
         ])->where('vehicle_id', $vehicle->id);
 
-        if ($dueDate !== '') {
+        if ($loadSheetId > 0) {
+            $query->where('load_sheet_id', $loadSheetId);
+        } elseif ($dueDate !== '') {
             $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
                 $q->where('estimated_delivery_date', $dueDate);
             });
@@ -739,6 +927,7 @@ class OutgoingPalletsLoadingController extends Controller
             'maxRows' => $maxRows,
             'rows' => $loadRows,
             'totalWeight' => $totalWeight,
+            'loadSheetId' => $loadSheetId > 0 ? $loadSheetId : null,
         ])->render();
 
         $mpdf = new Mpdf([

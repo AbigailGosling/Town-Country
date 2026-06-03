@@ -16,24 +16,24 @@ return new class extends Migration
     {
         Schema::connection('tandc_live')->table('site', function (Blueprint $table) {
             $table->decimal('lat', 11, 9)->nullable();
-            $table->decimal('lng', 11, 9)->nullable()->after('lat');
+            $table->decimal('lon', 11, 9)->nullable()->after('lat');
         });
         $wol = Site::where("name","Wolverhampton")->first();
         if ($wol) {
             $wol->lat = 52.577817000;
-            $wol->lng = -2.107758000;
+            $wol->lon = -2.107758000;
             $wol->save();
         }
         $gat = Site::where("name","Gatwick")->first();
         if ($gat) {
             $gat->lat = 51.140880366;
-            $gat->lng = -0.162313549;
+            $gat->lon = -0.162313549;
             $gat->save();
         }
         $tau = Site::where("name","Taunton")->first();
         if ($tau) {
             $tau->lat = 51.025874332;
-            $tau->lng = -3.131914573;
+            $tau->lon = -3.131914573;
             $tau->save();
         }
     }
@@ -46,7 +46,7 @@ return new class extends Migration
     public function down()
     {
         Schema::connection('tandc_live')->table('site', function (Blueprint $table) {
-            $table->dropColumn(['lat', 'lng']);
+            $table->dropColumn(['lat', 'lon']);
         });
     }
 };

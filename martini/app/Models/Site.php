@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property float|null $lat
- * @property float|null $lng
+ * @property float|null $lon
  *
  * @package App\Models
  */
@@ -39,7 +39,7 @@ class Site extends Model
         'abbreviation',
         'cutoff',
         'lat',
-        'lng',
+        'lon',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -59,7 +59,7 @@ class Site extends Model
     protected $casts = [
         'disabled' => 'bool',
         'lat' => 'float',
-        'lng' => 'float',
+        'lon' => 'float',
     ];
     public function locations():HasMany
     {

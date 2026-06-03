@@ -42,7 +42,7 @@ class GraphHopperController extends Controller
         $validated = $request->validate([
             'points' => ['required', 'array', 'min:2'],
             'points.*.lat' => ['required', 'numeric', 'between:-90,90'],
-            'points.*.lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'points.*.lon' => ['nullable', 'numeric', 'between:-180,180'],
             'points.*.lon' => ['nullable', 'numeric', 'between:-180,180'],
             'profile' => ['nullable', 'string'],
             'locale' => ['nullable', 'string', 'max:10'],
@@ -55,18 +55,18 @@ class GraphHopperController extends Controller
         ]);
 
         foreach ($validated['points'] as $index => $point) {
-            $hasLng = array_key_exists('lng', $point) && $point['lng'] !== null;
+            $hasLon = array_key_exists('lon', $point) && $point['lon'] !== null;
             $hasLon = array_key_exists('lon', $point) && $point['lon'] !== null;
 
-            if (!$hasLng && !$hasLon) {
+            if (!$hasLon && !$hasLon) {
                 return response()->json([
-                    'message' => "The points.$index field must include either lng or lon.",
+                    'message' => "The points.$index field must include either lon or lon.",
                 ], 422);
             }
         }
 
         $points = array_map(static function (array $point): string {
-            $lon = $point['lng'] ?? $point['lon'];
+            $lon = $point['lon'] ?? $point['lon'];
 
             return $point['lat'] . ',' . $lon;
         }, $validated['points']);

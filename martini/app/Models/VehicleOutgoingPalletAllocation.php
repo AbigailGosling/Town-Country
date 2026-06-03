@@ -10,6 +10,7 @@ class VehicleOutgoingPalletAllocation extends Model
     protected $table = 'vehicle_outgoing_pallet_allocations';
     protected $fillable = [
         'vehicle_id',
+        'load_sheet_id',
         'outgoing_pallet_id',
         'row',
         'column',
@@ -20,6 +21,7 @@ class VehicleOutgoingPalletAllocation extends Model
 
     protected $casts = [
         'vehicle_id' => 'integer',
+        'load_sheet_id' => 'integer',
         'outgoing_pallet_id' => 'integer',
         'row' => 'integer',
         'column' => 'integer',
@@ -30,6 +32,11 @@ class VehicleOutgoingPalletAllocation extends Model
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class);
+    }
+
+    public function loadSheet()
+    {
+        return $this->belongsTo(LoadSheet::class, 'load_sheet_id');
     }
 
     public function outgoingPallet()
