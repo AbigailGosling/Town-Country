@@ -26,17 +26,19 @@ class ClientAddress extends Model
         'address_4',
         'postcode',
         'lat',
-        'lng',
+        'lon',
         'site_id',
         'client_type',
+        'geocoding_tried',
     ];
 
     protected $casts = [
         'client_id' => 'int',
         'address_id' => 'int',
         'lat' => 'float',
-        'lng' => 'float',
+        'lon' => 'float',
         'site_id' => 'int',
+        'geocoding_tried' => 'boolean',
     ];
 
     public function client(): BelongsTo

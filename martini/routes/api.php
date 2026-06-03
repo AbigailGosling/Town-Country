@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\GraphHopperController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,10 +16,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
-});
-
-Route::prefix('graphhopper')->group(function () {
-    Route::get('/health', [GraphHopperController::class, 'health']);
-    Route::post('/route', [GraphHopperController::class, 'route']);
-    Route::get('/geocode', [GraphHopperController::class, 'geocode']);
 });

@@ -32,6 +32,7 @@ use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserCustomerController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\VehicleRoutePlanningController;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Auth;
@@ -154,6 +155,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/outgoing-pallets-loading/vehicles', [OutgoingPalletsLoadingController::class, 'vehicle'])->name('outgoing-pallets-loading.vehicles');
     Route::get('/outgoing-pallets-loading/vehicle-details', [OutgoingPalletsLoadingController::class, 'vehicleDetails'])->name('outgoing-pallets-loading.vehicle-details');
     Route::get('/outgoing-pallets-loading/vehicle-allocations', [OutgoingPalletsLoadingController::class, 'vehicleAllocations'])->name('outgoing-pallets-loading.vehicle-allocations');
+    Route::get('/outgoing-pallets-loading/load-sheets', [OutgoingPalletsLoadingController::class, 'loadSheets'])->name('outgoing-pallets-loading.load-sheets');
     Route::post('/outgoing-pallets-loading/update-allocation', [OutgoingPalletsLoadingController::class, 'updateAllocation'])->name('outgoing-pallets-loading.update-allocation');
     Route::post('/outgoing-pallets-loading/update-pallet-type', [OutgoingPalletsLoadingController::class, 'updatePalletType'])->name('outgoing-pallets-loading.update-pallet-type');
     Route::post('/outgoing-pallets-loading/commit-allocations', [OutgoingPalletsLoadingController::class, 'commitAllocations'])->name('outgoing-pallets-loading.commit-allocations');
@@ -162,10 +164,11 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/outgoing-pallets-loading/pallet-overview', [OutgoingPalletsLoadingController::class, 'palletOverview'])->name('outgoing-pallets-loading.pallet-overview');
     Route::get('/outgoing-pallets-loading/orders', [OutgoingPalletsLoadingController::class, 'orders'])->name('outgoing-pallets-loading.orders');
     Route::get('/outgoing-pallets-loading/depots', [OutgoingPalletsLoadingController::class, 'depots'])->name('outgoing-pallets-loading.depots');
-    Route::get('/outgoing-pallets-loading/graphhopper-results', [OutgoingPalletsLoadingController::class, 'graphhopperResultsView'])->name('outgoing-pallets-loading.graphhopper-results');
-    Route::post('/outgoing-pallets-loading/ai-plan', [OutgoingPalletsLoadingController::class, 'aiPlan'])->name('outgoing-pallets-loading.ai-plan');
-    Route::post('/outgoing-pallets-loading/graphhopper-multi-vehicle', [OutgoingPalletsLoadingController::class, 'graphhopperMultiVehiclePlan'])->name('outgoing-pallets-loading.graphhopper-multi-vehicle');
 
+    Route::get('/route-planning', [VehicleRoutePlanningController::class, 'view'])->name('route-planning.view');
+    Route::get('/route-planning/vehicles', [VehicleRoutePlanningController::class, 'vehicle'])->name('route-planning.vehicles');
+    Route::post('/route-planning/multi-vehicle', [VehicleRoutePlanningController::class, 'multiVehiclePlan'])->name('route-planning.multi-vehicle');
+    Route::post('/route-planning/commit-allocations', [VehicleRoutePlanningController::class, 'commitAllocations'])->name('route-planning.commit-allocations');
 
     Route::get('containers/search', [InboundContainerController::class, 'search'])->name('containers.search');
     Route::get('containers/{existingContainer}/clone-container', [InboundContainerController::class, 'cloneContainer'])->name('containers.clone-container');

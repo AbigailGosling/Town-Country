@@ -468,9 +468,8 @@
     function routeColor(index) {
         const colors = [
             '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6',
-            '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3',
-            '#808000', '#ffd8b1', '#000075', '#808080', '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-            '#9467bd', '#8c564b', '#e377c2', '#17becf', '#393b79', '#637939', '#8c6d31', '#843c39'
+            '#008080', '#e6beff', '#800000', '#000075', '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
+            '#9467bd', '#e377c2', '#17becf', '#393b79', '#637939', '#8c6d31', '#843c39'
         ];
 
         if (index < colors.length) {
@@ -692,6 +691,7 @@
 
         const responseRoutes = payload?.response?.solution?.routes ?? payload?.response?.routes ?? [];
         const requestServices = payload?.request?.services ?? [];
+        const requestVehicles = payload?.request?.vehicles ?? [];
 
         if (!Array.isArray(responseRoutes) || !responseRoutes.length) {
             routeBreakdownEl.innerHTML = '<p class="route-breakdown-empty">No routes available for breakdown.</p>';
@@ -700,6 +700,45 @@
 
         const serviceMeta = new Map();
         const serviceWeightByServiceId = new Map();
+        const vehicleMetaById = new Map();
+
+        requestVehicles.forEach(vehicle => {
+            const vehicleId = String(vehicle?.vehicle_id ?? '').trim();
+            if (!vehicleId) {
+                return;
+            }
+
+            const startAddress = vehicle?.start_address ?? null;
+            const endAddress = vehicle?.end_address ?? null;
+            const formatAddress = address => {
+                if (!address) {
+                    return 'Unknown address';
+                }
+
+                const locationId = String(address?.location_id ?? '').trim();
+                const lat = Number(address?.lat);
+                const lon = Number(address?.lon);
+                const coordinates = Number.isFinite(lat) && Number.isFinite(lon)
+                    ? `${lat.toFixed(5)}, ${lon.toFixed(5)}`
+                    : '';
+
+                if (locationId && coordinates) {
+                    return `${locationId} (${coordinates})`;
+                }
+
+                if (locationId) {
+                    return locationId;
+                }
+
+                return coordinates || 'Unknown address';
+            };
+
+            vehicleMetaById.set(vehicleId, {
+                startAddressLabel: formatAddress(startAddress),
+                endAddressLabel: formatAddress(endAddress),
+            });
+        });
+
         requestServices.forEach(service => {
             const id = String(service?.id ?? '');
             if (!id) {
@@ -785,8 +824,14 @@
                 const type = String(activity?.type ?? '').toLowerCase();
                 return type === 'service' || type === 'pickup' || type === 'delivery';
             });
+            const startActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'start') ?? null;
+            const endActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'end') ?? null;
             const travelMetrics = computeRouteTravelMetrics(route);
             const routePalletIds = extractRoutePalletIds(stops);
+            const vehicleMeta = vehicleMetaById.get(vehicleId) ?? {
+                startAddressLabel: 'Start address',
+                endAddressLabel: 'End address',
+            };
 
             const requiredPalletCount = stops.length;
             const requiredPayloadKg = stops.reduce((sum, activity) => {
@@ -906,7 +951,7 @@
 
                 try {
                     setStatus(`Committing ${routePalletIds.length} pallets to ${selectedReg}...`, null);
-                    const response = await fetch("{{ route('outgoing-pallets-loading.commit-allocations') }}", {
+                    const response = await fetch("{{ route('route-planning.commit-allocations') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -931,7 +976,7 @@
                         const message = payload?.error || payload?.message || 'Failed to commit route allocations';
                         throw new Error(message);
                     }
-
+                    console.log(payload);
                     const committedCount = Number(payload?.committedCount ?? payload?.assignedCount ?? 0);
                     const skippedCount = Number(payload?.skippedCount ?? 0);
                     const suffix = skippedCount > 0 ? ` (${skippedCount} skipped)` : '';
@@ -965,6 +1010,7 @@
             metrics.className = 'route-breakdown-metrics';
             metrics.innerHTML = [
                 `<span class="route-breakdown-badge">Pallets: ${stops.length}</span>`,
+                `<span class="route-breakdown-badge">Weight: ${Math.round(requiredPayloadKg)} kg</span>`,
                 `<span class="route-breakdown-badge">Distance: ${formatMeters(travelMetrics.distanceMeters)}</span>`,
                 `<span class="route-breakdown-badge">Drive: ${formatSeconds(travelMetrics.driveSeconds)}</span>`,
                 `<span class="route-breakdown-badge">Total: ${formatSeconds(route?.completion_time ?? route?.time)}</span>`,
@@ -987,6 +1033,12 @@
             const list = document.createElement('ol');
             list.className = 'route-breakdown-stops';
 
+            const departureWhen = formatUnixTimestamp(startActivity?.arr_time ?? startActivity?.end_time ?? startActivity?.start_time);
+            const departureTimePart = departureWhen ? ` (${departureWhen})` : '';
+            const departureLi = document.createElement('li');
+            departureLi.textContent = `Departure: ${vehicleMeta.startAddressLabel}${departureTimePart}`;
+            list.appendChild(departureLi);
+
             stops.forEach(activity => {
                 const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? 'Unknown');
                 const meta = serviceMeta.get(serviceId);
@@ -998,6 +1050,12 @@
                 li.textContent = `${meta?.name ?? serviceId}${group}${timePart}`;
                 list.appendChild(li);
             });
+
+            const arrivalWhen = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
+            const arrivalTimePart = arrivalWhen ? ` (${arrivalWhen})` : '';
+            const arrivalLi = document.createElement('li');
+            arrivalLi.textContent = `Arrival: ${vehicleMeta.endAddressLabel}${arrivalTimePart}`;
+            list.appendChild(arrivalLi);
 
             card.appendChild(list);
             routeBreakdownEl.appendChild(card);
@@ -1065,42 +1123,6 @@
         });
     }
 
-    async function requestRouteGeometryViaServer(points, profile) {
-        const response = await fetch('/api/graphhopper/route', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-            },
-            body: JSON.stringify({
-                points: points.map(point => ({
-                    lat: point.lat,
-                    lng: point.lon,
-                    lon: point.lon,
-                })),
-                profile,
-                calc_points: true,
-                points_encoded: false,
-                instructions: false,
-            }),
-        });
-
-        let payload = null;
-        try {
-            payload = await response.json();
-        } catch (error) {
-            payload = null;
-        }
-
-        if (!response.ok) {
-            const message = payload?.message || payload?.error || `Route API request failed (${response.status})`;
-            throw new Error(message);
-        }
-
-        return payload;
-    }
-
     async function requestRouteGeometryViaOsrm(points, profile) {
         const coords = points
             .map(point => `${Number(point.lon)},${Number(point.lat)}`)
@@ -1137,56 +1159,25 @@
             .filter(point => Number.isFinite(point[0]) && Number.isFinite(point[1]));
     }
 
-    function extractLatLngsFromRouteResponse(routeResponse) {
+    function extractLatLonsFromRouteResponse(routeResponse) {
         const path = routeResponse?.paths?.[0] ?? null;
         if (!path) {
             return [];
         }
 
-        let latLngs = [];
+        let latLons = [];
         const geoJsonCoordinates = path?.points?.coordinates ?? [];
         if (Array.isArray(geoJsonCoordinates) && geoJsonCoordinates.length) {
-            latLngs = geoJsonCoordinates
+            latLons = geoJsonCoordinates
                 .map(coord => [Number(coord[1]), Number(coord[0])])
                 .filter(point => Number.isFinite(point[0]) && Number.isFinite(point[1]));
         } else if (typeof path?.points === 'string' && window?.L?.PolylineUtil?.decode) {
-            latLngs = L.PolylineUtil.decode(path.points, 5)
+            latLons = L.PolylineUtil.decode(path.points, 5)
                 .map(point => [Number(point[0]), Number(point[1])])
                 .filter(point => Number.isFinite(point[0]) && Number.isFinite(point[1]));
         }
 
-        return latLngs;
-    }
-
-    async function buildRoadLatLngsViaServerSegments(route, profile) {
-        const points = route.points;
-        if (!Array.isArray(points) || points.length < 2) {
-            return [];
-        }
-
-        const stitched = [];
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const segmentPoints = [points[i], points[i + 1]];
-            const segmentResponse = await requestRouteGeometryViaServer(segmentPoints, profile);
-            const segmentLatLngs = extractLatLngsFromRouteResponse(segmentResponse);
-
-            if (!segmentLatLngs.length) {
-                throw new Error(`no geometry points returned for segment ${i + 1}`);
-            }
-
-            if (stitched.length && segmentLatLngs.length) {
-                const [prevLat, prevLng] = stitched[stitched.length - 1];
-                const [firstLat, firstLng] = segmentLatLngs[0];
-                if (prevLat === firstLat && prevLng === firstLng) {
-                    segmentLatLngs.shift();
-                }
-            }
-
-            stitched.push(...segmentLatLngs);
-        }
-
-        return stitched;
+        return latLons;
     }
 
     async function drawRoutesWithGraphHopperJs(payload) {
@@ -1264,7 +1255,7 @@
             bounds.push(...fallbackLine);
 
             try {
-                let latLngs = [];
+                let latLons = [];
 
                 if (graphHopperClientAvailable && !graphHopperRateLimited) {
                     const ghRouting = new window.GraphHopper.Routing(
@@ -1283,7 +1274,7 @@
 
                     try {
                         const routeResponse = await requestGraphHopperPath(ghRouting, routingRequest);
-                        latLngs = extractLatLngsFromRouteResponse(routeResponse);
+                        latLons = extractLatLonsFromRouteResponse(routeResponse);
                     } catch (clientError) {
                         if (isGraphHopperRateLimitedError(clientError)) {
                             graphHopperRateLimited = true;
@@ -1292,37 +1283,13 @@
                     }
                 }
 
-                if (!latLngs.length && !graphHopperRateLimited) {
-                    try {
-                        const routeResponse = await requestRouteGeometryViaServer(route.points, profile);
-                        latLngs = extractLatLngsFromRouteResponse(routeResponse);
-                    } catch (serverRouteError) {
-                        if (isGraphHopperRateLimitedError(serverRouteError)) {
-                            graphHopperRateLimited = true;
-                            graphHopperRateLimitedUntil = Date.now() + 60 * 1000;
-                        }
-                    }
+                if (!latLons.length) {
+                    latLons = await requestRouteGeometryViaOsrm(route.points, profile);
                 }
 
-                if (!latLngs.length && !graphHopperRateLimited) {
-                    // Fallback: request each leg separately and stitch road geometry.
-                    try {
-                        latLngs = await buildRoadLatLngsViaServerSegments(route, profile);
-                    } catch (segmentError) {
-                        if (isGraphHopperRateLimitedError(segmentError)) {
-                            graphHopperRateLimited = true;
-                            graphHopperRateLimitedUntil = Date.now() + 60 * 1000;
-                        }
-                    }
-                }
-
-                if (!latLngs.length) {
-                    latLngs = await requestRouteGeometryViaOsrm(route.points, profile);
-                }
-
-                if (latLngs.length) {
+                if (latLons.length) {
                     fallbackPolyline.remove();
-                    L.polyline(latLngs, {
+                    L.polyline(latLons, {
                         color,
                         weight: 4,
                         opacity: 0.85,
@@ -1406,7 +1373,7 @@
         }
 
         try {
-            const response = await fetch(`{{ route('outgoing-pallets-loading.vehicles') }}?depot=${encodeURIComponent(value)}`, {
+            const response = await fetch(`{{ route('route-planning.vehicles') }}?depot=${encodeURIComponent(value)}`, {
                 headers: {
                     'Accept': 'application/json',
                 },
@@ -1463,7 +1430,7 @@
         setStatus('Running GraphHopper plan...', null);
 
         try {
-            const response = await fetch("{{ route('outgoing-pallets-loading.graphhopper-multi-vehicle') }}", {
+            const response = await fetch("{{ route('route-planning.multi-vehicle') }}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

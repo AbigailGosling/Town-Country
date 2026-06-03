@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ProcessHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 
@@ -167,7 +168,11 @@ use App\Models\ClientType;
         $ca->address_number = request()->input('address_number')[$index] ?? null;
         $ca->site_id = request()->input('site_id')[$index];
         $ca->restrictions = request()->input('restrictions')[$index] ?? null;
+        $ca->geocoding_tried = 0;
+        $ca->lat = null;
+        $ca->lon = null;
         $ca->save();
+        ProcessHelper::runInBackground('run:geocode '.$ca->id);
 	}
 
 ?>

@@ -54,6 +54,7 @@ class UserController extends Controller
         $this->authorizeResource(User::class);
         View::composer('user-management/user', function ($view) {
             $view->with('permissions', PermissionsGroup::with('permissions')->where('id','<>',"0")->get());
+            $view->with('loggedInUser', User::find(Auth::id()));
         });
     }
 
@@ -152,7 +153,9 @@ class UserController extends Controller
             }
         }
         return view('user-management/user',
-            ['user' => $user,
+            [
+                'loggedInUser' => User::find(Auth::id()),
+                'user' => $user,
             'permissions' => PermissionsGroup::with('permissions')->where('id','<>',"0")->get(),
             'isNew' => $user->id === null,
             'locations' => $locations]);
