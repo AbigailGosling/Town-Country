@@ -52,6 +52,7 @@ class UserController extends Controller
         $this->authorizeResource(User::class);
         View::composer('user-management/user', function ($view) {
             $view->with('permissions', PermissionsGroup::with('permissions')->where('id','<>',"0")->get());
+            $view->with('loggedInUser', User::find(Auth::id()));
         });
     }
 
@@ -81,7 +82,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user-management/user', ['user' => new User, 'isNew' => true]);
+        return view('user-management/user', ['loggedInUser' => User::find(Auth::id()), 'user' => new User, 'isNew' => true]);
     }
 
     /**
@@ -138,7 +139,9 @@ class UserController extends Controller
     public function show(User $user)
     {
         return view('user-management/user',
-            ['user' => $user,
+            [
+                'loggedInUser' => User::find(Auth::id()),
+                'user' => $user,
                 'permissions' => PermissionsGroup::with('permissions')->where('id','<>',"0")->get(),
                 'isNew' => false]);
     }
