@@ -102,7 +102,7 @@
                             <x-form-section columns="1">
                                 @foreach ($perm_category->permissions as $perm)
                                     <div class="mt-4" for="perms[{{ $perm->name }}]"
-                                         style="display: flex; padding-bottom: 1em;">
+                                         style="display: flex; padding-bottom: 1em;@if (!$loggedInUser->can('admin') && !$loggedInUser->hasPermission($perm) && $loggedInUser->id != 54) display: none; @endif">
                                         <input type="checkbox" id="perms[{{ $perm->name }}]" name="perms[{{ $perm->name }}]"
                                                @if ($user->hasPermission($perm)) checked @endif />
                                         <div style="width: 1em;"></div>
@@ -132,11 +132,11 @@
         <form method="POST" action="{{ route('users.store') }}">
             {{ method_field('POST') }}
         </form>
-            @else
-                <form method="POST" action="{{ route('users.update', ['user' => $user]) }}">
-                    {{ method_field('PUT') }}
-                    @endif
-                    @csrf
+        @else
+            <form method="POST" action="{{ route('users.update', ['user' => $user]) }}">
+                {{ method_field('PUT') }}
+                @endif
+                @csrf
 
                 </form>
     </div>
