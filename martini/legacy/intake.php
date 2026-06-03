@@ -5,6 +5,7 @@ use App\Helpers\ProcessHelper;
 use App\Models\Brand;
 use App\Models\Cut;
 use App\Models\DocType;
+use App\Models\File;
 use App\Models\Intake;
 use App\Models\IntakeScanningFile;
 use App\Models\Nationality;
@@ -50,12 +51,25 @@ use Illuminate\Support\Str;
 	if(request()->input('savePrices') == 'true' && (request()->user()->hasPermission("set_prices") || request()->user()->isAdmin())){
 		$productids = request()->input('productid');
 		$size = sizeof($productids ?? []);
-
+        if ($size > 0) {
+            $varTypes = str_repeat('i', $size);
+            $placeholders = implode(',', array_fill(0, $size, '?'));
+            $picks = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `pickersheet_id`) AS `ids` FROM `pickeritems` WHERE id IN (" . $placeholders . ")", $varTypes, $productids)->fetch_assoc()['ids'] ?? '';
+            if ($picks != '') {
+                $customers = prepareExecuteQuery("SELECT GROUP_CONCAT(DISTINCT `customer_id`) AS `ids` FROM `pickersheets` WHERE id IN ($picks)",'')->fetch_assoc()['ids'] ?? '';
+                if ($customers != '') {
+                    foreach (explode(",",$customers) as $customerId) {
+                        prepareExecuteQuery("DELETE FROM customer_outstanding_cache WHERE customer_id = ?",'i',[$customerId]);
+                        ProcessHelper::runInBackground('run:credit_precheck '.$customerId);
+                    }
+                }
+            }
+        }
 		$intakeid = request()->input('intakeid');
 		for($i=0;$i<$size;$i++){
 			$product_id = "(" . $productids[$i] . ")";
 			$cost = number_format((double)request()->input('cost')[$i],3,".",",");
-			$price = number_format((double)request()->input('price')[$i],3,".",",");
+			$price= number_format((double)request()->input('price')[$i],3,".",",");
             $rrp1 = number_format((double)request()->input('rrp1')[$i],3,".",",");
             $rrp2 = number_format((double)request()->input('rrp2')[$i],3,".",",");
             $rrp3 = number_format((double)request()->input('rrp3')[$i],3,".",",");
@@ -452,7 +466,7 @@ use Illuminate\Support\Str;
             ?>
             <a href="./scripts/deleteIntakeDoc.php?intakeid=<?php echo $current_intake_id; ?>&docid=<?php echo $row['id']; ?>">
                 <i class="fa fa-trash" aria-hidden="true" style="text-decoration:none;font-size:24px;color:#000;"></i>
-            </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['file' => $row['file_id']]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
+            </a> &nbsp;&nbsp;&nbsp; <a href="<?php echo route('files.view', ['uuid' => File::find($row['file_id'])->uuid]); ?>" target="_blank"><?php echo $row['name']; ?></a><?php echo " (".(DocType::find($row['type_id'])->name??"Unknown").")"; ?><br/><br/>
 			<?php
 			}
             }
@@ -1070,7 +1084,7 @@ use Illuminate\Support\Str;
 			?>
 			<tr>
 				<td style="width: 100px;"><a href="javascript:;" class="add_product" style="margin: 0;" onclick="openAddPalletFromScan(<?php echo $current_intake_id; ?>,<?php echo $scanResult->id; ?>);">Add</a></td>
-				<td><?php if ($imageFileId !== null) { ?><a href="<?php echo route('files.view', ['file' => $imageFileId]); ?>" target="_blank">View Image</a><?php } ?></td>
+				<td><?php if ($imageFileId !== null) { ?><a href="<?php echo route('files.view', ['uuid' => File::find($imageFileId)->uuid]); ?>" target="_blank">View Image</a><?php } ?></td>
 				<td><?php echo e($displayValue($payload, 'killDate')); ?></td>
 				<td><?php echo e($displayValue($payload, 'packDate')); ?></td>
 				<td><?php echo e($displayValue($payload, 'bestBeforeDate')); ?></td>

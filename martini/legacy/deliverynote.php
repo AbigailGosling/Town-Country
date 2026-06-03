@@ -2,19 +2,26 @@
 
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\File;
+use App\Models\Intake;
 use App\Models\Location;
+use App\Models\Product;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\Weight;
 
 $e = new \Exception;
 $s = (int)(microtime(true));
 	include('includes/frontHeader.php');
 	require_once("ajax/customer_soa_results_function.php");
 	require_once("scripts/SLabsEmailer.php");
-
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
+
+    $minRows = 14;
+    $returnIntake = Intake::where('delivery_note_number', $pickersheet_id)->orderBy('created_at', 'desc')->first();
+    $hasReturns = $returnIntake != null;
 
 	$x = "SELECT * FROM `pickerSheets` WHERE id=?";
 	$y = prepareExecuteQuery($x,'i',[$pickersheet_id]);
@@ -312,7 +319,7 @@ $s = (int)(microtime(true));
 			</tr>
 		</table>
 		<?php
-			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE type='DELIVERY_NOTE' && pickersheet_id=? ORDER BY id DESC",'s',[$pickersheet_id]);
+			$internalDocResult = prepareExecuteQuery("SELECT * FROM `pickersheet_documents` WHERE `type` = 'DELIVERY_NOTE' AND `pickersheet_id` = ? ORDER BY id DESC",'s',[$pickersheet_id]);
 			$internalDocCount = $internalDocResult->num_rows;
 
 			if($internalDocCount > 0){
@@ -332,8 +339,13 @@ $s = (int)(microtime(true));
 					<td>
 						<?php
 							echo $internalDoc['message'];
-
-							if($internalDoc['dfile'] != ''){
+                            if ($internalDoc['file_id'] != null) {
+                                $file = File::find($internalDoc['file_id']);
+                                if ($file) {
+                                    ?> <a href="<?php echo route("files.download", ["uuid" => $file->uuid]); ?>" target="_blank">(View Document)</a><?php
+                                }
+                            }
+							else if($internalDoc['dfile'] != ''){
 							?> <a href="docs/<?php echo $internalDoc['dfile']; ?>" target="_blank">(View Document)</a><?php
 							}
 						?>
@@ -359,6 +371,9 @@ $s = (int)(microtime(true));
     <?php } ?>
     <br/>
 	<table width="100%" border="0">
+        <tr class="productsHeading">
+            <th colspan="100%">Quoted</th>
+        </tr>
 		<tr class="productsHeading">
 			<th align="left">Intake ID</th>
 			<th align="left">Plt ID</th>
@@ -371,170 +386,57 @@ $s = (int)(microtime(true));
                 <th align="right" class="price">Total</th>
             <?php } ?>
          </tr>
-
          <?php
 		 		$numOfRows = 0;
                 $outpalletQuery = "SELECT * FROM `pickWeightOut` WHERE pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$pickersheet_id]);
-
-                $outpalletCount = $outpalletResult2->num_rows;
+                $outpallets = $outpalletResult2->fetch_all(MYSQLI_ASSOC);
+                $outpalletCount = count($outpallets);
 
 				$total_qty_count = 0;
 				$total_weight_count = 0;
 				$total_case_count = 0;
-                while($outpallet = $outpalletResult2->fetch_assoc()){
-                    $weightids = explode(',', $outpallet['weight_ids']);
-
-                    $productIDArray = array();
-
-                    foreach($weightids as $weightid){
-                        $x = "SELECT * FROM `weights` WHERE id=?";
-                        $y = prepareExecuteQuery($x,'i',[$weightid]);
-                        $weight = $y->fetch_assoc();
-
-                        if(!in_array($weight['product_id'], $productIDArray)){
-                            array_push($productIDArray, $weight['product_id']);
-                        }
-
-                        $queryBits .= ' id = ' . $weightid . ' || ';
-                    }
-
-                    foreach($productIDArray as $productID){
-
-                        $x1 = "SELECT * FROM `product` WHERE id=?";
-                        $y1 = prepareExecuteQuery($x1,'i',[$productID]);
-                        $product = $y1->fetch_assoc();
-
-
-                        if($product['unit'] == 'PPC'){
-                            $ext = ' Cases';
-                        }else{
-                            $ext = ' kg';
-                        }
-						$queryVars = $weightids;
-						array_unshift($queryVars,$productID);
-                        $x2 = "SELECT * FROM `weights` WHERE product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
-
-                        $y2 = prepareExecuteQuery($x2,str_repeat('i',count($weightids)+1),$queryVars);
-                        $count = $y2->num_rows;
-
-                        ${"globalProductCount" . $product['id']} += $count;
-
-                        $k = 0;
-
-                        while($weight = $y2->fetch_assoc()){
-
-                            if($weight['weight_tear'] == $weight['weight_gross']){
-                                (double)$w = (double)$weight['weight_gross'];
-                            }else{
-                                (double)$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
-                            }
-
-                            $k = $k + $w;
-                        }
-						$smallestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?"EXTENSION":$product['range_from'];
-						$largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
-						$total_qty_count += $count;
-                        ?>
-                        <tr class="productsRow">
-						<?php $numOfRows++; ?>
-					<td align="center"><span class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
-					<td align="center"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
-					<td align="center"><span class="palletid"><?php echo getNationality($product['nationality_id']); ?></span></td>
-					<td align="center"><span class="chilled"><?php echo getTemp($product['cooling_id']); ?></span></td>
-					<td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?></b></td>
-					<td align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
-					<td align="center"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
-					<td align="right"><b class="brand"><?php echo $smallestDate.' - '.$largestDate; ?></b></td>
-                    <?php
-                        $productID = $product['id'];
-                        $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-                        $howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
-                        $pickerItem = $howManyY->fetch_assoc();
-                        $howMany = $howManyY->num_rows;
-                    ?>
-					<td align="center"><b class="quantity"><?php echo $count; ?></b></td>
-					<td align="left">
-						<b class="unit">
-						<?php
-
-							if($product['unit'] == 'C'){
-								$unit = 'Cases';
-							}else if($product['unit'] == 'PPC'){
-								$unit = 'Per Case';
-							}else if($product['unit'] == 'P'){
-								$unit = 'Pallet';
-							}else if($product['unit'] == 'KG'){
-								$unit = 'Kilo';
-							}else{
-								$unit = 'Cases';
-							}
-
-							echo $unit;
-						?>
-						</b>
-					</td>
-					<td align="right">
-					<b class="weight">
-                      <?php
-
-						$qBit = '';
-
-						$kg = 0;
-						$queryVars = $weightids;
-						array_unshift($queryVars,$productID);
-						$xxWeight = "SELECT * FROM `weights` WHERE  product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
-						$yyWeight = prepareExecuteQuery($xxWeight,str_repeat('i',count($weightids)+1),$queryVars);
-
-						while($weightRow = mysqli_fetch_array($yyWeight)){
-
-							if($weightRow['weight_tear'] == $weightRow['weight_gross']){
-								(double)$tw = (double)$weightRow['weight_gross'];
-							}else{
-								(double)$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
-							}
-
-							$kg = $kg + $tw;
-
-							$kg = number_format($kg, 3, '.', '');
-
-						}
-
-
-						if($product['unit'] == 'PPC'){
-							echo $count . ' Cases';
-							$total_case_count += $count;
-						}else{
-							echo $kg . ' kg';
-							$total_weight_count += $kg;
-						}
-
-					  ?>
-					  </b>
-                    </td>
-                    <?php if($customerRow['pricedefault'] == 1){ ?>
-                        <td align="right" class="price">£<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?></td>
-						<?php if($product['unit'] == 'PPC'){
-								$totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
-							?>
-							<td align="right" class="price">£<?php echo number_format((double)$count * $pickerItem['price'], 2, '.', ''); ?></td>
-						<?php }else{
-								$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
-							?>
-							<td align="right" class="price">£<?php echo number_format((double)$kg * $pickerItem['price'], 2, '.', ''); ?></td>
-						<?php } ?>
-                    <?php } ?>
-				</tr>
-                <?php
-                    }
-                }
+                $allProductIDs = [];
+                $allWeightsIDs = [];
+                $totalPrice = 0.0;
+                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs,[], $totalPrice);
+        if ($hasReturns)
+        {
+            $allProductIDs = array_filter(array_unique($allProductIDs));
+            $allWeightsIDs = array_filter(array_unique($allWeightsIDs));
+            $returnPallets = $returnIntake->pallets()->pluck("id")->toArray();
+            $returnedProducts = Product::whereIn('original_product_id',$allProductIDs)->whereIn('pallet_id',$returnPallets)->get();
+            $returnedWeights = Weight::whereIn('original_weight_id',$allWeightsIDs)->get()->pluck("original_weight_id")->toArray();
+            if (count($returnedProducts) > 0 && count($returnedWeights) > 0)
+            {
+                $minRows--;
+                $total_qty_count = 0;
+				$total_weight_count = 0;
+				$total_case_count = 0;
             ?>
+            <tr><td></td></tr>
+            <tr><td></td></tr>
+            <tr class="productsHeading">
+                <th colspan="100%">Delivered</th>
+            </tr>
+            <tr class="productsHeading">
+                <th align="left">Intake ID</th>
+                <th align="left">Plt ID</th>
+                <th align="left" colspan="6"></th>
+                <th align="center">Qty</th>
+                <th align="left">Unit</th>
+                <th align="right">Weight</th>
+                <?php if($customerRow['pricedefault'] == 1){ ?>
+                    <th align="price" class="price">Price</th>
+                    <th align="right" class="price">Total</th>
+                <?php } ?>
+            </tr>
+            <?php
+                outPalletPrinter($outpallets,$customerRow,$pickersheet_id,$total_qty_count,$total_weight_count,$total_case_count,$numOfRows,$allProductIDs,$allWeightsIDs,$returnedWeights, $totalPrice);
+            }
+        }
 
-
-
-		<?php
-
-		$target = 15 - $numOfRows;
+		$target = $minRows - $numOfRows;
 
 		for($i=0;$i<$target;$i++){ ?>
 			<tr class="productsRow">
@@ -607,8 +509,8 @@ $s = (int)(microtime(true));
 
 			<div class="col">
 				<div class="signbox">
-					<span>Sign ..................................</span>
-					<span>Print ..................................</span>
+					<span>Sign <?php echo ($pickSheetRow['signature_file_id'] ? '<img style="max-width:187.5px;max-height:75px;" src="'. route('files.show_image', ['uuid' => File::find($pickSheetRow['signature_file_id'])->uuid]) . '" alt="Signature"/>' : '..................................'); ?></span>
+					<span>Print <?php echo $pickSheetRow['receiver_name'] ?? '..................................'; ?></span>
 				</div>
 			</div>
 		</div>
@@ -938,3 +840,157 @@ if($customerRow['pricedefault'] == '0'){
 </style>
 </body>
 </html>
+<?php
+function outPalletPrinter(array $outPallets,array $customerRow,int $pickersheet_id,int &$total_qty_count,float &$total_weight_count,int &$total_case_count,int &$numOfRows,array &$allProductIDs,array &$allWeightsIDs,array $returnedWeights = [],&$totalPrice){
+    foreach($outPallets as $outPallet){
+        $weightids = explode(',', $outPallet['weight_ids']);
+
+        $productIDArray = array();
+
+        foreach($weightids as $weightid){
+            if (in_array($weightid,$returnedWeights)){
+                continue;
+            }
+            $x = "SELECT * FROM `weights` WHERE id=?";
+            $y = prepareExecuteQuery($x,'i',[$weightid]);
+            $weight = $y->fetch_assoc();
+
+            if(!in_array($weight['product_id'], $productIDArray)){
+                array_push($productIDArray, $weight['product_id']);
+            }
+            $allProductIDs[] = $weight['product_id'];
+            $allWeightsIDs[] = $weightid;
+
+            $queryBits .= ' id = ' . $weightid . ' || ';
+        }
+
+        foreach($productIDArray as $productID){
+
+            $x1 = "SELECT * FROM `product` WHERE id=?";
+            $y1 = prepareExecuteQuery($x1,'i',[$productID]);
+            $product = $y1->fetch_assoc();
+
+
+            if($product['unit'] == 'PPC'){
+                $ext = ' Cases';
+            }else{
+                $ext = ' kg';
+            }
+            $queryVars = $weightids;
+            array_unshift($queryVars,$productID);
+            $x2 = "SELECT * FROM `weights` WHERE product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
+
+            $y2 = prepareExecuteQuery($x2,str_repeat('i',count($weightids)+1),$queryVars);
+            $count = $y2->num_rows;
+
+            ${"globalProductCount" . $product['id']} += $count;
+
+            $k = 0;
+
+            while($weight = $y2->fetch_assoc()){
+
+                if($weight['weight_tear'] == $weight['weight_gross']){
+                    (double)$w = (double)$weight['weight_gross'];
+                }else{
+                    (double)$w = (double)$weight['weight_gross'] - (double)$weight['weight_tear'];
+                }
+
+                $k = $k + $w;
+            }
+            $smallestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?"EXTENSION":$product['range_from'];
+            $largestDate = ($product['range_extension']!= null && $product['range_extension']!= '')?$product['range_extension']:$product['range_to'];
+            $total_qty_count += $count;
+            ?>
+            <tr class="productsRow">
+            <?php $numOfRows++; ?>
+        <td align="center"><span class="palletid"><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span></td>
+        <td align="center"><span class="palletid"><?php echo $product['pallet_id']; ?></span></td>
+        <td align="center"><span class="palletid"><?php echo getNationality($product['nationality_id']); ?></span></td>
+        <td align="center"><span class="chilled"><?php echo getTemp($product['cooling_id']); ?></span></td>
+        <td align="left"><b class="species"><?php echo getSpeciesFromCutID($product['cut_id']); ?></b></td>
+        <td align="left"><b class="cut"><?php echo getCut($product['cut_id']); ?></b></td>
+        <td align="center"><b class="brand"><?php echo getBrand($product['brand_id']); ?></b></td>
+        <td align="right"><b class="brand"><?php echo $smallestDate.' - '.$largestDate; ?></b></td>
+        <?php
+            $productID = $product['id'];
+            $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
+            $howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
+            $pickerItem = $howManyY->fetch_assoc();
+            $howMany = $howManyY->num_rows;
+        ?>
+        <td align="center"><b class="quantity"><?php echo $count; ?></b></td>
+        <td align="left">
+            <b class="unit">
+            <?php
+
+                if($product['unit'] == 'C'){
+                    $unit = 'Cases';
+                }else if($product['unit'] == 'PPC'){
+                    $unit = 'Per Case';
+                }else if($product['unit'] == 'P'){
+                    $unit = 'Pallet';
+                }else if($product['unit'] == 'KG'){
+                    $unit = 'Kilo';
+                }else{
+                    $unit = 'Cases';
+                }
+
+                echo $unit;
+            ?>
+            </b>
+        </td>
+        <td align="right">
+        <b class="weight">
+            <?php
+
+            $qBit = '';
+
+            $kg = 0;
+            $queryVars = $weightids;
+            array_unshift($queryVars,$productID);
+            $xxWeight = "SELECT * FROM `weights` WHERE  product_id=? AND id IN (".implode(",",array_fill(0,count($weightids),"?")).")";
+            $yyWeight = prepareExecuteQuery($xxWeight,str_repeat('i',count($weightids)+1),$queryVars);
+
+            while($weightRow = mysqli_fetch_array($yyWeight)){
+
+                if($weightRow['weight_tear'] == $weightRow['weight_gross']){
+                    (double)$tw = (double)$weightRow['weight_gross'];
+                }else{
+                    (double)$tw = (double)$weightRow['weight_gross'] - (double)$weightRow['weight_tear'];
+                }
+
+                $kg = $kg + $tw;
+
+                $kg = number_format($kg, 3, '.', '');
+
+            }
+
+
+            if($product['unit'] == 'PPC'){
+                echo $count . ' Cases';
+                $total_case_count += $count;
+            }else{
+                echo $kg . ' kg';
+                $total_weight_count += $kg;
+            }
+
+            ?>
+            </b>
+        </td>
+        <?php if($customerRow['pricedefault'] == 1){ ?>
+            <td align="right" class="price">£<?php echo number_format((double)$pickerItem['price'], 2, '.', ''); ?></td>
+            <?php if($product['unit'] == 'PPC'){
+                    $totalPrice += number_format((double)$count * $pickerItem['price'], 2, '.', '');
+                ?>
+                <td align="right" class="price">£<?php echo number_format((double)$count * $pickerItem['price'], 2, '.', ''); ?></td>
+            <?php }else{
+                    $totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
+                ?>
+                <td align="right" class="price">£<?php echo number_format((double)$kg * $pickerItem['price'], 2, '.', ''); ?></td>
+            <?php } ?>
+        <?php } ?>
+    </tr>
+    <?php
+        }
+    }
+}

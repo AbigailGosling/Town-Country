@@ -39,6 +39,29 @@
       align-items: flex-end;
       gap: 1rem;
     }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+    .results-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background: #fff;
+      color: #111827;
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .results-link:hover {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
+    }
     .toggle-btn {
       padding: 0.5rem 0.9rem;
       border-radius: 0.5rem;
@@ -624,7 +647,10 @@
         <button id="toggleAllocatedBtn" class="toggle-btn" type="button">Hide Allocated</button>
       </div>
     </div>
-    <h1>Pallet Loader</h1>
+    <div class="top-right">
+      <h1>Pallet Loader</h1>
+      <a class="results-link" href="{{ route('outgoing-pallets-loading.graphhopper-results') }}">GraphHopper Results</a>
+    </div>
   </header>
 
   <main class="main">

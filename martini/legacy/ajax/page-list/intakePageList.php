@@ -2,7 +2,6 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../../functions.php');
     $toSkip = request()->input('toSkip', 0);
@@ -144,7 +143,7 @@ use Illuminate\Support\Facades\Log;
                         </td>
                         <td width="30">
                             <?php
-                                if($productCountNotCosted == 0){
+                                if(($intake['returned']==0 || $intake['approved']==1) && $productCountNotCosted == 0){
                                 ?><i class="fa fa-sterling-sign" aria-hidden="true" style="margin-left:10px;"></i><?php
                                 }
                             ?>

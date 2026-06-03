@@ -25,6 +25,8 @@ class ClientAddress extends Model
         'address_3',
         'address_4',
         'postcode',
+        'lat',
+        'lng',
         'site_id',
         'client_type',
     ];
@@ -32,6 +34,8 @@ class ClientAddress extends Model
     protected $casts = [
         'client_id' => 'int',
         'address_id' => 'int',
+        'lat' => 'float',
+        'lng' => 'float',
         'site_id' => 'int',
     ];
 

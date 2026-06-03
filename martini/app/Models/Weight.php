@@ -41,7 +41,8 @@ protected $connection = 'tandc_live';
 		'tare_per_carton' => 'float',
 		'number_of_cartons' => 'float',
 		'tampered' => 'int',
-		'grosstare' => 'int'
+		'grosstare' => 'int',
+        'original_weight_id' => 'int',
 	];
 
 	protected $fillable = [
@@ -54,13 +55,17 @@ protected $connection = 'tandc_live';
 		'number_of_cartons',
 		'original_gross',
 		'tampered',
-		'grosstare'
+		'grosstare',
+        'original_weight_id',
 	];
     public function pallet():BelongsTo{
         return $this->belongsTo(Pallet::class,"pallet_id","id");
     }
     public function product():BelongsTo{
         return $this->belongsTo(Product::class,"product_id","id");
+    }
+    public function originalWeight():BelongsTo{
+        return $this->belongsTo(Weight::class,"original_weight_id","id");
     }
     public function getNetWeight(){
         if($this->weight_tear == $this->weight_gross){
