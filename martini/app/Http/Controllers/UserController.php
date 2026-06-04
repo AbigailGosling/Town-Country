@@ -112,7 +112,6 @@ class UserController extends Controller
             'use_two_factor' => array_key_exists("use_two_factor", $input),
             'override_saledate_check' => array_key_exists("override_saledate_check", $input),
         ]);
-
         if (isset($request->perms) && is_array($request->perms) && count($request->perms) > 0) {
             foreach (Permission::all() as $perm) {
                 if (array_key_exists($perm->name, $request->perms)) {
@@ -241,6 +240,12 @@ class UserController extends Controller
         }
         else {
             $selectedPerms = [];
+        }
+        /** @disregard P1013 */
+        if (isset($input['sale_target']) && is_numeric($input['sale_target']) && $input['sale_target'] >= 0 && Auth::user()->can('admin')) {
+            $user->sale_target = $input['sale_target'];
+        } else {
+            $user->sale_target = null;
         }
         foreach (Permission::all() as $perm) {
             if (array_key_exists($perm->name, $selectedPerms)) {

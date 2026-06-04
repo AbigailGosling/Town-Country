@@ -90,8 +90,12 @@
                         <x-input-label for="use_two_factor" :value="__('Use Two Factor Authentication')"/>
                     </div>
                 @endcan
-
-            </x-form-section>
+                </x-form-section>
+            @can('admin',Auth::user())
+                <x-form-section title="Sales Target" columns="1">
+                        <x-text-input id="sale_target" type="number" step="0.01" name="sale_target" :value="old('sale_target', $user->sale_target)" />
+                </x-form-section>
+            @endcan
             @if(Auth::user()->id == $user->id || Auth::user()->can('admin'))
             <x-form-section title="Change Password" columns="1">
             @if(Auth::user()->id == $user->id)

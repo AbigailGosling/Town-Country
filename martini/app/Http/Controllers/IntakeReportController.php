@@ -480,8 +480,8 @@ class IntakeReportController extends Controller
                         $originalProduct,
                         $cut,
                         $displayLookups,
-                        $creditNote->quantity,
-                        (float) ($returnWeightSumsByProductId->get($newProduct->id) ?? 0),
+                        $creditNote->quantity*-1,
+                        (float) ($returnWeightSumsByProductId->get($newProduct->id) ?? 0)*-1,
                         $creditNote->price,
                         $creditNote->price,
                         $pickItemPrice
