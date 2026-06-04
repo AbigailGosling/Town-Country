@@ -104,7 +104,6 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make(Str::random(40)),
         ]);
-
         if (isset($request->perms) && is_array($request->perms) && count($request->perms) > 0) {
             foreach (Permission::all() as $perm) {
                 if (array_key_exists($perm->name, $request->perms)) {
@@ -177,6 +176,7 @@ class UserController extends Controller
         $input = $request->all();
         //Autofill doesn't seem to fill in the confirm password, so we use this to check whether user wants
         //to change their password.
+        /** @disregard P1013 */
         if((isset($input['new_password']) && isset($input['confirm_password'])) && (Auth::user()->id === $user->id || Auth::user()->can('admin')))
         {
             //Use correct password check for each Hash method
@@ -222,6 +222,12 @@ class UserController extends Controller
         }
         else {
             $selectedPerms = [];
+        }
+        /** @disregard P1013 */
+        if (isset($input['sale_target']) && is_numeric($input['sale_target']) && $input['sale_target'] >= 0 && Auth::user()->can('admin')) {
+            $user->sale_target = $input['sale_target'];
+        } else {
+            $user->sale_target = null;
         }
         foreach (Permission::all() as $perm) {
             if (array_key_exists($perm->name, $selectedPerms)) {

@@ -41,6 +41,7 @@ use Illuminate\Support\Str;
  * @property bool $is_hidden
  * @property bool $receive_short_stock
  * @property bool $receive_return_intake
+ * @property float $sale_target
  *
  * @property Collection|Permission[] $permissions
  *
@@ -68,7 +69,8 @@ class User extends Authenticatable
         'two_factor_expires_at',
         'actual_email',
         'receive_short_stock',
-        'receive_return_intake'
+        'receive_return_intake',
+        'sale_target'
     ];
 
     /**
@@ -98,7 +100,8 @@ class User extends Authenticatable
         'two_factor_confirmed_at' => 'datetime',
         'two_factor_expires_at' => 'datetime',
         'receive_short_stock' => 'bool',
-        'receive_return_intake' => 'bool'
+        'receive_return_intake' => 'bool',
+        'sale_target' => 'float'
     ];
     public function generateTwoFactorCode()
     {
