@@ -225,12 +225,12 @@
                         <td style="width:100px;" align="center">{{ $item->product_name }}</td>
                         <td style="width:100px;" align="center">{{ $item->brand_name }}</td>
                         <td style="width:100px;" align="center">{{ $item->supplier_name }}</td>
-                        <td style="width:100px;" align="center">{{ $item->qty }}</td>
+                        <td style="width:100px;" align="center">{{ abs($item->qty) }}</td>
                         <td style="width:100px;" align="center">{{ $item->unit }}</td>
-                        <td style="width:100px;" align="center">{{ number_format($item->kg, 3) }}</td>
-                        <td style="width:100px;" align="center">{{ $currency($item->cost, true) }}</td>
-                        <td style="width:100px;" align="center">{{ $currency($item->actCost, true) }}</td>
-                        <td style="width:100px;" align="center">{{ $currency($item->sell, true) }}</td>
+                        <td style="width:100px;" align="center">{{ number_format(abs($item->kg), 3) }}</td>
+                        <td style="width:100px;" align="center">{{ $currency(abs($item->cost)) }}</td>
+                        <td style="width:100px;" align="center">{{ $currency(abs($item->actCost)) }}</td>
+                        <td style="width:100px;" align="center">{{ $currency(abs($item->sell)) }}</td>
                         <td style="width:100px;" align="center">{!! $currency($item->profit) . '<br>' . $percent($item->profit, $item->cost) !!}</td>
                         <td style="width:100px;" align="center">{!! $currency($item->actProfit) . '<br>' . $percent($item->actProfit, $item->actCost) !!}</td>
                     </tr>
@@ -241,12 +241,12 @@
                         @for($i = 0; $i < 12; $i++)
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center"></th>
                         @endfor
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $returnTotals['qty'] }}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ abs($returnTotals['qty']) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center"></th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ number_format($returnTotals['kg'], 3) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency($returnTotals['cost']) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency($returnTotals['actCost']) }}</th>
-                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency($returnTotals['sell']) }}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ number_format(abs($returnTotals['kg']), 3) }}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency(abs($returnTotals['cost'])) }}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency(abs($returnTotals['actCost'])) }}</th>
+                        <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{{ $currency(abs($returnTotals['sell'])) }}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{!! $currency($returnTotals['profit']) . '<br>' . $percent($returnTotals['profit'], $returnTotals['cost']) !!}</th>
                         <th class="max-w-full border-b dark:border-slate-600 font-semibold p-4 lg:pl-8 pt-0 text-slate-900 text-center">{!! $currency($returnTotals['actProfit']) . '<br>' . $percent($returnTotals['actProfit'], $returnTotals['actCost']) !!}</th>
                     </tr>
