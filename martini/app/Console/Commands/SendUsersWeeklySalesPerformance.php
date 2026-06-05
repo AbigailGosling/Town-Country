@@ -104,11 +104,13 @@ class SendUsersWeeklySalesPerformance extends Command
         $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary);
 
         $to = [
+            $email,
+        ];
+        $cc = [
             "Ross.Whetton@townandcountrymeats.co.uk",
             "gary@townandcountrymeats.co.uk",
-            $email
         ];
-        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody);
+        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody, '', '', null ,false, $cc);
     }
     private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd): array
     {
@@ -157,7 +159,7 @@ class SendUsersWeeklySalesPerformance extends Command
 
     private function buildEmailBody(float $sale_target, Carbon $targetDateStart, string $targetLabel, array $targetSummary): string
     {
-        $balance = $targetSummary['Sell Value'] - $sale_target;
+        $balance = $targetSummary['Actual Profit'] - $sale_target;
         $isNegative = $balance < 0;
         $absBalance = abs($balance);
         return "<html><body>"
