@@ -53,8 +53,10 @@ class SendUsersDailySalesPerformance extends Command
             return Command::FAILURE;
         }
         $salesPermission = Permission::find(1);
-        $targetDateStart = Carbon::today()->startOfDay();
-        $targetDateEnd = Carbon::today()->endOfDay();
+        $targetDateStart = Carbon::createFromFormat('Y-m-d',"2026-05-31")->startOfDay();
+        $targetDateEnd = $targetDateStart->copy()->endOfDay();
+        $weekDateStart = $targetDateStart->copy()->startOfWeek(Carbon::SUNDAY)->startOfDay();
+        $diffInWeek = $targetDateStart->diffInDays($weekDateStart, true);
         $usersSorted = [];
         $saleTargets = [];
         foreach (User::where([["disabled", false],["is_hidden", false]])->get() as $user){
@@ -74,44 +76,49 @@ class SendUsersDailySalesPerformance extends Command
             if ($saleTargets[$email] !== null && $saleTargets[$email] > 0 &&
             $user->actual_email !== null && $user->actual_email !== '' &&
             $user->hasPermission($salesPermission)){
-                $this->processUser($email, array_column($users, 'id'), $saleTargets[$email], $user, $report, $targetDateStart, $targetDateEnd);
+                $this->processUser($email, array_column($users, 'id'), $saleTargets[$email], $user, $report, $targetDateStart, $targetDateEnd, $weekDateStart, $diffInWeek);
             }
-
         }
         return Command::SUCCESS;
     }
-    private function processUser(string $email, array $user_ids, float $sale_target, User $user, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd): void
+    private function processUser(string $email, array $user_ids, float $sale_target, User $user, Report $report, Carbon $targetDateStart, Carbon $weekDateStart, Carbon $weekDateEnd, int $diffInWeek): void
     {
-        $targetSummary = [];
+        $targetSummary = ['daily' => [], 'weekly' => []];
         foreach ($user_ids as $user_id){
-            $subSummary = $this->processSubUser($user_id, $report, $targetDateStart, $targetDateEnd);
-            if ($subSummary == null || $subSummary['Sell Value'] == 0){
-                continue;
-            }
-            foreach ($subSummary as $key => $value){
-                if (!array_key_exists($key, $targetSummary)){
-                    $targetSummary[$key] = 0;
+            $subSummary = $this->processSubUser($user_id, $report, $targetDateStart, $weekDateStart, $weekDateEnd);
+            foreach ($subSummary['daily'] as $key => $value){
+                if (!array_key_exists($key, $targetSummary['daily'])){
+                    $targetSummary['daily'][$key] = 0;
                 }
-                $targetSummary[$key] += $value;
+                $targetSummary['daily'][$key] += $value;
+            }
+            foreach ($subSummary['weekly'] as $key => $value){
+                if (!array_key_exists($key, $targetSummary['weekly'])){
+                    $targetSummary['weekly'][$key] = 0;
+                }
+                $targetSummary['weekly'][$key] += $value;
             }
         }
-        if (!array_key_exists('Sell Value', $targetSummary) || $targetSummary['Sell Value'] == 0){
+        if (!array_key_exists('Sell Value', $targetSummary['weekly']) || $targetSummary['weekly']['Sell Value'] == 0){
             return;
         }
         $targetLabel = $targetDateStart->format('d/m/Y');
         $subject = 'Daily Summary For ' . $user->name . ' - ' . $targetLabel;
-        $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary);
+        $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary, $diffInWeek);
 
         $to = [
-            $email
+            //$email
+            "abigail.gosling@tang.solutions"
         ];
         $cc = [
-            "Ross.Whetton@townandcountrymeats.co.uk",
-            "gary@townandcountrymeats.co.uk"
+            //"Ross.Whetton@townandcountrymeats.co.uk",
+            // "gary@townandcountrymeats.co.uk"
+            //"cyanangel@hotmail.co.uk"
         ];
         SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody, '', '', null, false, $cc);
+        if ($targetSummary['daily']['Actual Profit'] > 0)exit;
     }
-    private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd): array
+    private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart): array
     {
         $interestedPicks = [];
         $filters = ReportHelper::filterBuilder(
@@ -137,13 +144,19 @@ class SendUsersDailySalesPerformance extends Command
             $filters = null;
         }
 
-        return FinancialOverviewSummaryHelper::buildSummaryForRange(
+        return ["daily" => FinancialOverviewSummaryHelper::buildSummaryForRange(
             $report,
             $targetDateStart->copy(),
             $targetDateEnd->copy(),
             $filters,
             $interestedPicks
-        );
+        ), "weekly" => FinancialOverviewSummaryHelper::buildSummaryForRange(
+            $report,
+            $weekDateStart->copy(),
+            $targetDateEnd->copy(),
+            $filters,
+            $interestedPicks
+        )];
     }
     private function formatMoney(float $value): string
     {
@@ -156,12 +169,19 @@ class SendUsersDailySalesPerformance extends Command
         return number_format($value, 3, '.', ',') . ' kg';
     }
 
-    private function buildEmailBody(float $sale_target, Carbon $targetDateStart, string $targetLabel, array $targetSummary): string
+    private function buildEmailBody(float $sale_target, Carbon $targetDateStart, string $targetLabel, array $targetSummary, int $diffInWeek): string
     {
         $dailyTarget = $sale_target / 5;
-        $balance = $targetSummary['Actual Profit'] - $dailyTarget;
+        if ($targetDateStart->dayOfWeek === Carbon::SUNDAY) {
+            $dailyTarget = 0;
+        }
+        $balance = $targetSummary['daily']['Actual Profit'] - $dailyTarget;
         $isNegative = $balance < 0;
         $absBalance = abs($balance);
+        $expectedForTheWeek = $dailyTarget * min(5, $diffInWeek);
+        $weekBalance = $targetSummary['weekly']['Actual Profit'] - $expectedForTheWeek;
+        $isWeekBalanceNegative = $weekBalance < 0;
+        $absWeekBalance = abs($weekBalance);
         return "<html><body>"
             . "<p>Daily Summary.</p>"
             . "<p>Your weekly sales target is: <strong>{$this->formatMoney($sale_target)}</strong></p>"
@@ -184,17 +204,18 @@ class SendUsersDailySalesPerformance extends Command
             . "<td><strong>{$targetLabel}</strong></td>"
             . "<td>{$targetDateStart->format('l')}</td>"
             . "<td>Week {$targetDateStart->isoWeek()}</td>"
-            . "<td>{$this->formatKg($targetSummary['kg'])}</td>"
+            . "<td>{$this->formatKg($targetSummary['daily']['kg'])}</td>"
             // . "<td>{$this->formatMoney($targetSummary['Cost Value'])}</td>"
             // . "<td>{$this->formatMoney($targetSummary['Actual Cost Value'])}</td>"
-            . "<td>{$this->formatMoney($targetSummary['Sell Value'])}</td>"
+            . "<td>{$this->formatMoney($targetSummary['daily']['Sell Value'])}</td>"
             // . "<td>{$this->formatMoney($targetSummary['Profit'])}</td>"
             // . "<td>" . number_format($targetSummary['Profit %'], 3, '.', '') . "%</td>"
-            . "<td>{$this->formatMoney($targetSummary['Actual Profit'])}</td>"
-            . "<td>" . number_format($targetSummary['Actual Profit %'], 3, '.', '') . "%</td>"
+            . "<td>{$this->formatMoney($targetSummary['daily']['Actual Profit'])}</td>"
+            . "<td>" . number_format($targetSummary['daily']['Actual Profit %'], 3, '.', '') . "%</td>"
             . "</tr>"
             . "</tbody></table>"
-            . "<p style='margin-top:20px;'>Your balance against daily target is: <strong style='color:" . ($isNegative ? 'red' : 'green') . "'>".($isNegative ? '-': '')."{$this->formatMoney($absBalance)}</strong></p>"
+            . "<p style='margin-top:20px;'>Your balance against daily target is: <strong style='color:" . ($isNegative ? 'red' : 'green') . "'>".($isNegative ? '-': '+')."{$this->formatMoney($absBalance)}</strong></p>"
+            . "<p style='margin-top:20px;'>Your balance against weekly target is: <strong style='color:" . ($isWeekBalanceNegative ? 'red' : 'green') . "'>".($isWeekBalanceNegative ? '-': '+')."{$this->formatMoney($absWeekBalance)}</strong></p>"
             . "</body></html>";
     }
 }
