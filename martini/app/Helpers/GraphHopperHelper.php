@@ -338,7 +338,7 @@ class GraphHopperHelper
                 ],
                 'setup_time' => $serviceDurationSeconds,
                 'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
-                'group' => $tempCategory,
+                'group' => $address->client_id . '-' . $address->address_id . '-' . $tempCategory,
             ];
             $services[] = $thisService;
             if (!array_key_exists($address->client_id . '-' . $address->address_id, $addressDelTypes)) {
