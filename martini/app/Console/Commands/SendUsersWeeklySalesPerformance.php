@@ -10,7 +10,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
 
