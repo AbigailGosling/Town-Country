@@ -66,7 +66,7 @@ class PodHelper
                     "TASK_INFO" => (object)[
                         "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                         "TASK_START_TIME" => $ticking->format('H:i'),
-                        "TASK_MOBILE_USER" => strtoupper(implode('', explode(' ', $vehicle->reg))).'@tc.co.uk',
+                        "TASK_MOBILE_USER" => strtoupper(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
                         //"TASK_MOBILE_USER_ID" => 13,
                         "TASK_MOBILE_USER_PROF_ID" => "",
                         "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
