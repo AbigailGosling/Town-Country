@@ -71,7 +71,6 @@ class SendUsersDailySalesPerformance extends Command
         foreach ($usersSorted as $email => $users){
             if ($email === '' || $email === null || count($users) === 0) continue;
             $user = $users[0];
-            if ($saleTargets[$email] == 0) $saleTargets[$email] = 10;
             if ($saleTargets[$email] !== null && $saleTargets[$email] > 0 &&
             $user->actual_email !== null && $user->actual_email !== '' &&
             $user->hasPermission($salesPermission)){
@@ -104,12 +103,13 @@ class SendUsersDailySalesPerformance extends Command
         $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary);
 
         $to = [
-            "Ross.Whetton@townandcountrymeats.co.uk",
-            "gary@townandcountrymeats.co.uk",
             $email
         ];
-        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody);
-        exit;
+        $cc = [
+            "Ross.Whetton@townandcountrymeats.co.uk",
+            "gary@townandcountrymeats.co.uk"
+        ];
+        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody, '', '', null, false, $cc);
     }
     private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd): array
     {
@@ -159,11 +159,12 @@ class SendUsersDailySalesPerformance extends Command
     private function buildEmailBody(float $sale_target, Carbon $targetDateStart, string $targetLabel, array $targetSummary): string
     {
         $dailyTarget = $sale_target / 5;
-        $balance = $targetSummary['Sell Value'] - $dailyTarget;
+        $balance = $targetSummary['Actual Profit'] - $dailyTarget;
         $isNegative = $balance < 0;
         $absBalance = abs($balance);
         return "<html><body>"
             . "<p>Daily Summary.</p>"
+            . "<p>Your weekly sales target is: <strong>{$this->formatMoney($sale_target)}</strong></p>"
             . "<p>Your daily sales target is: <strong>{$this->formatMoney($dailyTarget)}</strong></p>"
             . "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
             . "<thead><tr style='background:#f2f2f2;'>"

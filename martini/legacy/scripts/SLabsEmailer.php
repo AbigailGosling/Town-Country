@@ -26,7 +26,7 @@ class SLabsEmailer {
             mt_rand( 0, 0xff4B )
         );
     }
-    public static function send_email(int $customerID, string $type, array $toEmails, string $subject, string $htmlBody, string $pathToFile = '', string $fileName = '', $document_id = null, bool $isAbsolPath = false) {
+    public static function send_email(int $customerID, string $type, array $toEmails, string $subject, string $htmlBody, string $pathToFile = '', string $fileName = '', $document_id = null, bool $isAbsolPath = false, array $cc = []) {
         global $mysqli;
         if (env("APP_DEBUG",true)==true) $toEmails = [env("MAIL_TEST_ADDRESS")];
         if ($document_id == null) $document_id = "NULL";
@@ -35,6 +35,7 @@ class SLabsEmailer {
         set_time_limit(1800); //seconds
 
         $client = new SocketLabsClient(env("MAIL_SOCKET_ID"), env("MAIL_INJECTION_KEY"));
+        $onceCC = false;
         foreach($toEmails as $email)
         {
             $trimmed = trim($email);
@@ -75,8 +76,15 @@ class SLabsEmailer {
             try
             {
                 $message->addToAddress(new BulkRecipient($trimmed));
+                if ($onceCC == false && count($cc)>0) {
+                    foreach($cc as $emailCC)
+                    {
+                        $message->addCcAddress(new BulkRecipient($emailCC));
+                    }
+                }
+                $onceCC = true;
                 $response = $client->send($message);
-                if ($response->result != "Success") {
+                if (!isset($response->result) || $response->result != "Success") {
                     Log::error(new \Exception(json_encode(['response'=>$response,'customerID'=>$customerID,'type'=>$type,'toEmails'=>$toEmails,'subject'=>$subject,'htmlBody'=>$htmlBody,'pathToFile'=>$pathToFile,'fileName'=>$fileName,'document_id'=>$document_id])));
                 }
             }
