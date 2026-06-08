@@ -5,14 +5,19 @@ use App\Models\Pallet;
 use App\Models\Product;
 use App\Models\ReservationProduct;
 use App\Models\Weight;
-use Illuminate\Support\Facades\Log;
 
 require_once(__DIR__.'/../functions.php');
 $intake_id = request()->input("intake_id");
 $pallet_id = request()->input("pallet_id");
 $product_id = request()->input("product_id");
 $cases_to_split = request()->input("cases_to_split");
-
+if ($pallet_id == null || $pallet_id == "" || $pallet_id < 0)
+{
+?><script>
+	window.location = '../intake.php?id=<?php  echo $intake_id; ?>';
+</script><?php
+exit;
+}
 $existingPallet = Pallet::find($pallet_id);
 $newPallet = $existingPallet->replicate();
 $newPallet->save();

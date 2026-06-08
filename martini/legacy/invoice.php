@@ -313,6 +313,7 @@ use App\Models\ClientType;
                     }
                     if (count($productIDArray)==0) continue;
                     foreach($productIDArray as $productID){
+                        if ($productID == "") continue;
                          $x1 = "SELECT * FROM `product` WHERE id=?";
                         $y1 = prepareExecuteQuery($x1,'i',[$productID]);
                         $product = mysqli_fetch_array($y1);
