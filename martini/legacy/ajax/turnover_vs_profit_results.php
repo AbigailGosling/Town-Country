@@ -209,7 +209,7 @@ use Illuminate\Support\Facades\Auth;
                     echo $t.$kgS;
                 }
                 echo "</div></td>";
-                if ($index % 2 == 1 && (strpos($garyCol,"Profit") == false && floatval($d->$col) > 0)) $d->$col = -$d->$col;
+                if ($index % 2 == 1 && ((strpos($garyCol,"Profit") == false || strpos($garyCol,"Actual Profit") == false ) && floatval($d->$col) > 0)) $d->$col = -$d->$col;
             }
             echo "</tr>".PHP_EOL;
 			$processed[$table->name][] = $d;
