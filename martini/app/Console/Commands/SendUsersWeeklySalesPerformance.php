@@ -70,7 +70,6 @@ class SendUsersWeeklySalesPerformance extends Command
         foreach ($usersSorted as $email => $users){
             if ($email === '' || $email === null || count($users) === 0) continue;
             $user = $users[0];
-            if ($saleTargets[$email] == 0) $saleTargets[$email] = 10;
             if ($saleTargets[$email] !== null && $saleTargets[$email] > 0 &&
             $user->actual_email !== null && $user->actual_email !== '' &&
             $user->hasPermission($salesPermission)){

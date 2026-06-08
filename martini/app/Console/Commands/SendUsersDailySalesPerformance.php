@@ -53,7 +53,7 @@ class SendUsersDailySalesPerformance extends Command
             return Command::FAILURE;
         }
         $salesPermission = Permission::find(1);
-        $targetDateStart = Carbon::createFromFormat('Y-m-d',"2026-05-31")->startOfDay();
+        $targetDateStart = Carbon::now()->startOfDay();
         $targetDateEnd = $targetDateStart->copy()->endOfDay();
         $weekDateStart = $targetDateStart->copy()->startOfWeek(Carbon::SUNDAY)->startOfDay();
         $diffInWeek = $targetDateStart->diffInDays($weekDateStart, true);
@@ -107,16 +107,13 @@ class SendUsersDailySalesPerformance extends Command
         $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary, $diffInWeek);
 
         $to = [
-            //$email
-            "abigail.gosling@tang.solutions"
+            $email
         ];
         $cc = [
-            //"Ross.Whetton@townandcountrymeats.co.uk",
-            // "gary@townandcountrymeats.co.uk"
-            //"cyanangel@hotmail.co.uk"
+            "Ross.Whetton@townandcountrymeats.co.uk",
+            "gary@townandcountrymeats.co.uk"
         ];
         SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody, '', '', null, false, $cc);
-        if ($targetSummary['daily']['Actual Profit'] > 0)exit;
     }
     private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart): array
     {

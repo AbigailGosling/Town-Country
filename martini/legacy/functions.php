@@ -218,21 +218,23 @@ use App\Models\User;
 				$kg = $kg + $w;
 
 			}
-			$queryBits2 = rtrim($queryBits2," || ");
+            $queryBits2 = rtrim($queryBits2," || ");
+            if ($queryBits2 != "")
+            {
+                $x = "SELECT * FROM `product` WHERE $queryBits2 GROUP BY cut_id";
+                $y = prepareExecuteQuery($x,str_repeat('i',count($productids)),$productids);
 
-			$x = "SELECT * FROM `product` WHERE $queryBits2 GROUP BY cut_id";
-			$y = prepareExecuteQuery($x,str_repeat('i',count($productids)),$productids);
+                while($product = $y->fetch_assoc()){
 
-			while($product = $y->fetch_assoc()){
+                        $productID = $product['id'];
+                        $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
+                        $howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
+                        $pickerItem = $howManyY->fetch_assoc();
 
-					$productID = $product['id'];
-					$howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
-					$howManyY = prepareExecuteQuery($howManyX,'ii',[$pickersheet_id,$productID]);
-					$pickerItem = $howManyY->fetch_assoc();
+                        $totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
 
-					$totalPrice += number_format((double)$kg * $pickerItem['price'], 2, '.', '');
-
-			}
+                }
+            }
 		}
 
 
