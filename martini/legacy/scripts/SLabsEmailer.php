@@ -155,6 +155,10 @@ abstract class SLabsEmailerType
     const PrceChnge = 'PRICE_CHANGE';
     const TwoFactor = 'TWO_FACTOR_CODE';
     const ReturnAppr= 'RETURN_APPROVED';
+    const FinancialDailySummary = 'FINANCIAL_DAILY_SUMMARY';
+    const FinancialWeeklySummary = 'FINANCIAL_WEEKLY_SUMMARY';
+    const IndividualDailySummary = 'INDIVIDUAL_DAILY_SUMMARY';
+    const IndividualWeeklySummary = 'INDIVIDUAL_WEEKLY_SUMMARY';
 }
 abstract class SLabsEmailerStatus
 {
