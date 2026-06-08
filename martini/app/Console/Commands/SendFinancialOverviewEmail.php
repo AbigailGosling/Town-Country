@@ -107,7 +107,7 @@ class SendFinancialOverviewEmail extends Command
             "gary@townandcountrymeats.co.uk",
             "bridget@townandcountrymeats.co.uk"
         ];
-        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody);
+        SLabsEmailer::send_email(-1, SLabsEmailerType::FinancialDailySummary, $to, $subject, $htmlBody);
 
         $this->info('Financial overview sent to: ' . implode(', ', $to));
         return Command::SUCCESS;

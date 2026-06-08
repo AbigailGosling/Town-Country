@@ -113,7 +113,7 @@ class SendUsersDailySalesPerformance extends Command
             "Ross.Whetton@townandcountrymeats.co.uk",
             "gary@townandcountrymeats.co.uk"
         ];
-        SLabsEmailer::send_email(-1, SLabsEmailerType::Sales, $to, $subject, $htmlBody, '', '', null, false, $cc);
+        SLabsEmailer::send_email(-1, SLabsEmailerType::IndividualDailySummary, $to, $subject, $htmlBody, '', '', null, false, $cc);
     }
     private function processSubUser(int $user_id, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart): array
     {
