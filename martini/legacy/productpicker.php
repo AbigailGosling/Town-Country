@@ -957,7 +957,8 @@ function cancelSale()
                 break;
             }
         }
-        if (targetCutoff == undefined) return true;
+        console.log(customerIgnoreNextDayCutoff);
+        if (targetCutoff == undefined || customerIgnoreNextDayCutoff) return true;
         var deldate = $('#estimated_delivery_date').datepicker('getDate');
         var now = new Date();
         var tomorrow = new Date();

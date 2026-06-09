@@ -131,6 +131,7 @@ class Customer extends Model
 		'delivery_days' => 'int',
         'override_cost_check' => 'bool',
         'cost_check_enabled' => 'bool',
+        'ignore_next_day_cutoff' => 'bool',
 	];
 
 	protected $fillable = [
@@ -226,6 +227,7 @@ class Customer extends Model
 		'sage_no',
         'override_cost_check',
         'cost_check_enabled',
+        'ignore_next_day_cutoff',
 	];
 
     public function user():BelongsTo{
