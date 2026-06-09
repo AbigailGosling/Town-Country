@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Auth;
 	delDays				= <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
 	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo ($isContainerSearch)?$creditCheck['messageReservation']:$creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
     bipassNDandTenD     = <?php echo ($user['override_saledate_check']>0||$row['check_saledate']==0)?"true":"false"; ?>;
+    customerIgnoreNextDayCutoff = <?php echo ($row['ignore_next_day_cutoff'])?"true":"false"; ?>;
 </script>
 <div class="col">
 	<div class="row">
