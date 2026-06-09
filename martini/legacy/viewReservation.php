@@ -478,7 +478,7 @@ any outstanding amounts owed.</p>
                 break;
             }
         }
-        if (targetCutoff == undefined) return true;
+        if (targetCutoff == undefined || customerIgnoreNextDayCutoff) return true;
         var deldate = $('#eta').datepicker('getDate');
         var now = new Date();
         var tomorrow = new Date();
