@@ -604,7 +604,6 @@ use App\Models\Site;
 				if(targetWeightInput.length){
 					targetWeightInput.val(standardWeightVal);
 				}
-				$('#single_weight_val').val('');
 			}
 
 			var formName = '#addPalletForm';
