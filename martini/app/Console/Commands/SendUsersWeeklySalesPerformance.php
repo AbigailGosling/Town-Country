@@ -107,6 +107,7 @@ class SendUsersWeeklySalesPerformance extends Command
         $cc = [
             "Ross.Whetton@townandcountrymeats.co.uk",
             "gary@townandcountrymeats.co.uk",
+            "bridget@townandcountrymeats.co.uk"
         ];
         SLabsEmailer::send_email(-1, SLabsEmailerType::IndividualWeeklySummary, $to, $subject, $htmlBody, '', '', null ,false, $cc);
     }

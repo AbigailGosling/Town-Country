@@ -211,7 +211,7 @@ if (!empty($paymentID)) {
                 <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                 <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
                 <b class=""><?php echo getCut($product['cut_id']); ?></b>
-                <b class=""><?php echo getBrand($product['brand_id']); ?></b>
+                <b class=""><?php echo ($product['brand_id']!=-1)?getBrand($product['brand_id']):""; ?></b>
             </td>
 
             <?php

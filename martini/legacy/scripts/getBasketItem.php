@@ -104,9 +104,12 @@ use App\Models\InboundContainer;
             } else {
                  $strict = "";
             }
+            $price = "";
+            if ($container == true) $price = "£".number_format($containerP->rrp,2,'.',',');
+            else if ($strict!=="") $price = "£".number_format($rowProduct['cost'],2,'.',',');
         ?>
 	<td><input type="number" step="0.01" onwheel="this.blur()" onkeydown="if (event.key === 'ArrowUp' || event.key === 'ArrowDown') event.preventDefault();" <?php if ($isGT) echo 'isgt'; ?> metadata="<?php echo $intakeID."-".$nationality_id."-".$brand_id."-".$cut_id; ?>" cost="<?php echo $rowProduct['cost']; ?>" rrp1="<?php echo $rowProduct['rrp1'];?>" rrp2="<?php echo $rowProduct['rrp2'];?>" rrp3="<?php echo $rowProduct['rrp3'];?>" <?php echo $strict; ?> class="price" name="price_<?php echo $product_id; ?>" minvalue="0" style="width:50px;text-align:center;height:30px;"></td>
-    <td id="rowPrice" name="rowPrice"><?php if ($strict!=="") echo "£".number_format($rowProduct['cost'],2,'.',','); ?></td>
+    <td id="rowPrice" name="rowPrice"><?php echo $price ?></td>
 	<td>
 	</td>
 	<td id=temp_id style="display:none;"><?php echo $temp_id; ?></td>

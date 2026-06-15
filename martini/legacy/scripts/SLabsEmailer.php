@@ -107,38 +107,38 @@ class SLabsEmailer {
         http_response_code(200);
         $secondary_code = (isset($data['FailureCode']))?$data['FailureCode']:0;
         $status_code = SLabsEmailerStatus::Unknown;
-        if (isset($data['FailureCode']))
-        {
-            switch ($data['FailureCode']){
-                case 0:
-                    $status_code = SLabsEmailerStatus::TempFail;
-                    break;
-                case 1:
-                    $status_code = SLabsEmailerStatus::PermFail;
-                    break;
-                case 2:
-                    $status_code = SLabsEmailerStatus::Suppressed;
-                    break;
-            }
-        }
-        else
-        {
-            switch ($data['Type']){
-                case "Failed":
-                    $status_code = SLabsEmailerStatus::TempFail;
-                    break;
-                case "Complaint":
-                    $status_code = SLabsEmailerStatus::Complaint;
-                    break;
-                case "Delivered":
-                    $status_code = SLabsEmailerStatus::Received;
-                    break;
-                case "Tracking":
-                    $status_code = SLabsEmailerStatus::Open;
-                    break;
-            }
-        }
 
+        if ($data['Type'] == "Delivered")
+        {
+            $status_code = SLabsEmailerStatus::Received;
+        }
+        else if ($data['Type'] == "Tracking")
+        {
+            $status_code = SLabsEmailerStatus::Open;
+        }
+        else if ($data['Type'] == "Complaint")
+        {
+            $status_code = SLabsEmailerStatus::Complaint;
+        }
+        else if ($data['Type'] == "Failed")
+        {
+            if ($data['FailureType'] == "Permanent")
+            {
+                $status_code = SLabsEmailerStatus::PermFail;
+            }
+            else if ($data['FailureType'] == "Temporary")
+            {
+                $status_code = SLabsEmailerStatus::TempFail;
+            }
+            else if ($data['FailureType'] == "Suppressed")
+            {
+                $status_code = SLabsEmailerStatus::Suppressed;
+            }
+        }
+        if ($status_code == SLabsEmailerStatus::Unknown)
+        {
+            Log::error("Unknown status code received from SocketLabs", ['message_id' => $message_id, 'addressee' => $addressee, 'data' => $data]);
+        }
         prepareExecuteQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($mysqli));
     }
 }
