@@ -48,7 +48,7 @@ else if (InternalCache::has($transaction_id))
     </script> <?php exit;
 }
 else {
-    InternalCache::put($transaction_id, getmypid(), 3600);
+    InternalCache::put($transaction_id, getmypid(), 600);
 }
 /**
 * @var Pallet $pallet
