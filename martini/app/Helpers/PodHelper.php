@@ -3,6 +3,7 @@ namespace App\Helpers;
 
 use App\Http\Controllers\FileController;
 use App\Models\Brand;
+use App\Models\Customer;
 use App\Models\Cut;
 use App\Models\Intake;
 use App\Models\Location;
@@ -25,6 +26,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use InternalScripts\PDFRenderer;
+use InternalScripts\SLabsEmailer;
+use InternalScripts\SLabsEmailerType;
 
 class PodHelper
 {
@@ -218,80 +222,96 @@ class PodHelper
             }
         }
         $rejected_weights = Weight::whereIn('id', $rejected_weight_ids)->get();
-        if (count($rejected_weights) === 0) {
-            //No rejected weights, nothing to process
-            return true;
-        }
-
-        //Store rejected for return intake creation, but also organise by nationality/brand/cut for easier processing when creating new pallets/products/weights for the return intake
-        $organisedByNatBrandCut = [];
-        foreach ($rejected_weights as $weight) {
-            $natBrandCut = $weight->product->nationality_id . '-' . $weight->product->brand_id . '-' . $weight->product->cut_id;
-            if (!isset($organisedByNatBrandCut[$natBrandCut])) {
-                $organisedByNatBrandCut[$natBrandCut] = [];
+        if (count($rejected_weights) > 0) {
+            //Store rejected for return intake creation, but also organise by nationality/brand/cut for easier processing when creating new pallets/products/weights for the return intake
+            $organisedByNatBrandCut = [];
+            foreach ($rejected_weights as $weight) {
+                $natBrandCut = $weight->product->nationality_id . '-' . $weight->product->brand_id . '-' . $weight->product->cut_id;
+                if (!isset($organisedByNatBrandCut[$natBrandCut])) {
+                    $organisedByNatBrandCut[$natBrandCut] = [];
+                }
+                $organisedByNatBrandCut[$natBrandCut][] = $weight;
             }
-            $organisedByNatBrandCut[$natBrandCut][] = $weight;
-        }
-        $returnIntake = new Intake();
-        $returnIntake->returned = 1;
-        $returnIntake->delivery_note_number = $pickerSheetID;
-        $returnIntake->supplier_id = $pickerSheet->customer_id;
-        $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
+            $returnIntake = new Intake();
+            $returnIntake->returned = 1;
+            $returnIntake->delivery_note_number = $pickerSheetID;
+            $returnIntake->supplier_id = $pickerSheet->customer_id;
+            $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
 
-        //find the original vehicle by looking at the original pick weights and their associated outgoing pallets and vehicle allocations
-        if (array_key_exists('TC_VEHICLE_ID', $payload["PARENT_TASK"]["UserData"])) {
-            $vehicle = Vehicle::find($payload["PARENT_TASK"]["UserData"]["TC_VEHICLE_ID"]);
-        } else {
-            $pwos = PickWeightOut::where('pickersheet_id', $pickerSheetID)->get();
-            foreach ($pwos as $pwo) {
-                $pwoWeights = explode(',', $pwo->weight_ids);
-                if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
-                    $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
-                    $vehicle = Vehicle::find($vopa->vehicle_id);
-                    break;
+            //find the original vehicle by looking at the original pick weights and their associated outgoing pallets and vehicle allocations
+            if (array_key_exists('TC_VEHICLE_ID', $payload["PARENT_TASK"]["UserData"])) {
+                $vehicle = Vehicle::find($payload["PARENT_TASK"]["UserData"]["TC_VEHICLE_ID"]);
+            } else {
+                $pwos = PickWeightOut::where('pickersheet_id', $pickerSheetID)->get();
+                foreach ($pwos as $pwo) {
+                    $pwoWeights = explode(',', $pwo->weight_ids);
+                    if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
+                        $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+                        $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                        $vehicle = Vehicle::find($vopa->vehicle_id);
+                        break;
+                    }
                 }
             }
-        }
-        $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
-        $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
-        $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
-        $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
-        $returnIntake->save();
+            $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
+            $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
+            $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
+            $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
+            $returnIntake->save();
 
-        $site_id = null;
-        foreach ($organisedByNatBrandCut as $natBrandCut => $weights) {
-            $oldPallet = $weights[0]->product->pallet;
-            if (!$site_id) {
+            $site_id = null;
+            foreach ($organisedByNatBrandCut as $natBrandCut => $weights) {
+                $oldPallet = $weights[0]->product->pallet;
+                if (!$site_id) {
 
-                $site_id = Location::find($oldPallet->storage_location)->site_id;
+                    $site_id = Location::find($oldPallet->storage_location)->site_id;
+                }
+                $newPallet = $oldPallet->replicate();
+                $newPallet->intake_id = $returnIntake->id;
+                $newPallet->comments = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldPallet->comments;
+                $newPallet->save();
+
+                $oldProduct = $weights[0]->product;
+
+                $newProduct = $oldProduct->replicate();
+                $newProduct->pallet_id = $newPallet->id;
+                $oldWeightNote = $oldProduct->weightnote ?? '';
+                $newProduct->weightnote = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldWeightNote;
+                $newProduct->original_product_id = $oldProduct->id;
+                $newProduct->original_pallet_id = $oldProduct->pallet_id;
+                $newProduct->original_intake_id = $oldPallet->intake_id;
+                $newProduct->save();
+
+                foreach ($weights as $oldWeight) {
+                    $newWeight = $oldWeight->replicate();
+                    $newWeight->product_id = $newProduct->id;
+                    $newWeight->status_id = 0;
+                    $newWeight->original_weight_id = $oldWeight->id;
+                    $newWeight->save();
+                }
             }
-            $newPallet = $oldPallet->replicate();
-            $newPallet->intake_id = $returnIntake->id;
-            $newPallet->comments = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldPallet->comments;
-            $newPallet->save();
-
-            $oldProduct = $weights[0]->product;
-
-            $newProduct = $oldProduct->replicate();
-            $newProduct->pallet_id = $newPallet->id;
-            $oldWeightNote = $oldProduct->weightnote ?? '';
-            $newProduct->weightnote = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldWeightNote;
-            $newProduct->original_product_id = $oldProduct->id;
-            $newProduct->original_pallet_id = $oldProduct->pallet_id;
-            $newProduct->original_intake_id = $oldPallet->intake_id;
-            $newProduct->save();
-
-            foreach ($weights as $oldWeight) {
-                $newWeight = $oldWeight->replicate();
-                $newWeight->product_id = $newProduct->id;
-                $newWeight->status_id = 0;
-                $newWeight->original_weight_id = $oldWeight->id;
-                $newWeight->save();
-            }
+            $returnIntake->site_id = $site_id ?? 1;
+            $returnIntake->save();
         }
-        $returnIntake->site_id = $site_id ?? 1;
-        $returnIntake->save();
+        $customer = Customer::find($pickerSheet->customer_id);
+        if ($customer->customer_email != null && $customer->customer_email != "")
+        {
+            $customer_emails = explode(";",$customer->customer_email);
+        }
+        else if ($customer->accounts_email != null && $customer->accounts_email != "")
+        {
+            $customer_emails = explode(";",$customer->accounts_email);
+        }
+        else
+        {
+            $customer_emails = explode(";",$customer->internal_email);
+        }
+        $subject = "Delivery Note ".$pickerSheetID." from Town and Country Meats";
+        $htmlBody = "<html>Please find attached a delivery note from Town and Country Meats Group for ".$customer->businessname." Invoice No: ".$pickerSheetID.".</html>";
+        $fileName = 'DeliveryNote_'.$pickerSheetID.'.pdf';
+        $pathToFile = 'PDF';
+        PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheetID,$pathToFile,$fileName);
+        SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
         return true;
     }
     /**
