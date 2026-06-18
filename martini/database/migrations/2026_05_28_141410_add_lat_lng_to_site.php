@@ -15,8 +15,8 @@ return new class extends Migration
     public function up()
     {
         Schema::connection('tandc_live')->table('site', function (Blueprint $table) {
-            $table->decimal('lat', 11, 9)->nullable();
-            $table->decimal('lon', 11, 9)->nullable()->after('lat');
+            $table->decimal('lat', 12, 9)->nullable();
+            $table->decimal('lon', 12, 9)->nullable()->after('lat');
         });
         $wol = Site::where("name","Wolverhampton")->first();
         if ($wol) {

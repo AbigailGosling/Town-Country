@@ -11,6 +11,7 @@ use App\Models\OutgoingPallet;
 use App\Models\Site;
 use App\Models\Vehicle;
 use App\Models\VehicleOutgoingPalletAllocation;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,7 +71,7 @@ class VehicleRoutePlanningController extends Controller
 
     public function multiVehiclePlan(Request $request): JsonResponse
     {
-        $dueDate = trim((string) $request->input('dueDate', now()->format('Y-m-d')));
+        $dueDate = Carbon::createFromFormat('Y-m-d', trim((string) $request->input('dueDate', now()->format('Y-m-d'))));
         $depotSite = Site::find((int) $request->input('depot', 0));
         if (!$depotSite || $depotSite->disabled) {
             return response()->json(['error' => 'Invalid depot site'], 400);
@@ -80,7 +81,7 @@ class VehicleRoutePlanningController extends Controller
         }
         $serviceDurationSeconds = max(60, (int) $request->input('serviceDurationSeconds', 1200));
 
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate)) {
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDate->format('Y-m-d'))) {
             return response()->json(['error' => 'dueDate must be in Y-m-d format'], 422);
         }
 
@@ -94,7 +95,7 @@ class VehicleRoutePlanningController extends Controller
         }
 
         $pallets = OutgoingPallet::with(['outgoingPalletType'])
-            ->whereDate('estimated_delivery_date', $dueDate)
+            ->whereDate('estimated_delivery_date', $dueDate->format('Y-m-d'))
             ->where(function ($query) {
                 //$query->whereNull('dispatched')->orWhere('dispatched', 0);
             })
@@ -102,7 +103,7 @@ class VehicleRoutePlanningController extends Controller
         if ($pallets->isEmpty()) {
             return response()->json([
                 'error' => 'No outgoing pallets found for date',
-                'dueDate' => $dueDate,
+                'dueDate' => $dueDate->format('Y-m-d'),
             ], 404);
         }
 
@@ -121,7 +122,7 @@ class VehicleRoutePlanningController extends Controller
         $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $skipped, $skippedAddresses, $addressDelTypes);
         if (empty($services)) {
             Log::error('No services could be created from outgoing pallets', [
-                'dueDate' => $dueDate,
+                'dueDate' => $dueDate->format('Y-m-d'),
                 'palletCount' => count($pallets),
                 'skippedPalletIds' => $skipped,
                 'skippedAddressIds' => $skippedAddresses,
@@ -131,11 +132,29 @@ class VehicleRoutePlanningController extends Controller
                 'skipped' => $skipped,
             ], 422);
         }
+        $allGroups = [];
+        $locClusterFinding = [];
+        $locServices = [];
         foreach ($services as &$service) {
             $addrId = $service['address']['location_id'];
+            if (!array_key_exists($addrId, $locClusterFinding)) {
+                $locServices[$addrId] = [];
+                $locClusterFinding[$addrId] = [
+                    'id' => $addrId,
+                    'address' => [
+                        'lat' => $service['address']['lat'],
+                        'lon' => $service['address']['lon'],
+                    ],
+                    "quantity" => 1,
+                ];
+            }
+            $locServices[$addrId][] = $service['id'];
             $addrDetails = $addressDelTypes[$addrId] ?? ['fresh' => false, 'frozen' => false];
             if ($addrDetails['fresh'] && $addrDetails['frozen']) {
                 $service['group'] = 'freshfrozen';
+            }
+            if (!in_array($service['group'], $allGroups, true)) {
+                $allGroups[] = $service['group'];
             }
         }
 
@@ -148,17 +167,60 @@ class VehicleRoutePlanningController extends Controller
         ];
         $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate);
 
-        $allGroups = ["fresh","freshfrozen","frozen"];
+        $locClusteringPayload = [
+            'customers' => array_values($locClusterFinding),
+            "configuration"=>  [
+                "routing"=>  [
+                    "profile"=>  config('services.graphhopper.profile', 'truck'),
+                    "cost_per_meter"=> 1,
+                    "cost_per_second"=> 0
+                ],
+                "clustering"=>  [
+                    "num_clusters"=> count($vrpVehicles)
+                ]
+            ]
+        ];
+        $clusterResponse = GraphHopperHelper::clusters($locClusteringPayload)['data']["clusters"] ?? [];
         $relations = [
             // [
             //     'type'=> 'not_in_same_route',
             //     'groups'=> $ffgroups,
             // ],
-            [
-                'type'=> 'in_sequence',
-                'groups'=> $allGroups,
-            ],
+
         ];
+        foreach ($clusterResponse as $cluster) {
+            $serviceIds = [];
+            foreach ($cluster['ids'] as $locId) {
+                if (!array_key_exists($locId, $locServices)) {
+                    continue;
+                }
+                $serviceIds = array_merge($serviceIds, $locServices[$locId]);
+            }
+            if (count($serviceIds) < 2) {
+                continue;
+            }
+            $relations[] = [
+                'type'=> 'in_same_route',
+                'ids' => $serviceIds,
+            ];
+        }
+        $allGroups2 = [];
+        if (in_array('fresh', $allGroups, true)) {
+            $allGroups2[] = 'fresh';
+        }
+        if (in_array('freshfrozen', $allGroups, true)) {
+            $allGroups2[] = 'freshfrozen';
+        }
+        if (in_array('frozen', $allGroups, true)) {
+            $allGroups2[] = 'frozen';
+        }
+
+        if (count($allGroups2) > 1) {
+            $relations[] = [
+                'type'=> 'in_sequence',
+                'groups'=> $allGroups2,
+            ];
+        }
 
         $vrpPayload = [
             'configuration' => [
@@ -207,6 +269,7 @@ class VehicleRoutePlanningController extends Controller
         $reg = trim((string) $request->input('reg', ''));
         $dueDate = trim((string) $request->input('dueDate', ''));
         $outgoingPalletIds = array_reverse($request->input('outgoingPalletIds', []));
+        $returnToOrigin = filter_var($request->input('returnToOrigin', false), FILTER_VALIDATE_BOOLEAN);
 
         if ($reg === '') {
             return response()->json(['error' => 'reg is required'], 400);
@@ -235,6 +298,45 @@ class VehicleRoutePlanningController extends Controller
 
         if (empty($orderedPalletIds)) {
             return response()->json(['error' => 'outgoingPalletIds must contain valid numeric IDs'], 400);
+        }
+
+        $terminalLat = null;
+        $terminalLon = null;
+
+        if ($returnToOrigin) {
+            $site = Site::find((int) ($vehicle->site_id ?? 0));
+            if ($site && is_numeric($site->lat) && is_numeric($site->lon)) {
+                $terminalLat = (float) $site->lat;
+                $terminalLon = (float) $site->lon;
+            }
+        } else {
+            $lastDeliveryPalletId = end($orderedPalletIds);
+            if ($lastDeliveryPalletId !== false) {
+                $lastDeliveryPallet = OutgoingPallet::query()
+                    ->where('id', (int) $lastDeliveryPalletId)
+                    ->first(['customer_id', 'address_id']);
+
+                if ($lastDeliveryPallet) {
+                    $lastDeliveryAddress = ClientAddress::query()
+                        ->where('client_type', ClientType::CUSTOMER->value)
+                        ->where('client_id', (int) $lastDeliveryPallet->customer_id)
+                        ->where('address_id', (int) $lastDeliveryPallet->address_id)
+                        ->first(['lat', 'lon']);
+
+                    if ($lastDeliveryAddress && is_numeric($lastDeliveryAddress->lat) && is_numeric($lastDeliveryAddress->lon)) {
+                        $terminalLat = (float) $lastDeliveryAddress->lat;
+                        $terminalLon = (float) $lastDeliveryAddress->lon;
+                    }
+                }
+            }
+
+            if ($terminalLat === null || $terminalLon === null) {
+                $site = Site::find((int) ($vehicle->site_id ?? 0));
+                if ($site && is_numeric($site->lat) && is_numeric($site->lon)) {
+                    $terminalLat = (float) $site->lat;
+                    $terminalLon = (float) $site->lon;
+                }
+            }
         }
 
         $palletsById = OutgoingPallet::query()
@@ -298,7 +400,7 @@ class VehicleRoutePlanningController extends Controller
             return (int) $placement['outgoing_pallet_id'];
         }, $placements);
 
-        DB::connection('tandc_live')->transaction(function () use ($vehicle, $placements, $committedAt, $committedByUserId, $committedByName, $dueDate, $committedPalletIds) {
+        DB::connection('tandc_live')->transaction(function () use ($vehicle, $placements, $committedAt, $committedByUserId, $committedByName, $dueDate, $committedPalletIds, $terminalLat, $terminalLon) {
             $loadSheetId = null;
             if (!empty($placements)) {
                 $loadSheet = LoadSheet::create([
@@ -332,6 +434,12 @@ class VehicleRoutePlanningController extends Controller
                     $pallet->save();
                 }
             }
+
+            if ($terminalLat !== null && $terminalLon !== null) {
+                $vehicle->lat = $terminalLat;
+                $vehicle->lon = $terminalLon;
+                $vehicle->save();
+            }
         });
 
         $committedCount = count($placements);
@@ -345,6 +453,7 @@ class VehicleRoutePlanningController extends Controller
             'committedAt' => $committedAt,
             'committedByUserId' => $committedByUserId,
             'committedByName' => $committedByName,
+            'returnToOrigin' => $returnToOrigin,
         ]);
     }
 }

@@ -167,6 +167,11 @@
     .load-complete-btn:hover {
       background: #15803d;
     }
+    .load-complete-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
     .print-load-btn {
       justify-self: end;
       padding: 0.5rem 0.9rem;
@@ -180,6 +185,11 @@
     }
     .print-load-btn:hover {
       background: #030712;
+    }
+    .print-load-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
     }
     .truck-title {
       font-weight: 700;
@@ -259,6 +269,10 @@
       border-color: #2563eb;
       box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
       background: rgba(37, 99, 235, 0.05);
+    }
+    .order-card.load-blocked {
+      border-color: #dc2626;
+      background: rgba(220, 38, 38, 0.06);
     }
     .order-info h3 {
       margin: 0 0 0.35rem;
@@ -386,6 +400,11 @@
       border-color: #f59e0b;
       background: rgba(245, 158, 11, 0.15);
       color: #92400e;
+    }
+    .pallet.load-blocked {
+      border-color: #dc2626;
+      background: rgba(220, 38, 38, 0.16);
+      color: #991b1b;
     }
     .pallet:active {
       cursor: grabbing;
@@ -830,6 +849,19 @@
         : "";
     }
 
+    function hasBlockedAllocatedPallet() {
+      return orders.some(order => order.allocated && order.canBeLoaded === false);
+    }
+
+    function updateActionButtonsState() {
+      const hasBlockedLoaded = hasBlockedAllocatedPallet();
+      printLoadBtn.disabled = hasBlockedLoaded;
+      const loadCompleteBtn = document.getElementById("loadCompleteBtn");
+      if (loadCompleteBtn) {
+        loadCompleteBtn.disabled = hasBlockedLoaded;
+      }
+    }
+
     function jsonHeaders() {
       const headers = {
         "Content-Type": "application/json"
@@ -1234,6 +1266,7 @@
           palletType: normalizePalletType(order.palletType),
           weightKg: Number(order.weightKg) || 0,
           freshFrozen: order.freshFrozen || "",
+            canBeLoaded: Boolean(order.canBeLoaded ?? true),
             isAllocatedAnywhere,
             allocatedVehicleReg: String(order.allocatedVehicleReg || "").trim(),
             allocatedLoadSheetId: order.allocatedLoadSheetId ? Number(order.allocatedLoadSheetId) : null,
@@ -1654,6 +1687,9 @@
         if (order.id === selectedOrderId) {
           card.classList.add("selected");
         }
+        if (order.canBeLoaded === false) {
+          card.classList.add("load-blocked");
+        }
         card.addEventListener("click", (event) => {
           if (event.target.closest("button") || event.target.closest(".postcode-link")) {
             return;
@@ -1801,6 +1837,9 @@
 
         const pallet = document.createElement("div");
         pallet.className = `pallet ${order.palletType === "Standard" ? "standard" : "euro"}`;
+        if (order.canBeLoaded === false) {
+          pallet.classList.add("load-blocked");
+        }
         pallet.textContent = order.palletType === "Standard" ? "STD" : "EU";
         pallet.draggable = !order.isAllocatedAnywhere;
         pallet.dataset.orderId = order.id;
@@ -1866,6 +1905,9 @@
 
           const pallet = document.createElement("div");
           pallet.className = `pallet ${assignedOrder.palletType === "Standard" ? "standard" : "euro"}`;
+          if (assignedOrder.canBeLoaded === false) {
+            pallet.classList.add("load-blocked");
+          }
           pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div>`;
           pallet.draggable = !!assignedOrder.allocated;
           pallet.dataset.orderId = assignedOrder.id;
@@ -1945,6 +1987,7 @@
       });
 
       bindTouchDraggable(palletGrid);
+      updateActionButtonsState();
     }
 
     ordersContainer.addEventListener("dragover", event => {
@@ -2002,6 +2045,11 @@
     });
 
     document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
+      if (hasBlockedAllocatedPallet()) {
+        window.alert("Cannot complete load while a loaded pallet is marked as not loadable.");
+        return;
+      }
+
       const confirmed = window.confirm("Are you sure you want to complete this Vehicle Load and generate the PODs?");
       if (!confirmed) {
         return;
@@ -2076,6 +2124,11 @@
     });
 
     printLoadBtn.addEventListener("click", () => {
+      if (hasBlockedAllocatedPallet()) {
+        window.alert("Cannot print load while a loaded pallet is marked as not loadable.");
+        return;
+      }
+
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
       const dueDate = document.getElementById("deliveryDate").value || "";
       const depot = depotSelect.value || "";

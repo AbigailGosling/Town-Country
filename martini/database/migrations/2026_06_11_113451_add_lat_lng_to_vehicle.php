@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::connection('tandc_live')->table('client_addresses', function (Blueprint $table) {
-            $table->decimal('lat', 12, 9)->nullable();
-            $table->decimal('lon', 12, 9)->nullable()->after('lat');
+        Schema::connection('tandc_live')->table('vehicle', function (Blueprint $table) {
+                $table->decimal('lat', 12, 9)->nullable();
+                $table->decimal('lon', 12, 9)->nullable()->after('lat');
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::connection('tandc_live')->table('client_addresses', function (Blueprint $table) {
+        Schema::connection('tandc_live')->table('vehicle', function (Blueprint $table) {
             $table->dropColumn(['lat', 'lon']);
         });
     }

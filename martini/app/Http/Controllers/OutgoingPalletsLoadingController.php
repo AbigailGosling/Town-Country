@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\Customer;
 use App\Models\LoadSheet;
 use App\Models\OutgoingPallet;
 use App\Models\OutgoingPalletType;
@@ -88,6 +89,43 @@ class OutgoingPalletsLoadingController extends Controller
         }
 
         return $lines;
+    }
+    private function getLegacyCreditCheckForCustomer(int $customerId): array
+    {
+        if ($customerId <= 0) {
+            return [];
+        }
+
+        $request = Request::create(
+            route('legacy', ['path' => 'legacy/ajax/customer_credit_check.php']),
+            'GET',
+            ['customer_id' => $customerId]
+        );
+        $response = app()->handle($request);
+
+        if (is_array($response)) {
+            return $response;
+        }
+
+        if ($response instanceof JsonResponse) {
+            $data = $response->getData(true);
+            return is_array($data) ? $data : [];
+        }
+
+        if (is_object($response) && method_exists($response, 'getContent')) {
+            $decoded = json_decode((string) $response->getContent(), true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+    private function canOutgoingPalletBeLoaded(int $customerId): bool
+    {
+        $response = $this->getLegacyCreditCheckForCustomer($customerId);
+        $customer = Customer::find($customerId);
+        // Keep the legacy eligibility formula exactly as provided.
+        return !(($response['overcredit'] || $response['printblock']) && !$customer->allowPrint);
     }
 
     public function view()
@@ -486,8 +524,14 @@ class OutgoingPalletsLoadingController extends Controller
             });
 
         $orders = [];
+        $canLoadByCustomerId = [];
         foreach ($pallets as $pallet)
         {
+            $customerId = (int) ($pallet->customer_id ?? 0);
+            if (!array_key_exists($customerId, $canLoadByCustomerId)) {
+                $canLoadByCustomerId[$customerId] = $this->canOutgoingPalletBeLoaded($customerId);
+            }
+
             $allocation = $allocations->get($pallet->id);
             if ($allocation) {
                 $regAllocatedTo = $allocation->vehicle ? trim((string)$allocation->vehicle->reg) : '';
@@ -546,6 +590,7 @@ class OutgoingPalletsLoadingController extends Controller
                     'allocatedVehicleReg' => $anyAllocatedVehicleReg,
                     'allocatedLoadSheetId' => $anyAllocatedLoadSheetId > 0 ? $anyAllocatedLoadSheetId : null,
                     'allocatedLoadSheetLabel' => $anyAllocatedLoadSheetLabel,
+                    'canBeLoaded' => (bool) ($canLoadByCustomerId[$customerId] ?? false),
             ];
         }
 

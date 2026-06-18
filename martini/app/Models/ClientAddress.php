@@ -30,6 +30,7 @@ class ClientAddress extends Model
         'site_id',
         'client_type',
         'geocoding_tried',
+        'collection',
     ];
 
     protected $casts = [
@@ -39,6 +40,7 @@ class ClientAddress extends Model
         'lon' => 'float',
         'site_id' => 'int',
         'geocoding_tried' => 'boolean',
+        'collection' => 'boolean',
     ];
 
     public function client(): BelongsTo

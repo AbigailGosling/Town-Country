@@ -489,15 +489,6 @@
     }
 
     function osrmProfileFromRoutingProfile(profile) {
-        const value = String(profile || '').toLowerCase();
-        if (value === 'bike') {
-            return 'cycling';
-        }
-
-        if (value === 'foot' || value === 'hike') {
-            return 'foot';
-        }
-
         return 'driving';
     }
 
@@ -533,7 +524,7 @@
             }
 
             const requestVehicle = vehicleById.get(vehicleId);
-            if (!requestVehicle || !requestVehicle.start_address || !requestVehicle.end_address) {
+            if (!requestVehicle || !requestVehicle.start_address) {
                 return;
             }
 
@@ -567,12 +558,14 @@
                 });
             });
 
-            points.push({
-                kind: 'end',
-                id: String(requestVehicle.end_address.location_id ?? vehicleId + '-end'),
-                lat: Number(requestVehicle.end_address.lat),
-                lon: Number(requestVehicle.end_address.lon),
-            });
+            if (requestVehicle.end_address) {
+                points.push({
+                    kind: 'end',
+                    id: String(requestVehicle.end_address?.location_id ?? vehicleId + '-end'),
+                    lat: Number(requestVehicle.end_address?.lat),
+                    lon: Number(requestVehicle.end_address?.lon),
+                });
+            }
 
             const validPoints = points.filter(point =>
                 Number.isFinite(point.lat)
@@ -736,6 +729,9 @@
             vehicleMetaById.set(vehicleId, {
                 startAddressLabel: formatAddress(startAddress),
                 endAddressLabel: formatAddress(endAddress),
+                returnToOrigin: vehicle?.return_to_depot == null
+                    ? !!endAddress
+                    : Boolean(vehicle.return_to_depot),
             });
         });
 
@@ -815,6 +811,55 @@
             return { distanceMeters, driveSeconds };
         }
 
+        function getRouteTerminalActivity(activities, terminal) {
+            const routeActivities = Array.isArray(activities) ? activities : [];
+            const stopActivities = routeActivities.filter(activity => {
+                const type = String(activity?.type ?? '').toLowerCase();
+                return type === 'service' || type === 'pickup' || type === 'delivery';
+            });
+
+            const terminalType = terminal === 'start' ? 'start' : 'end';
+            const explicitMatch = terminal === 'start'
+                ? routeActivities.find(activity => String(activity?.type ?? '').toLowerCase() === 'start') ?? null
+                : [...routeActivities].reverse().find(activity => String(activity?.type ?? '').toLowerCase() === 'end') ?? null;
+
+            if (explicitMatch) {
+                return explicitMatch;
+            }
+
+            return terminal === 'start'
+                ? stopActivities[0] ?? null
+                : stopActivities[stopActivities.length - 1] ?? null;
+        }
+
+        function formatRouteTerminalLabel(activity, fallbackLabel) {
+            if (!activity) {
+                return fallbackLabel;
+            }
+
+            const address = activity?.address ?? null;
+            const locationId = String(address?.location_id ?? activity?.location_id ?? activity?.id ?? '').trim();
+            const lat = Number(address?.lat ?? activity?.lat);
+            const lon = Number(address?.lon ?? activity?.lon);
+            const coordinates = Number.isFinite(lat) && Number.isFinite(lon)
+                ? `${lat.toFixed(5)}, ${lon.toFixed(5)}`
+                : '';
+
+            if (locationId && coordinates) {
+                return `${locationId} (${coordinates})`;
+            }
+
+            if (locationId) {
+                return locationId;
+            }
+
+            if (coordinates) {
+                return coordinates;
+            }
+
+            return fallbackLabel;
+        }
+
         responseRoutes.forEach((route, index) => {
             const vehicleId = String(route?.vehicle_id ?? `Vehicle ${index + 1}`);
             const routeKey = `${index}:${vehicleId}`;
@@ -824,13 +869,14 @@
                 const type = String(activity?.type ?? '').toLowerCase();
                 return type === 'service' || type === 'pickup' || type === 'delivery';
             });
-            const startActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'start') ?? null;
-            const endActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'end') ?? null;
+            const startActivity = getRouteTerminalActivity(activities, 'start');
+            const endActivity = getRouteTerminalActivity(activities, 'end');
             const travelMetrics = computeRouteTravelMetrics(route);
             const routePalletIds = extractRoutePalletIds(stops);
             const vehicleMeta = vehicleMetaById.get(vehicleId) ?? {
                 startAddressLabel: 'Start address',
                 endAddressLabel: 'End address',
+                returnToOrigin: true,
             };
 
             const requiredPalletCount = stops.length;
@@ -921,6 +967,7 @@
             commitButton.addEventListener('click', async () => {
                 const selectedReg = String(selector.value || '').trim();
                 const dueDate = String(document.getElementById('dueDate')?.value || '').trim();
+                const returnToOrigin = Boolean(vehicleMeta.returnToOrigin);
 
                 if (!selectedReg) {
                     setStatus('Select a vehicle before committing a route.', 'error');
@@ -962,6 +1009,7 @@
                             reg: selectedReg,
                             dueDate,
                             outgoingPalletIds: routePalletIds,
+                            returnToOrigin,
                         }),
                     });
 
@@ -1036,7 +1084,7 @@
             const departureWhen = formatUnixTimestamp(startActivity?.arr_time ?? startActivity?.end_time ?? startActivity?.start_time);
             const departureTimePart = departureWhen ? ` (${departureWhen})` : '';
             const departureLi = document.createElement('li');
-            departureLi.textContent = `Departure: ${vehicleMeta.startAddressLabel}${departureTimePart}`;
+            departureLi.textContent = `Departure: ${formatRouteTerminalLabel(startActivity, vehicleMeta.startAddressLabel)}${departureTimePart}`;
             list.appendChild(departureLi);
 
             stops.forEach(activity => {
@@ -1051,11 +1099,14 @@
                 list.appendChild(li);
             });
 
-            const arrivalWhen = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
-            const arrivalTimePart = arrivalWhen ? ` (${arrivalWhen})` : '';
-            const arrivalLi = document.createElement('li');
-            arrivalLi.textContent = `Arrival: ${vehicleMeta.endAddressLabel}${arrivalTimePart}`;
-            list.appendChild(arrivalLi);
+            const arrivalLabel = formatRouteTerminalLabel(endActivity, vehicleMeta.endAddressLabel);
+            if (arrivalLabel && arrivalLabel !== 'Unknown address') {
+                const arrivalWhen = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
+                const arrivalTimePart = arrivalWhen ? ` (${arrivalWhen})` : '';
+                const arrivalLi = document.createElement('li');
+                arrivalLi.textContent = `Arrival: ${arrivalLabel}${arrivalTimePart}`;
+                list.appendChild(arrivalLi);
+            }
 
             card.appendChild(list);
             routeBreakdownEl.appendChild(card);
@@ -1186,13 +1237,15 @@
         const routes = getRoutesFromPayload(payload);
         if (!routes.length) {
             mapNoteEl.textContent = 'No route geometry could be assembled from the response.';
+            mapNoteEl.classList.remove('hidden');
             return;
         }
 
         renderRouteLegend(routes);
 
         if (!graphHopperApiKey) {
-            mapNoteEl.textContent = 'GraphHopper API key is missing, cannot render map routes.';
+            mapNoteEl.textContent = 'GraphHopper API key is missing — showing straight-line fallback.';
+            mapNoteEl.classList.remove('hidden');
 
             const fallbackBounds = [];
             routes.forEach((route, index) => {
@@ -1307,6 +1360,12 @@
         });
 
         await Promise.all(drawTasks);
+
+        if (routeErrors.length) {
+            console.warn('[route-map] routing errors:', routeErrors);
+            mapNoteEl.textContent = `Routing note: ${routeErrors.join('; ')}`;
+            mapNoteEl.classList.remove('hidden');
+        }
 
         if (bounds.length) {
             routeMap.fitBounds(bounds, {padding: [24, 24]});

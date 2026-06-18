@@ -23,6 +23,9 @@ class Vehicle extends Model
         'driver',
         'max_pallet_rows',
         'barracuda_id',
+        'lat',
+        'lon',
+        'disabled',
     ];
 
     public function site()
