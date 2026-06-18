@@ -18,6 +18,7 @@ use App\Models\Product;
 use App\Models\Site;
 use App\Models\Species;
 use App\Models\Temperature;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleOutgoingPalletAllocation;
 use App\Models\Weight;
@@ -25,6 +26,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use InternalScripts\PDFRenderer;
 use InternalScripts\SLabsEmailer;
@@ -200,6 +202,27 @@ class PodHelper
         $psd->pod = true;
         $psd->file_id = $pickerSheet->signature_file_id;
         $psd->save();
+
+        if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "CANNOT_DELIVER") {
+            $pickerSheet->estimated_delivery_date = Carbon::now()->addDays(1)->format("d/m/Y");
+            FuncHelper::loggedDataChange(57,"picksheet_estimated_delivery_date",$pickerSheetID,Carbon::now()->addDays(1)->format("d/m/Y"));
+            $pickerSheet->save();
+            $pwos = PickWeightOut::where('pickersheet_id', $pickerSheetID)->get();
+            foreach ($pwos as $pwo) {
+                $oppws = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
+                foreach ($oppws as $oppw)
+                {
+                    $op = OutgoingPallet::find($oppw->outgoing_pallet_id);
+                    $op->estimated_delivery_date = Carbon::now()->addDays(1)->format("d/m/Y");
+                    $op->dispatched = $op->pod_sent = 0;
+                    $op->save();
+                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $vopa->delete();
+                }
+
+            }
+            return true;
+        }
         //Process complete failure - all items rejected
         if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "DELIVERY_REJECTED") {
             foreach ($payload["SUB_TASKS"] as $line) {
@@ -306,12 +329,14 @@ class PodHelper
         {
             $customer_emails = explode(";",$customer->internal_email);
         }
+        Auth::login(User::where('id',57)->first());
         $subject = "Delivery Note ".$pickerSheetID." from Town and Country Meats";
         $htmlBody = "<html>Please find attached a delivery note from Town and Country Meats Group for ".$customer->businessname." Invoice No: ".$pickerSheetID.".</html>";
         $fileName = 'DeliveryNote_'.$pickerSheetID.'.pdf';
         $pathToFile = 'PDF';
         PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheetID,$pathToFile,$fileName);
         SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
+        Auth::logout();
         return true;
     }
     /**
