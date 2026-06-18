@@ -84,6 +84,7 @@ class OutgoingPallet extends Model
                     continue;
                 }
                 $weight = Weight::find($pickWeightOut->getWeights()[0]);
+                if (!$weight) return '';
                 $product = Product::find($weight->product_id);
                 if ($product->cooling_id == 2){
                     $this->_temperatureCategoryCache = 'Frozen';

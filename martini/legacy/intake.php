@@ -127,7 +127,7 @@ use Illuminate\Support\Str;
 			else {
 				$x = "UPDATE `product` SET weightnote=? WHERE id IN $product_id";
 				$y = prepareExecuteQuery($x,'s',[$weightnote]);
-				loggedDataChange('product_note',$product_id,$weightnote);
+				loggedDataChange('product_note',$productids[$i],$weightnote);
 			}
 		}
         if ($intakeid != "" && $intakeid != null)

@@ -1385,18 +1385,22 @@ use App\Models\User;
 		$pallet_ids = array();
 		$product_ids = array();
 
-		$palletsResult = prepareExecuteQuery("SELECT id FROM `pallet` WHERE intake_id=?",'i',[$intake_id]);
+		$palletsResult = prepareExecuteQuery("SELECT id FROM `pallet` WHERE `intake_id` = ?",'i',[$intake_id]);
 		while($pallet = $palletsResult->fetch_assoc()){ array_push($pallet_ids, $pallet['id']); }
 
 		$temp_pallet_ids = implode(',', $pallet_ids);
 
-		$productsResult = prepareExecuteQuery("SELECT id FROM `product` WHERE pallet_id IN ($temp_pallet_ids)");
-		while($product = $productsResult->fetch_assoc()){ array_push($product_ids, $product['id']); }
+        if ($temp_pallet_ids != '')
+        {
+            $productsResult = prepareExecuteQuery("SELECT id FROM `product` WHERE `pallet_id` IN ($temp_pallet_ids)");
+            while($product = $productsResult->fetch_assoc()){ array_push($product_ids, $product['id']); }
 
-		$temp_product_ids = implode(',', $product_ids);
-		// Delete unsold weight entries
-		prepareExecuteQuery("DELETE FROM `weights` WHERE `status_id` = 0 AND `product_id` IN ($temp_product_ids)");
-		prepareExecuteQuery("UPDATE `intake` SET `deleted` = 1 WHERE `id` IN ($intake_id)");
+            $temp_product_ids = implode(',', $product_ids);
+            // Delete unsold weight entries
+            if ($temp_product_ids != '')prepareExecuteQuery("DELETE FROM `weights` WHERE `status_id` = 0 AND `product_id` IN ($temp_product_ids)");
+
+        }
+        prepareExecuteQuery("UPDATE `intake` SET `deleted` = 1 WHERE `id` = ?",'i',[$intake_id]);
 	}
 
 	function getPallet($id){

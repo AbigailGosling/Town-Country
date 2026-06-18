@@ -6,17 +6,18 @@
     $picksheetid = request()->input('picksheetid');
     $picksheet_note = request()->input('picksheet_note');
     $user_from_id = request()->input('user_from_id');
-        
+
     $orderReferenceNumber = request()->input('orderReferenceNumber');
 
-    
+
     $estimated_delivery_date = request()->input('estimated_delivery_date'); #picksheet
- 
+
     $y = prepareExecuteQuery("UPDATE `pickerSheets` SET user_from_id=?, estimated_delivery_date=?, orderReferenceNumber=?, addressid=?,picksheet_note=? WHERE id=? LIMIT 1",
 'isssss',[$user_from_id,$estimated_delivery_date,$orderReferenceNumber,$addressid,$picksheet_note,$picksheetid]);
 
     loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
     loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
+    loggedDataChange("picksheet_estimated_delivery_date",$picksheetid,$estimated_delivery_date);
 ?>
 
 <script type="text/javascript">
