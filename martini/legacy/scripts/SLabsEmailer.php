@@ -159,6 +159,7 @@ abstract class SLabsEmailerType
     const FinancialWeeklySummary = 'FINANCIAL_WEEKLY_SUMMARY';
     const IndividualDailySummary = 'INDIVIDUAL_DAILY_SUMMARY';
     const IndividualWeeklySummary = 'INDIVIDUAL_WEEKLY_SUMMARY';
+    const DeliveryNote = 'DELIVERY_NOTE';
 }
 abstract class SLabsEmailerStatus
 {
