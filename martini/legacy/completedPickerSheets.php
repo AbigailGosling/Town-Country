@@ -4,6 +4,23 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 	include_once('functions.php');
+    if (request()->has("loadAll")) ini_set("memory_limit","300M");
+
+    $usermodel = User::find(Auth::id());
+    $customers = [];
+    $cq = "SELECT * FROM `customers` WHERE `id` IN (".implode(",",$usermodel->listViewableCustomers()).")";
+    $cr = prepareExecuteQuery($cq);
+    foreach ($cr->fetch_all(MYSQLI_ASSOC) as $customer)
+    {
+        $customers[$customer['id']] = $customer;
+    }
+    $suppliers = [];
+    $cq = "SELECT * FROM `supplier`";
+    $cr = prepareExecuteQuery($cq);
+    foreach ($cr->fetch_all(MYSQLI_ASSOC) as $supplier)
+    {
+        $suppliers[$supplier['id']] = $supplier;
+    }
 ?>
 <!doctype html>
 <html class="int">
@@ -43,7 +60,6 @@ use Illuminate\Support\Facades\Auth;
 				session_start();session_write_close();
 
 				$userid = $_SESSION['USER'];
-				$usermodel = User::find(Auth::id());
 				$x = "SELECT * FROM `pickerSheets` WHERE completed='1' AND (customer_id IN (".implode(",",$usermodel->listViewableCustomers()).") AND is_return_to_supplier = 0) OR is_return_to_supplier = 1 ORDER BY `date_completed` DESC";
 				if (!request()->has("loadAll")) $x = $x . " LIMIT 100";
 				$y = $mysqli->prepare($x);
@@ -62,15 +78,12 @@ use Illuminate\Support\Facades\Auth;
 
 					if ($row['is_return_to_supplier']==0)
                     {
-                        $x2 = "SELECT * FROM `customers` WHERE id = ?";
-                        $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-                        $row2 = $y2->fetch_assoc();
+                        $row2 = $customers[$customer_id];
                     }
                     else
                     {
-                        $x2 = "SELECT * FROM `supplier` WHERE id = ?";
-                        $y2 = prepareExecuteQuery($x2,'i',[$customer_id]);
-					$row2 = $y2->fetch_assoc();
+
+					    $row2 = $suppliers[$customer_id];
                     }
 
 				?>

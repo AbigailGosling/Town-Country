@@ -10,7 +10,7 @@ class InsuredCreditReportController extends Controller
     {
         $customers = Customer::query()
             ->leftJoin('customer_outstanding_cache', 'customer_outstanding_cache.customer_id', '=', 'customers.id')
-            ->whereNotIn('customers.insured_credit',[0,''])->whereNotNull('customers.insured_credit')
+            //->whereNotIn('customers.insured_credit',[0,''])->whereNotNull('customers.insured_credit')
             ->where('customers.credit_enabled', true)
             ->where('customers.disabled', false)
             ->whereNotIn('customers.businessname', ['', '.. search'])
