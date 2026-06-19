@@ -54,4 +54,12 @@ class FuncHelper
     {
         return $array[array_search($needle, array_column($array, $column))];
     }
+    public static function array_consecutive(array $d):bool{
+        for($i=0;$i<count($d);$i++) {
+            if(isset($d[$i+1]) && $d[$i]+1 != $d[$i+1]) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

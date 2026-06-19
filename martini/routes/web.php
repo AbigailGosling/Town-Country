@@ -12,6 +12,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\HealthMarkController;
 use App\Http\Controllers\InboundContainerApprovalController;
 use App\Http\Controllers\InboundContainerController;
+use App\Http\Controllers\InsuranceExposureReportController;
 use App\Http\Controllers\IntakeReportController;
 use App\Http\Controllers\IntakeScanningController;
 use App\Http\Controllers\LegacyController;
@@ -132,6 +133,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/shortpick', [ShortPickReportController::class, 'index'])->name('shortpick.index');
 
     Route::get('/insuredcreditreport', [InsuredCreditReportController::class, 'index'])->name('insuredcreditreport.index');
+    Route::get('/insuranceexposurereport', [InsuranceExposureReportController::class, 'index'])->name('insuranceexposurereport.index');
 
     Route::get('/returnedstock', [ReturnedStockReportController::class, 'index'])->name('returnedstock.index');
     Route::get('/returnedstock/download', [ReturnedStockReportController::class, 'download'])->name('returnedstock.download');
