@@ -23,15 +23,18 @@ use Illuminate\Support\Facades\Auth;
 	$creditCheck = precredit_check($customer_id);
 ?>
 <script type="text/javascript">
-    custStrictOverride = <?php echo ($row['cost_check_enabled']==0 || $row['override_cost_check']>0)?"true":"false"; ?>;
-	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
-	showWarning 		= <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
-	showHigherWarning 	= <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
-	delCheckingOn		= <?php echo ($row['delivery_day_checking'] == 1 && $row['delivery_day_override'] == 0)?"true":"false"; ?>;
-	delDays				= <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
-	warningMessage		="<table style='width:100%;'><tr><td style='width:50%'><?php echo ($isContainerSearch)?$creditCheck['messageReservation']:$creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
-    bipassNDandTenD     = <?php echo ($user['override_saledate_check']>0||$row['check_saledate']==0)?"true":"false"; ?>;
+    custStrictOverride          = <?php echo ($row['cost_check_enabled']==0 || $row['override_cost_check']>0 || $row['higher_override']>0)?"true":"false"; ?>;
+	transactionAllowed          = <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ?>;
+	showWarning                 = <?php echo ($creditCheck['showWarning'])?"true":"false"; ?>;
+	showHigherWarning           = <?php echo ($creditCheck['showHigherWarning'])?"true":"false"; ?>;
+	delCheckingOn               = <?php echo ($row['delivery_day_checking'] == 1 && $row['delivery_day_override'] == 0 &&  $row['higher_override']==0)?"true":"false"; ?>;
+	delDays                     = <?php echo ($row['delivery_days']>0)?$row['delivery_days']:0; ?>;
+	warningMessage              = "<table style='width:100%;'><tr><td style='width:50%'><?php echo ($isContainerSearch)?$creditCheck['messageReservation']:$creditCheck['message']."</td><td></td><td>".$creditCheck['infoMessage']; ?></td></tr></table>";
+    bipassNDandTenD             = <?php echo ($user['override_saledate_check']>0||$row['check_saledate']==0||$row['higher_override']>0)?"true":"false"; ?>;
     customerIgnoreNextDayCutoff = <?php echo ($row['ignore_next_day_cutoff'])?"true":"false"; ?>;
+    if (typeof sitecutoffLookup !== 'undefined' && sitecutoffLookup !== null) sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    if (typeof stockMovementLookup !== 'undefined' && stockMovementLookup !== null) stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
+
 </script>
 <div class="col">
 	<div class="row">
@@ -103,46 +106,6 @@ use Illuminate\Support\Facades\Auth;
 				$flaguplimit = (double) $row['flaguplimit'];
 				$credit_rating = (double) $row['credit_rating'];
 
-				if(false){ # temp disable credit control requested by Jamie
-					if($current_outstanding >= $credit_rating && $row['override'] != 1){
-					?>
-					<div class="status stop" style="width:90%;position:fixed;top:470px;left:5%;">Stop</div>
-					<script>
-						$('.leftPanel').css('pointer-events','none');
-						$('.leftPanel').css('opacity','0.2');
-
-						$('#sendfake').css('pointer-events','none');
-						$('#sendfake').css('opacity','0.2');
-
-
-					</script>
-					<?php
-					}else if($current_outstanding >= $flaguplimit){
-					?>
-					<div class="status closetolimit" style="width:97%;">Close to limit</div>
-					<script>
-						$('.leftPanel').css('pointer-events','all');
-						$('.leftPanel').css('opacity','1');
-
-						$('#sendfake').css('pointer-events','all');
-						$('#sendfake').css('opacity','1');
-
-
-					</script>
-					<?php
-					}else{
-					?>
-					<script>
-						$('.leftPanel').css('pointer-events','all');
-						$('.leftPanel').css('opacity','1');
-
-
-						$('#sendfake').css('pointer-events','all');
-						$('#sendfake').css('opacity','1');
-					</script>
-					<?php
-					}
-				}
 			}
  		?>
 

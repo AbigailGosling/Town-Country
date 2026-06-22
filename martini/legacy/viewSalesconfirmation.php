@@ -374,8 +374,8 @@ use Illuminate\Support\Facades\Auth;
     const siteid = '<?php
     $loc = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id=?",'i',[$thispalletid])->fetch_assoc()['storage_location'];
         echo prepareExecuteQuery("SELECT * FROM `location` WHERE id=?",'i',[$loc])->fetch_assoc()['site_id'];?>';
-    const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
-    const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    var sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    var stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
     function checkNextDayCutoff() {
         var targetCutoff = undefined;
         for (var ll of sitecutoffLookup)

@@ -49,18 +49,18 @@ use App\Models\User;
 			</select>
 </div>
 		<div class="col">
-			<label>	Reference</label><br/>
+			<label>Reference</label><br/>
 			<input class="form-control" type="text" class="inputbox" id="orderReferenceNumber" name="orderReferenceNumber" value="<?php echo $row['orderReferenceNumber']; ?>">
 		</div>
 	</div>
 
-	<?php if($user['allow_override_salesman'] == 0){ ?>
-		<input type="hidden" id="sales_person" name="sales_person" value="<?php echo $userid; ?>">
-	<?php }else{ ?>
 	<div class="row">
 		<div class="col">
-			<label> Salesperson</label><br />
-			<select id="sales_person" name="sales_person" class="form-control">
+			<label>Salesperson</label><br />
+            <?php if($user['allow_override_salesman'] == 0){ ?>
+            <input type="hidden" id="sales_person" name="sales_person" value="<?php echo $userid; ?>">
+            <?php }else{ ?>
+            <select id="sales_person" name="sales_person" class="form-control">
 				<?php
 					 $newUsers = User::where([["disabled",false],["is_hidden",false]]);
                             $newUsers= $newUsers->orWhere("id",$userid);
@@ -72,10 +72,14 @@ use App\Models\User;
 					}
 				?>
 			</select>
+            <?php } ?>
 		</div>
-		<div class="col"></div>
+		<div id="invoice_search_container" name="invoice_search_container" class="col" style="display:none;">
+			<label>Invoice</label><br/>
+			<input class="form-control" type="text" id="invoice" class="inputbox">
+			<div id="invoice_search_results" style="position:relative;z-index:99999;"></div>
+		</div>
 	</div>
-	<?php } ?>
 	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>
 </div>
 <div class="leftPanel" style="position:relative;">
@@ -310,7 +314,14 @@ use App\Models\User;
 				changePage($(this).attr('id'))
 			}
 		})
-
+        $('#sup_type').change(function() {
+            var selectedType = $(this).val();
+            if (selectedType === 'credit') {
+                $('#invoice_search_container').css('display', 'block');
+            } else {
+                $('#invoice_search_container').css('display', 'none');
+            }
+        });
 		function changePage(prop) {
 			var alert = confirm('Are you sure you want to leave?')
 
@@ -378,13 +389,6 @@ use App\Models\User;
 		} else{
 			UserSet = false;
  			$('#sales_person').css('border','1px solid red');
-		}
-		if (sup_type != undefined) {
-			UserSet = true;
-			$('#sup_type').css('border-color', '#f2f2f2');
-		} else{
-			UserSet = false;
- 			$('#sup_type').css('border','1px solid red');
 		}
 
 		if (date != '') {
@@ -538,6 +542,33 @@ use App\Models\User;
 
 		request.done(function(data) {
 			$('#customer_search_results').html(data);
+ 		});
+
+		request.fail(function(jqXHR, textStatus) {
+			// alert( "Request failed: " + textStatus );
+		});
+
+	});
+    function setInvoice(invoice_id){
+		$('#invoice_search_results').fadeOut();
+		$('#invoice').val(invoice_id);
+	}
+    $('#invoice').keyup(function(){
+		var val = $('#invoice').val();
+		$('#invoice_search_results').fadeIn();
+
+		var request = $.ajax({
+			type: "POST",
+			url: "ajax/getInvoiceDropdown.php",
+			data: {
+                customer_id: $('#customer_id').val(),
+				searchterm: val
+			},
+			dataType: "html"
+		});
+
+		request.done(function(data) {
+			$('#invoice_search_results').html(data);
  		});
 
 		request.fail(function(jqXHR, textStatus) {

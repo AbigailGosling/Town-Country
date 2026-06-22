@@ -945,8 +945,8 @@ function cancelSale()
     const GLOBAL_RRP_FUNCTION = <?php echo SystemSetting::where('key_name','RRP_FUNCTION_ENABLED')->first()->key_value; ?>;
     const GLOBAL_CREDIT_CHECK = <?php echo SystemSetting::where('key_name','CREDIT_CHECK_FUNCTION_ENABLED')->first()->key_value; ?>;
     const GLOBAL_DELIVERY_DAY = <?php echo SystemSetting::where('key_name','DELIVERY_DAY_FUNCTION_ENABLED')->first()->key_value; ?>;
-    const sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
-    const stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    var sitecutoffLookup = <?php echo json_encode(prepareExecuteQuery("SELECT `id`,`cutoff` FROM `site`")->fetch_all(MYSQLI_ASSOC)); ?>;
+    var stockMovementLookup = <?php echo json_encode(prepareExecuteQuery("SELECT * FROM `stock_movements`")->fetch_all(MYSQLI_ASSOC)); ?>;
     function checkNextDayCutoff(siteid) {
         var targetCutoff = undefined;
         for (var ll of sitecutoffLookup)
