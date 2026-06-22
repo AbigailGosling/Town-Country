@@ -455,6 +455,14 @@ use Illuminate\Support\Facades\Log;
 					<td class="label"><label>Sunday</label></td>
 					<td><input type="checkbox" id="del_sunday" name="del_sunday" value="1" <?php echo ($data['delivery_days'] & DEL_SUNDAY)?"checked":""; ?>></td>
 				</tr>
+                <tr height=""><td colspan="2"></td></tr>
+                <tr>
+					<td class="label"><label>Master Override</label></td>
+					<td align="right">
+						<a href="javascript:;" id="higher_override" onclick="higherOverride(this,<?php echo $id; ?> )" class="override" style="background-color:<?php if($data['higher_override'] == 0){?>red<?php }else{?>lightgreen<?php }?>"><?php if($data['higher_override'] == 0){ ?>Disabled<?php } else { ?>Enabled<?php } ?></a>
+                        <input type="hidden" id="higher_override_hidden" name="higher_override_hidden" value="<?php echo $data['higher_override']?1:0; ?>">
+                    </td>
+				</tr>
 			</table>
 		</div>
 	</div>
@@ -788,16 +796,32 @@ function mainForm2(){
 			su: $('#del_sunday').is(":checked")?1:0,
 		});
 	}
+    function higherOverride(ele, id){
+        var q = $('#higher_override');
+		if (q.text() != "Disabled") {
+            $("#higher_override_hidden").val("0");
+			q.css("background-color","red");
+		}
+		else {
+            $("#higher_override_hidden").val("1");
+			q.css("background-color","lightgreen");
+			q.text("Enabled");
+			setTimeout(alert,10,["Higher Override Enabled!"]);
+		}
+		$.post("ajax/toggleHigherOverride.php",{
+			id: id,
+		});
+	}
 	function delDayOverride(ele, id){
 		var q = $('#delivery_day_override');
 		if (q.text() != "Disabled") {
-            $("delivery_day_override_hidden").val("0");
+            $("#delivery_day_override_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Delivery Day Override Disabled!"]);
 		}
 		else {
-            $("delivery_day_override_hidden").val("1");
+            $("#delivery_day_override_hidden").val("1");
 			q.css("background-color","lightgreen");
 			q.text("Enabled");
 			setTimeout(alert,10,["Delivery Day Override Enabled!"]);
@@ -816,7 +840,7 @@ function mainForm2(){
     function checkSaleDate(ele, id){
 		var q = $('#check_saledate');
 		if (q.text() != "Disabled") {
-            $("check_saledate_hidden").val("0");
+            $("#check_saledate_hidden").val("0");
 			q.css("background-color","red");
 			q.text("Disabled");
 			setTimeout(alert,10,["Next Day and Long Reservation Controls Disabled!"]);
