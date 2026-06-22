@@ -139,6 +139,10 @@ class SLabsEmailer {
         {
             Log::error("Unknown status code received from SocketLabs", ['message_id' => $message_id, 'addressee' => $addressee, 'data' => $data]);
         }
+        if ($status_code == SLabsEmailerStatus::TempFail || $status_code == SLabsEmailerStatus::PermFail)
+        {
+            Log::error("Failure status code received from SocketLabs", ['message_id' => $message_id, 'addressee' => $addressee, 'data' => $data]);
+        }
         prepareExecuteQuery("UPDATE `mail_tracking` SET `status`='$status_code',`secondary_code`=$secondary_code WHERE `addressee`='$addressee' AND `message_id`='$message_id'") or die(mysqli_error($mysqli));
     }
 }

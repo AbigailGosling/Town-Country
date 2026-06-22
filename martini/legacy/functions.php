@@ -608,16 +608,21 @@ use App\Models\User;
 
 	# Get Cut name from id
 	function getCut($id){
-		global $mysqli;
-		// ??: Why get everything if we only want the name?
-		$x = "SELECT `name` FROM `cuts` WHERE `id` = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row['name'];
+		return _getCut($id)['name'];
 	}
-
+    global $_cuts;
+    $_cuts = [];
+    function _getCut(int $id)
+    {
+        global $_cuts;
+        if (!array_key_exists($id,$_cuts))
+        {
+            $x = "SELECT * FROM `cuts` WHERE `id` = ?";
+            $y = prepareExecuteQuery($x,'i',[$id]);
+            $_cuts[$id] = $y->fetch_assoc();
+        }
+        return $_cuts[$id] ?? null;
+    }
 
 	function getTotesNumProductsForCutOnIntake($intake_id, $cut_id){
 		global $mysqli;
@@ -883,35 +888,30 @@ use App\Models\User;
 		return $count;
 
 	}
-
-
+    global $_species;
+    $_species = [];
+    function _getSpecies(int $id)
+    {
+        global $_species;
+        if (!array_key_exists($id,$_species))
+        {
+            $x = "SELECT * FROM species WHERE id = ?";
+		    $y = prepareExecuteQuery($x,'i',[$id]);
+		    $_species[$id] = $y->fetch_assoc();
+        }
+        return $_species[$id] ?? null;
+    }
 	# Get Species name from id
 	function getSpecies($id){
-		global $mysqli;
-
-		$x = "SELECT * FROM species WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$id]);
-
-		$row = $y->fetch_assoc();
-
-		return $row['name'];
+		return _getSpecies($id)['name'] ?? null;
 	}
 
 	function getSpeciesFromCut($cut_id){
-		global $mysqli;
-
-		$x = "SELECT * FROM cuts WHERE id = ?";
-		$y = prepareExecuteQuery($x,'i',[$cut_id]);
-
-		$row = mysqli_fetch_array($y);
-
-		return $row['species_id'];
+		return _getCut($cut_id)['species_id'] ?? "";
 	}
 
 	function getSpeciesFromCutID($cut_id){
 		$speciesid = getSpeciesFromCut($cut_id);
-
-
 		$name = getSpecies($speciesid);
 
 		return $name;
