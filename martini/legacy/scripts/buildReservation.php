@@ -114,7 +114,7 @@ use Carbon\Carbon;
 		}
         ProcessHelper::runInBackground('run:send_reservation '.$reservation->id);
 	}
-	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0 WHERE id = ?";
+	$x = "UPDATE `customers` SET `override` = 0, `delivery_day_override` = 0, `override_cost_check` = 0, `higher_override` = 0 WHERE id = ?";
 	$y = prepareExecuteQuery($x,'i',[$customer_id]);
 
     $x = "UPDATE `users` SET `override_saledate_check` = 0 WHERE id = ?";

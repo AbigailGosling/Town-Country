@@ -242,7 +242,7 @@ function precredit_check($customer_id)
     $returningObj['showWarning'] = false;
     $returningObj['saleAllowed'] = true;
     $returningObj['creditCheckRender'] = true;
-    if ($custR['override'] == 1 || $custR['credit_enabled'] == 0)
+    if ($custR['override'] == 1 || $custR['credit_enabled'] == 0 || $custR['higher_override'] == 1)
     {
         $returningObj['infoMessage'] = "<td align='center' style='height:100%;padding-top:15px;padding-bottom:15px;'>Credit Check Disabled</td>";
         $returningObj['creditCheckRender'] = false;

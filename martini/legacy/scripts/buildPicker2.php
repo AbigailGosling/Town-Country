@@ -1,7 +1,6 @@
 <?php
 
 use App\Helpers\FuncHelper;
-use Illuminate\Support\Facades\Log;
 
 include(__DIR__.'/../functions.php');
 $picker_id = request()->input('picker_id', $_SESSION['USER']);
@@ -19,6 +18,7 @@ $addressid = request()->input('addressid',1);
 $transaction_id = request()->input('transaction_id');
 $isCredit = (request()->input('sup_type') == "credit");
 $isSupplier = request()->has('is_supplier');
+$invoice_id = request()->input('invoice');
 
 if ($transaction_id != null && $transaction_id != "")
 {
@@ -29,10 +29,24 @@ if ($transaction_id != null && $transaction_id != "")
         die();
     }
 }
-$x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit,is_return_to_supplier,goods_out_notes) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").",".(($isSupplier)?"1":"0").",?)";
-$y = prepareExecuteQuery($x,'iiisssssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id,$goods_out_note],true);
+if ($isCredit && !$isSupplier && $invoice_id != null && $invoice_id != "")
+{
+    $invoiceCheck = prepareExecuteQuery("SELECT * FROM `pickerSheets` WHERE id = ? AND customer_id = ? AND is_return_to_supplier = 0 AND deleted = 0",'ii',[$invoice_id, $customer_id]);
+    if ($invoiceCheck->num_rows == 0) {
+        throw new \Exception("invalid invoice");
+        abort(500);
+        die();
+    }
+    $pickersheet_id = $invoiceCheck->fetch_assoc()['id'];
+}
+else
+{
+    $x = "INSERT INTO `pickerSheets` (picker_id,user_from_id,customer_id,estimated_delivery_date,orderReferenceNumber,date_completed,addressid,picksheet_note,transaction_id,isSupplemental,isSupplementalCredit,is_return_to_supplier,goods_out_notes) VALUES (?,?,?,?,?,?,?,?,?,1,".(($isCredit)?"1":"0").",".(($isSupplier)?"1":"0").",?)";
+    $y = prepareExecuteQuery($x,'iiisssssss',[$picker_id,$user_from_id,$customer_id,$estimated_delivery_date,$orderReferenceNumber,$today,$addressid,$picksheet_note,$transaction_id,$goods_out_note],true);
 
-$pickersheet_id = $y;
+    $pickersheet_id = $y;
+}
+
 
 if ($isSupplier) {
     $x = "INSERT INTO `supplier_returns` (user_id,supplier_id,pick_id,reference_number,comments) VALUES (?,?,?,?,?)";
@@ -107,7 +121,7 @@ $customer = mysqli_fetch_array($y1);
 $current_outstanding = (float) $customer['current_outstanding'];
 $newVal = $current_outstanding + (float) $val;
 
-$x = "UPDATE `customers` SET current_outstanding = ?,`override` = 0, `delivery_day_override` = 0 WHERE id = ? LIMIT 1";
+$x = "UPDATE `customers` SET current_outstanding = ?,`override` = 0, `delivery_day_override` = 0, `override_cost_check` = 0, `higher_override` = 0 WHERE id = ? LIMIT 1";
 $y = prepareExecuteQuery($x,'si',[$newVal,$customer_id]);
 # END update customer price
 

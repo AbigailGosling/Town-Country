@@ -4,6 +4,7 @@ use App\Helpers\ProcessHelper;
 use App\Models\Location;
 use App\Models\Pallet;
 use App\Models\Product;
+use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../functions.php');
 
@@ -75,16 +76,20 @@ use App\Models\Product;
         $transaction_id = null;
 		$pickersheet_id = $y;
 
+        if ((int)$pickersheet_id !== $pickersheet_id)
+		{
+			abort(500);
+			die();
+		}
+
         $x = "INSERT INTO `supplier_returns` (user_id,supplier_id,pick_id,reference_number,comments) VALUES (?,?,?,?,?)";
 		$y = prepareExecuteQuery($x,'iiiss',[$user_from_id,$supplier_id,$pickersheet_id,$orderReferenceNumber,$picksheet_note],true);
 
 		$return_id = $y;
 
-		if ((int)$pickersheet_id !== $pickersheet_id)
-		{
-			abort(500);
-			die();
-		}
+        $xa = "INSERT INTO `supplier_return_attachment` (user_id,return_id,comments) VALUES (?,?,?)";
+		$ya = prepareExecuteQuery($xa,'iis',[$user_from_id,$return_id,"created"],true);
+
 		loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
 		loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
         loggedDataChange("picksheet_estimated_delivery_date",$pickersheet_id,$estimated_delivery_date);
@@ -99,9 +104,7 @@ use App\Models\Product;
 
 			$target_weight = (int) request('target_weight_' . $product_id);
 
-			if(empty($target_weight)){ $target_weight = 0; }
-
-			if(!is_int($target_weight)){ $target_weight = 0; }
+			if(empty($target_weight) || !is_int($target_weight) || $target_weight < 0){ $target_weight = 0; }
 
 			$price = request('price_' . $product_id);
 			$price_type = $priceTypeSorted[$product_id];
