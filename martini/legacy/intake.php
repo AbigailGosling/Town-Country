@@ -899,7 +899,7 @@ use Illuminate\Support\Str;
 
 	<?php
 		$xk = "SELECT * FROM product WHERE original_intake_id=?";
-		$yk = prepareExecuteQuery($xk,'s',[$current_intake_id]);
+		$yk = prepareExecuteQuery($xk,'i',[$current_intake_id]);
 
 		$counting = mysqli_num_rows($yk);
 
