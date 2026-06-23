@@ -7,14 +7,16 @@ use Illuminate\View\Component;
 class DataTableHeader extends Component
 {
     public $showOnMobile;
+    public $width;
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct(bool $showOnMobile = true)
+    public function __construct(bool $showOnMobile = true,string $width = '100:px')
     {
         $this->showOnMobile = $showOnMobile;
+        $this->width = $width;
     }
 
     /**

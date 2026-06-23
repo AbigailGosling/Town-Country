@@ -300,7 +300,27 @@ use Illuminate\Support\Str;
 				if(is_numeric($intake['user_id'])){
 					echo getUsername($intake['user_id']);
 				}else{
-					echo $intake['user_id'];
+					?>
+                <form method="POST" action="" class="flex">
+                    <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
+                    <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
+                    <select name="staff_name" style="width:140px;">
+                        <option value="<?php echo $intake['user_id']; ?>" selected disabled><?php echo $intake['user_id']; ?></option>
+                        <?php
+                        $userLookup = prepareExecuteQuery("SELECT * FROM `users` WHERE `id` = ?",'i',[$userid])->fetch_assoc();
+                        ?>
+                        <option value=<?php echo $userLookup['id']; ?>><?php echo $userLookup['name']; ?></option>
+                        <?php
+                        $allUserLookup = prepareExecuteQuery("SELECT * FROM `laravel`.`users` WHERE `disabled` = 0 AND `is_hidden` = 0 AND `id` <> ? ORDER BY `name`",'i',[$userid])->fetch_all(MYSQLI_ASSOC);
+                        foreach($allUserLookup as $userLookup)
+                        {?>
+                        <option value=<?php echo $userLookup['id']; ?>><?php echo $userLookup['name']; ?></option>
+                        <?php }
+                        ?>
+                    </select>
+                    <!--<input type="submit" value="Save">-->
+                </form>
+                    <?php
 				}
 			?>
 		</div>

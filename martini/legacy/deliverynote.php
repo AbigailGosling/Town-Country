@@ -125,7 +125,10 @@ $s = (int)(microtime(true));
 	}
 ?>
 <script type="text/javascript">
-
+    var renderCompleted = false;
+    function renderComplete(){
+        return renderCompleted;
+    }
 </script>
 	<a href="<?php echo $domain; ?>deliverynoteList.php" class="backbtn">< Back</a>
 <main class="int int--extra-padding">
@@ -530,7 +533,7 @@ $s = (int)(microtime(true));
 	});
 	$(document).ready(function(){
 		var totalIntakeWeight = 0.0;
-
+        renderCompleted = true;
 		$('.aWeight').each(function() {
 			totalIntakeWeight = parseFloat(totalIntakeWeight) + parseFloat($(this).val());
 

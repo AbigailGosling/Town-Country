@@ -124,9 +124,6 @@ class PodHelper
             $pickedAt = [];
             /** @var PickerSheet $pickSheet */
             foreach ($addressData["pickSheets"] as $pickSheet) {
-                if (in_array($pickSheet->id, $processedPicks)) {
-                    continue;
-                }
                 foreach($pickSheet->pickWeightOuts as $pwo) {
                     $productIDArray = Weight::whereIn('id', $pwo->getWeights())->pluck('product_id')->unique()->toArray();
                     foreach($productIDArray as $productID){
