@@ -608,12 +608,13 @@ use App\Models\User;
 
 	# Get Cut name from id
 	function getCut($id){
-		return _getCut($id)['name'];
+		return _getCut($id)['name']??"";
 	}
     global $_cuts;
     $_cuts = [];
-    function _getCut(int $id)
+    function _getCut(int|null $id)
     {
+        if ($id === null) return null;
         global $_cuts;
         if (!array_key_exists($id,$_cuts))
         {

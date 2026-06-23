@@ -301,10 +301,10 @@ use Illuminate\Support\Str;
 					echo getUsername($intake['user_id']);
 				}else{
 					?>
-                <form method="POST" action="" class="flex">
+                <form id="changeStaffNameForm" method="POST" action="scripts/changeIntakeStaff.php" class="flex">
                     <input type="hidden" name="_token" value="<?php echo csrf_token();?>">
                     <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
-                    <select name="staff_name" style="width:140px;">
+                    <select style="height:30px;outline:none;border:0px;width: 100%;" id="staff_name" name="staff_name" style="width:140px;">
                         <option value="<?php echo $intake['user_id']; ?>" selected disabled><?php echo $intake['user_id']; ?></option>
                         <?php
                         $userLookup = prepareExecuteQuery("SELECT * FROM `users` WHERE `id` = ?",'i',[$userid])->fetch_assoc();
@@ -388,7 +388,7 @@ use Illuminate\Support\Str;
                 <form id="changeIntakeHealthForm" method="post" action="scripts/changeIntakeHealth.php">
                     <input type="hidden" name="intake_id" value="<?php echo $intake['id']; ?>">
                     <select id="changeIntakeHealth" style="height:30px;outline:none;border:0px;width: 100%;" name="health_id">
-                    <option value="-1" disabled<?php if(-1 == $intake['health_id']||null == $intake['health_id']||"" == $intake['health_id']){ echo 'selected'; } ?>></option>
+                    <option value="-1" disabled <?php if(-1 == $intake['health_id']||null == $intake['health_id']||"" == $intake['health_id']){ echo 'selected'; } ?>></option>
                         <?php
                             $y = prepareExecuteQuery("SELECT * FROM `health_mark` ORDER BY `name` ASC");
 
@@ -1224,6 +1224,14 @@ use Illuminate\Support\Str;
 			headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
 			url: "scripts/changeIntakeHealth.php", // it's the URL of your component B
 			data: $('#changeIntakeHealthForm').serialize(), // serializes the form's elements
+		});
+    });
+    $('#staff_name').change(function(){
+		$.ajax({ // make an AJAX request
+			type: "POST",
+			headers: { 'X-CSRF-TOKEN': "<?php echo csrf_token();?>" },
+			url: "scripts/changeIntakeStaff.php", // it's the URL of your component B
+			data: $('#changeStaffNameForm').serialize(), // serializes the form's elements
 		});
     });
 	$('.loadPalletBtn').click(function(){
