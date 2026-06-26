@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $cutoff
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property bool $pallet_movement_tracking_enabled
  *
  * @package App\Models
  */
@@ -32,6 +33,11 @@ class Site extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'name',
+        'disabled',
+        'abbreviation',
+        'cutoff',
+        'pallet_movement_tracking_enabled',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -50,6 +56,7 @@ class Site extends Model
      */
     protected $casts = [
         'disabled' => 'bool',
+        'pallet_movement_tracking_enabled' => 'bool',
     ];
     public function locations():HasMany
     {
