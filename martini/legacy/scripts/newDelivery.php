@@ -5,6 +5,7 @@ use App\Models\InboundContainer;
 use App\Models\Intake;
 use App\Models\Location;
 use App\Models\Pallet;
+use App\Models\PalletMovementTracking;
 use App\Models\Weight;
 use Illuminate\Support\Facades\Cache;
 
@@ -54,14 +55,14 @@ use Illuminate\Support\Facades\Cache;
         $intakeModel = Intake::find($intake_id);
         $intakeModel->container_id = $container->id;
         $intakeModel->save();
-
+        $locationId = Location::where("site_id",$site_id)->get()[0]->id;
         foreach($container->getProducts() as $containerProduct){
             if ($containerProduct->deleted == 1)continue;
             $pallet = new Pallet();
             $pallet->intake_id = $intake_id;
-            $pallet->storage_location = Location::where("site_id",$site_id)->get()[0]->id;
             $pallet->qc_hold = false;
             $pallet->save();
+            PalletMovementTracking::moveStock($pallet->id, $locationId);
 
             $product= $containerProduct->getProduct();
             $akg = $product->akg;

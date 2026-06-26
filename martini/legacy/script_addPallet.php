@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\PalletMovementTracking;
+
 	include('functions.php');
 	$unit = request()->input('unit');
 	$intake_id = request()->input('intake_id');
@@ -130,9 +133,10 @@
 
 		}
 	}
+
 	$storage_location = request()->input('storage_location');
-	$palletx = "UPDATE `pallet` SET `storage_location`=? WHERE `id`=?";
-	$pallety = prepareExecuteQuery($palletx,'si',[$storage_location,$pallet_id]);
+	PalletMovementTracking::moveStock($pallet_id, $storage_location);
+
 	if(request()->input('dupe') == 'true'){
 		echo $pallet_id;
 	}else{

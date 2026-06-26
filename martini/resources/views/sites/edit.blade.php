@@ -47,6 +47,12 @@
 
                     <x-input-error :messages="$errors->get('cutoff')" class="mt-2"/>
                 </div>
+                <div class="mt-4" for="pallet_movement_tracking_enabled" style="display: flex; padding-bottom: 1em;">
+                    <input type="checkbox" id="pallet_movement_tracking_enabled" name="pallet_movement_tracking_enabled"
+                            @if ($site->pallet_movement_tracking_enabled) checked @endif />
+                    <div style="width: 1em;"></div>
+                    <x-input-label for="pallet_movement_tracking_enabled" value="Include in Pallet Movement Tracking emails"/>
+                </div>
                 <div class="mt-4" for="sale_blocked" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="sale_blocked" name="sale_blocked"
                             @if ($site->sale_blocked) checked @endif />

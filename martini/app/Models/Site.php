@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon|null $updated_at
  * @property float|null $lat
  * @property float|null $lon
+ * @property bool $pallet_movement_tracking_enabled
  *
  * @package App\Models
  */
@@ -40,6 +41,7 @@ class Site extends Model
         'cutoff',
         'lat',
         'lon',
+        'pallet_movement_tracking_enabled',
     ];
     /**
      * The attributes that should be hidden for serialization.
@@ -60,6 +62,7 @@ class Site extends Model
         'disabled' => 'bool',
         'lat' => 'float',
         'lon' => 'float',
+        'pallet_movement_tracking_enabled' => 'bool',
     ];
     public function locations():HasMany
     {
