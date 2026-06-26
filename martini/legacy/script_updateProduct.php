@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\PalletMovementTracking;
+
 	include('functions.php');
 
 	$intake_id = request()->input('intake_id');
@@ -33,8 +36,7 @@
 	$price = request()->input('price');
 
 	$storage_location = request()->input('storage_location');
-	$palletx = "UPDATE `pallet` SET `storage_location`=? WHERE `id`=?";
-	$pallety = prepareExecuteQuery($palletx,'si',[$storage_location,$pallet_id]);
+	PalletMovementTracking::moveStock($pallet_id, $storage_location);
 
 	$cost = request()->input('cost');
 	$price = request()->input('price');

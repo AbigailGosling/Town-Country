@@ -49,13 +49,13 @@ class SiteController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'abbr' => ['nullable', 'string', 'max:255'],
             'cutoff' => ['required', 'date_format:H:i'],
-
         ]);
         $input = $request->all();
         $site = new Site;
         $site->name = $input['name'];
         $site->abbreviation = $input['abbr'];
         $site->cutoff = $input['cutoff'];
+        $site->pallet_movement_tracking_enabled = array_key_exists("pallet_movement_tracking_enabled", $input);
         $site->sale_blocked = array_key_exists("sale_blocked", $input);
         $site->save();
         return redirect(route('sites.index'))->with(['message' => "Successfully created $site->name"]);
@@ -107,6 +107,7 @@ class SiteController extends Controller
         $site->name = $input['name'];
         $site->abbreviation = $input['abbr'];
         $site->cutoff = $input['cutoff'];
+        $site->pallet_movement_tracking_enabled = array_key_exists("pallet_movement_tracking_enabled", $input);
         $site->sale_blocked = array_key_exists("sale_blocked", $input);
         $site->disabled = array_key_exists("disabled", $input);
         $site->save();
