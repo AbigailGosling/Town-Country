@@ -65,6 +65,7 @@ use Illuminate\Support\Str;
                 }
             }
         }
+        $cacheArray = [];
 		$intakeid = request()->input('intakeid');
 		for($i=0;$i<$size;$i++){
 			$product_id = "(" . $productids[$i] . ")";
@@ -455,7 +456,7 @@ use Illuminate\Support\Str;
 
             <label>Type</label><br/>
             <select style="width:177px;height:21px;" name="type_id" id="type_id" required>
-            <option disabled selected>Select...</option>
+            <option value="3" disabled selected>Select...</option>
 			<?php echo DocType::generateHTMLList($intake['type_id']); ?><br/>
             </select><br/><br/>
 

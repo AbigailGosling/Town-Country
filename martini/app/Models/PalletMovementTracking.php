@@ -40,9 +40,10 @@ class PalletMovementTracking extends Model
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
-    public static function moveStock(int $palletId, int $toLocationId): self
+    public static function moveStock(int $palletId, int $toLocationId): self|null
     {
         $pallet = Pallet::find($palletId);
+        if ($pallet->storage_location == $toLocationId) return null;
         $l = self::create([
             'pallet_id' => $palletId,
             'from_location' => ($pallet->storage_location !== null && $pallet->storage_location !== "") ? $pallet->storage_location : -1,

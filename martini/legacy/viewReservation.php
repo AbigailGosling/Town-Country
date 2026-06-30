@@ -134,7 +134,7 @@ use Illuminate\Support\Facades\Auth;
 	<div class="row">
 		<div class="col">
 			<label>	Order Reference Number</label><br/>
-			<input id="orderReferenceNumber" class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $reservation['orderReferenceNumber']; ?>">
+			<input id="orderReferenceNumber" class="form-control" type="text" class="inputbox" name="orderReferenceNumber" value="<?php echo $reservation['order_reference_number']; ?>">
 		</div>
 		<div class="col"></div>
 	</div>

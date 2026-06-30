@@ -86,30 +86,41 @@ class SupplierReturnController extends Controller
             $line->outstanding = 0;
             $line->value = 0;
             $line->paid = 0;
-            $returnProducts = PickerItem::selectRaw("ANY_VALUE(`price`) AS `price`, ANY_VALUE(`product_id`) AS `product_id`, count(`product_id`) as `count`")->where("pickersheet_id",$pick->id)->groupBy('product_id')->get();
+            $returnProducts = PickerItem::selectRaw("ANY_VALUE(`price`) AS `price`, ANY_VALUE(`product_id`) AS `product_id`")->where("pickersheet_id",$pick->id)->groupBy('product_id')->get();
             $quickWeightLookup = explode(",",implode(",",PickWeightOut::where("pickersheet_id",$pick->id)->pluck("weight_ids")->toArray()));
             foreach ($returnProducts as $returnProduct)
             {
                 $internalProduct = Product::find($returnProduct->product_id);
-                if ( $internalProduct == null) continue;
+                if ($internalProduct == null) continue;
+                $weights = Weight::where("product_id",$returnProduct->product_id)->whereIn("id",$quickWeightLookup)->get();
                 if ($internalProduct->unit=="PPC")
                 {
-                    $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $returnProduct->count,3);
-
+                    $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $weights->count(),3);
                 }
                 else
                 {
-                    $q = Weight::where("product_id",$returnProduct->product_id)->whereIn("id",$quickWeightLookup);
-                    $tear = FuncHelper::floorDec($q->get()->sum("weight_tear"),3);
+                    $tear = 0;
+                    foreach ($weights as $weight)
+                    {
+                        $tear += FuncHelper::floorDec($weight->weight_tear,3);
+                    }
                     $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $tear,3);
                 }
                 $line->value += $itemCost;
                 $line->items[] = [$internalProduct,$returnProduct,$quickWeightLookup];
             }
-            $line->paid = FuncHelper::floorDec(InvoicePayment::where("invoice_id",$pick->id)->get()->sum("amount"),3);
-            if ($line->paid==null)$line->paid=0;
+            $line->value = FuncHelper::floorDec($line->value,3);
+            $line->paid = 0;
+            foreach (InvoicePayment::where("invoice_id",$pick->id)->get() as $invPay)
+            {
+                $line->paid += FuncHelper::floorDec($invPay->amount,3);
+            }
+            $line->paid = FuncHelper::floorDec($line->paid,3);
             $line->outstanding = FuncHelper::floorDec($line->value - $line->paid,3);
-            $returnCol->add($line);
+            if (abs($line->outstanding) >= 0.01)
+            {
+                $returnCol->add($line);
+            }
         }
         return $returnCol;
     }

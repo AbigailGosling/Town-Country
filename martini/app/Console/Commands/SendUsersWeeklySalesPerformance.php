@@ -52,8 +52,8 @@ class SendUsersWeeklySalesPerformance extends Command
             return Command::FAILURE;
         }
         $salesPermission = Permission::find(1);
-        $targetDateStart = Carbon::now()->startOfWeek(Carbon::SUNDAY)->startOfDay();
-        $targetDateEnd = $targetDateStart->copy()->addDays(6)->endOfDay();
+        $targetDateStart = Carbon::now()->startOfWeek(Carbon::SUNDAY);
+        $targetDateEnd = $targetDateStart->copy()->addDays(6);
         $usersSorted = [];
         $saleTargets = [];
         foreach (User::where([["disabled", false],["is_hidden", false]])->get() as $user){
