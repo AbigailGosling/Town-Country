@@ -84,15 +84,15 @@ class SendFinancialOverviewEmail extends Command
 
         $targetSummary = FinancialOverviewSummaryHelper::buildSummaryForRange(
             $report,
-            $targetDate->copy()->startOfDay(),
-            $targetDate->copy()->endOfDay(),
+            $targetDate->copy()->subDay(),
+            $targetDate->copy(),
             $filters,
             $interestedPicks
         );
         $comparisonSummary = FinancialOverviewSummaryHelper::buildSummaryForRange(
             $report,
-            $comparisonDate->copy()->startOfDay(),
-            $comparisonDate->copy()->endOfDay(),
+            $comparisonDate->copy()->subDay(),
+            $comparisonDate->copy(),
             $filters,
             $interestedPicks
         );

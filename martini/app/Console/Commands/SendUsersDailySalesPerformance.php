@@ -10,7 +10,6 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
 
@@ -53,10 +52,10 @@ class SendUsersDailySalesPerformance extends Command
             return Command::FAILURE;
         }
         $salesPermission = Permission::find(1);
-        $targetDateStart = Carbon::now()->startOfDay();
-        $targetDateEnd = $targetDateStart->copy()->endOfDay();
-        $weekDateStart = $targetDateStart->copy()->startOfWeek(Carbon::SUNDAY)->startOfDay();
-        $diffInWeek = $targetDateStart->diffInDays($weekDateStart, true);
+        $targetDateEnd = Carbon::now()->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
+        $targetDateStart = $targetDateEnd->copy()->subDay();
+        $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::SUNDAY);
+        $diffInWeek = $targetDateEnd->diffInDays($targetDateEnd, true);
         $usersSorted = [];
         $saleTargets = [];
         foreach (User::where([["disabled", false],["is_hidden", false]])->get() as $user){
@@ -81,11 +80,11 @@ class SendUsersDailySalesPerformance extends Command
         }
         return Command::SUCCESS;
     }
-    private function processUser(string $email, array $user_ids, float $sale_target, User $user, Report $report, Carbon $targetDateStart, Carbon $weekDateStart, Carbon $weekDateEnd, int $diffInWeek): void
+    private function processUser(string $email, array $user_ids, float $sale_target, User $user, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart, int $diffInWeek): void
     {
         $targetSummary = ['daily' => [], 'weekly' => []];
         foreach ($user_ids as $user_id){
-            $subSummary = $this->processSubUser($user_id, $report, $targetDateStart, $weekDateStart, $weekDateEnd);
+            $subSummary = $this->processSubUser($user_id, $report, $targetDateStart, $targetDateEnd, $weekDateStart);
             foreach ($subSummary['daily'] as $key => $value){
                 if (!array_key_exists($key, $targetSummary['daily'])){
                     $targetSummary['daily'][$key] = 0;
@@ -102,12 +101,13 @@ class SendUsersDailySalesPerformance extends Command
         if (!array_key_exists('Sell Value', $targetSummary['weekly']) || $targetSummary['weekly']['Sell Value'] == 0){
             return;
         }
-        $targetLabel = $targetDateStart->format('d/m/Y');
+        $targetLabel = $targetDateEnd->format('d/m/Y');
         $subject = 'Daily Summary For ' . $user->name . ' - ' . $targetLabel;
-        $htmlBody = $this->buildEmailBody($sale_target, $targetDateStart, $targetLabel, $targetSummary, $diffInWeek);
+        $htmlBody = $this->buildEmailBody($sale_target, $targetDateEnd, $targetLabel, $targetSummary, $diffInWeek);
 
         $to = [
             $email
+            // "abigail.gosling@tang.solutions"
         ];
         $cc = [
             "Ross.Whetton@townandcountrymeats.co.uk",
@@ -167,10 +167,10 @@ class SendUsersDailySalesPerformance extends Command
         return number_format($value, 3, '.', ',') . ' kg';
     }
 
-    private function buildEmailBody(float $sale_target, Carbon $targetDateStart, string $targetLabel, array $targetSummary, int $diffInWeek): string
+    private function buildEmailBody(float $sale_target, Carbon $targetDateEnd, string $targetLabel, array $targetSummary, int $diffInWeek): string
     {
         $dailyTarget = $sale_target / 5;
-        if ($targetDateStart->dayOfWeek === Carbon::SUNDAY) {
+        if ($targetDateEnd->dayOfWeek === Carbon::SUNDAY) {
             $dailyTarget = 0;
         }
         $balance = $targetSummary['daily']['Actual Profit'] - $dailyTarget;
@@ -200,8 +200,8 @@ class SendUsersDailySalesPerformance extends Command
             . "</tr></thead><tbody>"
             . "<tr>"
             . "<td><strong>{$targetLabel}</strong></td>"
-            . "<td>{$targetDateStart->format('l')}</td>"
-            . "<td>Week {$targetDateStart->isoWeek()}</td>"
+            . "<td>{$targetDateEnd->format('l')}</td>"
+            . "<td>Week {$targetDateEnd->isoWeek()}</td>"
             . "<td>{$this->formatKg($targetSummary['daily']['kg'])}</td>"
             // . "<td>{$this->formatMoney($targetSummary['Cost Value'])}</td>"
             // . "<td>{$this->formatMoney($targetSummary['Actual Cost Value'])}</td>"
