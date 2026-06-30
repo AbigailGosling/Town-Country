@@ -213,8 +213,17 @@ class PodHelper
 
         if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "CANNOT_DELIVER") {
             foreach ($pickerSheets as $pickerSheet) {
-                $pickerSheet->estimated_delivery_date = Carbon::now()->addDays(1)->format("d/m/Y");
-                FuncHelper::loggedDataChange(57,"picksheet_estimated_delivery_date",$pickerSheet->id,Carbon::now()->addDays(1)->format("d/m/Y"));
+
+                $nextDeliveryDate = Carbon::now()->addDay();
+                $weekdayLookup = [1			,64			,32			,16			,8			,4			,2			];
+                $weekdayInt = $weekdayLookup[$nextDeliveryDate->dayOfWeek];
+                while ($pickerSheet->customer->delivery_day_checking == 1 && ($weekdayInt & $pickerSheet->customer->delivery_days) == 0) {
+                    $nextDeliveryDate->addDay();
+                    $weekdayInt = $weekdayLookup[$nextDeliveryDate->dayOfWeek];
+                }
+                $pickerSheet->estimated_delivery_date = $nextDeliveryDate->format("d/m/Y");
+
+                FuncHelper::loggedDataChange(57,"picksheet_estimated_delivery_date",$pickerSheet->id,$nextDeliveryDate->format("d/m/Y"));
                 $pickerSheet->save();
                 $pwos = PickWeightOut::where('pickersheet_id', $pickerSheet->id)->get();
                 foreach ($pwos as $pwo) {
@@ -222,7 +231,7 @@ class PodHelper
                     foreach ($oppws as $oppw)
                     {
                         $op = OutgoingPallet::find($oppw->outgoing_pallet_id);
-                        $op->estimated_delivery_date = Carbon::now()->addDays(1)->format("d/m/Y");
+                        $op->estimated_delivery_date = $nextDeliveryDate->format("d/m/Y");
                         $op->dispatched = $op->pod_sent = 0;
                         $op->save();
                         $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
