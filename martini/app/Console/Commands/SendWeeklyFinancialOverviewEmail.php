@@ -56,12 +56,12 @@ class SendWeeklyFinancialOverviewEmail extends Command
 
         $today = Carbon::now();
         $targetWeekNumber = $today->isoWeek();
-        $targetStart = $today->copy()->startOfWeek(Carbon::SATURDAY)->startOfDay();
-        $targetEnd = $today->copy()->endOfWeek(Carbon::FRIDAY)->endOfDay();
+        $targetStart = $today->copy()->startOfWeek(Carbon::SATURDAY);
+        $targetEnd = $today->copy()->endOfWeek(Carbon::FRIDAY);
 
         $comparisonDate = $today->copy()->subYear();
-        $comparisonStart = $comparisonDate->copy()->startOfWeek(Carbon::SATURDAY)->startOfDay();
-        $comparisonEnd = $comparisonDate->copy()->endOfWeek(Carbon::FRIDAY)->endOfDay();
+        $comparisonStart = $comparisonDate->copy()->startOfWeek(Carbon::SATURDAY);
+        $comparisonEnd = $comparisonDate->copy()->endOfWeek(Carbon::FRIDAY);
 
         $interestedPicks = [];
         $filters = ReportHelper::filterBuilder(

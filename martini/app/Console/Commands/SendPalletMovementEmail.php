@@ -33,7 +33,7 @@ class SendPalletMovementEmail extends Command
     public function handle()
     {
         $now = now();
-        $start = $now->copy()->subDay();
+        $start = $now->copy()->subDays(1);
         $sites = Site::where([['pallet_movement_tracking_enabled', true], ['disabled', false]])->get();
         $output = "";
         foreach($sites as $site) {
@@ -45,12 +45,19 @@ class SendPalletMovementEmail extends Command
             $output .= "<h2>{$site->abbreviation} : {$site->name} Movements</h2>";
             $output .= $this->processMovements($movements,$locations);
         }
-        SLabsEmailer::send_email(-1,"TEST",["abigail.gosling@tang.solutions"],"Pallet Movement Report",$output);
+        $u = [
+            "gemma@townandcountrymeats.co.uk",
+            "office@townandcountrymeats.co.uk",
+            "ross.whetton@townandcountrymeats.co.uk",
+            "abigail.gosling@tang.solutions"
+            ];
+        SLabsEmailer::send_email(-1,"ColdStoreMovements",$u,"Pallet Movement Report",$output);
         return Command::SUCCESS;
     }
     public function processMovements(Collection $movements, array $locations) {
         $output = "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'><thead><tr><th>Pallet ID</th><th>By</th><th>From Location</th><th>To Location</th><th>At</th></tr></thead><tbody>";
         foreach ($movements as $movement) {
+            if ($movement->from_location == $movement->to_location) continue;
             $name = $movement->createdBy->name ?? 'System';
             $output .= "<tr><td>{$movement->pallet->id}</td>
             <td>{$name}</td>
@@ -73,6 +80,6 @@ class SendPalletMovementEmail extends Command
         if (!in_array($interestedID, $locations)) {
             return "{$internalLocation->site->abbreviation} : {$internalLocation->name}";
         }
-        return "{$internalLocation->site->abbreviation}";
+        return "{$internalLocation->name}";
     }
 }

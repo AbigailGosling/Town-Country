@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\Site;
 use App\Models\User;
 use App\Models\Weight;
+use Illuminate\Support\Facades\Auth;
 
 $e = new \Exception;
 $s = (int)(microtime(true));
@@ -67,7 +68,7 @@ $s = (int)(microtime(true));
     }
 
 
-	if(request()->input('deleteInternalDocument') !== null && $user['user_type'] == 'A'){
+	if(request()->input('deleteInternalDocument') !== null && ($user['user_type'] == 'A' || User::find(Auth::id())->hasPermission("delivery_documents"))){
 		$internal_doc_id = request()->input('deleteInternalDocument');
 		$pickersheet_id = request()->input('id');
 
@@ -291,7 +292,7 @@ $s = (int)(microtime(true));
 		</table>
     </form>
     <?php }?>
-	<?php if($user['user_type'] == 'A'){ ?>
+	<?php if($user['user_type'] == 'A' || User::find(Auth::id())->hasPermission("delivery_documents")){ ?>
 	<form id="mainForm" class="printhide" method="POST" action="scripts/addInternalDocument.php" enctype="multipart/form-data" style="padding:10px;background: #f9f9f9;border: 1px solid #333;">
 		<input type="hidden" name="type" value="DELIVERY_NOTE">
 		<input type="hidden" name="pickersheet_id" value="<?php echo $pickersheet_id; ?>">

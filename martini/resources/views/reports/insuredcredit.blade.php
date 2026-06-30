@@ -20,8 +20,8 @@
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 mb-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <div class="text-sm text-gray-500">Customers</div>
-                    <div class="text-lg font-semibold text-gray-900">{{ $totals['customer_count'] }}</div>
+                    <div class="text-sm text-gray-500"> Customers over insured credit</div>
+                    <div class="text-lg font-semibold text-gray-900">{{ $totals['over_limit_count'] }}</div>
                 </div>
                 <div>
                     <div class="text-sm text-gray-500">Total Insured Credit</div>
@@ -33,14 +33,14 @@
                 </div>
                 <div>
                     <div class="text-sm text-gray-500">Total Difference</div>
-                    <div class="text-lg font-semibold {{ $totals['difference'] < 0 ? 'text-red-600' : 'text-green-700' }}">
+                    <div class="text-lg font-semibold text-red-600">
                         {{ $formatCurrency((float) $totals['difference']) }}
                     </div>
                 </div>
             </div>
             <div class="mt-4 flex items-center justify-between gap-4 flex-wrap">
                 <div class="text-sm text-gray-600">
-                    Customers over insured credit: <span class="font-semibold text-gray-900">{{ $totals['over_limit_count'] }}</span>
+                    Customers : <span class="font-semibold text-gray-900">{{ $totals['customer_count'] }}</span>
                 </div>
                 <x-form-button id="export" title="Loading..." background="green" iconClass="fa-solid fa-file-spreadsheet" :disable="true" :fixed="true"></x-form-button>
             </div>
@@ -64,7 +64,7 @@
                                 <x-data-table-column>
                                     @if (in_array($key, $currencyColumns, true))
                                         @if ($key === 'Difference')
-                                            <span class="{{ (float) $value < 0 ? 'text-red-600' : 'text-green-700' }}">
+                                            <span class="text-red-600">
                                                 {{ $formatCurrency((float) $value) }}
                                             </span>
                                         @else

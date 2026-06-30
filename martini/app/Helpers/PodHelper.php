@@ -236,6 +236,10 @@ class PodHelper
         if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "DELIVERY_REJECTED") {
             foreach ($payload["SUB_TASKS"] as $line) {
                 $thisWeights = explode(',', $line["UserData"]["PRODUCT_WEIGHT_INFO"]);
+                if (count($thisWeights)<1)
+                {
+                    $thisWeights = explode(",",implode(",",PickWeightOut::whereIn("pickersheet_id",$pickerSheetIDs)->get()->pluck("weight_ids")->toArray()));
+                }
                 foreach ($thisWeights as $weightInfo) {
                     $weightId = (int) explode('|', $weightInfo)[0];
                     $rejected_weight_ids[] = $weightId;
@@ -270,7 +274,7 @@ class PodHelper
             }
         }
         Auth::login(User::where('id',57)->first());
-        $rejected_weights = Weight::whereIn('id', $rejected_weight_ids)->get();
+        $rejected_weights = Weight::whereIn('id', $rejected_weight_ids)->get()->keyBy('id');
         /** @var PickerSheet $pickerSheet */
         foreach ($pickerSheets as $pickerSheet) {
             $thisPickWeights = [];
@@ -286,7 +290,7 @@ class PodHelper
                     if (!isset($organisedByNatBrandCut[$natBrandCut])) {
                         $organisedByNatBrandCut[$natBrandCut] = [];
                     }
-                    $organisedByNatBrandCut[$natBrandCut][] = $weight;
+                    $organisedByNatBrandCut[$natBrandCut][] = $rejected_weights[$weight];
                 }
                 $returnIntake = new Intake();
                 $returnIntake->returned = 1;

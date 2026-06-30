@@ -282,8 +282,8 @@ class ReportHelper
 			$start = Carbon::createFromTimestamp(0);
 		}
 		if ($end == null) $end = Carbon::now();
-		$start = $start->startOfDay();
-		$end = $end->endOfDay();
+		// $start = $start->startOfDay();
+		// $end = $end->endOfDay();
         //Alter DB Settings
         static::$conn = DB::connection("tandc_live");
         static::$pdo = static::$conn->getPdo();

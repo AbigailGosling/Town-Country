@@ -21,12 +21,14 @@ class InsuredCreditReportController extends Controller
                 'customers.insured_credit',
                 'customer_outstanding_cache.outstanding',
             ]);
-
-        $data = $customers->map(function ($customer) {
+        $customerCount = $customers->count();
+        $customers = $customers->filter(function ($customer) {
+            return (float) ($customer->outstanding ?? 0) > (float) ($customer->insured_credit ?? 0);
+        })->values();
+        $customers = $customers->map(function ($customer) {
             $insuredCredit = (float) ($customer->insured_credit ?? 0);
             $outstanding = (float) ($customer->outstanding ?? 0);
-            $difference = $insuredCredit - $outstanding;
-
+            $difference =  $outstanding - $insuredCredit;
             return [
                 'Customer ID' => $customer->id,
                 'Customer' => $customer->businessname,
@@ -35,29 +37,27 @@ class InsuredCreditReportController extends Controller
                 'Difference' => $difference,
             ];
         })->values();
-        $data = $data->sortByDesc(function ($customer){
-            return $customer['Outstanding Balance'];
+        $customers = $customers->sortByDesc(function ($customer){
+            return $customer['Difference'];
         })->values();
         $totals = [
-            'customer_count' => $data->count(),
+            'customer_count' => $customerCount,
             'insured_credit' => (float) $customers->sum(function ($customer) {
-                return (float) ($customer->insured_credit ?? 0);
+                return (float) ($customer['Insured Credit'] ?? 0);
             }),
             'outstanding' => (float) $customers->sum(function ($customer) {
-                return (float) ($customer->outstanding ?? 0);
+                return (float) ($customer['Outstanding Balance'] ?? 0);
             }),
         ];
-        $totals['difference'] = $totals['insured_credit'] - $totals['outstanding'];
-        $totals['over_limit_count'] = $customers->filter(function ($customer) {
-            return (float) ($customer->outstanding ?? 0) > (float) ($customer->insured_credit ?? 0);
-        })->count();
+        $totals['difference'] = $totals['outstanding'] - $totals['insured_credit'];
+        $totals['over_limit_count'] = $customers->count();
 
-        if ($data->isNotEmpty()) {
-            $data->push($this->buildTotalRow($totals));
+        if ($customers->isNotEmpty()) {
+            $customers->push($this->buildTotalRow($totals));
         }
 
         return view('reports.insuredcredit', [
-            'data' => $data,
+            'data' => $customers,
             'totals' => $totals,
         ]);
     }
