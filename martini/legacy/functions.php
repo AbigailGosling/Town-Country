@@ -375,9 +375,9 @@ use App\Models\User;
 	function addIntakeFromPurchase($supplier_id, $purchase_id, $date_received, $vehicle_reg, $vehicle_temperature, $product_temperature, $delivery_note_number,$purchased_id){
 		global $mysqli;
 
-		$x = "INSERT into `intake` (supplier_id, purchase_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id)
-				VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-		return prepareExecuteQuery($x,'iissssss',[$supplier_id,$purchase_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$purchased_id],true);
+		$x = "INSERT into `intake` (created_by, supplier_id, purchase_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		return prepareExecuteQuery($x,'iiissssss',[Auth::id(),$supplier_id,$purchase_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$purchased_id],true);
 
 	}
 
@@ -587,21 +587,21 @@ use App\Models\User;
 
 	function deleteWeight($weightID){
 		global $mysqli;
-
-		$x = "DELETE FROM weights WHERE id=? LIMIT 1";
+	    loggedDataChange("weight_delete", $weightID, "functions.php->deleteWeight");
+		$x = "DELETE FROM weights WHERE status_id = 0 AND id=? LIMIT 1";
 		$y = prepareExecuteQuery($x,'i',[$weightID]);
 	}
 
 	function deleteIntakeDoc($intakeid, $docid){
 		global $mysqli;
-
+        loggedDataChange("intake_doc_delete", $docid, "functions.php->deleteIntakeDoc");
 		$x = "DELETE FROM intakeDocs WHERE id=? && intakeid=? LIMIT 1";
 		$y = prepareExecuteQuery($x,'ii',[$docid,$intakeid]);
 	}
 
 	function deletePurchase($id){
 		global $mysqli;
-
+        loggedDataChange("purchase_delete", $id, "functions.php->deletePurchase");
 		$x = "UPDATE purchase_form SET deleted = 1 WHERE id=? LIMIT 1";
 		$y = prepareExecuteQuery($x,'i',[$id]);
 	}
@@ -1264,7 +1264,11 @@ use App\Models\User;
 	# Delete Boxes for specific product_id
 	function deleteWeightsFor($product_id){
 		global $mysqli;
-
+        $allBeingDeleted = prepareExecuteQuery("SELECT * FROM `weights` WHERE status_id = 0 AND product_id = ?",'i',[$product_id])->fetch_all(MYSQLI_ASSOC);
+        foreach ($allBeingDeleted as $weight)
+        {
+            loggedDataChange("weight_delete", $weight['id'], "functions.php->deleteWeightsFor");
+        }
 		$x = "DELETE FROM `weights` WHERE product_id = ?";
 		$y = prepareExecuteQuery($x,'i',[$product_id]);
 	}
@@ -1273,14 +1277,26 @@ use App\Models\User;
 	function deleteProductsFor($pallet_id){
 		global $mysqli;
 
-		$x = "DELETE FROM `product` WHERE pallet_id = ?";
-		$y = prepareExecuteQuery($x,'i',[$pallet_id]);
+        $allBeingDeleted = prepareExecuteQuery("SELECT * FROM `product` WHERE pallet_id = ?",'i',[$pallet_id])->fetch_all(MYSQLI_ASSOC);
+        $toDelete = [];
+        foreach ($allBeingDeleted as $product)
+        {
+            $weights = prepareExecuteQuery("SELECT * FROM `weights` WHERE status_id = 1 AND product_id = ?",'i',[$product['id']])->fetch_all(MYSQLI_ASSOC);
+            if (count($weights) > 0)
+            {
+                $toDelete[] = $product['id'];
+                loggedDataChange("product_delete", $product['id'], "functions.php->deleteProductsFor");
+            }
+        }
+		$x = "DELETE FROM `product` WHERE id IN (".implode(",",$toDelete).")";
+		$y = prepareExecuteQuery($x);
 	}
 
 	# Delete pallet
 	function deletePallet($pallet_id){
 		global $mysqli;
 
+        loggedDataChange("pallet_delete", $pallet_id, "functions.php->deletePallet");
 		$x = "DELETE FROM `pallet` WHERE id = ?";
 		$y = prepareExecuteQuery($x,'i',[$pallet_id]);
 	}
@@ -1290,14 +1306,14 @@ use App\Models\User;
 		global $mysqli;
 
 		if($purchase_id != '#'){
-			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id,site_id,internal_num)
-			VALUES (?,?,?,?,?,?,?,?,?,?,?)";
-			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id, $site_id,$internal_number];
+			$x = "INSERT into `intake` (created_by, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id,site_id,internal_num)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+			$vars = [Auth::id(),$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id, $site_id,$internal_number];
 			$varSt= str_repeat('s',count($vars));
 		}else{
-			$x = "INSERT into `intake` (supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,site_id,internal_num)
-			VALUES (?,?,?,?,?,?,?,?,?,?)";
-			$vars = [$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id, $site_id,$internal_number];
+			$x = "INSERT into `intake` (created_by, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,site_id,internal_num)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+			$vars = [Auth::id(),$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id, $site_id,$internal_number];
 			$varSt= str_repeat('s',count($vars));
 		}
 
@@ -1308,14 +1324,14 @@ use App\Models\User;
 		global $mysqli;
 
 		if($purchase_id != '#'){
-			$x = "INSERT into `intake` (returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id)
-			VALUES (?,?,?,?,?,?,?,?,?,?)";
-			$vars = [1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id];
+			$x = "INSERT into `intake` (created_by, returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id,purchase_id)
+			VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+			$vars = [Auth::id(),1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id,$purchase_id];
 			$varSt= str_repeat('s',count($vars));
 		}else{
-			$x = "INSERT into `intake` (returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id)
-			VALUES (?,?,?,?,?,?,?,?,?)";
-			$vars = [1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id];
+			$x = "INSERT into `intake` (created_by, returned, supplier_id,security_id, date_received, vehicle_reg, vehicle_temperature,product_temperature,delivery_note_number,user_id)
+			VALUES (?,?,?,?,?,?,?,?,?,?)";
+			$vars = [Auth::id(),1,$supplier_id,$security_id,$date_received,$vehicle_reg,$vehicle_temperature,$product_temperature,$delivery_note_number,$staff_id];
 			$varSt= str_repeat('s',count($vars));
 		}
 
@@ -1394,13 +1410,16 @@ use App\Models\User;
         if ($temp_pallet_ids != '')
         {
             $productsResult = prepareExecuteQuery("SELECT id FROM `product` WHERE `pallet_id` IN ($temp_pallet_ids)");
-            while($product = $productsResult->fetch_assoc()){ array_push($product_ids, $product['id']); }
-
-            $temp_product_ids = implode(',', $product_ids);
-            // Delete unsold weight entries
-            if ($temp_product_ids != '')prepareExecuteQuery("DELETE FROM `weights` WHERE `status_id` = 0 AND `product_id` IN ($temp_product_ids)");
-
+            while($product = $productsResult->fetch_assoc())
+            {
+                deleteWeightsFor($product['id']);
+            }
+            foreach ($pallet_ids as $pallet_id)
+            {
+                deleteProductsFor($pallet_id);
+            }
         }
+        loggedDataChange("intake_delete", $intake_id, "functions.php->deleteIntake");
         prepareExecuteQuery("UPDATE `intake` SET `deleted` = 1 WHERE `id` = ?",'i',[$intake_id]);
 	}
 
@@ -1463,8 +1482,8 @@ use App\Models\User;
 	function addIntake($supplier_id, $date_received, $vehicle_reg, $vehicle_temperature){
 		global $mysqli;
 
-		$x = "INSERT into `intake` (supplier_id, date_received, vehicle_reg, vehicle_temperature) VALUES (?,?,?,?)";
-		$y = prepareExecuteQuery($x,'isss',[$supplier_id,$date_received,$vehicle_reg,$vehicle_temperature]);
+		$x = "INSERT into `intake` (created_by, supplier_id, date_received, vehicle_reg, vehicle_temperature) VALUES (?,?,?,?,?)";
+		$y = prepareExecuteQuery($x,'iisss',[Auth::id(),$supplier_id,$date_received,$vehicle_reg,$vehicle_temperature]);
 	}
 
 
