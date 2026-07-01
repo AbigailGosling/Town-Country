@@ -302,6 +302,7 @@ class PodHelper
                     $organisedByNatBrandCut[$natBrandCut][] = $rejected_weights[$weight];
                 }
                 $returnIntake = new Intake();
+                $returnIntake->created_by = Auth::id();
                 $returnIntake->returned = 1;
                 $returnIntake->delivery_note_number = $pickerSheet->id;
                 $returnIntake->supplier_id = $pickerSheet->customer_id;
