@@ -54,8 +54,8 @@ class SendUsersDailySalesPerformance extends Command
         $salesPermission = Permission::find(1);
         $targetDateEnd = Carbon::now()->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
         $targetDateStart = $targetDateEnd->copy()->subDay();
-        $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::SUNDAY);
-        $diffInWeek = $targetDateEnd->diffInDays($targetDateEnd, true);
+        $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::MONDAY);
+        $diffInWeek = $targetDateEnd->diffInDays($weekDateStart, true);
         $usersSorted = [];
         $saleTargets = [];
         foreach (User::where([["disabled", false],["is_hidden", false]])->get() as $user){
@@ -80,7 +80,7 @@ class SendUsersDailySalesPerformance extends Command
         }
         return Command::SUCCESS;
     }
-    private function processUser(string $email, array $user_ids, float $sale_target, User $user, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart, int $diffInWeek): void
+    private function processUser(string $email, array $user_ids, float $saleTarget, User $user, Report $report, Carbon $targetDateStart, Carbon $targetDateEnd, Carbon $weekDateStart, int $diffInWeek): void
     {
         $targetSummary = ['daily' => [], 'weekly' => []];
         foreach ($user_ids as $user_id){
@@ -103,7 +103,7 @@ class SendUsersDailySalesPerformance extends Command
         }
         $targetLabel = $targetDateEnd->format('d/m/Y');
         $subject = 'Daily Summary For ' . $user->name . ' - ' . $targetLabel;
-        $htmlBody = $this->buildEmailBody($sale_target, $targetDateEnd, $targetLabel, $targetSummary, $diffInWeek);
+        $htmlBody = $this->buildEmailBody($saleTarget, $targetDateEnd, $targetLabel, $targetSummary, $diffInWeek);
 
         $to = [
             $email
@@ -167,22 +167,22 @@ class SendUsersDailySalesPerformance extends Command
         return number_format($value, 3, '.', ',') . ' kg';
     }
 
-    private function buildEmailBody(float $sale_target, Carbon $targetDateEnd, string $targetLabel, array $targetSummary, int $diffInWeek): string
+    private function buildEmailBody(float $saleTarget, Carbon $targetDateEnd, string $targetLabel, array $targetSummary, int $diffInWeek): string
     {
-        $dailyTarget = $sale_target / 5;
-        if ($targetDateEnd->dayOfWeek === Carbon::SUNDAY) {
+        $dailyTarget = $saleTarget / 5;
+        if ($targetDateEnd->dayOfWeek === Carbon::SUNDAY || $targetDateEnd->dayOfWeek === Carbon::SATURDAY) {
             $dailyTarget = 0;
         }
         $balance = $targetSummary['daily']['Actual Profit'] - $dailyTarget;
         $isNegative = $balance < 0;
         $absBalance = abs($balance);
-        $expectedForTheWeek = $dailyTarget * min(5, $diffInWeek);
+        $expectedForTheWeek = $dailyTarget * min(5, $diffInWeek+1);
         $weekBalance = $targetSummary['weekly']['Actual Profit'] - $expectedForTheWeek;
         $isWeekBalanceNegative = $weekBalance < 0;
         $absWeekBalance = abs($weekBalance);
         return "<html><body>"
             . "<p>Daily Summary.</p>"
-            . "<p>Your weekly sales target is: <strong>{$this->formatMoney($sale_target)}</strong></p>"
+            . "<p>Your weekly sales target is: <strong>{$this->formatMoney($saleTarget)}</strong></p>"
             . "<p>Your daily sales target is: <strong>{$this->formatMoney($dailyTarget)}</strong></p>"
             . "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
             . "<thead><tr style='background:#f2f2f2;'>"
