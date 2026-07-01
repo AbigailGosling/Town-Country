@@ -300,6 +300,8 @@ use Illuminate\Support\Str;
 			<?php
 				if(is_numeric($intake['user_id'])){
 					echo getUsername($intake['user_id']);
+                }else if ($intake['user_id'] != "UNKNOWN"){
+                    echo $intake['user_id'];
 				}else{
 					?>
                 <form id="changeStaffNameForm" method="POST" action="scripts/changeIntakeStaff.php" class="flex">

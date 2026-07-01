@@ -608,6 +608,7 @@ use App\Models\User;
 
 	# Get Cut name from id
 	function getCut($id){
+        if ($id=="") return "";
 		return _getCut($id)['name']??"";
 	}
     global $_cuts;
@@ -904,10 +905,12 @@ use App\Models\User;
     }
 	# Get Species name from id
 	function getSpecies($id){
-		return _getSpecies($id)['name'] ?? null;
+        if ($id=="") return null;
+		return _getSpecies((int)$id)['name'] ?? null;
 	}
 
 	function getSpeciesFromCut($cut_id){
+        if ($cut_id=="") return "";
 		return _getCut($cut_id)['species_id'] ?? "";
 	}
 
