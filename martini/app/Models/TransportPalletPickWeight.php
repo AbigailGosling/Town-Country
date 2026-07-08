@@ -5,25 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class OutgoingPalletPickWeight extends Model
+class TransportPalletPickWeight extends Model
 {
     protected $connection = 'tandc_live';
 
-    protected $table = 'outgoing_pallet_pickWeights';
+    protected $table = 'transport_pallet_pickWeights';
 
     protected $fillable = [
-        'outgoing_pallet_id',
+        'transport_pallet_id',
         'pickWeightOut_id',
     ];
 
     protected $casts = [
-        'outgoing_pallet_id' => 'integer',
+        'transport_pallet_id' => 'integer',
         'pickWeightOut_id' => 'integer',
     ];
 
-    public function outgoingPallet(): BelongsTo
+    public function transportPallet(): BelongsTo
     {
-        return $this->belongsTo(OutgoingPallet::class, 'outgoing_pallet_id');
+        return $this->belongsTo(TransportPallet::class, 'transport_pallet_id');
     }
 
     public function pickWeightOut(): BelongsTo

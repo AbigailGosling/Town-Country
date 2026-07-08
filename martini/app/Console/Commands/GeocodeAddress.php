@@ -6,14 +6,14 @@ use App\Helpers\GraphHopperHelper;
 use App\Models\ClientAddress;
 use Illuminate\Console\Command;
 
-class geocode extends Command
+class GeocodeAddress extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'run:geocode {id}';
+    protected $signature = 'run:geocode_address {id}';
 
     /**
      * The console command description.

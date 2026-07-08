@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class OutgoingPalletType extends Model
+class TransportPalletType extends Model
 {
     protected $connection = 'tandc_live';
-    protected $table = 'outgoing_pallet_types';
+    protected $table = 'tranport_pallet_types';
 
     protected $fillable = [
         'name',
@@ -18,8 +18,8 @@ class OutgoingPalletType extends Model
         'max_weight' => 'decimal:4',
     ];
 
-    public function outgoingPallets()
+    public function transportPallets()
     {
-        return $this->hasMany(OutgoingPallet::class, 'outgoing_pallet_type_id');
+        return $this->hasMany(TransportPallet::class, 'transport_pallet_type_id');
     }
 }

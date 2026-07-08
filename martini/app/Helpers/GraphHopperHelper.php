@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 use App\Models\ClientAddress;
 use App\Models\Customer;
-use App\Models\OutgoingPallet;
+use App\Models\TransportPallet;
 use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
@@ -330,7 +330,7 @@ class GraphHopperHelper
 
     /**
      * @param int $site_id
-     * @param Collection<OutgoingPallet> $pallets
+     * @param Collection<TransportPallet> $pallets
      * @param Collection<Customer> $customers
      * @param Collection<ClientAddress> $customerAddresses
      * @param int $serviceDurationSeconds

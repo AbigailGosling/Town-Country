@@ -181,7 +181,7 @@ use Illuminate\Support\Facades\Auth;
         $ca->lon = null;
         $ca->collection = request()->has('address_collection') && in_array($index, request()->input('address_collection')) ? 1 : 0;
         $ca->save();
-        ProcessHelper::runInBackground('run:geocode '.$ca->id);
+        ProcessHelper::runInBackground('run:geocode_address '.$ca->id);
 	}
 ?>
 <script>

@@ -39,7 +39,7 @@ class Vehicle extends Model
     }
     public function outgoingPalletAllocations()
     {
-        return $this->hasMany(VehicleOutgoingPalletAllocation::class, 'vehicle_id');
+        return $this->hasMany(VehicleTransportPalletAllocation::class, 'vehicle_id');
     }
     public function planningPayloadForVehicle(): ?int
     {

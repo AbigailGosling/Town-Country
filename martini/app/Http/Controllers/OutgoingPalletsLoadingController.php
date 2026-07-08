@@ -6,12 +6,12 @@ use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
 use App\Models\LoadSheet;
-use App\Models\OutgoingPallet;
-use App\Models\OutgoingPalletType;
+use App\Models\TransportPallet;
+use App\Models\TransportPalletType;
 use App\Models\Site;
 use App\Models\Vehicle;
-use App\Models\VehicleOutgoingPalletAllocation;
-use App\Models\OutgoingPalletPickWeight;
+use App\Models\VehicleTransportPalletAllocation;
+use App\Models\TransportPalletPickWeight;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -36,14 +36,14 @@ class OutgoingPalletsLoadingController extends Controller
             && $column <= self::PALLET_COLUMNS;
     }
 
-    private function isStandardPallet(OutgoingPallet $pallet): bool
+    private function isStandardPallet(TransportPallet $pallet): bool
     {
         $pallet->loadMissing('outgoingPalletType');
         $typeName = strtolower(trim((string) ($pallet->outgoingPalletType->name ?? '')));
         return str_starts_with($typeName, 'standard');
     }
 
-    private function getPicksheetIdsForPallet(OutgoingPallet $pallet): array
+    private function getPicksheetIdsForPallet(TransportPallet $pallet): array
     {
         $pallet->loadMissing('pickWeightOuts.pickWeightOut');
 
@@ -57,7 +57,7 @@ class OutgoingPalletsLoadingController extends Controller
             ->all();
     }
 
-    private function getPicksheetCutSummaryLines(OutgoingPallet $pallet, int $maxLines = 3): array
+    private function getPicksheetCutSummaryLines(TransportPallet $pallet, int $maxLines = 3): array
     {
         $pallet->loadMissing('pickWeightOuts.pickWeightOut');
 
@@ -120,7 +120,7 @@ class OutgoingPalletsLoadingController extends Controller
         return [];
     }
 
-    private function canOutgoingPalletBeLoaded(int $customerId): bool
+    private function canTransportPalletBeLoaded(int $customerId): bool
     {
         $response = $this->getLegacyCreditCheckForCustomer($customerId);
         $customer = Customer::find($customerId);
@@ -210,7 +210,7 @@ class OutgoingPalletsLoadingController extends Controller
 
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
-        $allocationsQuery = VehicleOutgoingPalletAllocation::with([
+        $allocationsQuery = VehicleTransportPalletAllocation::with([
             'outgoingPallet.pickWeightOuts',
             'outgoingPallet.customer',
             'outgoingPallet.outgoingPalletType',
@@ -299,7 +299,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['loadSheets' => []]);
         }
 
-        $allocationCounts = VehicleOutgoingPalletAllocation::query()
+        $allocationCounts = VehicleTransportPalletAllocation::query()
             ->selectRaw('load_sheet_id, COUNT(*) as pallet_count')
             ->whereIn('load_sheet_id', $sheets->pluck('id')->all())
             ->groupBy('load_sheet_id')
@@ -339,7 +339,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'outgoingPalletId is required'], 400);
         }
 
-        $pallet = OutgoingPallet::find($outgoingPalletId);
+        $pallet = TransportPallet::find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
@@ -347,7 +347,7 @@ class OutgoingPalletsLoadingController extends Controller
         $regAllocatedTo = trim($regAllocatedTo);
 
         if ($regAllocatedTo === '' || $palletRow === null || $palletColumn === null) {
-            $deleteQuery = VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id);
+            $deleteQuery = VehicleTransportPalletAllocation::where('outgoing_pallet_id', $pallet->id);
             if ($requestedLoadSheetId > 0) {
                 $deleteQuery->where('load_sheet_id', $requestedLoadSheetId);
             }
@@ -410,19 +410,19 @@ class OutgoingPalletsLoadingController extends Controller
             $createdNewLoadSheet = true;
         }
 
-        VehicleOutgoingPalletAllocation::where('outgoing_pallet_id', $pallet->id)
+        VehicleTransportPalletAllocation::where('outgoing_pallet_id', $pallet->id)
             ->where('load_sheet_id', $loadSheetId)
             ->where('vehicle_id', '<>', $vehicle->id)
             ->delete();
 
-        VehicleOutgoingPalletAllocation::where('vehicle_id', $vehicle->id)
+        VehicleTransportPalletAllocation::where('vehicle_id', $vehicle->id)
             ->where('load_sheet_id', $loadSheetId)
             ->where('row', $row)
             ->where('column', $column)
             ->where('outgoing_pallet_id', '<>', $pallet->id)
             ->delete();
 
-        VehicleOutgoingPalletAllocation::updateOrCreate(
+        VehicleTransportPalletAllocation::updateOrCreate(
             [
                 'vehicle_id' => $vehicle->id,
                 'outgoing_pallet_id' => $pallet->id,
@@ -459,12 +459,12 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'Invalid palletType'], 400);
         }
 
-        $pallet = OutgoingPallet::find($outgoingPalletId);
+        $pallet = TransportPallet::find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
 
-        $type = OutgoingPalletType::query()
+        $type = TransportPalletType::query()
             ->whereRaw('LOWER(name) LIKE ?', [$normalizedType . '%'])
             ->orderBy('id')
             ->first();
@@ -494,9 +494,9 @@ class OutgoingPalletsLoadingController extends Controller
                 return response()->json(['orders' => []]);
         }
 
-        $pallets = OutgoingPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
+        $pallets = TransportPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
-        $allocationsQuery = VehicleOutgoingPalletAllocation::with('vehicle');
+        $allocationsQuery = VehicleTransportPalletAllocation::with('vehicle');
 
         $vehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$reg])->first();
         if ($vehicle) {
@@ -513,7 +513,7 @@ class OutgoingPalletsLoadingController extends Controller
             ->get()
             ->keyBy('outgoing_pallet_id');
 
-        $anyAllocationByPalletId = VehicleOutgoingPalletAllocation::query()
+        $anyAllocationByPalletId = VehicleTransportPalletAllocation::query()
             ->with(['vehicle', 'loadSheet'])
             ->whereIn('outgoing_pallet_id', $pallets->pluck('id')->map(fn ($id) => (int) $id)->all())
             ->orderByDesc('id')
@@ -529,7 +529,7 @@ class OutgoingPalletsLoadingController extends Controller
         {
             $customerId = (int) ($pallet->customer_id ?? 0);
             if (!array_key_exists($customerId, $canLoadByCustomerId)) {
-                $canLoadByCustomerId[$customerId] = $this->canOutgoingPalletBeLoaded($customerId);
+                $canLoadByCustomerId[$customerId] = $this->canTransportPalletBeLoaded($customerId);
             }
 
             $allocation = $allocations->get($pallet->id);
@@ -605,7 +605,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['orders' => []]);
         }
 
-        $query = OutgoingPallet::query();
+        $query = TransportPallet::query();
         if ($dueDate) {
             $query->where('estimated_delivery_date', $dueDate);
         }
@@ -681,7 +681,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'outgoingPalletId is required'], 400);
         }
 
-        $pallet = OutgoingPallet::with(['customer', 'outgoingPalletType', 'pickWeightOuts.pickWeightOut'])->find($outgoingPalletId);
+        $pallet = TransportPallet::with(['customer', 'outgoingPalletType', 'pickWeightOuts.pickWeightOut'])->find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
@@ -691,7 +691,7 @@ class OutgoingPalletsLoadingController extends Controller
             ->where('client_type', ClientType::CUSTOMER->value)
             ->first();
 
-        $pickLinks = OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
+        $pickLinks = TransportPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
         $pickWeightOutIds = $pickLinks->pluck('pickWeightOut_id')->map(fn ($id) => (int) $id)->filter()->values()->all();
         $picksheetIds = $this->getPicksheetIdsForPallet($pallet);
         $contentSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
@@ -822,7 +822,7 @@ class OutgoingPalletsLoadingController extends Controller
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
         // Fetch allocations for the given vehicle and pallet IDs
-        $allocations = VehicleOutgoingPalletAllocation::with('outgoingPallet')
+        $allocations = VehicleTransportPalletAllocation::with('outgoingPallet')
             ->where('vehicle_id', $vehicle->id)
             ->whereIn('outgoing_pallet_id', $outgoingPalletIds)
             ->get()
@@ -895,7 +895,7 @@ class OutgoingPalletsLoadingController extends Controller
 
         $depot = Site::find($depotSiteId);
 
-        $query = VehicleOutgoingPalletAllocation::with([
+        $query = VehicleTransportPalletAllocation::with([
             'outgoingPallet.pickWeightOuts.pickWeightOut',
             'outgoingPallet.customer',
             'outgoingPallet.outgoingPalletType',

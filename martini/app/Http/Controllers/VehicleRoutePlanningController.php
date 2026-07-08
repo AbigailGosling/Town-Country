@@ -7,10 +7,10 @@ use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
 use App\Models\LoadSheet;
-use App\Models\OutgoingPallet;
+use App\Models\TransportPallet;
 use App\Models\Site;
 use App\Models\Vehicle;
-use App\Models\VehicleOutgoingPalletAllocation;
+use App\Models\VehicleTransportPalletAllocation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -94,7 +94,7 @@ class VehicleRoutePlanningController extends Controller
             return response()->json(['error' => 'No vehicles available for planning'], 422);
         }
 
-        $pallets = OutgoingPallet::with(['outgoingPalletType'])
+        $pallets = TransportPallet::with(['outgoingPalletType'])
             ->whereDate('estimated_delivery_date', $dueDate->format('Y-m-d'))
             ->where(function ($query) {
                 //$query->whereNull('dispatched')->orWhere('dispatched', 0);
@@ -312,7 +312,7 @@ class VehicleRoutePlanningController extends Controller
         } else {
             $lastDeliveryPalletId = end($orderedPalletIds);
             if ($lastDeliveryPalletId !== false) {
-                $lastDeliveryPallet = OutgoingPallet::query()
+                $lastDeliveryPallet = TransportPallet::query()
                     ->where('id', (int) $lastDeliveryPalletId)
                     ->first(['customer_id', 'address_id']);
 
@@ -339,7 +339,7 @@ class VehicleRoutePlanningController extends Controller
             }
         }
 
-        $palletsById = OutgoingPallet::query()
+        $palletsById = TransportPallet::query()
             ->whereIn('id', $orderedPalletIds)
             ->get(['id', 'outgoing_pallet_type_id'])
             ->keyBy('id');
@@ -412,11 +412,11 @@ class VehicleRoutePlanningController extends Controller
             }
 
             if (!empty($committedPalletIds)) {
-                VehicleOutgoingPalletAllocation::whereIn('outgoing_pallet_id', $committedPalletIds)->delete();
+                VehicleTransportPalletAllocation::whereIn('outgoing_pallet_id', $committedPalletIds)->delete();
             }
 
             foreach ($placements as $placement) {
-                $allocation = VehicleOutgoingPalletAllocation::create([
+                $allocation = VehicleTransportPalletAllocation::create([
                     'vehicle_id' => (int) $vehicle->id,
                     'load_sheet_id' => $loadSheetId,
                     'outgoing_pallet_id' => (int) $placement['outgoing_pallet_id'],
@@ -427,7 +427,7 @@ class VehicleRoutePlanningController extends Controller
                     'committed_at' => $committedAt,
                 ]);
 
-                $pallet = OutgoingPallet::find((int) $allocation->outgoing_pallet_id);
+                $pallet = TransportPallet::find((int) $allocation->outgoing_pallet_id);
                 if ($pallet) {
                     $pallet->dispatched = true;
                     $pallet->estimated_delivery_date = $dueDate;

@@ -6,16 +6,16 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OutgoingPallet extends Model
+class TransportPallet extends Model
 {
     use HasFactory;
 
     protected $connection = 'tandc_live';
 
-    protected $table = 'outgoing_pallet';
+    protected $table = 'transport_pallet';
 
     protected $fillable = [
-        'outgoing_pallet_type_id',
+        'transport_pallet_type_id',
         'customer_id',
         'address_id',
         'estimated_delivery_date',
@@ -26,7 +26,7 @@ class OutgoingPallet extends Model
     protected $casts = [
         'customer_id' => 'integer',
         'address_id' => 'integer',
-        'outgoing_pallet_type_id' => 'integer',
+        'transport_pallet_type_id' => 'integer',
         'estimated_delivery_date' => 'date',
         'dispatched' => 'boolean',
         'pod_sent' => 'boolean',
@@ -37,18 +37,18 @@ class OutgoingPallet extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function outgoingPalletType()
+    public function transportPalletType()
     {
-        return $this->belongsTo(OutgoingPalletType::class, 'outgoing_pallet_type_id');
+        return $this->belongsTo(TransportPalletType::class, 'transport_pallet_type_id');
     }
 
     public function pickWeightOuts()
     {
-        return $this->hasMany(OutgoingPalletPickWeight::class, 'outgoing_pallet_id');
+        return $this->hasMany(TransportPalletPickWeight::class, 'outgoing_pallet_id');
     }
     public function vehicleAllocations()
     {
-        return $this->belongsTo(VehicleOutgoingPalletAllocation::class, 'outgoing_pallet_id');
+        return $this->belongsTo(VehicleTransportPalletAllocation::class, 'outgoing_pallet_id');
     }
     public function getTotalWeight()
     {
@@ -111,10 +111,10 @@ class OutgoingPallet extends Model
 
     public function isOverWeight()
     {
-        if (!$this->outgoingPalletType) {
+        if (!$this->transportPalletType) {
             return false;
         }
-        return $this->getTotalWeight() > $this->outgoingPalletType->max_weight;
+        return $this->getTotalWeight() > $this->transportPalletType->max_weight;
     }
 
     public function address()

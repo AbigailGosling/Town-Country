@@ -693,7 +693,7 @@ function mainFormSucess(){
 			askForIncompleteSelectionApprovalAndSubmit();
 			return false;
 		 }
-		askForOutgoingPallet();
+		askForTransportPallet();
 	}
 
 	function askForIncompleteSelectionApprovalAndSubmit()
@@ -707,11 +707,11 @@ function mainFormSucess(){
 			confirmButtonText: 'Continue'
 		}).then((result) => {
 			if (result.value) {
-				askForOutgoingPallet();
+				askForTransportPallet();
 			}
 		});
 	}
-    function askForOutgoingPallet()
+    function askForTransportPallet()
     {
         $.ajax({
             url:'<?php echo route("outgoing-pallets.pick-pallets");?>',

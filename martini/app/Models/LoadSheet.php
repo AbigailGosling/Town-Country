@@ -27,7 +27,7 @@ class LoadSheet extends Model
 
     public function allocations()
     {
-        return $this->hasMany(VehicleOutgoingPalletAllocation::class, 'load_sheet_id');
+        return $this->hasMany(VehicleTransportPalletAllocation::class, 'load_sheet_id');
     }
 
     public function user()

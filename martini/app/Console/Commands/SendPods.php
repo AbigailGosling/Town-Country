@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\InternalCache;
 use App\Helpers\PodHelper;
-use App\Models\OutgoingPallet;
+use App\Models\TransportPallet;
 use App\Models\Vehicle;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -48,7 +48,7 @@ class SendPods extends Command
             return self::FAILURE;
         }
 
-        $outgoingPallets = OutgoingPallet::whereIn('id', $outgoingPalletIds)->get();
+        $outgoingPallets = TransportPallet::whereIn('id', $outgoingPalletIds)->get();
         $vehicle = Vehicle::find((int) $vehicleId);
 
         if ($outgoingPallets->isEmpty()) {

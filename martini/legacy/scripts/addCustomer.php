@@ -144,11 +144,11 @@ use App\Models\ClientType;
 	$colNames[] = '`sage_no`';
 	$colValue[] = request()->input('sage_no');
 
-	$x = "INSERT INTO `customers` (".implode(",",$colNames).")
+	$x = "INSERT INTO `customers` (".implode(",",$colNames).",`businessnameDM`)
 	VALUES
-	(".implode(",",array_fill(0,count($colNames),"?")).");";
+	(".implode(",",array_fill(0,count($colNames),"?")).",dm(?));";
 
-	$customer_id = prepareExecuteQuery($x,str_repeat('s',count($colNames)),$colValue,true);
+	$customer_id = prepareExecuteQuery($x,str_repeat('s',count($colNames)).'s',array_merge($colValue, [request()->input('businessname')]),true);
 
 
 	foreach (request()->input('address_id') as $index => $address_id)
@@ -173,7 +173,7 @@ use App\Models\ClientType;
         $ca->lat = null;
         $ca->lon = null;
         $ca->save();
-        ProcessHelper::runInBackground('run:geocode '.$ca->id);
+        ProcessHelper::runInBackground('run:geocode_address '.$ca->id);
 	}
 
 ?>
