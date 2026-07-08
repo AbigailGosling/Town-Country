@@ -20,7 +20,6 @@ use App\Models\Site;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
 
@@ -66,6 +65,7 @@ class ApproveIntake extends Command
                 $prod = Product::find($containerProduct->product_id);
                 if ($prod == null) continue;
                 $pallet=Pallet::find($prod->pallet_id);
+                if ($pallet == null) continue;
                 $pallet->user_id = $intake->approved_by;
                 $pallet->save();
             }

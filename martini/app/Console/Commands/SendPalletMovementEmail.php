@@ -7,6 +7,7 @@ use App\Models\PalletMovementTracking;
 use App\Models\Site;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use InternalScripts\SLabsEmailer;
 
 class SendPalletMovementEmail extends Command
@@ -38,7 +39,10 @@ class SendPalletMovementEmail extends Command
         $output = "";
         foreach($sites as $site) {
             $locations = $site->locations()->where('disabled', false)->get()->pluck('id')->toArray();
-            $movements = PalletMovementTracking::whereIn('from_location', $locations)->orWhereIn('to_location', $locations)->whereBetween('created_at', [$start, $now])->get();
+            $movements = PalletMovementTracking::whereBetween('created_at', [$start, $now])->where(function($query) use ($locations)
+            {
+                $query->whereIn('from_location', $locations)->orWhereIn('to_location', $locations);
+            });
             if ($movements->count() === 0) {
                 continue;
             }

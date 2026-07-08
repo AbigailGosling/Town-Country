@@ -26,7 +26,7 @@ if ($intake->approving_start != null || $intake->approved != false)
         window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=0';
     </script> <?php exit;
 }
-if ($intake->pallets->count() == 0)
+if ($intake->pallets?->count() == 0)
 {?>
 <script>
 	window.location = '../intake.php?id=<?php echo $intake->id; ?>&error=1';
