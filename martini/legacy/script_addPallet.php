@@ -89,7 +89,9 @@ use App\Models\PalletMovementTracking;
 
 		# # # Create Weight
 		$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
-		$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$net_weight,$net_weight]);
+		$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$net_weight,$net_weight],true);
+        loggedDataChange("weight_gross", $y, $net_weight);
+        loggedDataChange("weight_tear", $y, $net_weight);
 		# # #
 
 
@@ -110,7 +112,9 @@ use App\Models\PalletMovementTracking;
 
 		if($akg != ''){
 			$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
-			$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$akg,$akg]);
+			$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$akg,$akg],true);
+            loggedDataChange("weight_gross", $y, $akg);
+            loggedDataChange("weight_tear", $y, $akg);
 		}else{
 
 			for($a = 1; $a <= request()->input('quantity'); $a++){
@@ -120,14 +124,18 @@ use App\Models\PalletMovementTracking;
 					$weight = request()->input('weights' . $a);
 
 					$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
-					$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$weight,$weight]);
+					$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$weight,$weight],true);
+                    loggedDataChange("weight_gross", $y, $weight);
+                    loggedDataChange("weight_tear", $y, $weight);
 
 				}else{
 					# Single Weight Value
 					$weight = $single_weight_val;
 
 					$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
-					$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$weight,$weight]);
+					$y = prepareExecuteQuery($x,'iiss',[$product_id,$status_id,$weight,$weight],true);
+                    loggedDataChange("weight_gross", $y, $weight);
+                    loggedDataChange("weight_tear", $y, $weight);
 				}
 			}
 
