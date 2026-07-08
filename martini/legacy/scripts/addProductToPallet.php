@@ -47,17 +47,21 @@
 
 	if($akg != ''){
 		$x = "INSERT INTO `weights` (`product_id`,`status_id`,`weight_gross`,`weight_tear`) VALUES (?,?,?,?)";
-		$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$akg,$akg]);
+		$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$akg,$akg],true);
+        loggedDataChange("weight_gross", $y, $akg);
+        loggedDataChange("weight_tear", $y, $akg);
 	}else{
 		for($a = 1; $a < $quantity; $a++){
  			$individualweights = request()->input('individualweights');
 
 			if($individualweights == 'C'){
 				# Catch Weights
-				$weight = request('weights' . $a);
+				$weight = request()->input('weights' . $a);
 
 				$x = "INSERT INTO `weights` (`product_id`,`status_id`,`weight_gross`,`weight_tear`) VALUES (?,?,?,?)";
-				$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$weight,$weight]);
+				$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$weight,$weight],true);
+                loggedDataChange("weight_gross", $y, $weight);
+                loggedDataChange("weight_tear", $y, $weight);
 
 			}else if($individualweights == 'D'){
 				# Dolav Weights
@@ -66,7 +70,12 @@
 
 				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear,pallet_tare,tare_per_carton,number_of_cartons)
 				VALUES (?,?,?,?,?,?,?)";
-				$y = prepareExecuteQuery($x,'sssssss',[$product_id,$status_id,$gross_weight_val,$tear_weight_val,$pallet_tare,$tare_per_carton,$number_of_cartons]);
+				$y = prepareExecuteQuery($x,'sssssss',[$product_id,$status_id,$gross_weight_val,$tear_weight_val,$pallet_tare,$tare_per_carton,$number_of_cartons],true);
+                loggedDataChange("weight_gross", $y, $gross_weight_val);
+                loggedDataChange("weight_tear", $y, $tear_weight_val);
+                loggedDataChange("weight_pallet_tare", $y, $pallet_tare);
+                loggedDataChange("weight_tare_per_carton", $y, $tare_per_carton);
+                loggedDataChange("weight_number_of_cartons", $y, $number_of_cartons);
 
 			}else{
 				# Single Weight Value
@@ -75,6 +84,8 @@
 
 				$x = "INSERT INTO `weights` (product_id,status_id,weight_gross,weight_tear) VALUES (?,?,?,?)";
 				$y = prepareExecuteQuery($x,'ssss',[$product_id,$status_id,$weight,$weight]);
+                loggedDataChange("weight_gross", $y, $weight);
+                loggedDataChange("weight_tear", $y, $weight);
 			}
 
 		}

@@ -128,10 +128,15 @@ use App\Models\PalletMovementTracking;
 
 		$xxx = "UPDATE `weights` SET product_id=?,weight_gross=?,weight_tear=? WHERE id=?";
 		$y = prepareExecuteQuery($xxx,'issi',[$product_id,$weightVal,$weightVal,$weightid]);
+        loggedDataChange("weight_gross", $weightid, $weightVal);
+        loggedDataChange("weight_tear", $weightid, $weightVal);
 
 		if($mode == 'D'){
 			$xxx2 = "UPDATE `weights` SET pallet_tare=?, tare_per_carton=?, number_of_cartons=? WHERE id=?";
 			prepareExecuteQuery($xxx2,'sssi',[$pallet_tare_val,$tare_per_carton_val,$num_cartons,$weightid]);
+            loggedDataChange("weight_pallet_tare", $weightid, $pallet_tare_val);
+            loggedDataChange("weight_tare_per_carton", $weightid, $tare_per_carton_val);
+            loggedDataChange("weight_number_of_cartons", $weightid, $num_cartons);
 		}
 	}
 ?>
