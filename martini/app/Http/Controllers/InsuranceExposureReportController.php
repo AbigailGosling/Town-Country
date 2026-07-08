@@ -9,13 +9,13 @@ use App\Models\CustomerOutstandingCache;
 use App\Models\Weight;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class InsuranceExposureReportController extends Controller
 {
     public function index()
     {
-        ini_set('memory_limit', '1G');
+        ini_set("memory_limit","1G");
+        $detailedView = request()->input("detailed-view",0) == 1;
         $customers = Customer::query()
             ->where('customers.credit_enabled', true)
             ->where('customers.disabled', false)
@@ -57,6 +57,7 @@ class InsuranceExposureReportController extends Controller
         $data = $data->sortBy([['gt_total_outstanding', 'desc'], ['ot_total_outstanding', 'desc'], ['at_total_outstanding', 'desc']]);
         return view('reports.insuranceexposure', [
             'data' => $data,
+            'detailedView' => $detailedView,
         ]);
     }
 
