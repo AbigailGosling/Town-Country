@@ -182,11 +182,18 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     $products2 = mysqli_fetch_all($productsY, MYSQLI_ASSOC);
     $products = [];
     $knownCombo = [];
+    $intakeApprovalLookup = [];
     $intakeIDsToCheck = array_unique(array_column($products2,'intake_id'));
     if (count($products2) > 0 && count($intakeIDsToCheck) > 0){
         $minIntake= min($intakeIDsToCheck);
         $maxIntake= max($intakeIDsToCheck);
-        $intakeIDsToCheck = array_column(prepareExecuteQuery("SELECT `id` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".$minIntake." AND ".$maxIntake." AND (`approved` = 1 OR `container_id` IS NULL)")->fetch_all(MYSQLI_ASSOC),"id");
+        $intakeIDsToCheck = [];
+        $intakeIDsToCheck2 = prepareExecuteQuery("SELECT `id`,`approved` from `intake` WHERE `deleted` = 0 AND `id` BETWEEN ".$minIntake." AND ".$maxIntake." AND (`approved` = 1 OR `container_id` IS NULL)")->fetch_all(MYSQLI_ASSOC);
+        foreach ($intakeIDsToCheck2 as $intakeApprovalRow) {
+            $intakeApprovalLookup[$intakeApprovalRow['id']] = ($intakeApprovalRow['approved'] == 1);
+            $intakeIDsToCheck[] = $intakeApprovalRow['id'];
+        }
+        $intakeIDsToCheck = array_filter(array_unique($intakeIDsToCheck));
         foreach ($products2 as $productRow)
         {
             if (!in_array($productRow['intake_id'],$intakeIDsToCheck)) continue;
@@ -263,6 +270,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         $largestDate = ($productsRow['range_extension']!= null && $productsRow['range_extension']!= '')?$productsRow['range_extension']:$productsRow['range_to'];
 
         $intake_id = $productsRow['intake_id'];
+        $intakeApproved = (array_key_exists($intake_id,$intakeApprovalLookup)) ? $intakeApprovalLookup[$intake_id] : false;
         $nationality_id = $productsRow['nationality_id'];
         $local = $productsRow['local'];
         //$cut = getCut($productsRow['cut_id']);
@@ -463,7 +471,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         //If product was created after 04/03/2026 and has no RRP's and no cost, lock it.
         $timestampOfCreation = DateTime::createFromFormat('Y-m-d H:i:s', $productsRow['created_at']);
         $timestampOfCreation = ($timestampOfCreation === false) ? 0 : $timestampOfCreation->getTimestamp();
-        if($productsRow['cost'] == '0.00' || $productsRow['cost'] == '' ||
+        if($productsRow['cost'] == '0.00' || $productsRow['cost'] == '' || !$intakeApproved ||
             ($species_id != "5" && $timestampOfCreation > env('INTAKE_COST_LOCK_TIMESTAMP',1772582400) && (empty($productsRow['rrp1']) && empty($productsRow['rrp2']) && empty($productsRow['rrp3'])))
         ){
             $locked = true;
