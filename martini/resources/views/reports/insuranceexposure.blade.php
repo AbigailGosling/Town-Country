@@ -1,5 +1,6 @@
 <x-app-layout :hideLink="true">
     @php
+    if (!isset($detailedView)) $detailedView = false;
         $currencyColumns = ['Total'];
         $formatCurrency = static function (float $value): string {
             $currencySymbol = '£';
@@ -30,6 +31,17 @@
             </div>
             <div class="mt-4 flex items-center justify-between gap-4 flex-wrap">
                 <div class="text-sm text-gray-600">--</div>
+                @if (!$detailedView)
+                    <form method="GET" action="{{route('insuranceexposurereport.index')}}">
+                        <input type="hidden" id="detailed-view" name="detailed-view" value="1">
+                        <x-form-button title="Show Detailed View" background="green" iconClass="" :submit="true"></x-form-button>
+                    </form>
+                @else
+                    <form method="GET" action="{{route('insuranceexposurereport.index')}}">
+                        <input type="hidden" id="detailed-view" name="detailed-view" value="0">
+                        <x-form-button title="Show Simplifed View" background="green" iconClass="" :submit="true"></x-form-button>
+                    </form>
+                @endif
                 <x-form-button id="export" title="Loading..." background="green" iconClass="fa-solid fa-file-spreadsheet" :disable="true" :fixed="true"></x-form-button>
             </div>
         </div>
@@ -40,12 +52,24 @@
             <x-slot:headers>
                 <x-data-table-header :width="'6%'">Name</x-data-table-header>
                 <x-data-table-header :width="'10%'">Contact</x-data-table-header>
+                @if ($detailedView)
                 <x-data-table-header :width="'16%'">Approaching Terms</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
+                @else
+                <x-data-table-header :width="'16%'"> Under 28 Subtotal</x-data-table-header>
+                @endif
+                @if ($detailedView)
                 <x-data-table-header :width="'16%'">Over Terms</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
+                @else
+                <x-data-table-header :width="'16%'">28 - 35 Subtotal</x-data-table-header>
+                @endif
+                @if ($detailedView)
                 <x-data-table-header :width="'16%'">Over Grace</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
+                @else
+                <x-data-table-header :width="'16%'">Over 35 Subtotal</x-data-table-header>
+                @endif
                 <x-data-table-header :width="'5%'">Total</x-data-table-header>
             </x-slot:headers>
             <slot>
@@ -53,6 +77,7 @@
                     <tr>
                         <x-data-table-column>{{$item->customer->businessname}}</x-data-table-column>
                         <x-data-table-column>{{$item->customer->accounts_contact}}<br/>{{$item->customer->tel_number}}</x-data-table-column>
+                        @if ($detailedView)
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->at as $invoice)
@@ -60,7 +85,9 @@
                                 @endforeach
                             </ul>
                         </x-data-table-column>
-                        <x-data-table-column>{{ ($item->at_total_outstanding > 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
+                        @endif
+                        <x-data-table-column :align="'center'">{{ ($item->at_total_outstanding > 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
+                        @if ($detailedView)
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->ot as $invoice)
@@ -68,7 +95,9 @@
                                 @endforeach
                             </ul>
                         </x-data-table-column>
-                        <x-data-table-column><span class="text-amber-600">{{ ($item->ot_total_outstanding > 0) ? $formatCurrency($item->ot_total_outstanding) : '' }}</span></x-data-table-column>
+                        @endif
+                        <x-data-table-column :align="'center'"><span class="text-amber-600">{{ ($item->ot_total_outstanding > 0) ? $formatCurrency($item->ot_total_outstanding) : '' }}</span></x-data-table-column>
+                        @if ($detailedView)
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->gt as $invoice)
@@ -76,8 +105,9 @@
                                 @endforeach
                             </ul>
                         </x-data-table-column>
-                        <x-data-table-column><span class="text-red-600">{{ ($item->gt_total_outstanding > 0) ? $formatCurrency($item->gt_total_outstanding) : '' }}</span></x-data-table-column>
-                        <x-data-table-column><span>{{ ($item->total_outstanding > 0) ? $formatCurrency($item->total_outstanding) : '' }}</span></x-data-table-column>
+                        @endif
+                        <x-data-table-column :align="'center'"><span class="text-red-600">{{ ($item->gt_total_outstanding > 0) ? $formatCurrency($item->gt_total_outstanding) : '' }}</span></x-data-table-column>
+                        <x-data-table-column :align="'center'"><span>{{ ($item->total_outstanding > 0) ? $formatCurrency($item->total_outstanding) : '' }}</span></x-data-table-column>
                     </tr>
                 @endforeach
             </slot>

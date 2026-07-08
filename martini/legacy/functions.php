@@ -1291,8 +1291,10 @@ use App\Models\User;
                 loggedDataChange("product_delete", $product['id'], "functions.php->deleteProductsFor");
             }
         }
-		$x = "DELETE FROM `product` WHERE id IN (".implode(",",$toDelete).")";
-		$y = prepareExecuteQuery($x);
+		if (count($toDelete)>0){
+            $x = "DELETE FROM `product` WHERE id IN (".implode(",",$toDelete).")";
+		    $y = prepareExecuteQuery($x);
+        }
 	}
 
 	# Delete pallet
