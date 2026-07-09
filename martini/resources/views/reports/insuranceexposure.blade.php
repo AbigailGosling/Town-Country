@@ -55,10 +55,6 @@
                 @if ($detailedView)
                 <x-data-table-header :width="'16%'">Approaching Terms</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
-                @else
-                <x-data-table-header :width="'16%'"> Under 28 Subtotal</x-data-table-header>
-                @endif
-                @if ($detailedView)
                 <x-data-table-header :width="'16%'">Over Terms</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
                 @else
@@ -85,8 +81,8 @@
                                 @endforeach
                             </ul>
                         </x-data-table-column>
-                        @endif
                         <x-data-table-column :align="'center'">{{ ($item->at_total_outstanding > 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
+                        @endif
                         @if ($detailedView)
                         <x-data-table-column>
                             <ul class="list-disc pl-5">

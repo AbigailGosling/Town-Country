@@ -42,7 +42,7 @@ class SendPalletMovementEmail extends Command
             $movements = PalletMovementTracking::whereBetween('created_at', [$start, $now])->where(function($query) use ($locations)
             {
                 $query->whereIn('from_location', $locations)->orWhereIn('to_location', $locations);
-            });
+            })->get();
             if ($movements->count() === 0) {
                 continue;
             }

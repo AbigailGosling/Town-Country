@@ -157,7 +157,7 @@ function processGrossDolav(array $workingSet,string $key):array
 
             # START CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
             $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id,grosstare) VALUES (?,?,?,'0',0)";
-            $y3 = prepareExecuteQuery($x3,'sss',[$product_id,$weightTwo,$weightTwo,true]);
+            $y3 = prepareExecuteQuery($x3,'sss',[$product_id,$weightTwo,$weightTwo],true);
             loggedDataChange("weight_gross", $y3, $weightTwo);
             loggedDataChange("weight_tear",$y3, $weightTwo);
             # END CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
