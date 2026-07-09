@@ -2,8 +2,8 @@
 
 use App\Helpers\FuncHelper;
 use App\Helpers\InternalCache;
-use App\Models\TransportPallet;
-use App\Models\TransportPalletPickWeight;
+use App\Models\OutgoingPallet;
+use App\Models\OutgoingPalletPickWeight;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
 use Carbon\Carbon;
@@ -55,7 +55,7 @@ use Carbon\Carbon;
     }
     $pickSheet = PickerSheet::find($pickersheet_id);
     if ($outgoingPalletID == -1 || $outgoingPalletID == null || $outgoingPalletID == '#') {
-        $op = TransportPallet::create([
+        $op = OutgoingPallet::create([
             'outgoing_pallet_type_id' => 1,
             'customer_id' => $pickSheet->customer_id,
             'address_id' => $pickSheet->addressid,
@@ -63,15 +63,15 @@ use Carbon\Carbon;
             'dispatched' => false,
         ]);
     }
-    else $op = TransportPallet::find($outgoingPalletID);
-    $oppw = TransportPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first();
+    else $op = OutgoingPallet::find($outgoingPalletID);
+    $oppw = OutgoingPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first();
     if ($oppw == null) {
         $tmp = new PickWeightOut();
         $tmp->pickersheet_id = $pickersheet_id;
         $tmp->weight_ids = '';
         $tmp->picker_ids = '';
         $tmp->save();
-        $oppw = new TransportPalletPickWeight();
+        $oppw = new OutgoingPalletPickWeight();
         $oppw->outgoing_pallet_id = $op->id;
         $oppw->pickWeightOut_id = $tmp->id;
         $oppw->save();
@@ -157,7 +157,7 @@ function processGrossDolav(array $workingSet,string $key):array
 
             # START CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT
             $x3 = "INSERT into `weights` (product_id, weight_gross, weight_tear,status_id,grosstare) VALUES (?,?,?,'0',0)";
-            $y3 = prepareExecuteQuery($x3,'sss',[$product_id,$weightTwo,$weightTwo,true]);
+            $y3 = prepareExecuteQuery($x3,'sss',[$product_id,$weightTwo,$weightTwo],true);
             loggedDataChange("weight_gross", $y3, $weightTwo);
             loggedDataChange("weight_tear",$y3, $weightTwo);
             # END CREATE NEW WEIGHT FOR REMAINING GROSSTARE WEIGHT

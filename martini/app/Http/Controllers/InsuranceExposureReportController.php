@@ -32,7 +32,7 @@ class InsuranceExposureReportController extends Controller
             $otOutstanding = 0;
             $gtOutstanding = 0;
             foreach ($ret as $invoice) {
-                if ($invoice->terms_passed == false && $invoice->grace_passed == false) {
+                if ($invoice->terms_passed == false && $invoice->grace_passed == false && $detailedView) {
                     $at[] = $invoice;
                     $atOutstanding += $invoice->outstanding;
                 } elseif ($invoice->terms_passed == true && $invoice->grace_passed == false) {
@@ -43,6 +43,7 @@ class InsuranceExposureReportController extends Controller
                     $gtOutstanding += $invoice->outstanding;
                 }
             }
+            if (!$detailedView && count($ot) == 0 && count($gt) == 0) continue;
             $data->push((object)[
                 'customer' => $customer,
                 'at' => $at,
@@ -131,7 +132,7 @@ class InsuranceExposureReportController extends Controller
             if (!property_exists($picksheet, 'id')) {
                 continue;
             }
-            $picksheet->credited = $picksheet->credit = (double) round($this->totalValueCreditedOnInvoiceID($picksheet->id,$creditPayments[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
+            $picksheet->credited = $picksheet->credit = (double) round($this->totalValueCreditedOnInvoiceID($creditPayments[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
             $picksheet->price = (double) round($this->invoiceTotal($picksheet->id,$pickerItems[$picksheet->id]??[],$pickWeightOuts[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
 
             $picksheet->date = str_replace('/', '-', $picksheet->estimated_delivery_date);
@@ -184,7 +185,7 @@ class InsuranceExposureReportController extends Controller
         $datetime2 = $element2->datetime;
         return $datetime1 - $datetime2;
     }
-    private function totalValueCreditedOnInvoiceID(int $invoice_id,array $creditPayments){
+    private function totalValueCreditedOnInvoiceID(array $creditPayments){
 		$price = 0;
 		$paymentsResult = $creditPayments ?? [];
 		foreach ($paymentsResult as $paymentData)
