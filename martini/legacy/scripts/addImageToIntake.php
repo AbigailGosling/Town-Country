@@ -19,7 +19,7 @@ use App\Http\Controllers\FileController;
 	$intakeID = request()->input('intakeid');
 	$name = request()->input('name');
     $type_id = request()->input('type_id');
-
+    if ($type_id === null || $type_id < 1) $type_id = 3;
 	$x = "INSERT INTO `intakeDocs` (`name`,`dfile`,`intakeid`,`type_id`,`file_id`,`new_file_system`) VALUES (?,?,?,?,?,?)";
 	$y = prepareExecuteQuery($x,'sssiii',[$name,$file_name,$intakeID,$type_id,$f->id,1]);
 ?>
