@@ -81,7 +81,7 @@ class FinancialOverviewSummaryHelper
             $reportColumns = $table->getColumns();
 
             foreach ($reportColumns as $reportCol) {
-                $label = $reportCol->getLabel($table->mode);
+                $label = $reportCol->getLabel("debits");
                 $columnLookup[$label] = $reportCol;
             }
 
@@ -122,7 +122,7 @@ class FinancialOverviewSummaryHelper
                     $resolved = (string) $rollingQty;
                 } elseif (isset($columnLookup[$column])) {
                     $reportCol = $columnLookup[$column];
-                    $resolved = ReportHelper::resolveFooter($reportCol, [], $processed, $table->mode);
+                    $resolved = ReportHelper::resolveFooter($reportCol, (array)$summary, $processed, $table->mode);
                 }
                 $summary->$column = self::parseNumber($resolved);
             }
@@ -165,6 +165,7 @@ class FinancialOverviewSummaryHelper
         }
 
         $sanitised = str_replace([',', '£', ' '], '', $value);
+        if (!is_numeric($sanitised)) $sanitised = $value;
         return (float) $sanitised;
     }
 }
