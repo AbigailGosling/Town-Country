@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransportPalletType extends Model
 {
     protected $connection = 'tandc_live';
-    protected $table = 'tranport_pallet_types';
+    protected $table = 'transport_pallet_types';
 
     protected $fillable = [
         'name',

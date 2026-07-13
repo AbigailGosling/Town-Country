@@ -12,7 +12,7 @@ class TransportPallet extends Model
 
     protected $connection = 'tandc_live';
 
-    protected $table = 'transport_pallet';
+    protected $table = 'transport_pallets';
 
     protected $fillable = [
         'transport_pallet_type_id',
@@ -44,11 +44,11 @@ class TransportPallet extends Model
 
     public function pickWeightOuts()
     {
-        return $this->hasMany(TransportPalletPickWeight::class, 'outgoing_pallet_id');
+        return $this->hasMany(TransportPalletPickWeight::class, 'transport_pallet_id');
     }
     public function vehicleAllocations()
     {
-        return $this->belongsTo(VehicleTransportPalletAllocation::class, 'outgoing_pallet_id');
+        return $this->belongsTo(VehicleTransportPalletAllocation::class, 'transport_pallet_id');
     }
     public function getTotalWeight()
     {

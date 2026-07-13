@@ -15,9 +15,12 @@ return new class extends Migration
      */
     public function up()
     {
-        $vt = new VehicleType();
-        $vt->name = 'COLLECTION';
-        $vt->save();
+        $vt = VehicleType::query()->where('name', 'COLLECTION')->first();
+        if (!$vt) {
+            $vt = new VehicleType();
+            $vt->name = 'COLLECTION';
+            $vt->save();
+        }
 
         foreach (Vehicle::where('reg', 'COLLECTION')->get() as $vehicle) {
             $vehicle->vehicle_type_id = $vt->id;

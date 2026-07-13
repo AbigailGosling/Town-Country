@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::connection('tandc_live')->create('vehicle_outgoing_pallet_allocations', function (Blueprint $table) {
+        Schema::connection('tandc_live')->create('vehicle_transport_pallet_allocations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('vehicle_id');
             $table->unsignedBigInteger('outgoing_pallet_id');
@@ -24,6 +24,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::connection('tandc_live')->dropIfExists('vehicle_outgoing_pallet_allocations');
+        Schema::connection('tandc_live')->dropIfExists('vehicle_transport_pallet_allocations');
     }
 };

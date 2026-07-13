@@ -94,7 +94,7 @@ class VehicleRoutePlanningController extends Controller
             return response()->json(['error' => 'No vehicles available for planning'], 422);
         }
 
-        $pallets = TransportPallet::with(['outgoingPalletType'])
+        $pallets = TransportPallet::with(['transportPalletType'])
             ->whereDate('estimated_delivery_date', $dueDate->format('Y-m-d'))
             ->where(function ($query) {
                 //$query->whereNull('dispatched')->orWhere('dispatched', 0);
@@ -176,7 +176,7 @@ class VehicleRoutePlanningController extends Controller
                     "cost_per_second"=> 0
                 ],
                 "clustering"=>  [
-                    "num_clusters"=> count($vrpVehicles)
+                    "num_clusters"=> count($vrpVehicles)/2
                 ]
             ]
         ];
@@ -236,13 +236,42 @@ class VehicleRoutePlanningController extends Controller
             'services' => $services,
             'relations' => $relations,
             'objectives' => [
-                [
-                    "type"=> "min",
-                    "value"=> "vehicles",
-                ]
+                // [
+                //     "type"=> "min",
+                //     "value"=> "vehicles",
+                // ]
             ],
         ];
         $graphResponse = GraphHopperHelper::vrp($vrpPayload);
+        Log::debug('',
+            $graphResponse
+        );
+        $overnights = 2;
+        while ($graphResponse['solution']['no_unassigned'] > 0) {
+            $overnights++;
+            $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,$overnights);
+            $vrpPayload = [
+                'configuration' => [
+                    'routing' => [
+                        'calc_points' => true,
+                        'return_snapped_waypoints' => true,
+                        'consider_traffic' => true,
+                        'snap_preventions' => ["motorway", "trunk", "bridge", "ford", "tunnel", "ferry"],
+                    ],
+                ],
+                'vehicle_types' => $vrcVehicleTypes,
+                'vehicles' => $vrpVehicles,
+                'services' => $services,
+                'relations' => $relations,
+                'objectives' => [
+                    // [
+                    //     "type"=> "min",
+                    //     "value"=> "vehicles",
+                    // ]
+                ],
+            ];
+            $graphResponse = GraphHopperHelper::vrp($vrpPayload);
+        }
         if (!$graphResponse['ok']) {
             return response()->json([
                 'error' => 'GraphHopper VRP request failed',

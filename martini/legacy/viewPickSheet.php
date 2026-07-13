@@ -91,23 +91,20 @@ use Illuminate\Support\Str;
 				?>
 				<div class="row custom-warning-box" id="warning" style="<?php if ($controlLock) //echo "width:75%;";?>background:rgb(255, 102, 102); border: 2px solid rgb(255, 0, 0)">
 					Locked by <?php echo $sendingUser['name']; ?> : <?php echo $notification['message']; ?>
-					<?php
-
-					?>
 				</div>
 				<?php
 				if ($controlLock){
 					?>
 					<div style="margin:10px;width:100%">
-					<form method="POST" action="scripts/releaseNotificationLock.php">
-						<?php echo csrf_field(); ?>
-						<input type="hidden" name="pick_id" value="<?php echo $picksheetid; ?>">
-						<input type="hidden" name="pick_type" value="<?php echo $type; ?>">
-						<input type="hidden" name="id" value="<?php echo $notification['id']; ?>">
-						<input type="submit" value="Release Lock" style="width:24%;height:30px;margin-bottom:10px;">
-					</form>
-				</div>
-					<?php
+                        <form method="POST" action="scripts/releaseNotificationLock.php">
+                            <?php echo csrf_field(); ?>
+                            <input type="hidden" name="pick_id" value="<?php echo $picksheetid; ?>">
+                            <input type="hidden" name="pick_type" value="<?php echo $type; ?>">
+                            <input type="hidden" name="id" value="<?php echo $notification['id']; ?>">
+                            <input type="submit" value="Release Lock" style="width:24%;height:30px;margin-bottom:10px;">
+                        </form>
+                    </div>
+                <?php
 				}
 			}
 			else
@@ -143,8 +140,8 @@ use Illuminate\Support\Str;
 		<?php if($pickerSheet['completed'] == '1'){ ?>
 
 		<div>
-			<a href="picknote.php?id=<?php echo $pickerSheet['id']; ?>">Pick Note</a>
-			|<a href="deliverynote.php?id=<?php echo $pickerSheet['id']; ?>">Delivery Note</a>|
+			<a href="picknote.php?id=<?php echo $pickerSheet['id']; ?>">Pick Note</a>|
+            <a href="deliverynote.php?id=<?php echo $pickerSheet['id']; ?>">Delivery Note</a>|
 			<a href="invoice.php?id=<?php echo $pickerSheet['id']; ?>">Invoice</a>
 		</div><br/>
 		<?php } ?><br/>

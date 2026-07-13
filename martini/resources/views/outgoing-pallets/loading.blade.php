@@ -1,21 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="csrf-token" content="{{ csrf_token() }}" />
-  <title>Pallet Allocator</title>
+<x-app-layout>
   <style>
-    :root {
+    .pallet-loader-page {
+      --layout-offset: 0px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color-scheme: light dark;
     }
     * {
       box-sizing: border-box;
     }
-    body {
+    .pallet-loader-page {
       margin: 0;
-      height: 100vh;
+      position: fixed;
+      top: var(--layout-offset);
+      right: 0;
+      bottom: 0;
+      left: 0;
       background: #f6f7fb;
       color: #111827;
       overflow: hidden;
@@ -29,7 +28,7 @@
       border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       background: #fff;
       position: fixed;
-      top: 0;
+      top: var(--layout-offset);
       left: 0;
       right: 0;
       z-index: 10;
@@ -118,7 +117,7 @@
       grid-template-columns: 1fr 1fr;
       grid-template-rows: minmax(0, 1fr);
       gap: 0;
-      height: calc(100vh - 100px);
+      height: calc(100vh - var(--layout-offset) - 100px);
       margin-top: 100px;
     }
     .pane {
@@ -629,8 +628,8 @@
       }
     }
   </style>
-</head>
-<body>
+
+  <div class="pallet-loader-page" id="palletLoaderPage">
   <header class="top-bar">
     <div class="top-controls">
       <div>
@@ -756,6 +755,7 @@
     const contentsModalTitle = document.getElementById("contentsModalTitle");
     const contentsModalBody = document.getElementById("contentsModalBody");
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+    const palletLoaderPage = document.getElementById("palletLoaderPage");
     let activeDragOrderId = null;
     let hideAllocated = false;
     let selectedOrderId = null;
@@ -769,6 +769,15 @@
 
     let vehicleInfo = null;
     let vehicleMaxPalletRows = DEFAULT_MAX_PALLET_ROWS;
+
+    function syncLayoutOffset() {
+      if (!palletLoaderPage) {
+        return;
+      }
+      const nav = document.querySelector("nav");
+      const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+      palletLoaderPage.style.setProperty("--layout-offset", `${Math.max(0, Math.round(navHeight))}px`);
+    }
 
     function normalizeMaxPalletRows(value) {
       const rows = Number(value);
@@ -2147,6 +2156,7 @@
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
+        syncLayoutOffset();
         renderGrid();
       }, 100);
     });
@@ -2224,9 +2234,10 @@
       });
     }
 
+    syncLayoutOffset();
     renderOrders();
     renderGrid();
     loadDepots();
   </script>
-</body>
-</html>
+  </div>
+</x-app-layout>

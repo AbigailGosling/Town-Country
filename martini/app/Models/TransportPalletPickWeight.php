@@ -9,7 +9,7 @@ class TransportPalletPickWeight extends Model
 {
     protected $connection = 'tandc_live';
 
-    protected $table = 'transport_pallet_pickWeights';
+    protected $table = 'transport_pallet_pick_weights';
 
     protected $fillable = [
         'transport_pallet_id',

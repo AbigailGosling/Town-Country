@@ -163,7 +163,6 @@ class GraphHopperHelper
             if (!is_array($data)) {
                 $data = ['raw' => $response->body()];
             }
-            Log::debug("payload", [$payload]);
             return [
                 'ok' => true,
                 'data' => $data,
@@ -195,7 +194,7 @@ class GraphHopperHelper
                 ->post(self::baseUrl() . '/cluster?key=' . urlencode($apiKey), $payload);
 
             if (!$response->successful()) {
-                Log::warning('GraphHopper VRP request failed', [
+                Log::warning('GraphHopper clustering request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
@@ -210,7 +209,6 @@ class GraphHopperHelper
             if (!is_array($data)) {
                 $data = ['raw' => $response->body()];
             }
-            Log::debug("payload", [$payload]);
             return [
                 'ok' => true,
                 'data' => $data,
@@ -274,7 +272,7 @@ class GraphHopperHelper
      * @param Carbon $dueDate
      * @return array
      */
-    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, Carbon $dueDate): array
+    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, Carbon $dueDate, int $overnight_limit = 2): array
     {
         $daytwo = $dueDate->copy()->addDay()->format('Y-m-d');
         $vrpVehicles = [];
@@ -289,7 +287,7 @@ class GraphHopperHelper
             foreach ($type['vehicle'] as $i => $vehicle) {
                 $startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
                 if (count($vrpVehicles)>=20)break 2;
-                if (($type_overview[0] == 3 && $overnighters < 1 || $startLocation['location_id'] !== 'depot')) {
+                if (($type_overview[0] == 3 && $overnighters < $overnight_limit || $startLocation['location_id'] !== 'depot')) {
                     $overnighters++;
                     $vrpVehicle = [
                         'vehicle_id' => $type['type_id'] . '-' . $i,

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -13,29 +14,16 @@ return new class extends Migration
      */
     public function up()
     {
-        // Schema::connection('tandc_live')->rename('outgoing_pallet', 'transport_pallets');
+        DB::connection('tandc_live')->unprepared('RENAME TABLE `outgoing_pallet` TO `transport_pallets`');
+        DB::connection('tandc_live')->unprepared('RENAME TABLE `outgoing_pallet_types` TO `transport_pallet_types`');
+        DB::connection('tandc_live')->unprepared('RENAME TABLE `outgoing_pallet_pickWeights` TO `transport_pallet_pick_weights`');
+        DB::connection('tandc_live')->unprepared('RENAME TABLE `vehicle_outgoing_pallet_allocations` TO `vehicle_transport_pallet_allocations`');
 
-        Schema::connection('tandc_live')->table('transport_pallets', function (Blueprint $table) {
-            $table->renameColumn('outgoing_pallet_type_id', 'transport_pallet_type_id');
-        });
+        DB::connection('tandc_live')->unprepared('ALTER TABLE `transport_pallets` CHANGE `outgoing_pallet_type_id` `transport_pallet_type_id` BIGINT(20) UNSIGNED NOT NULL;');
+        DB::connection('tandc_live')->unprepared('ALTER TABLE `transport_pallet_types` CHANGE `outgoing_pallet_type_id` `transport_pallet_type_id` BIGINT(20) UNSIGNED NOT NULL;');
+        DB::connection('tandc_live')->unprepared('ALTER TABLE `transport_pallet_pick_weights` CHANGE `outgoing_pallet_id` `transport_pallet_id` BIGINT(20) UNSIGNED NOT NULL;');
+        DB::connection('tandc_live')->unprepared('ALTER TABLE `vehicle_transport_pallet_allocations` CHANGE `outgoing_pallet_id` `transport_pallet_id` BIGINT(20) UNSIGNED NOT NULL;');
 
-        // Schema::connection('tandc_live')->rename('outgoing_pallet_types', 'transport_pallet_types');
-
-        Schema::connection('tandc_live')->table('transport_pallet_types', function (Blueprint $table) {
-            $table->renameColumn('outgoing_pallet_type_id', 'transport_pallet_type_id');
-        });
-
-        // Schema::connection('tandc_live')->rename('outgoing_pallet_pickWeights', 'transport_pallet_pick_weights');
-
-        Schema::connection('tandc_live')->table('transport_pallet_pick_weights', function (Blueprint $table) {
-            $table->renameColumn('outgoing_pallet_id', 'transport_pallet_id');
-        });
-
-        // Schema::connection('tandc_live')->rename('vehicle_outgoing_pallet_allocations', 'vehicle_transport_pallet_allocations');
-
-        Schema::connection('tandc_live')->table('vehicle_transport_pallet_allocations', function (Blueprint $table) {
-            $table->renameColumn('outgoing_pallet_id', 'transport_pallet_id');
-        });
     }
 
     /**

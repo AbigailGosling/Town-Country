@@ -38,8 +38,8 @@ class OutgoingPalletsLoadingController extends Controller
 
     private function isStandardPallet(TransportPallet $pallet): bool
     {
-        $pallet->loadMissing('outgoingPalletType');
-        $typeName = strtolower(trim((string) ($pallet->outgoingPalletType->name ?? '')));
+        $pallet->loadMissing('transportPalletType');
+        $typeName = strtolower(trim((string) ($pallet->transportPalletType->name ?? '')));
         return str_starts_with($typeName, 'standard');
     }
 
@@ -213,7 +213,7 @@ class OutgoingPalletsLoadingController extends Controller
         $allocationsQuery = VehicleTransportPalletAllocation::with([
             'outgoingPallet.pickWeightOuts',
             'outgoingPallet.customer',
-            'outgoingPallet.outgoingPalletType',
+            'outgoingPallet.transportPalletType',
         ])
             ->where('vehicle_id', $vehicle->id)
             ->where('load_sheet_id', $loadSheetId);
@@ -254,7 +254,7 @@ class OutgoingPalletsLoadingController extends Controller
                     'customerName' => $pallet->customer->businessname ?? '',
                     'customerDeliveryPostcode' => $ca->postcode ?? '',
                     'palletWeight' => (int)($pallet->getTotalWeight() ?? 0),
-                    'palletType' => $pallet->outgoingPalletType->name ?? 'Euro',
+                    'palletType' => $pallet->transportPalletType->name ?? 'Euro',
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
                     'dueDate' => $pallet->estimated_delivery_date ? date('Y-m-d', strtotime((string)$pallet->estimated_delivery_date)) : '',
                     'row' => $row,
@@ -494,7 +494,7 @@ class OutgoingPalletsLoadingController extends Controller
                 return response()->json(['orders' => []]);
         }
 
-        $pallets = TransportPallet::with('pickWeightOuts.pickWeightOut','customer','outgoingPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
+        $pallets = TransportPallet::with('pickWeightOuts.pickWeightOut','customer','transportPalletType')->where('estimated_delivery_date', $dueDate)->orWhereNull('estimated_delivery_date')->get();
 
         $allocationsQuery = VehicleTransportPalletAllocation::with('vehicle');
 
@@ -511,14 +511,14 @@ class OutgoingPalletsLoadingController extends Controller
 
         $allocations = $allocationsQuery
             ->get()
-            ->keyBy('outgoing_pallet_id');
+            ->keyBy('transport_pallet_id');
 
         $anyAllocationByPalletId = VehicleTransportPalletAllocation::query()
             ->with(['vehicle', 'loadSheet'])
-            ->whereIn('outgoing_pallet_id', $pallets->pluck('id')->map(fn ($id) => (int) $id)->all())
+            ->whereIn('transport_pallet_id', $pallets->pluck('id')->map(fn ($id) => (int) $id)->all())
             ->orderByDesc('id')
             ->get()
-            ->groupBy('outgoing_pallet_id')
+            ->groupBy('transport_pallet_id')
             ->map(function ($group) {
                 return $group->first();
             });
@@ -579,7 +579,7 @@ class OutgoingPalletsLoadingController extends Controller
                     'customerName' => $pallet->customer->businessname ?? '',
                     'customerDeliveryAddress' => $ca->address_1 ?? '',
                     'customerDeliveryPostcode' => $ca->postcode ?? '',
-                    'palletType' => $pallet->outgoingPalletType->name,
+                    'palletType' => $pallet->transportPalletType->name,
                     'weightKg' => (int)($pallet->getTotalWeight() ?? 0),
                     'contentsPreview' => $contentsPreview,
                     'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
@@ -681,7 +681,7 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'outgoingPalletId is required'], 400);
         }
 
-        $pallet = TransportPallet::with(['customer', 'outgoingPalletType', 'pickWeightOuts.pickWeightOut'])->find($outgoingPalletId);
+        $pallet = TransportPallet::with(['customer', 'transportPalletType', 'pickWeightOuts.pickWeightOut'])->find($outgoingPalletId);
         if (!$pallet) {
             return response()->json(['error' => 'Pallet not found'], 404);
         }
@@ -730,7 +730,7 @@ class OutgoingPalletsLoadingController extends Controller
                 'customerName' => $pallet->customer->businessname ?? '',
                 'address' => $address->address_1 ?? '',
                 'postcode' => $address->postcode ?? '',
-                'palletType' => $pallet->outgoingPalletType->name ?? '',
+                'palletType' => $pallet->transportPalletType->name ?? '',
                 'temperature' => $pallet->getTemperatureCategory() ?? '',
                 'totalWeightKg' => (int) ($pallet->getTotalWeight() ?? 0),
                 'pickWeightOutCount' => count($pickWeightOutIds),
@@ -898,7 +898,7 @@ class OutgoingPalletsLoadingController extends Controller
         $query = VehicleTransportPalletAllocation::with([
             'outgoingPallet.pickWeightOuts.pickWeightOut',
             'outgoingPallet.customer',
-            'outgoingPallet.outgoingPalletType',
+            'outgoingPallet.transportPalletType',
         ])->where('vehicle_id', $vehicle->id);
 
         if ($loadSheetId > 0) {
@@ -948,7 +948,7 @@ class OutgoingPalletsLoadingController extends Controller
                 'customerName' => $pallet->customer->businessname ?? '',
                 'address' => $ca->address_1 ?? '',
                 'postcode' => $ca->postcode ?? '',
-                'palletType' => $pallet->outgoingPalletType->name ?? 'Euro',
+                'palletType' => $pallet->transportPalletType->name ?? 'Euro',
                 'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
                 'contentsPreview' => $contentsPreview,
                 'weightKg' => $weightKg,

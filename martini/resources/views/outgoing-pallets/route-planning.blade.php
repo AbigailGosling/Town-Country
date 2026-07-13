@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Route Planning</title>
+<x-app-layout>
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -31,7 +25,8 @@
 
         * { box-sizing: border-box; }
 
-        body {
+        .route-planning-page {
+            --layout-offset: 0px;
             margin: 0;
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             background: radial-gradient(circle at top right, #e0f2fe 0%, var(--bg) 45%);
@@ -49,12 +44,37 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 20px;
+            margin: 0;
+            padding: 0;
+            border: none;
+            width: 100%;
+        }
+
+        .header a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.9rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .header a:hover {
+            background: var(--muted);
+            color: #fff;
+            border-color: var(--muted);
         }
 
         h1 {
             margin: 0;
             font-size: 1.8rem;
+            flex: 1;
         }
 
         .card {
@@ -66,9 +86,32 @@
             margin-bottom: 16px;
         }
 
+        .card:has(#plannerForm) {
+            position: static;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            padding: 0;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+        }
+
+        .card:has(#plannerForm) .header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .card:has(#plannerForm) form {
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
         }
 
@@ -101,7 +144,10 @@
             gap: 10px;
         }
 
-        button {
+        .route-planning-page button,
+        .route-planning-page [type='button'],
+        .route-planning-page [type='reset'],
+        .route-planning-page [type='submit'] {
             border: 0;
             border-radius: 8px;
             padding: 10px 14px;
@@ -111,8 +157,18 @@
             color: #fff;
         }
 
-        button:hover { background: var(--primary-dark); }
-        button:disabled { opacity: 0.65; cursor: wait; }
+        .route-planning-page button:hover,
+        .route-planning-page [type='button']:hover,
+        .route-planning-page [type='reset']:hover,
+        .route-planning-page [type='submit']:hover { background: var(--primary-dark); }
+
+        .route-planning-page button:disabled,
+        .route-planning-page [type='button']:disabled,
+        .route-planning-page [type='reset']:disabled,
+        .route-planning-page [type='submit']:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
 
         .status {
             margin: 0;
@@ -349,15 +405,13 @@
             .summary-grid { grid-template-columns: 1fr; }
         }
     </style>
-</head>
-<body>
+<div class="route-planning-page" id="routePlanningPage">
 <div class="container">
-    <div class="header">
-        <h1>Automated Route Plan</h1>
-        <a href="{{ route('outgoing-pallets-loading.view') }}">Back to Loading</a>
-    </div>
-
     <div class="card">
+        <div class="header">
+            <h1>Automated Route Plan</h1>
+            <a href="{{ route('outgoing-pallets-loading.view') }}">Back to Loading</a>
+        </div>
         <form id="plannerForm">
             <div class="form-grid">
                 <div class="field">
@@ -373,13 +427,6 @@
                 <div class="field">
                     <label for="serviceDurationSeconds">Service Duration (seconds)</label>
                     <input type="number" id="serviceDurationSeconds" name="serviceDurationSeconds" min="60" value="1800" required>
-                </div>
-                <div class="field">
-                    <label for="dryRun">Mode</label>
-                    <select id="dryRun" name="dryRun">
-                        <option value="false" selected>Persist Suggestions</option>
-                        <option value="true" selected>Dry Run (No Persist)</option>
-                    </select>
                 </div>
             </div>
 
@@ -1531,7 +1578,18 @@
         await loadVehiclesForDepot(depotSelect.value);
     });
 
+    function syncLayoutOffset() {
+        const routePlanningPage = document.getElementById('routePlanningPage');
+        if (!routePlanningPage) return;
+        const nav = document.querySelector('nav');
+        const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+        routePlanningPage.style.setProperty('--layout-offset', `${Math.max(0, Math.round(navHeight))}px`);
+    }
+
+    syncLayoutOffset();
+    window.addEventListener('resize', syncLayoutOffset);
     loadDepots();
 </script>
-</body>
-</html>
+</div>
+</div>
+</x-app-layout>
