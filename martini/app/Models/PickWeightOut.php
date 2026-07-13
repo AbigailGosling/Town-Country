@@ -40,7 +40,7 @@ protected $connection = 'tandc_live';
 
 	public function outgoingPalletLinks()
 	{
-		return $this->hasMany(OutgoingPalletPickWeight::class, 'pickWeightOut_id');
+		return $this->hasMany(TransportPalletPickWeight::class, 'pickWeightOut_id');
 	}
 
 	public function pickerSheet()
@@ -184,20 +184,20 @@ protected $connection = 'tandc_live';
 
 
                 do {
-                    $palletSearch = OutgoingPallet::where('customer_id', $customerId)
+                    $palletSearch = TransportPallet::where('customer_id', $customerId)
                         ->where('address_id', $addressId)
                         ->where('estimated_delivery_date', $date);
                     $palletSearch = $palletSearch->get();
                     $pallet = null;
                     $lowestWeight = null;
                     $lowestPallet = null;
-                    $stdMax = OutgoingPalletType::find(1)->max_weight;
+                    $stdMax = TransportPalletType::find(1)->max_weight;
                     foreach ($palletSearch as $p) {
                         $thisWeight = $p->getTotalWeight();
                         if ($lowestWeight === null || $thisWeight < $lowestWeight) {
                             $lowestWeight = $thisWeight;
                             $lowestPallet = $p;
-                            $pMaxWeight = OutgoingPalletType::find($p->outgoing_pallet_type_id)->max_weight;
+                            $pMaxWeight = TransportPalletType::find($p->outgoing_pallet_type_id)->max_weight;
                             if ($pMaxWeight - $thisWeight >= $pickWeightOut->getTotalWeight()) {
                                 $pallet = $p;
                                 $stdMax = $pMaxWeight;
@@ -205,7 +205,7 @@ protected $connection = 'tandc_live';
                         }
                     }
                     if (count($palletSearch)==0) {
-                        $pallet = OutgoingPallet::create([
+                        $pallet = TransportPallet::create([
                             'customer_id' => $customerId,
                             'address_id' => $addressId,
                             'outgoing_pallet_type_id' => 1,
@@ -214,7 +214,7 @@ protected $connection = 'tandc_live';
                         ]);
                     }
                     if ($pallet) {
-                        OutgoingPalletPickWeight::create([
+                        TransportPalletPickWeight::create([
                             'outgoing_pallet_id' => $pallet->id,
                             'pickWeightOut_id' => $pickWeightOut->id,
                         ]);
@@ -236,7 +236,7 @@ protected $connection = 'tandc_live';
             }
         });
     }
-    public static function SPLIT_PICK(int $pickWeightOutId, int $moveWeightCount, ?int $targetOutgoingPalletId, ?int $fromOutgoingPalletId, ?int $moveCutId = null): array
+    public static function SPLIT_PICK(int $pickWeightOutId, int $moveWeightCount, ?int $targetTransportPalletId, ?int $fromTransportPalletId, ?int $moveCutId = null): array
     {
        $sourcePickWeightOut = self::query()->findOrFail($pickWeightOutId);
         $pickerSheetId = (int) $sourcePickWeightOut->pickersheet_id;
@@ -268,23 +268,23 @@ protected $connection = 'tandc_live';
             'picker_ids' => $sourcePickWeightOut->picker_ids,
         ]);
 
-        if (!empty($targetOutgoingPalletId)) {
-            OutgoingPalletPickWeight::query()->firstOrCreate([
-                'outgoing_pallet_id' => (int) $targetOutgoingPalletId,
+        if (!empty($targetTransportPalletId)) {
+            TransportPalletPickWeight::query()->firstOrCreate([
+                'outgoing_pallet_id' => (int) $targetTransportPalletId,
                 'pickWeightOut_id' => $newPickWeightOut->id,
             ]);
         }
 
         $sourceSummaryPick = null;
-        if (!empty($fromOutgoingPalletId)) {
-            $sourceSummaryPick = self::recombineWithinPalletByPickerSheet((int) $fromOutgoingPalletId, $pickerSheetId);
+        if (!empty($fromTransportPalletId)) {
+            $sourceSummaryPick = self::recombineWithinPalletByPickerSheet((int) $fromTransportPalletId, $pickerSheetId);
         } else {
             $sourceSummaryPick = self::recombineWithinUnloadedByPickerSheet($pickerSheetId);
         }
 
         $movedSummaryPick = null;
-        if (!empty($targetOutgoingPalletId)) {
-            $movedSummaryPick = self::recombineWithinPalletByPickerSheet((int) $targetOutgoingPalletId, $pickerSheetId);
+        if (!empty($targetTransportPalletId)) {
+            $movedSummaryPick = self::recombineWithinPalletByPickerSheet((int) $targetTransportPalletId, $pickerSheetId);
         } else {
             $movedSummaryPick = self::recombineWithinUnloadedByPickerSheet($pickerSheetId);
         }
@@ -296,7 +296,7 @@ protected $connection = 'tandc_live';
     }
     public static function recombineWithinPalletByPickerSheet(int $outgoingPalletId, int $pickerSheetId): ?PickWeightOut
     {
-        $pickWeightOutIds = OutgoingPalletPickWeight::query()
+        $pickWeightOutIds = TransportPalletPickWeight::query()
             ->where('outgoing_pallet_id', $outgoingPalletId)
             ->whereHas('pickWeightOut', function ($query) use ($pickerSheetId) {
                 $query->where('pickersheet_id', $pickerSheetId);
@@ -312,7 +312,7 @@ protected $connection = 'tandc_live';
         }
 
         $keeperId = self::mergePickWeightOutIds($pickWeightOutIds, $outgoingPalletId);
-        OutgoingPallet::CHECK_UPDATE_ESTIMATED_DELIVERY_DATE($outgoingPalletId);
+        TransportPallet::CHECK_UPDATE_ESTIMATED_DELIVERY_DATE($outgoingPalletId);
         return PickWeightOut::query()->with('pickerSheet')->find($keeperId);
     }
     public static function recombineWithinUnloadedByPickerSheet(int $pickerSheetId): ?PickWeightOut
@@ -413,7 +413,7 @@ protected $connection = 'tandc_live';
 
         return array_values($selected);
     }
-    private static function mergePickWeightOutIds(array $pickWeightOutIds, ?int $contextOutgoingPalletId): int
+    private static function mergePickWeightOutIds(array $pickWeightOutIds, ?int $contextTransportPalletId): int
     {
         $pickWeightOutIds = array_values(array_unique(array_map('intval', $pickWeightOutIds)));
         sort($pickWeightOutIds);
@@ -446,14 +446,14 @@ protected $connection = 'tandc_live';
         ]);
 
         foreach ($pickWeightOuts->slice(1) as $redundant) {
-            if ($contextOutgoingPalletId !== null) {
-                OutgoingPalletPickWeight::query()
-                    ->where('outgoing_pallet_id', $contextOutgoingPalletId)
+            if ($contextTransportPalletId !== null) {
+                TransportPalletPickWeight::query()
+                    ->where('outgoing_pallet_id', $contextTransportPalletId)
                     ->where('pickWeightOut_id', $redundant->id)
                     ->delete();
             }
 
-            $stillLinked = OutgoingPalletPickWeight::query()
+            $stillLinked = TransportPalletPickWeight::query()
                 ->where('pickWeightOut_id', $redundant->id)
                 ->exists();
 

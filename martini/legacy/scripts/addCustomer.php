@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ProcessHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 
@@ -143,11 +144,11 @@ use App\Models\ClientType;
 	$colNames[] = '`sage_no`';
 	$colValue[] = request()->input('sage_no');
 
-	$x = "INSERT INTO `customers` (".implode(",",$colNames).")
+	$x = "INSERT INTO `customers` (".implode(",",$colNames).",`businessnameDM`)
 	VALUES
-	(".implode(",",array_fill(0,count($colNames),"?")).");";
+	(".implode(",",array_fill(0,count($colNames),"?")).",dm(?));";
 
-	$customer_id = prepareExecuteQuery($x,str_repeat('s',count($colNames)),$colValue,true);
+	$customer_id = prepareExecuteQuery($x,str_repeat('s',count($colNames)).'s',array_merge($colValue, [request()->input('businessname')]),true);
 
 
 	foreach (request()->input('address_id') as $index => $address_id)
@@ -167,7 +168,12 @@ use App\Models\ClientType;
         $ca->address_number = request()->input('address_number')[$index] ?? null;
         $ca->site_id = request()->input('site_id')[$index];
         $ca->restrictions = request()->input('restrictions')[$index] ?? null;
+        $ca->geocoding_tried = 0;
+        $ca->collection = request()->has('address_collection') && in_array($index, request()->input('address_collection')) ? 1 : 0;
+        $ca->lat = null;
+        $ca->lon = null;
         $ca->save();
+        ProcessHelper::runInBackground('run:geocode_address '.$ca->id);
 	}
 
 ?>

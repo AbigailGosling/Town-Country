@@ -115,6 +115,7 @@ class VehicleController extends Controller
             : 5;
 
         $vehicle->fill($validated);
+        $vehicle->disabled = $request->has('disabled');
         $vehicle->save();
 
         return redirect(route('vehicles.index'))
@@ -123,5 +124,7 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle)
     {
+        $vehicle->disabled = true;
+        $vehicle->save();
     }
 }

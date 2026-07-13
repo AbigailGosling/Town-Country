@@ -1,4 +1,8 @@
 <?php
+
+use App\Models\PickWeightOut;
+use App\Models\TransportPalletPickWeight;
+
 	require(__DIR__.'/../functions.php');
 
     $addressid = request()->input('addressid');
@@ -18,6 +22,14 @@
     loggedDataChange("picksheet_note",$picksheetid,$picksheet_note);
     loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
     loggedDataChange("picksheet_estimated_delivery_date",$picksheetid,$estimated_delivery_date);
+
+    $pwo = PickWeightOut::where('pickersheet_id', $picksheetid)->first();
+    if ($pwo) {
+        $tppw = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+        if ($tppw) {
+            $tppw->transportPallet->checkUpdateEstimatedDeliveryDate();
+        }
+    }
 ?>
 
 <script type="text/javascript">

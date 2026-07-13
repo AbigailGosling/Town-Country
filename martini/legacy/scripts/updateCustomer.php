@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\ProcessHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
@@ -175,9 +176,14 @@ use Illuminate\Support\Facades\Auth;
         $ca->address_number = request()->input('address_number')[$index] ?? null;
         $ca->site_id = request()->input('address_site_id')[$index] ?? null;
         $ca->restrictions = request()->input('restrictions')[$index] ?? null;
+        $ca->geocoding_tried = 0;
+        $ca->lat = null;
+        $ca->lon = null;
+        $ca->collection = request()->has('address_collection') && in_array($index, request()->input('address_collection')) ? 1 : 0;
         $ca->save();
+        ProcessHelper::runInBackground('run:geocode_address '.$ca->id);
 	}
 ?>
 <script>
-	window.location = '../manageCustomers.php?id=<?php echo $id; ?>';
+	window.location = '../manageCustomers.php?id=<?php echo $c->id; ?>';
 </script>

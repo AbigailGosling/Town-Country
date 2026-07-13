@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
-use App\Models\OutgoingPallet;
-use App\Models\OutgoingPalletPickWeight;
-use App\Models\OutgoingPalletType;
+use App\Models\TransportPallet;
+use App\Models\TransportPalletPickWeight;
+use App\Models\TransportPalletType;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
-use App\Models\VehicleOutgoingPalletAllocation;
+use App\Models\VehicleTransportPalletAllocation;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -113,7 +113,7 @@ class OutgoingPalletController extends Controller
             ->get();
 
         // Get all pickersheet IDs that are already loaded in outgoing_pallet via the pivot table
-        $outgoingPallets = OutgoingPallet::where('customer_id', $customerId)
+        $outgoingPallets = TransportPallet::where('customer_id', $customerId)
             ->where('address_id', $addressId)
             ->with(['pickWeightOuts.pickWeightOut.pickerSheet'])
             ->get();
@@ -140,7 +140,7 @@ class OutgoingPalletController extends Controller
             return !in_array($sheet->id, $loadedIds);
         });
 
-        $palletTypes = OutgoingPalletType::all();
+        $palletTypes = TransportPalletType::all();
         $customer = Customer::find($customerId);
         $customerAddress = ClientAddress::where('client_id', $customerId)
             ->where('address_id', $addressId)
@@ -166,7 +166,7 @@ class OutgoingPalletController extends Controller
             'address_id' => 'required|integer',//|exists:address,id
         ]);
         $validated['estimated_delivery_date'] = Carbon::today()->format('Y-m-d');
-        $pallet = OutgoingPallet::create($validated);
+        $pallet = TransportPallet::create($validated);
         $pallet->load(['customer', 'address']);
 
         return response()->json($pallet, 201);
@@ -179,7 +179,7 @@ class OutgoingPalletController extends Controller
         }
         $pickWeightOutIds = PickWeightOut::where('pickersheet_id', $pickSheetId)->pluck('id')->toArray();
 
-        $pallets = OutgoingPallet::query()
+        $pallets = TransportPallet::query()
             ->select('outgoing_pallet.*')
             ->join('outgoing_pallet_pickweights', 'outgoing_pallet.id', '=', 'outgoing_pallet_pickweights.outgoing_pallet_id')
             ->whereIn('outgoing_pallet_pickweights.pickWeightOut_id', $pickWeightOutIds)
@@ -192,7 +192,7 @@ class OutgoingPalletController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $pallet = OutgoingPallet::with(['customer', 'address'])->findOrFail($id);
+        $pallet = TransportPallet::with(['customer', 'address'])->findOrFail($id);
 
         return response()->json($pallet);
     }
@@ -201,7 +201,7 @@ class OutgoingPalletController extends Controller
      */
     public function update(Request $request, int $id): JsonResponse
     {
-        $pallet = OutgoingPallet::findOrFail($id);
+        $pallet = TransportPallet::findOrFail($id);
 
         $validated = $request->validate([
             'customer_id' => 'sometimes|required|integer|exists:tandc_live.customers,id',
@@ -218,9 +218,9 @@ class OutgoingPalletController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        $pallet = OutgoingPallet::findOrFail($id);
+        $pallet = TransportPallet::findOrFail($id);
         if ($pallet->dispatched == 1) return response()->json(['error' => 'Cannot Delete Pallet after dispatch']);
-        foreach (VehicleOutgoingPalletAllocation::where("outgoing_pallet_id",$pallet)->get() as $vopa)
+        foreach (VehicleTransportPalletAllocation::where("outgoing_pallet_id",$pallet)->get() as $vopa)
         {
             $vopa->delete();
         }
@@ -239,7 +239,7 @@ class OutgoingPalletController extends Controller
             $validated['outgoing_pallet_type_id'] = 1;
         }
 
-        $pallet = OutgoingPallet::create($validated);
+        $pallet = TransportPallet::create($validated);
 
         return response()->json([
             'id' => $pallet->id,
@@ -249,8 +249,8 @@ class OutgoingPalletController extends Controller
     }
     public function deletePallet(int $id): JsonResponse
     {
-        $pallet = OutgoingPallet::findOrFail($id);
-        OutgoingPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->delete();
+        $pallet = TransportPallet::findOrFail($id);
+        TransportPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->delete();
         $pallet->delete();
 
         return response()->json(['message' => 'Outgoing pallet deleted successfully']);
@@ -262,7 +262,7 @@ class OutgoingPalletController extends Controller
             'outgoing_pallet_type_id' => 'required|integer|exists:tandc_live.outgoing_pallet_types,id',
         ]);
 
-        $pallet = OutgoingPallet::findOrFail($validated['outgoing_pallet_id']);
+        $pallet = TransportPallet::findOrFail($validated['outgoing_pallet_id']);
         $pallet->update(['outgoing_pallet_type_id' => $validated['outgoing_pallet_type_id']]);
 
         return response()->json([
@@ -281,7 +281,7 @@ class OutgoingPalletController extends Controller
         $result = DB::connection('tandc_live')->transaction(function () use ($validated) {
             $pickWeightOut = PickWeightOut::query()->findOrFail($validated['pick_weight_out_id']);
 
-            $link = OutgoingPalletPickWeight::query()->firstOrCreate([
+            $link = TransportPalletPickWeight::query()->firstOrCreate([
                 'outgoing_pallet_id' => (int) $validated['outgoing_pallet_id'],
                 'pickWeightOut_id' => (int) $validated['pick_weight_out_id'],
             ]);
@@ -314,7 +314,7 @@ class OutgoingPalletController extends Controller
                 ? (bool) $validated['recombine_unloaded']
                 : true;
 
-            OutgoingPalletPickWeight::query()
+            TransportPalletPickWeight::query()
                 ->where('outgoing_pallet_id', (int) $validated['outgoing_pallet_id'])
                 ->where('pickWeightOut_id', (int) $validated['pick_weight_out_id'])
                 ->delete();

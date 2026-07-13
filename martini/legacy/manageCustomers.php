@@ -174,6 +174,10 @@ use Illuminate\Support\Facades\Log;
                             <?php } ?>
                         </select></td>
 				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>collection" style="<?php echo $style1; ?>">
+					<td class="label"><label>Collection</label></td>
+					<td><input type="checkbox" name="address_collection[]" value="1" <?php echo ($ca->collection ?? 0 == 1)?"checked":""; ?>></td>
+				</tr>
 				<tr height="40"><td colspan="2"></td></tr>
 				<?php
 					}

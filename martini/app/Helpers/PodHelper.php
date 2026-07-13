@@ -9,8 +9,8 @@ use App\Models\Cut;
 use App\Models\Intake;
 use App\Models\Location;
 use App\Models\Nationality;
-use App\Models\OutgoingPallet;
-use App\Models\OutgoingPalletPickWeight;
+use App\Models\TransportPallet;
+use App\Models\TransportPalletPickWeight;
 use App\Models\Pallet;
 use App\Models\PickerSheet;
 use App\Models\PickersheetDocument;
@@ -21,14 +21,13 @@ use App\Models\Species;
 use App\Models\Temperature;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Models\VehicleOutgoingPalletAllocation;
+use App\Models\VehicleTransportPalletAllocation;
 use App\Models\Weight;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use InternalScripts\PDFRenderer;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
@@ -37,7 +36,7 @@ class PodHelper
 {
     /**
      * Send PODs to an external system or service.
-     * @param Collection<OutgoingPallet> $outgoingPallets
+     * @param Collection<TransportPallet> $outgoingPallets
      * @param Vehicle $vehicle
      */
     public static function sendPods(Collection $outgoingPallets,Vehicle $vehicle): void
@@ -53,9 +52,9 @@ class PodHelper
         $brands = Brand::all()->keyBy('id');
         $ticking = Carbon::now()->startOfDay();
         $picksByAddress = [];
-        /** @var OutgoingPallet $outgoingPallet_ */
+        /** @var TransportPallet $outgoingPallet_ */
         foreach ($outgoingPallets as $outgoingPallet_) {
-            /** @var OutgoingPalletPickWeight $oppw_ */
+            /** @var TransportPalletPickWeight $oppw_ */
             foreach ($outgoingPallet_->pickWeightOuts as $oppw_) {
                 /** @var PickerSheet $pickSheet */
                 $pickSheet_ = $oppw_->pickWeightOut->pickerSheet;
@@ -87,7 +86,7 @@ class PodHelper
                 "TASK_INFO" => (object)[
                     "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
                     "TASK_START_TIME" => $ticking->format('H:i'),
-                    "TASK_MOBILE_USER" => strtoupper(implode('', explode(' ', $vehicle->reg))).'@tc.co.uk',
+                    "TASK_MOBILE_USER" => trim(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
                     //"TASK_MOBILE_USER_ID" => 13,
                     "TASK_MOBILE_USER_PROF_ID" => "",
                     "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
@@ -227,14 +226,14 @@ class PodHelper
                 $pickerSheet->save();
                 $pwos = PickWeightOut::where('pickersheet_id', $pickerSheet->id)->get();
                 foreach ($pwos as $pwo) {
-                    $oppws = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
+                    $oppws = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
                     foreach ($oppws as $oppw)
                     {
-                        $op = OutgoingPallet::find($oppw->outgoing_pallet_id);
+                        $op = TransportPallet::find($oppw->outgoing_pallet_id);
                         $op->estimated_delivery_date = $nextDeliveryDate->format("d/m/Y");
                         $op->dispatched = $op->pod_sent = 0;
                         $op->save();
-                        $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                        $vopa = VehicleTransportPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
                         $vopa->delete();
                     }
                 }
@@ -275,8 +274,8 @@ class PodHelper
             foreach ($pwos as $pwo) {
                 $pwoWeights = explode(',', $pwo->weight_ids);
                 if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
-                    $oppw = OutgoingPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-                    $vopa = VehicleOutgoingPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $oppw = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
+                    $vopa = VehicleTransportPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
                     $vehicle = Vehicle::find($vopa->vehicle_id);
                     break;
                 }

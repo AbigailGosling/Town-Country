@@ -6,16 +6,16 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class OutgoingPallet extends Model
+class TransportPallet extends Model
 {
     use HasFactory;
 
     protected $connection = 'tandc_live';
 
-    protected $table = 'outgoing_pallet';
+    protected $table = 'transport_pallets';
 
     protected $fillable = [
-        'outgoing_pallet_type_id',
+        'transport_pallet_type_id',
         'customer_id',
         'address_id',
         'estimated_delivery_date',
@@ -26,7 +26,7 @@ class OutgoingPallet extends Model
     protected $casts = [
         'customer_id' => 'integer',
         'address_id' => 'integer',
-        'outgoing_pallet_type_id' => 'integer',
+        'transport_pallet_type_id' => 'integer',
         'estimated_delivery_date' => 'date',
         'dispatched' => 'boolean',
         'pod_sent' => 'boolean',
@@ -37,32 +37,31 @@ class OutgoingPallet extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function outgoingPalletType()
+    public function transportPalletType()
     {
-        return $this->belongsTo(OutgoingPalletType::class, 'outgoing_pallet_type_id');
+        return $this->belongsTo(TransportPalletType::class, 'transport_pallet_type_id');
     }
 
     public function pickWeightOuts()
     {
-        return $this->hasMany(OutgoingPalletPickWeight::class, 'outgoing_pallet_id');
+        return $this->hasMany(TransportPalletPickWeight::class, 'transport_pallet_id');
     }
     public function vehicleAllocations()
     {
-        return $this->belongsTo(VehicleOutgoingPalletAllocation::class, 'outgoing_pallet_id');
+        return $this->belongsTo(VehicleTransportPalletAllocation::class, 'transport_pallet_id');
     }
     public function getTotalWeight()
     {
         $total = 0;
-        foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
-            foreach (PickWeightOut::where('id', $link->pickWeightOut_id)->get() as $pickWeightOut) {
-                if (count($pickWeightOut->getWeights()) == 0)
-                {
-                    $link->delete();
-                    $pickWeightOut->delete();
-                    continue;
-                }
-                $total += $pickWeightOut->getTotalWeight();
+        foreach ($this->pickWeightOuts as $link) {
+           $pickWeightOut = $link->pickWeightOut;
+            if (count($pickWeightOut->getWeights()) == 0)
+            {
+                $link->delete();
+                $pickWeightOut->delete();
+                continue;
             }
+            $total += $pickWeightOut->getTotalWeight();
         }
         return round($total, 3);
     }
@@ -70,39 +69,52 @@ class OutgoingPallet extends Model
     public function getTemperatureCategory()
     {
         if ($this->_temperatureCategoryCache == '') {
-            foreach (OutgoingPalletPickWeight::where('outgoing_pallet_id', $this->id)->get() as $link) {
-                $pickWeightOut = PickWeightOut::where('id', $link->pickWeightOut_id)->first();
-                if ($pickWeightOut === null)
-                {
-                    $link->delete();
-                    continue;
-                }
+            foreach ($this->pickWeightOuts as $link) {
+                $pickWeightOut = $link->pickWeightOut;
                 if (count($pickWeightOut->getWeights()) == 0)
                 {
                     $link->delete();
                     $pickWeightOut->delete();
                     continue;
                 }
-                $weight = Weight::find($pickWeightOut->getWeights()[0]);
+                if ($this->_temperatureCategoryCache == '')
+                {
+                    $weight = Weight::find($pickWeightOut->getWeights()[0]);
                 if (!$weight) return '';
-                $product = Product::find($weight->product_id);
-                if ($product->cooling_id == 2){
-                    $this->_temperatureCategoryCache = 'Frozen';
-                }
-                else {
-                    $this->_temperatureCategoryCache = 'Fresh';
+                    $product = Product::find($weight->product_id);
+                    if ($product->cooling_id == 2){
+                        $this->_temperatureCategoryCache = 'Frozen';
+                    }
+                    else {
+                        $this->_temperatureCategoryCache = 'Fresh';
+                    }
                 }
             }
 
         }
         return $this->_temperatureCategoryCache;
     }
+    public function normalizePlanningTemperatureCategory(): string
+    {
+        $category = strtolower(trim((string) ($this->getTemperatureCategory() ?? '')));
+
+        if (str_contains($category, 'frozen')) {
+            return 'frozen';
+        }
+
+        if (str_contains($category, 'fresh')) {
+            return 'fresh';
+        }
+
+        return '';
+    }
+
     public function isOverWeight()
     {
-        if (!$this->outgoingPalletType) {
+        if (!$this->transportPalletType) {
             return false;
         }
-        return $this->getTotalWeight() > $this->outgoingPalletType->max_weight;
+        return $this->getTotalWeight() > $this->transportPalletType->max_weight;
     }
 
     public function address()
