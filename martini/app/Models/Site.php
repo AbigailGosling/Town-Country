@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $cutoff
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property float|null $lat
+ * @property float|null $lon
  * @property bool $pallet_movement_tracking_enabled
  *
  * @package App\Models
@@ -37,6 +39,8 @@ class Site extends Model
         'disabled',
         'abbreviation',
         'cutoff',
+        'lat',
+        'lon',
         'pallet_movement_tracking_enabled',
     ];
     /**
@@ -56,6 +60,8 @@ class Site extends Model
      */
     protected $casts = [
         'disabled' => 'bool',
+        'lat' => 'float',
+        'lon' => 'float',
         'pallet_movement_tracking_enabled' => 'bool',
     ];
     public function locations():HasMany

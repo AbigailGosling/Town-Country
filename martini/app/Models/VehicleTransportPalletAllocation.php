@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class VehicleOutgoingPalletAllocation extends Model
+class VehicleTransportPalletAllocation extends Model
 {
     protected $connection = 'tandc_live';
-    protected $table = 'vehicle_outgoing_pallet_allocations';
+    protected $table = 'vehicle_transport_pallet_allocations';
     protected $fillable = [
         'vehicle_id',
-        'outgoing_pallet_id',
+        'load_sheet_id',
+        'transport_pallet_id',
         'row',
         'column',
         'committed_by_user_id',
@@ -20,7 +21,8 @@ class VehicleOutgoingPalletAllocation extends Model
 
     protected $casts = [
         'vehicle_id' => 'integer',
-        'outgoing_pallet_id' => 'integer',
+        'load_sheet_id' => 'integer',
+        'transport_pallet_id' => 'integer',
         'row' => 'integer',
         'column' => 'integer',
         'committed_by_user_id' => 'integer',
@@ -32,8 +34,13 @@ class VehicleOutgoingPalletAllocation extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function outgoingPallet()
+    public function loadSheet()
     {
-        return $this->belongsTo(OutgoingPallet::class);
+        return $this->belongsTo(LoadSheet::class, 'load_sheet_id');
+    }
+
+    public function transportPallet()
+    {
+        return $this->belongsTo(TransportPallet::class);
     }
 }

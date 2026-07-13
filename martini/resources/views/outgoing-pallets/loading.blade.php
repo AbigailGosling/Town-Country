@@ -1,21 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="csrf-token" content="{{ csrf_token() }}" />
-  <title>Pallet Allocator</title>
+<x-app-layout>
   <style>
-    :root {
+    .pallet-loader-page {
+      --layout-offset: 0px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color-scheme: light dark;
     }
     * {
       box-sizing: border-box;
     }
-    body {
+    .pallet-loader-page {
       margin: 0;
-      height: 100vh;
+      position: fixed;
+      top: var(--layout-offset);
+      right: 0;
+      bottom: 0;
+      left: 0;
       background: #f6f7fb;
       color: #111827;
       overflow: hidden;
@@ -29,7 +28,7 @@
       border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       background: #fff;
       position: fixed;
-      top: 0;
+      top: var(--layout-offset);
       left: 0;
       right: 0;
       z-index: 10;
@@ -38,6 +37,29 @@
       display: flex;
       align-items: flex-end;
       gap: 1rem;
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+    .results-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background: #fff;
+      color: #111827;
+      text-decoration: none;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .results-link:hover {
+      background: #111827;
+      color: #fff;
+      border-color: #111827;
     }
     .toggle-btn {
       padding: 0.5rem 0.9rem;
@@ -95,7 +117,7 @@
       grid-template-columns: 1fr 1fr;
       grid-template-rows: minmax(0, 1fr);
       gap: 0;
-      height: calc(100vh - 100px);
+      height: calc(100vh - var(--layout-offset) - 100px);
       margin-top: 100px;
     }
     .pane {
@@ -144,6 +166,11 @@
     .load-complete-btn:hover {
       background: #15803d;
     }
+    .load-complete-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
     .print-load-btn {
       justify-self: end;
       padding: 0.5rem 0.9rem;
@@ -158,20 +185,10 @@
     .print-load-btn:hover {
       background: #030712;
     }
-    .ai-plan-btn {
-      justify-self: end;
-      padding: 0.5rem 0.9rem;
-      border-radius: 0.5rem;
-      border: none;
-      background: #2563eb;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
-      margin-left: 0.6rem;
-    }
-    .ai-plan-btn:hover {
-      background: #1d4ed8;
+    .print-load-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
     }
     .truck-title {
       font-weight: 700;
@@ -252,6 +269,10 @@
       box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
       background: rgba(37, 99, 235, 0.05);
     }
+    .order-card.load-blocked {
+      border-color: #dc2626;
+      background: rgba(220, 38, 38, 0.06);
+    }
     .order-info h3 {
       margin: 0 0 0.35rem;
       font-size: 1.1rem;
@@ -297,6 +318,17 @@
       letter-spacing: 0.08em;
       font-size: 0.75rem;
       box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.12);
+    }
+    .order-status .sheet-badge {
+      display: inline-block;
+      margin-left: 0.4rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 0.35rem;
+      background: rgba(17, 24, 39, 0.08);
+      color: #111;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      font-weight: 700;
+      font-size: 0.75rem;
     }
     .order-status.visible {
       display: block;
@@ -367,6 +399,11 @@
       border-color: #f59e0b;
       background: rgba(245, 158, 11, 0.15);
       color: #92400e;
+    }
+    .pallet.load-blocked {
+      border-color: #dc2626;
+      background: rgba(220, 38, 38, 0.16);
+      color: #991b1b;
     }
     .pallet:active {
       cursor: grabbing;
@@ -591,8 +628,8 @@
       }
     }
   </style>
-</head>
-<body>
+
+  <div class="pallet-loader-page" id="palletLoaderPage">
   <header class="top-bar">
     <div class="top-controls">
       <div>
@@ -620,11 +657,20 @@
         <div class="field-hint" id="vehicleHint">No vehicles available for selected depot.</div>
       </div>
       <div>
+        <label for="loadSheetSelect">Load Sheet</label>
+        <select id="loadSheetSelect">
+          <option value="">Latest for day</option>
+        </select>
+      </div>
+      <div>
         <label>&nbsp;</label>
         <button id="toggleAllocatedBtn" class="toggle-btn" type="button">Hide Allocated</button>
       </div>
     </div>
-    <h1>Pallet Loader</h1>
+    <div class="top-right">
+      <h1>Pallet Loader</h1>
+      <a class="results-link" href="{{ route('route-planning.view') }}">Route Planning</a>
+    </div>
   </header>
 
   <main class="main">
@@ -641,7 +687,6 @@
           <div class="truck-actions">
             <button class="print-load-btn" id="printLoadBtn" type="button">Print Load</button>
             <button class="load-complete-btn" id="loadCompleteBtn" type="button">Load Complete</button>
-            <!--<button class="ai-plan-btn" id="aiPlanBtn" type="button" disabled>AI Plan</button>-->
           </div>
         </div>
         <div class="grid-wrapper">
@@ -672,16 +717,6 @@
     </div>
   </div>
 
-  <div class="modal" id="aiPlanModal" role="dialog" aria-modal="true" aria-label="AI delivery plan">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>AI Delivery Plan</h2>
-        <button class="modal-close" type="button" id="aiPlanClose">×</button>
-      </div>
-      <div class="modal-grid" id="aiPlanBody"></div>
-    </div>
-  </div>
-
   <div class="modal" id="contentsModal" role="dialog" aria-modal="true" aria-label="Pallet contents overview">
     <div class="modal-content">
       <div class="modal-header">
@@ -705,6 +740,7 @@
     const toggleAllocatedBtn = document.getElementById("toggleAllocatedBtn");
     const depotSelect = document.getElementById("depotSelect");
     const vehicleSelect = document.getElementById("vehicleSelect");
+    const loadSheetSelect = document.getElementById("loadSheetSelect");
     const vehicleHint = document.getElementById("vehicleHint");
     const vehiclePlate = document.getElementById("vehiclePlate");
     const vehicleModal = document.getElementById("vehicleModal");
@@ -714,19 +750,17 @@
     const mapModalClose = document.getElementById("mapModalClose");
     const mapFrame = document.getElementById("mapFrame");
     const mapModalTitle = document.getElementById("mapModalTitle");
-    const aiPlanBtn = document.getElementById("aiPlanBtn");
-    const aiPlanModal = document.getElementById("aiPlanModal");
-    const aiPlanClose = document.getElementById("aiPlanClose");
-    const aiPlanBody = document.getElementById("aiPlanBody");
     const contentsModal = document.getElementById("contentsModal");
     const contentsModalClose = document.getElementById("contentsModalClose");
     const contentsModalTitle = document.getElementById("contentsModalTitle");
     const contentsModalBody = document.getElementById("contentsModalBody");
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+    const palletLoaderPage = document.getElementById("palletLoaderPage");
     let activeDragOrderId = null;
     let hideAllocated = false;
     let selectedOrderId = null;
     let currentPayload = null;
+    let selectedLoadSheetId = "";
     let activeTouchDrag = null;
     const touchEdgeScrollThreshold = 90;
     const touchEdgeScrollMaxStep = 22;
@@ -735,6 +769,15 @@
 
     let vehicleInfo = null;
     let vehicleMaxPalletRows = DEFAULT_MAX_PALLET_ROWS;
+
+    function syncLayoutOffset() {
+      if (!palletLoaderPage) {
+        return;
+      }
+      const nav = document.querySelector("nav");
+      const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+      palletLoaderPage.style.setProperty("--layout-offset", `${Math.max(0, Math.round(navHeight))}px`);
+    }
 
     function normalizeMaxPalletRows(value) {
       const rows = Number(value);
@@ -815,6 +858,19 @@
         : "";
     }
 
+    function hasBlockedAllocatedPallet() {
+      return orders.some(order => order.allocated && order.canBeLoaded === false);
+    }
+
+    function updateActionButtonsState() {
+      const hasBlockedLoaded = hasBlockedAllocatedPallet();
+      printLoadBtn.disabled = hasBlockedLoaded;
+      const loadCompleteBtn = document.getElementById("loadCompleteBtn");
+      if (loadCompleteBtn) {
+        loadCompleteBtn.disabled = hasBlockedLoaded;
+      }
+    }
+
     function jsonHeaders() {
       const headers = {
         "Content-Type": "application/json"
@@ -843,6 +899,7 @@
         return;
       }
       try {
+        const dueDate = document.getElementById("deliveryDate")?.value || "";
         const response = await fetch("{{ route('outgoing-pallets-loading.update-allocation') }}", {
           method: "POST",
           headers: jsonHeaders(),
@@ -850,12 +907,31 @@
             outgoingPalletId,
             regAllocatedTo,
             palletRow,
-            palletColumn
+            palletColumn,
+            dueDate,
+            loadSheetId: selectedLoadSheetId
           })
         });
+
+        let payload = null;
+        try {
+          payload = await response.json();
+        } catch (error) {
+          payload = null;
+        }
+
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Allocation update failed", errorText);
+          console.error("Allocation update failed", payload || response.statusText);
+          return;
+        }
+
+        const createdNewLoadSheet = Boolean(payload?.createdNewLoadSheet);
+        const returnedLoadSheetId = String(payload?.loadSheetId || "").trim();
+
+        if (createdNewLoadSheet && returnedLoadSheetId && regAllocatedTo) {
+          selectedLoadSheetId = returnedLoadSheetId;
+          await loadLoadSheets(regAllocatedTo, returnedLoadSheetId);
+          await loadOrders();
         }
       } catch (error) {
         console.error("Allocation update error", error);
@@ -944,7 +1020,8 @@
         return [];
       }
       try {
-        const response = await fetch(`{{ route('outgoing-pallets-loading.vehicle-allocations') }}?reg=${encodeURIComponent(reg)}`);
+        const dueDate = document.getElementById("deliveryDate").value || "";
+        const response = await fetch(`{{ route('outgoing-pallets-loading.vehicle-allocations') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&loadSheetId=${encodeURIComponent(selectedLoadSheetId)}`);
         if (!response.ok) {
           throw new Error("Vehicle allocations unavailable");
         }
@@ -1084,9 +1161,58 @@
         vehicleSelect.value = nextReg;
         vehiclePlate.textContent = nextReg;
         await loadVehicleDetails(nextReg);
+        await loadLoadSheets(nextReg);
         await loadOrders();
       } catch (error) {
         updateVehicleHint("Vehicle list unavailable. Please try again.");
+        console.error(error);
+      }
+    }
+
+    async function loadLoadSheets(reg, preferredLoadSheetId = "") {
+      const dueDate = document.getElementById("deliveryDate").value || "";
+      const desiredLoadSheetId = String(preferredLoadSheetId || "").trim();
+      selectedLoadSheetId = desiredLoadSheetId;
+      loadSheetSelect.innerHTML = "";
+
+      const blankOption = document.createElement("option");
+      blankOption.value = "";
+      blankOption.textContent = "New";
+      loadSheetSelect.append(blankOption);
+
+      if (!reg || !dueDate) {
+        loadSheetSelect.value = "";
+        return;
+      }
+
+      try {
+        const response = await fetch(`{{ route('outgoing-pallets-loading.load-sheets') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}`);
+        if (!response.ok) {
+          throw new Error("Load sheets unavailable");
+        }
+
+        const payload = await response.json();
+        const sheets = Array.isArray(payload.loadSheets) ? payload.loadSheets : [];
+
+        sheets.forEach(sheet => {
+          const option = document.createElement("option");
+          option.value = String(sheet.id || "");
+          option.textContent = String(sheet.label || `Sheet #${sheet.id}`);
+          loadSheetSelect.append(option);
+        });
+
+        const availableIds = new Set(Array.from(loadSheetSelect.options).map(option => String(option.value || "").trim()));
+        if (selectedLoadSheetId && availableIds.has(selectedLoadSheetId)) {
+          // keep the preferred selection
+        } else if (sheets.length > 0) {
+          // default to most recent sheet (first in list, ordered by created_at desc)
+          selectedLoadSheetId = String(sheets[0].id || "");
+        } else {
+          selectedLoadSheetId = "";
+        }
+
+        loadSheetSelect.value = selectedLoadSheetId;
+      } catch (error) {
         console.error(error);
       }
     }
@@ -1122,7 +1248,7 @@
         const dueDate = document.getElementById("deliveryDate").value;
         const depot = depotSelect.value || "";
         const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-        const response = await fetch(`{{ route('outgoing-pallets-loading.pallet-selection') }}?dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&reg=${encodeURIComponent(reg)}`);
+        const response = await fetch(`{{ route('outgoing-pallets-loading.pallet-selection') }}?dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&reg=${encodeURIComponent(reg)}&loadSheetId=${encodeURIComponent(selectedLoadSheetId)}`);
         if (!response.ok) {
           throw new Error("Order list unavailable");
         }
@@ -1134,6 +1260,7 @@
           const row = Number(order.row) || 0;
           const column = Number(order.column) || 0;
           const hasSlot = allocatedToSelected && isSlotWithinCapacity(row, column);
+          const isAllocatedAnywhere = Boolean(order.isAllocatedAnywhere) || String(order.allocatedVehicleReg || "").trim() !== "";
           const slotId = hasSlot ? `slot-${(row - 1) * PALLET_COLUMNS + column}` : null;
           return {
           id: order.id || `order-${index + 1}`,
@@ -1148,6 +1275,11 @@
           palletType: normalizePalletType(order.palletType),
           weightKg: Number(order.weightKg) || 0,
           freshFrozen: order.freshFrozen || "",
+            canBeLoaded: Boolean(order.canBeLoaded ?? true),
+            isAllocatedAnywhere,
+            allocatedVehicleReg: String(order.allocatedVehicleReg || "").trim(),
+            allocatedLoadSheetId: order.allocatedLoadSheetId ? Number(order.allocatedLoadSheetId) : null,
+            allocatedLoadSheetLabel: String(order.allocatedLoadSheetLabel || "").trim(),
             allocatedReg: String(order.regAllocatedTo || "").trim(),
             allocated: hasSlot,
             slotId
@@ -1277,6 +1409,9 @@
       order.slotId = slotId;
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
       order.allocatedReg = String(reg).trim();
+      order.isAllocatedAnywhere = true;
+      order.allocatedVehicleReg = String(reg).trim();
+      order.allocatedLoadSheetId = selectedLoadSheetId ? Number(selectedLoadSheetId) : null;
       const palletRow = getRowForIndex(slotIndex);
       const palletColumn = getColumnForIndex(slotIndex);
       updateAllocation(order.outgoingPalletId, reg, palletRow, palletColumn);
@@ -1298,6 +1433,10 @@
       order.allocated = false;
       order.slotId = null;
       order.allocatedReg = "";
+      order.isAllocatedAnywhere = false;
+      order.allocatedVehicleReg = "";
+      order.allocatedLoadSheetId = null;
+      order.allocatedLoadSheetLabel = "";
       updateAllocation(order.outgoingPalletId, "", null, null);
       renderOrders();
       renderGrid();
@@ -1547,11 +1686,7 @@
     function renderOrders() {
       ordersContainer.innerHTML = "";
       orders.forEach(order => {
-        const currentReg = normalizeReg(vehicleSelect.value || vehiclePlate.textContent || "");
-        if (normalizeReg(order.allocatedReg) && normalizeReg(order.allocatedReg) !== currentReg) {
-          return;
-        }
-        if (hideAllocated && order.allocated) {
+        if (hideAllocated && order.isAllocatedAnywhere) {
           return;
         }
         const card = document.createElement("div");
@@ -1560,6 +1695,9 @@
         card.dataset.orderId = order.id;
         if (order.id === selectedOrderId) {
           card.classList.add("selected");
+        }
+        if (order.canBeLoaded === false) {
+          card.classList.add("load-blocked");
         }
         card.addEventListener("click", (event) => {
           if (event.target.closest("button") || event.target.closest(".postcode-link")) {
@@ -1610,7 +1748,25 @@
         }
         const status = document.createElement("div");
         status.className = "order-status";
-        if (order.allocatedReg) {
+        if (order.isAllocatedAnywhere) {
+          status.textContent = "Pallet Allocated";
+
+          const allocatedVehicleReg = String(order.allocatedVehicleReg || order.allocatedReg || "").trim();
+          if (allocatedVehicleReg) {
+            const regPlate = document.createElement("span");
+            regPlate.className = "reg-plate";
+            regPlate.textContent = allocatedVehicleReg;
+            status.append(regPlate);
+          }
+
+          const loadSheetLabel = String(order.allocatedLoadSheetLabel || "").trim();
+          if (loadSheetLabel) {
+            const sheetBadge = document.createElement("span");
+            sheetBadge.className = "sheet-badge";
+            sheetBadge.textContent = loadSheetLabel;
+            status.append(sheetBadge);
+          }
+        } else if (order.allocatedReg) {
           const regPlate = document.createElement("span");
           regPlate.className = "reg-plate";
           regPlate.textContent = order.allocatedReg;
@@ -1619,7 +1775,7 @@
         } else {
           status.textContent = "Pallet Allocated";
         }
-        if (order.allocated) {
+        if (order.isAllocatedAnywhere || order.allocated) {
           status.classList.add("visible");
         }
         info.append(title, sub, weight);
@@ -1646,7 +1802,7 @@
         euroBtn.type = "button";
         euroBtn.textContent = "Euro";
         euroBtn.className = order.palletType === "Euro" ? "active" : "";
-        euroBtn.disabled = !!order.allocated;
+        euroBtn.disabled = !!order.isAllocatedAnywhere;
         euroBtn.addEventListener("click", async () => {
           if (order.palletType === "Euro") {
             return;
@@ -1668,7 +1824,7 @@
         standardBtn.type = "button";
         standardBtn.textContent = "Standard";
         standardBtn.className = order.palletType === "Standard" ? "active" : "";
-        standardBtn.disabled = !!order.allocated;
+        standardBtn.disabled = !!order.isAllocatedAnywhere;
         standardBtn.addEventListener("click", async () => {
           if (order.palletType === "Standard") {
             return;
@@ -1690,8 +1846,11 @@
 
         const pallet = document.createElement("div");
         pallet.className = `pallet ${order.palletType === "Standard" ? "standard" : "euro"}`;
+        if (order.canBeLoaded === false) {
+          pallet.classList.add("load-blocked");
+        }
         pallet.textContent = order.palletType === "Standard" ? "STD" : "EU";
-        pallet.draggable = !order.allocated;
+        pallet.draggable = !order.isAllocatedAnywhere;
         pallet.dataset.orderId = order.id;
         pallet.addEventListener("dragstart", () => {
           activeDragOrderId = order.id;
@@ -1700,7 +1859,7 @@
           activeDragOrderId = null;
         });
 
-        pallet.style.display = order.allocated ? "none" : "grid";
+        pallet.style.display = order.isAllocatedAnywhere ? "none" : "grid";
         palletControls.append(contentsBtn, typeToggle, pallet);
         card.append(info, palletControls);
         ordersContainer.append(card);
@@ -1755,8 +1914,11 @@
 
           const pallet = document.createElement("div");
           pallet.className = `pallet ${assignedOrder.palletType === "Standard" ? "standard" : "euro"}`;
+          if (assignedOrder.canBeLoaded === false) {
+            pallet.classList.add("load-blocked");
+          }
           pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div>`;
-          pallet.draggable = true;
+          pallet.draggable = !!assignedOrder.allocated;
           pallet.dataset.orderId = assignedOrder.id;
           pallet.addEventListener("dragstart", () => {
             activeDragOrderId = assignedOrder.id;
@@ -1834,6 +1996,7 @@
       });
 
       bindTouchDraggable(palletGrid);
+      updateActionButtonsState();
     }
 
     ordersContainer.addEventListener("dragover", event => {
@@ -1869,6 +2032,7 @@
     vehicleSelect.addEventListener("change", async () => {
       vehiclePlate.textContent = vehicleSelect.value;
       await loadVehicleDetails(vehicleSelect.value);
+      await loadLoadSheets(vehicleSelect.value);
       await loadOrders();
     });
 
@@ -1876,14 +2040,25 @@
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     deliveryDateInput.value = tomorrow.toISOString().split("T")[0];
-    deliveryDateInput.addEventListener("change", () => {
-      loadOrders();
+    deliveryDateInput.addEventListener("change", async () => {
+      await loadLoadSheets(vehicleSelect.value || vehiclePlate.textContent || "");
+      await loadOrders();
     });
     depotSelect.addEventListener("change", async () => {
       await loadVehicles();
     });
 
+    loadSheetSelect.addEventListener("change", async () => {
+      selectedLoadSheetId = String(loadSheetSelect.value || "").trim();
+      await loadOrders();
+    });
+
     document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
+      if (hasBlockedAllocatedPallet()) {
+        window.alert("Cannot complete load while a loaded pallet is marked as not loadable.");
+        return;
+      }
+
       const confirmed = window.confirm("Are you sure you want to complete this Vehicle Load and generate the PODs?");
       if (!confirmed) {
         return;
@@ -1958,6 +2133,11 @@
     });
 
     printLoadBtn.addEventListener("click", () => {
+      if (hasBlockedAllocatedPallet()) {
+        window.alert("Cannot print load while a loaded pallet is marked as not loadable.");
+        return;
+      }
+
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
       const dueDate = document.getElementById("deliveryDate").value || "";
       const depot = depotSelect.value || "";
@@ -1967,7 +2147,8 @@
         return;
       }
 
-      const url = `{{ route('outgoing-pallets-loading.print-truck-load') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}`;
+      const loadSheetId = selectedLoadSheetId || "";
+      const url = `{{ route('outgoing-pallets-loading.print-truck-load') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&loadSheetId=${encodeURIComponent(loadSheetId)}`;
       window.open(url, "_blank", "noopener");
     });
 
@@ -1975,6 +2156,7 @@
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
+        syncLayoutOffset();
         renderGrid();
       }, 100);
     });
@@ -2026,19 +2208,6 @@
       mapFrame.src = "";
     }
 
-    function openAiPlanModal(content) {
-      aiPlanBody.innerHTML = "";
-      const row = document.createElement("div");
-      row.className = "modal-row";
-      row.innerHTML = `<strong>Itinerary</strong><div style="white-space: pre-wrap;">${content}</div>`;
-      aiPlanBody.append(row);
-      aiPlanModal.classList.add("open");
-    }
-
-    function closeAiPlanModal() {
-      aiPlanModal.classList.remove("open");
-    }
-
     vehiclePlate.addEventListener("click", openVehicleModal);
     vehicleModalClose.addEventListener("click", closeVehicleModal);
     vehicleModal.addEventListener("click", event => {
@@ -2054,57 +2223,6 @@
       }
     });
 
-    if (aiPlanBtn) {
-      aiPlanBtn.addEventListener("click", async () => {
-      const allocatedOrders = orders.filter(order => order.allocated);
-      const postcodes = Array.from(new Set(allocatedOrders
-        .map(order => (order.customerDeliveryPostcode || "").trim())
-        .filter(Boolean)));
-
-      if (!postcodes.length) {
-        window.alert("No allocated postcodes to plan.");
-        return;
-      }
-
-      aiPlanBtn.disabled = true;
-      aiPlanBtn.textContent = "Planning...";
-      try {
-        const response = await fetch("{{ route('outgoing-pallets-loading.ai-plan') }}", {
-          method: "POST",
-          headers: jsonHeaders(),
-          body: JSON.stringify({
-            startPostcode: "WV2 2QJ",
-            stopMinutes: 20,
-            postcodes
-          })
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || "AI plan unavailable");
-        }
-        const data = await response.json();
-        openAiPlanModal(data.itinerary || "No itinerary returned.");
-      } catch (error) {
-        window.alert("AI plan failed. Check server logs.");
-        console.error(error);
-      } finally {
-        aiPlanBtn.disabled = false;
-        aiPlanBtn.textContent = "AI Plan";
-      }
-      });
-    }
-
-    if (aiPlanClose) {
-      aiPlanClose.addEventListener("click", closeAiPlanModal);
-    }
-    if (aiPlanModal) {
-      aiPlanModal.addEventListener("click", event => {
-        if (event.target === aiPlanModal) {
-          closeAiPlanModal();
-        }
-      });
-    }
-
     if (contentsModalClose) {
       contentsModalClose.addEventListener("click", closeContentsModal);
     }
@@ -2116,9 +2234,10 @@
       });
     }
 
+    syncLayoutOffset();
     renderOrders();
     renderGrid();
     loadDepots();
   </script>
-</body>
-</html>
+  </div>
+</x-app-layout>

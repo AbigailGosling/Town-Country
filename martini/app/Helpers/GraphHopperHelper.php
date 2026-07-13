@@ -4,8 +4,9 @@ namespace App\Helpers;
 
 use App\Models\ClientAddress;
 use App\Models\Customer;
-use App\Models\OutgoingPallet;
+use App\Models\TransportPallet;
 use App\Models\Vehicle;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
@@ -99,22 +100,34 @@ class GraphHopperHelper
             'locale' => config('services.graphhopper.locale', 'en'),
         ]);
         if (!$response['ok']) {
+            Log::error('GraphHopper geocoding failed', [
+                'address' => $queryAddress,
+                'error' => $response,
+            ]);
             return null;
         }
 
         $hits = data_get($response['data'], 'hits', []);
         if (!is_array($hits) || empty($hits)) {
+            Log::error('GraphHopper geocoding returned no hits', [
+                'address' => $queryAddress,
+                'response' => $response['data'],
+            ]);
             return null;
         }
 
         $first = $hits[0] ?? null;
-        if (!is_array($first) || !isset($first['point']['lat'], $first['point']['lon'])) {
+        if (!is_array($first) || !isset($first['point']['lat'], $first['point']['lng'])) {
+            Log::error('GraphHopper geocoding returned invalid hit', [
+                'address' => $queryAddress,
+                'hit' => $first,
+            ]);
             return null;
         }
 
         return [
             'lat' => (float) $first['point']['lat'],
-            'lon' => (float) $first['point']['lon'],
+            'lon' => (float) $first['point']['lng'],
         ];
     }
 
@@ -136,6 +149,52 @@ class GraphHopperHelper
 
             if (!$response->successful()) {
                 Log::warning('GraphHopper VRP request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return [
+                    'ok' => false,
+                    'error' => $response->body(),
+                ];
+            }
+
+            $data = $response->json();
+            if (!is_array($data)) {
+                $data = ['raw' => $response->body()];
+            }
+            return [
+                'ok' => true,
+                'data' => $data,
+            ];
+        } catch (\Throwable $exception) {
+            Log::error($exception->getMessage());
+            Log::error("payload", [$payload]);
+            return [
+                'ok' => false,
+                'error' => $exception->getMessage(),
+            ];
+        }
+    }
+
+    public static function clusters(array $payload): array
+    {
+        $apiKey = self::apiKey();
+        if ($apiKey === '') {
+            return [
+                'ok' => false,
+                'error' => 'GraphHopper API key not configured',
+            ];
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->timeout((int) config('services.graphhopper.timeout', 20))
+                ->retry(2, 250)
+                ->post(self::baseUrl() . '/cluster?key=' . urlencode($apiKey), $payload);
+
+            if (!$response->successful()) {
+                Log::warning('GraphHopper clustering request failed', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
@@ -193,7 +252,7 @@ class GraphHopperHelper
             $ghtype_id = $tc_vehicle_type . '-'. $capacity . '-' . $payload;
             foreach ($output as &$existing) {
                 if ($existing['type_id'] === $ghtype_id) {
-                    $existing['count']++;
+                    $existing['vehicle'][] = $vehicle;
                     continue 2;
                 }
             }
@@ -201,7 +260,7 @@ class GraphHopperHelper
                 'type_id' => $ghtype_id,
                 'profile' => config('services.graphhopper.profile', 'truck'),
                 'capacity' => [$capacity, $payload],
-                'count' => 1,
+                'vehicle' => [$vehicle],
             ];
         }
         return $output;
@@ -210,46 +269,58 @@ class GraphHopperHelper
      * @param array $generifiedVehicleTypes
      * @param array $vrcVehicleTypes
      * @param array $depotLocation
-     * @param string $dueDate
+     * @param Carbon $dueDate
      * @return array
      */
-    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, string $dueDate): array
+    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, Carbon $dueDate, int $overnight_limit = 2): array
     {
+        $daytwo = $dueDate->copy()->addDay()->format('Y-m-d');
         $vrpVehicles = [];
+        $overnighters = 0;
         foreach ($generifiedVehicleTypes as $type) {
+            $type_overview = explode('-', $type['type_id']);
             $vrcVehicleTypes[] = [
                 'type_id' => $type['type_id'],
                 'profile' => $type['profile'],
                 'capacity' => $type['capacity'],
             ];
-            for ($i = 0; $type['count']>$i; $i++) {
-                if (count($vrpVehicles)==20)break 2;
-                $vrpVehicles[] = [
-                    'vehicle_id' => $type['type_id'] . '-' . $i,
-                    'type_id' => $type['type_id'],
-                    'start_address' => $depotLocation,
-                    'end_address' => $depotLocation,
-                    'earliest_start' => strtotime($dueDate . ' 04:00:00'),
-                    'latest_end' => strtotime($dueDate . ' 14:00:00'),
-                    // 'shifts' => [
-                    //     [
-                    //         'shift_id' => 'morning_shift',
-                    //         'earliest_start' => strtotime($dueDate . ' 05:00:00'),
-                    //         'latest_end' => strtotime($dueDate . ' 12:00:00'),
-                    //         'start_address' => $depotLocation,
-                    //         'end_address' => $depotLocation,
-                    //         'return_to_depot' => true,
-                    //     ],
-                    //     [
-                    //         'shift_id' => 'afternoon_shift',
-                    //         'earliest_start' => strtotime($dueDate . ' 14:00:00'),
-                    //         'latest_end' => strtotime($dueDate . ' 20:00:00'),
-                    //         'start_address' => $depotLocation,
-                    //         'end_address' => $depotLocation,
-                    //         'return_to_depot' => true,
-                    //     ],
-                    // ],
-                ];
+            foreach ($type['vehicle'] as $i => $vehicle) {
+                $startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
+                if (count($vrpVehicles)>=20)break 2;
+                if (($type_overview[0] == 3 && $overnighters < $overnight_limit || $startLocation['location_id'] !== 'depot')) {
+                    $overnighters++;
+                    $vrpVehicle = [
+                        'vehicle_id' => $type['type_id'] . '-' . $i,
+                        'type_id' => $type['type_id'],
+                        'start_address' => $startLocation,
+                        'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
+                        'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 20:00:00'),
+                        'break' => [
+                            'earliest' => strtotime($dueDate->format('Y-m-d') . ' 12:00:00'),
+                            'latest' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
+                            'duration' => 3600,
+                        ],
+                        'return_to_depot' => false,
+                        'min_jobs' => 2,
+                    ];
+                    if ($startLocation['location_id'] !== 'depot') {
+                        $vrpVehicle['return_to_depot'] = true;
+                        $vrpVehicle['end_address'] = $depotLocation;
+                    }
+                    $vrpVehicles[] = $vrpVehicle;
+                }
+                else
+                {
+                    $vrpVehicles[] = [
+                        'vehicle_id' => $type['type_id'] . '-' . $i,
+                        'type_id' => $type['type_id'],
+                        'start_address' => $depotLocation,
+                        'end_address' => $depotLocation,
+                        'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
+                        'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
+                        'min_jobs' => 2,
+                    ];
+                }
             }
         }
         return $vrpVehicles;
@@ -257,7 +328,7 @@ class GraphHopperHelper
 
     /**
      * @param int $site_id
-     * @param Collection<OutgoingPallet> $pallets
+     * @param Collection<TransportPallet> $pallets
      * @param Collection<Customer> $customers
      * @param Collection<ClientAddress> $customerAddresses
      * @param int $serviceDurationSeconds
@@ -269,6 +340,10 @@ class GraphHopperHelper
     {
         $services = [];
         foreach ($pallets as $pallet) {
+            // if (count($services) >= 5) {
+            //     $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Service limit reached, skipping remaining pallets',];
+            //     continue;
+            // }
             $address = $customerAddresses[$pallet->customer_id . '-' . $pallet->address_id] ?? null;
             if (!$address) {
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
@@ -338,7 +413,7 @@ class GraphHopperHelper
                 ],
                 'setup_time' => $serviceDurationSeconds,
                 'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
-                'group' => $address->client_id . '-' . $address->address_id . '-' . $tempCategory,
+                'group' => $tempCategory,
             ];
             $services[] = $thisService;
             if (!array_key_exists($address->client_id . '-' . $address->address_id, $addressDelTypes)) {

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\FuncHelper;
 use Illuminate\Database\Eloquent\Model;
 
 class Vehicle extends Model
@@ -22,6 +23,9 @@ class Vehicle extends Model
         'driver',
         'max_pallet_rows',
         'barracuda_id',
+        'lat',
+        'lon',
+        'disabled',
     ];
 
     public function site()
@@ -35,6 +39,16 @@ class Vehicle extends Model
     }
     public function outgoingPalletAllocations()
     {
-        return $this->hasMany(VehicleOutgoingPalletAllocation::class, 'vehicle_id');
+        return $this->hasMany(VehicleTransportPalletAllocation::class, 'vehicle_id');
+    }
+    public function planningPayloadForVehicle(): ?int
+    {
+        $payload = str_replace("*", "", str_replace('t', '', strtolower($this->payload)));
+        return is_numeric($payload) ? (int) FuncHelper::floorDec(((float)$payload)*1000,0) : null;
+    }
+    public function planningCapacityForVehicle(int $planningPalletColumns): int
+    {
+        $maxRows = $this->max_pallet_rows ?? 5;
+        return max($planningPalletColumns, $maxRows * $planningPalletColumns);
     }
 }

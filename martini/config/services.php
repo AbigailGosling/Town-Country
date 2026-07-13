@@ -31,4 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'graphhopper' => [
+        'base_url' => env('GRAPHHOPPER_BASE_URL', 'https://graphhopper.com/api/1'),
+        'key' => env('GRAPHHOPPER_API_KEY', ''),
+        'profile' => env('GRAPHHOPPER_PROFILE', 'truck'),
+        'locale' => env('GRAPHHOPPER_LOCALE', 'en'),
+        'timeout' => env('GRAPHHOPPER_TIMEOUT', 20),
+    ],
+
 ];

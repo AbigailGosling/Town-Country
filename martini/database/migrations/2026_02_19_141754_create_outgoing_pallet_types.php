@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\OutgoingPallet;
-use App\Models\OutgoingPalletPickWeight;
-use App\Models\OutgoingPalletType;
+use App\Models\TransportPallet;
+use App\Models\TransportPalletPickWeight;
+use App\Models\TransportPalletType;
 use App\Models\PickerSheet;
 use App\Models\PickWeightOut;
 use Carbon\Carbon;
@@ -30,11 +30,11 @@ return new class extends Migration
             $table->date('estimated_delivery_date')->after('outgoing_pallet_type_id');
             $table->boolean('dispatched')->default(false)->after('estimated_delivery_date');
         });
-        OutgoingPalletType::create([
+        TransportPalletType::create([
             'name' => 'Standard',
             'max_weight' => 1200.000,
         ]);
-        OutgoingPalletType::create([
+        TransportPalletType::create([
             'name' => 'Euro',
             'max_weight' => 1000.0000,
         ]);
@@ -58,8 +58,8 @@ return new class extends Migration
             $table->dropColumn('dispatched');
             $table->dropColumn('estimated_delivery_date');
         });
-        OutgoingPallet::truncate();
-        OutgoingPalletPickWeight::truncate();
+        TransportPallet::truncate();
+        TransportPalletPickWeight::truncate();
 
     }
 };

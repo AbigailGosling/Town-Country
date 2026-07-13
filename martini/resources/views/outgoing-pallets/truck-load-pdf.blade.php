@@ -221,10 +221,10 @@
                 <tr>
                     <td class="label">Delivery Date</td>
                     <td>{{ $dueDate ?: 'All dates' }}</td>
+                    <td class="label">Load Sheet</td>
+                    <td>{{ $loadSheetId ? '#'.$loadSheetId : '—' }}</td>
                     <td class="label">Generated</td>
                     <td>{{ $generatedAt->format('Y-m-d H:i') }}</td>
-                    <td></td>
-                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
