@@ -1521,7 +1521,7 @@
         const dueDate = document.getElementById('dueDate').value;
         const depot = depotSelect.value;
         const serviceDurationSeconds = Number(document.getElementById('serviceDurationSeconds').value || 1200);
-        const dryRun = document.getElementById('dryRun').value === 'true';
+        const dryRun = false;
 
         if (!dueDate || !depot) {
             setStatus('Due date and depot are required.', 'error');
