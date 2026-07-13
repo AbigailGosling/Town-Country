@@ -155,7 +155,7 @@ class InsuranceExposureReportController extends Controller
             $picksheet->hasCreditNote = (count($picksheet->creditNotes)>0);
 
             $due_threshold = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->due_warning != "")$due_threshold = $due_threshold->addDays(abs($customer->due_warning));
+            if ($customer->due_warning != "")$due_threshold = $due_threshold->addDays(abs(min($customer->due_warning,21)));
             $due_threshold = $due_threshold->getTimestamp();
             if ($now <= $due_threshold)
             {
@@ -164,12 +164,12 @@ class InsuranceExposureReportController extends Controller
             $picksheet->due_threshold_passed = true;
 
             $credit_terms = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->credit_terms != "")$credit_terms = $credit_terms->addDays(abs($customer->credit_terms));
+            if ($customer->credit_terms != "")$credit_terms = $credit_terms->addDays(abs(min($customer->credit_terms,28)));
             $credit_terms = $credit_terms->getTimestamp();
             $picksheet->terms_passed = ($now > $credit_terms);
 
             $credit_grace = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->credit_grace != "")$credit_grace = $credit_grace->addDays(abs($customer->credit_grace));
+            if ($customer->credit_grace != "")$credit_grace = $credit_grace->addDays(abs(min($customer->credit_grace,35)));
             $credit_grace = $credit_grace->getTimestamp();
             $picksheet->grace_passed = ($now > $credit_grace);
 
