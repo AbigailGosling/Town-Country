@@ -322,7 +322,7 @@ class PodHelper
                     }
                     $newPallet = $oldPallet->replicate();
                     $newPallet->intake_id = $returnIntake->id;
-                    $newPallet->comments = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldPallet->comments;
+                    //$newPallet->comments = $rejected_reason[$weights[0]->id] . PHP_EOL . $oldPallet->comments;
                     $newPallet->save();
 
                     $oldProduct = $weights[0]->product;

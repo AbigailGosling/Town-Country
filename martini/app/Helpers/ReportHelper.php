@@ -329,8 +329,8 @@ class ReportHelper
         //Alter DB Settings
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
-            ->join("pickWeightOut","pickerSheets.id"              ,'=',"pickWeightOut.pickersheet_id")
+            ->join("pickerItems","pickerSheets.id","=","pickerItems.pickersheet_id")
+            ->join("pickWeightOut","pickerSheets.id","=","pickWeightOut.pickersheet_id")
             ->selectRaw("pickerSheets.*,pickerItems.*,pickWeightOut.*,group_concat(pickWeightOut.weight_ids) as weight_ids,count(pickerItems.product_id),STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id","pickerItems.product_id"]);
@@ -344,8 +344,8 @@ class ReportHelper
         $debits = $resultQB->get();
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
-            ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
+            ->join("invoice_payments","pickerSheets.id","=","invoice_payments.invoice_id")
+            ->join("credit_note_items","invoice_payments.id","=","credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->orderBy("invoice_payments.created_at")
@@ -474,8 +474,8 @@ class ReportHelper
         static::$pdo->setAttribute(PDO::ATTR_FETCH_TABLE_NAMES, true);
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("pickWeightOut","pickerSheets.id"               ,'=',"pickWeightOut.pickersheet_id")
-            ->join("pickerItems","pickerSheets.id"              ,'=',"pickerItems.pickersheet_id")
+            ->join("pickWeightOut","pickerSheets.id"               ,"=","pickWeightOut.pickersheet_id")
+            ->join("pickerItems","pickerSheets.id"              ,"=","pickerItems.pickersheet_id")
             ->selectRaw("pickerSheets.*, count(pickerItems.product_id), GROUP_CONCAT(pickerItems.product_id) as product_ids, GROUP_CONCAT(pickerItems.price) as prices, GROUP_CONCAT(DISTINCT pickWeightOut.weight_ids) as weight_ids,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id"]);
@@ -489,8 +489,8 @@ class ReportHelper
         $debits = $resultQB->get();
 
         $resultQB = static::$conn->table("pickerSheets")
-            ->join("invoice_payments","pickerSheets.id"         ,'=',"invoice_payments.invoice_id")
-            ->join("credit_note_items","invoice_payments.id"    ,'=',"credit_note_items.payment_id")
+            ->join("invoice_payments","pickerSheets.id"         ,"=","invoice_payments.invoice_id")
+            ->join("credit_note_items","invoice_payments.id"    ,"=","credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->groupBy(["pickerSheets.id"])
