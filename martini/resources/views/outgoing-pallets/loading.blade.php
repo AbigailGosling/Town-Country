@@ -75,6 +75,20 @@
       color: #fff;
       border-color: #111827;
     }
+    .bypass-btn {
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.5rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      background: #fff;
+      color: #111827;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .bypass-btn.active {
+      background: #b91c1c;
+      color: #fff;
+      border-color: #b91c1c;
+    }
     .top-bar h1 {
       margin: 0;
       font-size: 1.8rem;
@@ -189,6 +203,15 @@
       background: #9ca3af;
       cursor: not-allowed;
       box-shadow: none;
+    }
+    .print-load-btn.lock-warning,
+    .load-complete-btn.lock-warning {
+      background: #b91c1c;
+      box-shadow: 0 6px 14px rgba(185, 28, 28, 0.28);
+    }
+    .print-load-btn.lock-warning:hover,
+    .load-complete-btn.lock-warning:hover {
+      background: #991b1b;
     }
     .truck-title {
       font-weight: 700;
@@ -685,6 +708,9 @@
             <!--<div class="total-weight" id="totalWeight">0 kg</div>-->
           </div>
           <div class="truck-actions">
+            @if(auth()->user() && auth()->user()->hasPermission('manageCustomers.php'))
+              <button class="bypass-btn" id="bypassLockBtn" type="button">Override Print: Off</button>
+            @endif
             <button class="print-load-btn" id="printLoadBtn" type="button">Print Load</button>
             <button class="load-complete-btn" id="loadCompleteBtn" type="button">Load Complete</button>
           </div>
@@ -754,13 +780,16 @@
     const contentsModalClose = document.getElementById("contentsModalClose");
     const contentsModalTitle = document.getElementById("contentsModalTitle");
     const contentsModalBody = document.getElementById("contentsModalBody");
+    const bypassLockBtn = document.getElementById("bypassLockBtn");
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
     const palletLoaderPage = document.getElementById("palletLoaderPage");
+    const canBypassPrintAndLoadLock = @json(auth()->user() && (auth()->user()->hasPermission('manageCustomers.php')));
     let activeDragOrderId = null;
     let hideAllocated = false;
     let selectedOrderId = null;
     let currentPayload = null;
     let selectedLoadSheetId = "";
+    let lockBypassEnabled = false;
     let activeTouchDrag = null;
     const touchEdgeScrollThreshold = 90;
     const touchEdgeScrollMaxStep = 22;
@@ -862,12 +891,27 @@
       return orders.some(order => order.allocated && order.canBeLoaded === false);
     }
 
+    function isLoadLockBypassed() {
+      return Boolean(canBypassPrintAndLoadLock && lockBypassEnabled);
+    }
+
+    function updateBypassButtonState() {
+      if (!bypassLockBtn) {
+        return;
+      }
+      bypassLockBtn.classList.toggle("active", isLoadLockBypassed());
+      bypassLockBtn.textContent = isLoadLockBypassed() ? "Override Print: On" : "Override Print: Off";
+    }
+
     function updateActionButtonsState() {
       const hasBlockedLoaded = hasBlockedAllocatedPallet();
-      printLoadBtn.disabled = hasBlockedLoaded;
+      const isLocked = hasBlockedLoaded && !isLoadLockBypassed();
+      printLoadBtn.disabled = isLocked;
+      printLoadBtn.classList.toggle("lock-warning", hasBlockedLoaded);
       const loadCompleteBtn = document.getElementById("loadCompleteBtn");
       if (loadCompleteBtn) {
-        loadCompleteBtn.disabled = hasBlockedLoaded;
+        loadCompleteBtn.disabled = isLocked;
+        loadCompleteBtn.classList.toggle("lock-warning", hasBlockedLoaded);
       }
     }
 
@@ -2053,8 +2097,18 @@
       await loadOrders();
     });
 
+    if (bypassLockBtn && canBypassPrintAndLoadLock) {
+      bypassLockBtn.addEventListener("click", () => {
+        lockBypassEnabled = !lockBypassEnabled;
+        updateBypassButtonState();
+        updateActionButtonsState();
+      });
+    }
+
+    updateBypassButtonState();
+
     document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
-      if (hasBlockedAllocatedPallet()) {
+      if (hasBlockedAllocatedPallet() && !isLoadLockBypassed()) {
         window.alert("Cannot complete load while a loaded pallet is marked as not loadable.");
         return;
       }
@@ -2133,7 +2187,7 @@
     });
 
     printLoadBtn.addEventListener("click", () => {
-      if (hasBlockedAllocatedPallet()) {
+      if (hasBlockedAllocatedPallet() && !isLoadLockBypassed()) {
         window.alert("Cannot print load while a loaded pallet is marked as not loadable.");
         return;
       }

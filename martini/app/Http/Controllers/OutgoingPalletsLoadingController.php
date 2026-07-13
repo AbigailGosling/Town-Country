@@ -347,7 +347,7 @@ class OutgoingPalletsLoadingController extends Controller
         $regAllocatedTo = trim($regAllocatedTo);
 
         if ($regAllocatedTo === '' || $palletRow === null || $palletColumn === null) {
-            $deleteQuery = VehicleTransportPalletAllocation::where('outgoing_pallet_id', $pallet->id);
+            $deleteQuery = VehicleTransportPalletAllocation::where('transport_pallet_id', $pallet->id);
             if ($requestedLoadSheetId > 0) {
                 $deleteQuery->where('load_sheet_id', $requestedLoadSheetId);
             }
@@ -410,7 +410,7 @@ class OutgoingPalletsLoadingController extends Controller
             $createdNewLoadSheet = true;
         }
 
-        VehicleTransportPalletAllocation::where('outgoing_pallet_id', $pallet->id)
+        VehicleTransportPalletAllocation::where('transport_pallet_id', $pallet->id)
             ->where('load_sheet_id', $loadSheetId)
             ->where('vehicle_id', '<>', $vehicle->id)
             ->delete();
@@ -419,13 +419,13 @@ class OutgoingPalletsLoadingController extends Controller
             ->where('load_sheet_id', $loadSheetId)
             ->where('row', $row)
             ->where('column', $column)
-            ->where('outgoing_pallet_id', '<>', $pallet->id)
+            ->where('transport_pallet_id', '<>', $pallet->id)
             ->delete();
 
         VehicleTransportPalletAllocation::updateOrCreate(
             [
                 'vehicle_id' => $vehicle->id,
-                'outgoing_pallet_id' => $pallet->id,
+                'transport_pallet_id' => $pallet->id,
                 'load_sheet_id' => $loadSheetId,
             ],
             [
@@ -691,7 +691,7 @@ class OutgoingPalletsLoadingController extends Controller
             ->where('client_type', ClientType::CUSTOMER->value)
             ->first();
 
-        $pickLinks = TransportPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->get();
+        $pickLinks = TransportPalletPickWeight::where('transport_pallet_id', $pallet->id)->get();
         $pickWeightOutIds = $pickLinks->pluck('pickWeightOut_id')->map(fn ($id) => (int) $id)->filter()->values()->all();
         $picksheetIds = $this->getPicksheetIdsForPallet($pallet);
         $contentSummaryLines = $this->getPicksheetCutSummaryLines($pallet);
@@ -824,7 +824,7 @@ class OutgoingPalletsLoadingController extends Controller
         // Fetch allocations for the given vehicle and pallet IDs
         $allocations = VehicleTransportPalletAllocation::with('outgoingPallet')
             ->where('vehicle_id', $vehicle->id)
-            ->whereIn('outgoing_pallet_id', $outgoingPalletIds)
+            ->whereIn('transport_pallet_id', $outgoingPalletIds)
             ->get()
             ->filter(function ($allocation) use ($maxRows) {
                 $row = (int) ($allocation->row ?? 0);
