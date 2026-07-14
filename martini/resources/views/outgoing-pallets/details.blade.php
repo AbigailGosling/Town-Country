@@ -30,15 +30,15 @@
                     <div class="text-gray-600">No outgoing pallets found for this customer/address.</div>
                 @else
                     @foreach($outgoingPallets as $pallet)
-                        <div class="border rounded mb-3 pallet-card" data-outgoing-pallet-id="{{ $pallet->id }}" data-pallet-type-id="{{ $pallet->outgoing_pallet_type_id }}">
+                        <div class="border rounded mb-3 pallet-card" data-outgoing-pallet-id="{{ $pallet->id }}" data-pallet-type-id="{{ $pallet->transport_pallet_type_id }}">
                             <div class="d-flex justify-content-between align-items-center mb-2 ">
                                 <div class="">
                                     <strong>Pallet #{{ $pallet->id }}</strong>
                                     <button class="rounded bg-red-500 hover:bg-red-700 w-6 h-6 btn-danger js-delete-pallet" data-outgoing-pallet-id="{{ $pallet->id }}"><i class="fas fa-trash text-red-100"></i></button>
                                     <strong>Type:</strong>
-                                    <select class="form-control form-control-sm d-inline js-pallet-type-selector" style="width: auto;padding-top: 2px;padding-bottom: 2px;" data-pallet-id="{{ $pallet->id }}" data-current-type="{{ $pallet->outgoing_pallet_type_id }}">
+                                    <select class="form-control form-control-sm d-inline js-pallet-type-selector" style="width: auto;padding-top: 2px;padding-bottom: 2px;" data-pallet-id="{{ $pallet->id }}" data-current-type="{{ $pallet->transport_pallet_type_id }}">
                                         @foreach($palletTypes as $type)
-                                            <option value="{{ $type->id }}" @if($type->id == $pallet->outgoing_pallet_type_id) selected @endif>
+                                            <option value="{{ $type->id }}" @if($type->id == $pallet->transport_pallet_type_id) selected @endif>
                                                 {{ $type->name }} (Max: {{ $type->max_weight }} kg)
                                             </option>
                                         @endforeach
@@ -192,7 +192,7 @@
                 },
                 body: JSON.stringify({
                     pick_weight_out_id: pickWeightOutId,
-                    from_outgoing_pallet_id: fromPalletId,
+                    from_transport_pallet_id: fromPalletId,
                     selected_cut_id: selectedCutId === '' ? null : selectedCutId,
                     move_weight_count: moveWeightCount,
                 }),
@@ -328,8 +328,8 @@
                     pick_weight_out_id: pickWeightOutId,
                     move_weight_count: moveWeightCount,
                     move_cut_id: moveCutId,
-                    from_outgoing_pallet_id: fromPalletId,
-                    target_outgoing_pallet_id: targetPalletId,
+                    from_transport_pallet_id: fromPalletId,
+                    target_transport_pallet_id: targetPalletId,
                 }),
             });
 
@@ -348,7 +348,7 @@
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
-                    outgoing_pallet_id: outgoingPalletId,
+                    transport_pallet_id: outgoingPalletId,
                     pick_weight_out_id: pickWeightOutId,
                 }),
             });
@@ -370,7 +370,7 @@
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
-                    outgoing_pallet_id: outgoingPalletId,
+                    transport_pallet_id: outgoingPalletId,
                     pick_weight_out_id: pickWeightOutId,
                     recombine_unloaded: recombineUnloaded,
                 }),
@@ -876,8 +876,8 @@
                     'X-CSRF-TOKEN': csrfToken,
                 },
                 body: JSON.stringify({
-                    outgoing_pallet_id: palletId,
-                    outgoing_pallet_type_id: newTypeId,
+                    transport_pallet_id: palletId,
+                    transport_pallet_type_id: newTypeId,
                 }),
             });
 
@@ -903,7 +903,7 @@
                 body: JSON.stringify({
                     customer_id: customerId,
                     address_id: addressId,
-                    outgoing_pallet_type_id: 1,
+                    transport_pallet_type_id: 1,
                 }),
             });
 

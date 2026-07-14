@@ -2164,7 +2164,7 @@
           method: "POST",
           headers: jsonHeaders(),
           body: JSON.stringify({
-            outgoing_pallets: outgoingPalletIds,
+            transport_pallets: outgoingPalletIds,
             vehicle: selectedVehicleId
           })
         });

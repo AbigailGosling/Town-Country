@@ -247,7 +247,8 @@ class VehicleRoutePlanningController extends Controller
             $graphResponse
         );
         $overnights = 2;
-        while ($graphResponse['data']['solution']['no_unassigned'] > 0) {
+        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0) {
+            $vrcVehicleTypes = [];
             $overnights++;
             $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,$overnights);
             $vrpPayload = [
@@ -370,7 +371,7 @@ class VehicleRoutePlanningController extends Controller
 
         $palletsById = TransportPallet::query()
             ->whereIn('id', $orderedPalletIds)
-            ->get(['id', 'outgoing_pallet_type_id'])
+            ->get(['id', 'transport_pallet_type_id'])
             ->keyBy('id');
 
         $placements = [];
@@ -384,7 +385,7 @@ class VehicleRoutePlanningController extends Controller
             }
 
             // Type 1 pallets cannot be placed in column 3.
-            $isTypeOne = (int) ($pallet->outgoing_pallet_type_id ?? 0) === 1;
+            $isTypeOne = (int) ($pallet->transport_pallet_type_id ?? 0) === 1;
             $placed = false;
 
             while (!$placed) {
@@ -409,7 +410,7 @@ class VehicleRoutePlanningController extends Controller
                 }
 
                 $placements[] = [
-                    'outgoing_pallet_id' => (int) $palletId,
+                    'transport_pallet_id' => (int) $palletId,
                     'row' => $currentRow,
                     'column' => $columnToUse,
                 ];
@@ -426,7 +427,7 @@ class VehicleRoutePlanningController extends Controller
         $committedByName = $authUser ? (string) $authUser->name : null;
 
         $committedPalletIds = array_map(function ($placement) {
-            return (int) $placement['outgoing_pallet_id'];
+            return (int) $placement['transport_pallet_id'];
         }, $placements);
 
         DB::connection('tandc_live')->transaction(function () use ($vehicle, $placements, $committedAt, $committedByUserId, $committedByName, $dueDate, $committedPalletIds, $terminalLat, $terminalLon) {
@@ -441,14 +442,14 @@ class VehicleRoutePlanningController extends Controller
             }
 
             if (!empty($committedPalletIds)) {
-                VehicleTransportPalletAllocation::whereIn('outgoing_pallet_id', $committedPalletIds)->delete();
+                VehicleTransportPalletAllocation::whereIn('transport_pallet_id', $committedPalletIds)->delete();
             }
 
             foreach ($placements as $placement) {
                 $allocation = VehicleTransportPalletAllocation::create([
                     'vehicle_id' => (int) $vehicle->id,
                     'load_sheet_id' => $loadSheetId,
-                    'outgoing_pallet_id' => (int) $placement['outgoing_pallet_id'],
+                    'transport_pallet_id' => (int) $placement['transport_pallet_id'],
                     'row' => (int) $placement['row'],
                     'column' => (int) $placement['column'],
                     'committed_by_user_id' => $committedByUserId,
@@ -456,7 +457,7 @@ class VehicleRoutePlanningController extends Controller
                     'committed_at' => $committedAt,
                 ]);
 
-                $pallet = TransportPallet::find((int) $allocation->outgoing_pallet_id);
+                $pallet = TransportPallet::find((int) $allocation->transport_pallet_id);
                 if ($pallet) {
                     $pallet->dispatched = true;
                     $pallet->estimated_delivery_date = $dueDate;

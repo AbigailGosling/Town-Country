@@ -112,7 +112,7 @@ class OutgoingPalletController extends Controller
             ->orderByRaw("STR_TO_DATE(estimated_delivery_date, '%d/%m/%Y') asc")
             ->get();
 
-        // Get all pickersheet IDs that are already loaded in outgoing_pallet via the pivot table
+        // Get all pickersheet IDs that are already loaded in transport_pallets via the pivot table
         $outgoingPallets = TransportPallet::where('customer_id', $customerId)
             ->where('address_id', $addressId)
             ->with(['pickWeightOuts.pickWeightOut.pickerSheet'])
@@ -180,9 +180,9 @@ class OutgoingPalletController extends Controller
         $pickWeightOutIds = PickWeightOut::where('pickersheet_id', $pickSheetId)->pluck('id')->toArray();
 
         $pallets = TransportPallet::query()
-            ->select('outgoing_pallet.*')
-            ->join('outgoing_pallet_pickweights', 'outgoing_pallet.id', '=', 'outgoing_pallet_pickweights.outgoing_pallet_id')
-            ->whereIn('outgoing_pallet_pickweights.pickWeightOut_id', $pickWeightOutIds)
+            ->select('transport_pallets.*')
+            ->join('transport_pallet_pick_weights', 'transport_pallets.id', '=', 'transport_pallet_pick_weights.transport_pallet_id')
+            ->whereIn('transport_pallet_pick_weights.pickWeightOut_id', $pickWeightOutIds)
             ->get();
 
         return response()->json($pallets);
@@ -220,7 +220,7 @@ class OutgoingPalletController extends Controller
     {
         $pallet = TransportPallet::findOrFail($id);
         if ($pallet->dispatched == 1) return response()->json(['error' => 'Cannot Delete Pallet after dispatch']);
-        foreach (VehicleTransportPalletAllocation::where("outgoing_pallet_id",$pallet)->get() as $vopa)
+        foreach (VehicleTransportPalletAllocation::where("transport_pallet_id",$pallet)->get() as $vopa)
         {
             $vopa->delete();
         }
@@ -232,11 +232,11 @@ class OutgoingPalletController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|integer|exists:tandc_live.customers,id',
             'address_id' => 'required|integer',
-            'outgoing_pallet_type_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet_types,id',
+            'transport_pallet_type_id' => 'nullable|integer|exists:tandc_live.transport_pallet_types,id',
         ]);
         $validated['estimated_delivery_date'] = Carbon::today()->format('Y-m-d');
-        if (!isset($validated['outgoing_pallet_type_id']) || !$validated['outgoing_pallet_type_id']) {
-            $validated['outgoing_pallet_type_id'] = 1;
+        if (!isset($validated['transport_pallet_type_id']) || !$validated['transport_pallet_type_id']) {
+            $validated['transport_pallet_type_id'] = 1;
         }
 
         $pallet = TransportPallet::create($validated);
@@ -250,7 +250,7 @@ class OutgoingPalletController extends Controller
     public function deletePallet(int $id): JsonResponse
     {
         $pallet = TransportPallet::findOrFail($id);
-        TransportPalletPickWeight::where('outgoing_pallet_id', $pallet->id)->delete();
+        TransportPalletPickWeight::where('transport_pallet_id', $pallet->id)->delete();
         $pallet->delete();
 
         return response()->json(['message' => 'Outgoing pallet deleted successfully']);
@@ -258,23 +258,23 @@ class OutgoingPalletController extends Controller
     public function updatePalletType(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'outgoing_pallet_id' => 'required|integer|exists:tandc_live.outgoing_pallet,id',
-            'outgoing_pallet_type_id' => 'required|integer|exists:tandc_live.outgoing_pallet_types,id',
+            'transport_pallet_id' => 'required|integer|exists:tandc_live.transport_pallets,id',
+            'transport_pallet_type_id' => 'required|integer|exists:tandc_live.transport_pallet_types,id',
         ]);
 
-        $pallet = TransportPallet::findOrFail($validated['outgoing_pallet_id']);
-        $pallet->update(['outgoing_pallet_type_id' => $validated['outgoing_pallet_type_id']]);
+        $pallet = TransportPallet::findOrFail($validated['transport_pallet_id']);
+        $pallet->update(['transport_pallet_type_id' => $validated['transport_pallet_type_id']]);
 
         return response()->json([
             'id' => $pallet->id,
-            'outgoing_pallet_type_id' => $pallet->outgoing_pallet_type_id,
+            'transport_pallet_type_id' => $pallet->transport_pallet_type_id,
             'message' => 'Pallet type updated successfully',
         ]);
     }
     public function attachPick(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'outgoing_pallet_id' => 'required|integer|exists:tandc_live.outgoing_pallet,id',
+            'transport_pallet_id' => 'required|integer|exists:tandc_live.transport_pallets,id',
             'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
         ]);
 
@@ -282,12 +282,12 @@ class OutgoingPalletController extends Controller
             $pickWeightOut = PickWeightOut::query()->findOrFail($validated['pick_weight_out_id']);
 
             $link = TransportPalletPickWeight::query()->firstOrCreate([
-                'outgoing_pallet_id' => (int) $validated['outgoing_pallet_id'],
+                'transport_pallet_id' => (int) $validated['transport_pallet_id'],
                 'pickWeightOut_id' => (int) $validated['pick_weight_out_id'],
             ]);
 
             $targetPick = PickWeightOut::recombineWithinPalletByPickerSheet(
-                (int) $validated['outgoing_pallet_id'],
+                (int) $validated['transport_pallet_id'],
                 (int) $pickWeightOut->pickersheet_id
             );
 
@@ -302,7 +302,7 @@ class OutgoingPalletController extends Controller
     public function detachPick(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'outgoing_pallet_id' => 'required|integer|exists:tandc_live.outgoing_pallet,id',
+            'transport_pallet_id' => 'required|integer|exists:tandc_live.transport_pallets,id',
             'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
             'recombine_unloaded' => 'nullable|boolean',
         ]);
@@ -315,11 +315,11 @@ class OutgoingPalletController extends Controller
                 : true;
 
             TransportPalletPickWeight::query()
-                ->where('outgoing_pallet_id', (int) $validated['outgoing_pallet_id'])
+                ->where('transport_pallet_id', (int) $validated['transport_pallet_id'])
                 ->where('pickWeightOut_id', (int) $validated['pick_weight_out_id'])
                 ->delete();
 
-            $sourcePalletPick = PickWeightOut::recombineWithinPalletByPickerSheet((int) $validated['outgoing_pallet_id'], $pickerSheetId);
+            $sourcePalletPick = PickWeightOut::recombineWithinPalletByPickerSheet((int) $validated['transport_pallet_id'], $pickerSheetId);
             $unloadedPick = $recombineUnloaded ? PickWeightOut::recombineWithinUnloadedByPickerSheet($pickerSheetId) : null;
 
             return [
@@ -337,16 +337,16 @@ class OutgoingPalletController extends Controller
             'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
             'move_weight_count' => 'required|integer|min:1',
             'move_cut_id' => 'nullable|integer|exists:tandc_live.cuts,id',
-            'target_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
-            'from_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
+            'target_transport_pallet_id' => 'nullable|integer|exists:tandc_live.transport_pallets,id',
+            'from_transport_pallet_id' => 'nullable|integer|exists:tandc_live.transport_pallets,id',
         ]);
 
         $result = DB::connection('tandc_live')->transaction(function () use ($validated) {
             return PickWeightOut::SPLIT_PICK(
                 (int) $validated['pick_weight_out_id'],
                 (int) $validated['move_weight_count'],
-                $validated['target_outgoing_pallet_id'] ?? null,
-                $validated['from_outgoing_pallet_id'] ?? null,
+                $validated['target_transport_pallet_id'] ?? null,
+                $validated['from_transport_pallet_id'] ?? null,
                 $validated['move_cut_id'] ?? null,
             );
         });
@@ -357,7 +357,7 @@ class OutgoingPalletController extends Controller
     {
         $validated = $request->validate([
             'pick_weight_out_id' => 'required|integer|exists:tandc_live.pickWeightOut,id',
-            'from_outgoing_pallet_id' => 'nullable|integer|exists:tandc_live.outgoing_pallet,id',
+            'from_transport_pallet_id' => 'nullable|integer|exists:tandc_live.transport_pallets,id',
             'selected_cut_id' => 'nullable|integer|exists:tandc_live.cuts,id',
             'move_weight_count' => 'nullable|integer|min:1',
         ]);
@@ -367,7 +367,7 @@ class OutgoingPalletController extends Controller
         $html = view('components.draggable-pick', [
             'pickWeightOut' => $pickWeightOut,
             'pickerSheet' => $pickWeightOut->pickerSheet,
-            'fromPalletId' => $validated['from_outgoing_pallet_id'] ?? null,
+            'fromPalletId' => $validated['from_transport_pallet_id'] ?? null,
             'selectedCutId' => $validated['selected_cut_id'] ?? null,
             'moveWeightCount' => $validated['move_weight_count'] ?? null,
         ])->render();

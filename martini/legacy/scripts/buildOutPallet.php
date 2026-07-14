@@ -56,7 +56,7 @@ use Carbon\Carbon;
     $pickSheet = PickerSheet::find($pickersheet_id);
     if ($outgoingPalletID == -1 || $outgoingPalletID == null || $outgoingPalletID == '#') {
         $op = TransportPallet::create([
-            'outgoing_pallet_type_id' => 1,
+            'transport_pallet_type_id' => 1,
             'customer_id' => $pickSheet->customer_id,
             'address_id' => $pickSheet->addressid,
             'estimated_delivery_date' => Carbon::createFromFormat('d/m/Y', $pickSheet->estimated_delivery_date)->format('Y-m-d'),
@@ -64,7 +64,7 @@ use Carbon\Carbon;
         ]);
     }
     else $op = TransportPallet::find($outgoingPalletID);
-    $oppw = TransportPalletPickWeight::where('outgoing_pallet_id', $op->id)->get()->first();
+    $oppw = TransportPalletPickWeight::where('transport_pallet_id', $op->id)->get()->first();
     if ($oppw == null) {
         $tmp = new PickWeightOut();
         $tmp->pickersheet_id = $pickersheet_id;
@@ -72,7 +72,7 @@ use Carbon\Carbon;
         $tmp->picker_ids = '';
         $tmp->save();
         $oppw = new TransportPalletPickWeight();
-        $oppw->outgoing_pallet_id = $op->id;
+        $oppw->transport_pallet_id = $op->id;
         $oppw->pickWeightOut_id = $tmp->id;
         $oppw->save();
     }

@@ -39,11 +39,11 @@ class SendPods extends Command
             return self::FAILURE;
         }
 
-        $outgoingPalletIds = $data['outgoing_pallet_ids'] ?? [];
+        $outgoingPalletIds = $data['transport_pallet_ids'] ?? [];
         $vehicleId = $data['vehicle_id'] ?? null;
 
         if (!is_array($outgoingPalletIds) || $outgoingPalletIds === [] || !is_numeric($vehicleId)) {
-            $this->error('Payload must contain outgoing_pallet_ids and vehicle_id.');
+            $this->error('Payload must contain transport_pallet_ids and vehicle_id.');
             Log::error('pods:send failed - invalid payload structure', ['cache_key' => $cacheKey, 'payload' => $data]);
             return self::FAILURE;
         }
@@ -53,7 +53,7 @@ class SendPods extends Command
 
         if ($outgoingPallets->isEmpty()) {
             $this->error('No outgoing pallets found for provided ids.');
-            Log::error('pods:send failed - no outgoing pallets found', ['cache_key' => $cacheKey, 'outgoing_pallet_ids' => $outgoingPalletIds]);
+            Log::error('pods:send failed - no outgoing pallets found', ['cache_key' => $cacheKey, 'transport_pallet_ids' => $outgoingPalletIds]);
             return self::FAILURE;
         }
 

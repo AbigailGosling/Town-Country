@@ -197,7 +197,7 @@ protected $connection = 'tandc_live';
                         if ($lowestWeight === null || $thisWeight < $lowestWeight) {
                             $lowestWeight = $thisWeight;
                             $lowestPallet = $p;
-                            $pMaxWeight = TransportPalletType::find($p->outgoing_pallet_type_id)->max_weight;
+                            $pMaxWeight = TransportPalletType::find($p->transport_pallet_type_id)->max_weight;
                             if ($pMaxWeight - $thisWeight >= $pickWeightOut->getTotalWeight()) {
                                 $pallet = $p;
                                 $stdMax = $pMaxWeight;
@@ -208,14 +208,14 @@ protected $connection = 'tandc_live';
                         $pallet = TransportPallet::create([
                             'customer_id' => $customerId,
                             'address_id' => $addressId,
-                            'outgoing_pallet_type_id' => 1,
+                            'transport_pallet_type_id' => 1,
                             'dispatched' => $pickerSheet->deliverynote_printed==1,
                             'estimated_delivery_date' => $date,
                         ]);
                     }
                     if ($pallet) {
                         TransportPalletPickWeight::create([
-                            'outgoing_pallet_id' => $pallet->id,
+                            'transport_pallet_id' => $pallet->id,
                             'pickWeightOut_id' => $pickWeightOut->id,
                         ]);
                     }
@@ -270,7 +270,7 @@ protected $connection = 'tandc_live';
 
         if (!empty($targetTransportPalletId)) {
             TransportPalletPickWeight::query()->firstOrCreate([
-                'outgoing_pallet_id' => (int) $targetTransportPalletId,
+                'transport_pallet_id' => (int) $targetTransportPalletId,
                 'pickWeightOut_id' => $newPickWeightOut->id,
             ]);
         }
@@ -297,7 +297,7 @@ protected $connection = 'tandc_live';
     public static function recombineWithinPalletByPickerSheet(int $outgoingPalletId, int $pickerSheetId): ?PickWeightOut
     {
         $pickWeightOutIds = TransportPalletPickWeight::query()
-            ->where('outgoing_pallet_id', $outgoingPalletId)
+            ->where('transport_pallet_id', $outgoingPalletId)
             ->whereHas('pickWeightOut', function ($query) use ($pickerSheetId) {
                 $query->where('pickersheet_id', $pickerSheetId);
             })
@@ -448,7 +448,7 @@ protected $connection = 'tandc_live';
         foreach ($pickWeightOuts->slice(1) as $redundant) {
             if ($contextTransportPalletId !== null) {
                 TransportPalletPickWeight::query()
-                    ->where('outgoing_pallet_id', $contextTransportPalletId)
+                    ->where('transport_pallet_id', $contextTransportPalletId)
                     ->where('pickWeightOut_id', $redundant->id)
                     ->delete();
             }

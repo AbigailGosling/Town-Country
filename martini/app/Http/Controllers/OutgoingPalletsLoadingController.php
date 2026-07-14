@@ -211,15 +211,15 @@ class OutgoingPalletsLoadingController extends Controller
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
         $allocationsQuery = VehicleTransportPalletAllocation::with([
-            'outgoingPallet.pickWeightOuts',
-            'outgoingPallet.customer',
-            'outgoingPallet.transportPalletType',
+            'transportPallet.pickWeightOuts',
+            'transportPallet.customer',
+            'transportPallet.transportPalletType',
         ])
             ->where('vehicle_id', $vehicle->id)
             ->where('load_sheet_id', $loadSheetId);
 
         if ($dueDate !== '') {
-            $allocationsQuery->whereHas('outgoingPallet', function ($query) use ($dueDate) {
+            $allocationsQuery->whereHas('transportPallet', function ($query) use ($dueDate) {
                 $query->whereDate('estimated_delivery_date', $dueDate);
             });
         }
@@ -227,7 +227,7 @@ class OutgoingPalletsLoadingController extends Controller
         $allocations = $allocationsQuery
             ->get()
             ->map(function ($allocation) use ($maxRows) {
-                $pallet = $allocation->outgoingPallet;
+                $pallet = $allocation->transportPallet;
                 if (!$pallet) {
                     return null;
                 }
@@ -473,13 +473,13 @@ class OutgoingPalletsLoadingController extends Controller
             return response()->json(['error' => 'Pallet type not found'], 404);
         }
 
-        $pallet->outgoing_pallet_type_id = (int) $type->id;
+        $pallet->transport_pallet_type_id = (int) $type->id;
         $pallet->save();
 
         return response()->json([
             'success' => true,
             'outgoingPalletId' => (int) $pallet->id,
-            'outgoingPalletTypeId' => (int) $pallet->outgoing_pallet_type_id,
+            'outgoingPalletTypeId' => (int) $pallet->transport_pallet_type_id,
             'palletType' => $type->name,
         ]);
     }
@@ -822,7 +822,7 @@ class OutgoingPalletsLoadingController extends Controller
         $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
 
         // Fetch allocations for the given vehicle and pallet IDs
-        $allocations = VehicleTransportPalletAllocation::with('outgoingPallet')
+        $allocations = VehicleTransportPalletAllocation::with('transportPallet')
             ->where('vehicle_id', $vehicle->id)
             ->whereIn('transport_pallet_id', $outgoingPalletIds)
             ->get()
@@ -857,7 +857,7 @@ class OutgoingPalletsLoadingController extends Controller
                 $allocation->committed_at = $committedAt;
                 $allocation->save();
 
-                $pallet = $allocation->outgoingPallet;
+                $pallet = $allocation->transportPallet;
                 if ($pallet) {
                     $pallet->dispatched = true;
                     $pallet->estimated_delivery_date = $dueDate;
@@ -896,15 +896,15 @@ class OutgoingPalletsLoadingController extends Controller
         $depot = Site::find($depotSiteId);
 
         $query = VehicleTransportPalletAllocation::with([
-            'outgoingPallet.pickWeightOuts.pickWeightOut',
-            'outgoingPallet.customer',
-            'outgoingPallet.transportPalletType',
+            'transportPallet.pickWeightOuts.pickWeightOut',
+            'transportPallet.customer',
+            'transportPallet.transportPalletType',
         ])->where('vehicle_id', $vehicle->id);
 
         if ($loadSheetId > 0) {
             $query->where('load_sheet_id', $loadSheetId);
         } elseif ($dueDate !== '') {
-            $query->whereHas('outgoingPallet', function ($q) use ($dueDate) {
+            $query->whereHas('transportPallet', function ($q) use ($dueDate) {
                 $q->where('estimated_delivery_date', $dueDate);
             });
         }
@@ -914,7 +914,7 @@ class OutgoingPalletsLoadingController extends Controller
         $totalWeight = 0;
 
         foreach ($allocations as $allocation) {
-            $pallet = $allocation->outgoingPallet;
+            $pallet = $allocation->transportPallet;
             $pallet->dispatched = true;
             $pallet->save();
             if (!$pallet) {
