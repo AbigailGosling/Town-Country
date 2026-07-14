@@ -388,7 +388,7 @@ use Illuminate\Support\Str;
 	<br/><br/><br/>
 
 		<?php if($pickerSheet['completed'] == '1'){ ?>
-        	<div class="transport_pallets">
+        	<div class="outgoing_pallets">
 		<?php }else{ ?>
 			<div class="outgoing_pallets" style="display:none;">
 		<?php } ?>
