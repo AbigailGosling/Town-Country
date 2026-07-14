@@ -355,7 +355,7 @@ class ReportHelper
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
         else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
-
+        
         /** @var Collection $credits */
         $credits = $resultQB->get();
         static::initialiseLookupArrays();
@@ -447,6 +447,7 @@ class ReportHelper
 
                 $col = "original_intake.supplier_id";
                 $item = static::$conn->table("supplier")->select("supplier.*")->where("supplier.id",$result->$col)->first();
+                if ($item===null) $item = static::$conn->table("customers")->select("customers.*")->where("customers.id",$result->$col)->first();
                 if ($item===null) continue;
                 static::row_merge($result,$item,"original_supplier.");
 
