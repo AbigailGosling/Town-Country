@@ -227,9 +227,9 @@ class GraphHopperHelper
     {
         return trim(implode(', ', array_filter([
             (string) ($address->address_1 ?? ''),
-            (string) ($address->address_2 ?? ''),
-            (string) ($address->address_3 ?? ''),
-            (string) ($address->address_4 ?? ''),
+            // (string) ($address->address_2 ?? ''),
+            // (string) ($address->address_3 ?? ''),
+            // (string) ($address->address_4 ?? ''),
             (string) ($address->postcode ?? ''),
             'United Kingdom',
         ])));
@@ -386,6 +386,7 @@ class GraphHopperHelper
                 }
                 $address->geocoding_tried = true;
                 $location = GraphHopperHelper::geocodeAddress($queryAddress);
+                if ($location === null) $location = GraphHopperHelper::geocodeAddress($address->postcode);
                 if ($location === null) {
                     $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
                     $skipped[] = [

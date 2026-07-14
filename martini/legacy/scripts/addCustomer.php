@@ -169,7 +169,7 @@ use App\Models\ClientType;
         $ca->site_id = request()->input('site_id')[$index];
         $ca->restrictions = request()->input('restrictions')[$index] ?? null;
         $ca->geocoding_tried = 0;
-        $ca->collection = request()->has('address_collection') && in_array($index, request()->input('address_collection')) ? 1 : 0;
+        $ca->collection = request()->has('address_collection'.$address_id);
         $ca->lat = null;
         $ca->lon = null;
         $ca->save();

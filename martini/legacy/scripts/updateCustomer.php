@@ -179,7 +179,7 @@ use Illuminate\Support\Facades\Auth;
         $ca->geocoding_tried = 0;
         $ca->lat = null;
         $ca->lon = null;
-        $ca->collection = request()->has('address_collection') && in_array($index, request()->input('address_collection')) ? 1 : 0;
+        $ca->collection = request()->has('address_collection'.$address_id);
         $ca->save();
         ProcessHelper::runInBackground('run:geocode_address '.$ca->id);
 	}
