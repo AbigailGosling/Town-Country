@@ -18,17 +18,17 @@ class PodDispatchController extends Controller
     public function send(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'outgoing_pallets'   => ['required', 'array', 'min:1'],
-            'outgoing_pallets.*' => ['required', 'integer', 'exists:tandc_live.outgoing_pallet,id'],
+            'transport_pallets'   => ['required', 'array', 'min:1'],
+            'transport_pallets.*' => ['required', 'integer', 'exists:tandc_live.transport_pallets,id'],
             'vehicle'            => ['required', 'integer', 'exists:tandc_live.vehicle,id'],
         ]);
 
-        $palletIds = $validated['outgoing_pallets'];
+        $palletIds = $validated['transport_pallets'];
         $vehicleId = (int) $validated['vehicle'];
 
         $cacheKey = 'pods_send_' . Str::uuid();
         InternalCache::put($cacheKey, [
-            'outgoing_pallet_ids' => $palletIds,
+            'transport_pallet_ids' => $palletIds,
             'vehicle_id'          => $vehicleId,
         ], 300);
         ProcessHelper::runInBackground('pods:send '.$cacheKey);
@@ -38,7 +38,7 @@ class PodDispatchController extends Controller
             'command'             => 'pods:send',
             'process_id'          => "N/A",
             'cache_key'           => $cacheKey,
-            'outgoing_pallet_ids' => $palletIds,
+            'transport_pallet_ids' => $palletIds,
             'vehicle_id'          => $vehicleId,
         ], 202);
     }

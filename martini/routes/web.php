@@ -142,7 +142,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::get('/outgoing-pallets', [OutgoingPalletController::class, 'index'])->name('outgoing-pallets.index');
     Route::get('/outgoing-pallets/details', [OutgoingPalletController::class, 'details'])->name('outgoing-pallets.details');
     Route::post('/outgoing-pallets', [OutgoingPalletController::class, 'createPallet'])->name('outgoing-pallets.create');
-    Route::delete('/outgoing-pallets/{outgoingPallet}', [OutgoingPalletController::class, 'deletePallet'])->name('outgoing-pallets.delete');
+    Route::delete('/outgoing-pallets/{transportPallet}', [OutgoingPalletController::class, 'deletePallet'])->name('outgoing-pallets.delete');
     Route::post('/outgoing-pallets/attach-pick', [OutgoingPalletController::class, 'attachPick'])->name('outgoing-pallets.attach-pick');
     Route::post('/outgoing-pallets/detach-pick', [OutgoingPalletController::class, 'detachPick'])->name('outgoing-pallets.detach-pick');
     Route::post('/outgoing-pallets/update-type', [OutgoingPalletController::class, 'updatePalletType'])->name('outgoing-pallets.update-type');

@@ -76,15 +76,15 @@ class PodHelper
         }
         foreach ($picksByAddress as $addressID => $addressData) {
 
-            // if ((bool) $outgoingPallet->pod_sent) {
+            // if ((bool) $transportPallet->pod_sent) {
             //     continue;
             // }
             $ticking->addMinute();
             $allCallsSucceeded = true;
-            $outgoingPallet = $addressData["outgoingPallets"][0];
+            $transportPallet = $addressData["outgoingPallets"][0];
             $thisData = (object)[
                 "TASK_INFO" => (object)[
-                    "TASK_START_DATE" => $outgoingPallet->estimated_delivery_date->format('d/m/Y'),
+                    "TASK_START_DATE" => $transportPallet->estimated_delivery_date->format('d/m/Y'),
                     "TASK_START_TIME" => $ticking->format('H:i'),
                     "TASK_MOBILE_USER" => trim(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
                     //"TASK_MOBILE_USER_ID" => 13,
@@ -190,9 +190,9 @@ class PodHelper
                 $allCallsSucceeded = false;
             }
             if ($allCallsSucceeded) {
-                foreach ($addressData["outgoingPallets"] as $outgoingPallet) {
-                    $outgoingPallet->pod_sent = true;
-                    $outgoingPallet->save();
+                foreach ($addressData["outgoingPallets"] as $transportPallet) {
+                    $transportPallet->pod_sent = true;
+                    $transportPallet->save();
                 }
             }
         }
@@ -229,11 +229,11 @@ class PodHelper
                     $oppws = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
                     foreach ($oppws as $oppw)
                     {
-                        $op = TransportPallet::find($oppw->outgoing_pallet_id);
+                        $op = TransportPallet::find($oppw->transport_pallet_id);
                         $op->estimated_delivery_date = $nextDeliveryDate->format("d/m/Y");
                         $op->dispatched = $op->pod_sent = 0;
                         $op->save();
-                        $vopa = VehicleTransportPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                        $vopa = VehicleTransportPalletAllocation::where("transport_pallet_id", $oppw->transport_pallet_id)->first();
                         $vopa->delete();
                     }
                 }
@@ -275,7 +275,7 @@ class PodHelper
                 $pwoWeights = explode(',', $pwo->weight_ids);
                 if (count(FuncHelper::custom_intersect($rejected_weight_ids, $pwoWeights)) > 0) {
                     $oppw = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-                    $vopa = VehicleTransportPalletAllocation::where("outgoing_pallet_id", $oppw->outgoing_pallet_id)->first();
+                    $vopa = VehicleTransportPalletAllocation::where("transport_pallet_id", $oppw->transport_pallet_id)->first();
                     $vehicle = Vehicle::find($vopa->vehicle_id);
                     break;
                 }

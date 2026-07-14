@@ -251,7 +251,7 @@ class GraphHopperHelper
             }
             $ghtype_id = $tc_vehicle_type . '-'. $capacity . '-' . $payload;
             foreach ($output as &$existing) {
-                if ($existing['type_id'] === $ghtype_id) {
+                if ($existing['type_id'] == $ghtype_id) {
                     $existing['vehicle'][] = $vehicle;
                     continue 2;
                 }

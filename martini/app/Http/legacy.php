@@ -10,5 +10,5 @@ else
 {
     abort(404);
 }
-if ($mysqli)mysqli_close($mysqli);
+
 ?>

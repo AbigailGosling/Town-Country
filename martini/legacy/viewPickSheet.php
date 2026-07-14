@@ -388,20 +388,20 @@ use Illuminate\Support\Str;
 	<br/><br/><br/>
 
 		<?php if($pickerSheet['completed'] == '1'){ ?>
-        	<div class="outgoing_pallets">
+        	<div class="transport_pallets">
 		<?php }else{ ?>
 			<div class="outgoing_pallets" style="display:none;">
 		<?php } ?>
 
 		<?php
-                $outpalletQuery = "SELECT *,pickWeightOut.id as pid FROM `outgoing_pallet_pickweights` INNER JOIN `pickWeightOut` ON `outgoing_pallet_pickweights`.pickWeightOut_id = `pickWeightOut`.id WHERE `pickWeightOut`.pickersheet_id=?";
+                $outpalletQuery = "SELECT *,pickWeightOut.id as pid FROM `transport_pallet_pick_weights` INNER JOIN `pickWeightOut` ON `transport_pallet_pick_weights`.pickWeightOut_id = `pickWeightOut`.id WHERE `pickWeightOut`.pickersheet_id=?";
                 $outpalletResult2 = prepareExecuteQuery($outpalletQuery,'i',[$picksheetid]);
 
                 $outpalletCount = mysqli_num_rows($outpalletResult2);
 
                 while($outpallet = mysqli_fetch_assoc($outpalletResult2)){
                     $weightids = explode(',', $outpallet['weight_ids']);
-                    ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['outgoing_pallet_id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
+                    ?><h3 style="text-align:left;">Outgoing Pallet: <?php echo str_pad($outpallet['transport_pallet_id'], 5, '0', STR_PAD_LEFT); ?></h3><?php
 
                     $productIDArray = array();
 
