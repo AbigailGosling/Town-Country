@@ -90,6 +90,12 @@ use Illuminate\Support\Facades\Log;
         $xa = "INSERT INTO `supplier_return_attachment` (user_id,return_id,comments) VALUES (?,?,?)";
 		$ya = prepareExecuteQuery($xa,'iis',[$user_from_id,$return_id,"created"],true);
 
+        if ($picksheet_note != null && $picksheet_note != "") {
+
+            $xa = "INSERT INTO `supplier_return_attachment` (user_id,return_id,comments) VALUES (?,?,?)";
+            $ya = prepareExecuteQuery($xa,'iis',[$user_from_id,$return_id,$picksheet_note],true);
+        }
+
 		loggedDataChange("picksheet_note",$pickersheet_id,$picksheet_note);
 		loggedDataChange("picksheet_orderReferenceNumber",$pickersheet_id,$orderReferenceNumber);
         loggedDataChange("picksheet_estimated_delivery_date",$pickersheet_id,$estimated_delivery_date);
