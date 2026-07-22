@@ -737,13 +737,13 @@ use Illuminate\Support\Str;
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-						<input required style="width: 65px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
+						<input style="width: 65px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 65px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
+                        <input required style="width: 65px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
