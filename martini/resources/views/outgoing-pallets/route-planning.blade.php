@@ -428,6 +428,24 @@
                     <label for="serviceDurationSeconds">Service Duration (seconds)</label>
                     <input type="number" id="serviceDurationSeconds" name="serviceDurationSeconds" min="60" value="1800" required>
                 </div>
+                <div class="field">
+                    <label for="maxRigids">Max Rigids</label>
+                    <select id="maxRigids" name="maxRigids">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="maxArtics">Max Artics</label>
+                    <select id="maxArtics" name="maxArtics">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="maxVans">Max Vans</label>
+                    <select id="maxVans" name="maxVans">
+                        <option value="">All</option>
+                    </select>
+                </div>
             </div>
 
             <div class="actions">
@@ -463,6 +481,9 @@
     const graphHopperApiKey = @json(config('services.graphhopper.key', ''));
     const form = document.getElementById('plannerForm');
     const depotSelect = document.getElementById('depot');
+    const maxRigidsSelect = document.getElementById('maxRigids');
+    const maxArticsSelect = document.getElementById('maxArtics');
+    const maxVansSelect = document.getElementById('maxVans');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
@@ -510,6 +531,27 @@
         routeBreakdownEl.innerHTML = '';
         mapNoteEl.textContent = '';
         mapNoteEl.classList.add('hidden');
+    }
+
+    function buildVehicleLimitOptions(selectEl, maxCount) {
+        if (!selectEl) {
+            return;
+        }
+
+        const previousValue = String(selectEl.value ?? '').trim();
+        const safeMax = Math.max(0, Number(maxCount) || 0);
+        const options = ['<option value="">All available</option>'];
+
+        for (let i = safeMax; i >= 0; i--) {
+            options.push(`<option value="${i}">${i}</option>`);
+        }
+
+        selectEl.innerHTML = options.join('');
+        if (previousValue !== '' && Number(previousValue) <= safeMax) {
+            selectEl.value = previousValue;
+        } else {
+            selectEl.value = '';
+        }
     }
 
     function routeColor(index) {
@@ -1475,6 +1517,9 @@
         const value = String(depotId || '').trim();
         if (!value) {
             availableVehicles = [];
+            buildVehicleLimitOptions(maxRigidsSelect, 0);
+            buildVehicleLimitOptions(maxArticsSelect, 0);
+            buildVehicleLimitOptions(maxVansSelect, 0);
             return;
         }
 
@@ -1490,6 +1535,14 @@
             }
 
             const payload = await response.json();
+            const rigidCount = Number(payload?.vehicleTypeCounts?.rigids || 0);
+            const articCount = Number(payload?.vehicleTypeCounts?.artics || 0);
+            const vanCount = Number(payload?.vehicleTypeCounts?.vans || 0);
+
+            buildVehicleLimitOptions(maxRigidsSelect, rigidCount);
+            buildVehicleLimitOptions(maxArticsSelect, articCount);
+            buildVehicleLimitOptions(maxVansSelect, vanCount);
+
             if (Array.isArray(payload?.vehicleOptions)) {
                 availableVehicles = payload.vehicleOptions
                     .map(vehicle => ({
@@ -1512,15 +1565,30 @@
             }
         } catch (error) {
             availableVehicles = [];
+            buildVehicleLimitOptions(maxRigidsSelect, 0);
+            buildVehicleLimitOptions(maxArticsSelect, 0);
+            buildVehicleLimitOptions(maxVansSelect, 0);
         }
     }
 
     form.addEventListener('submit', async event => {
         event.preventDefault();
 
+        const parseOptionalLimit = value => {
+            const parsed = Number.parseInt(String(value ?? '').trim(), 10);
+            if (!Number.isFinite(parsed) || parsed < 0) {
+                return null;
+            }
+
+            return parsed;
+        };
+
         const dueDate = document.getElementById('dueDate').value;
         const depot = depotSelect.value;
         const serviceDurationSeconds = Number(document.getElementById('serviceDurationSeconds').value || 1200);
+        const maxRigids = parseOptionalLimit(document.getElementById('maxRigids')?.value);
+        const maxArtics = parseOptionalLimit(document.getElementById('maxArtics')?.value);
+        const maxVans = parseOptionalLimit(document.getElementById('maxVans')?.value);
         const dryRun = false;
 
         if (!dueDate || !depot) {
@@ -1547,6 +1615,9 @@
                     dueDate,
                     depot: Number(depot),
                     serviceDurationSeconds,
+                    maxRigids,
+                    maxArtics,
+                    maxVans,
                     dryRun,
                     persistSuggestions: !dryRun
                 })

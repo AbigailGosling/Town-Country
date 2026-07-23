@@ -43,6 +43,7 @@ class IntakeScanningController extends Controller
 
     public function ocr(Request $request): JsonResponse
     {
+        ini_set('memory_limit', '1G');
         $payload = $request->json()->all();
         if ($payload === [] && $request->all() !== []) {
             $payload = $request->all();

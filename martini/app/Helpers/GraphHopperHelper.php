@@ -308,11 +308,10 @@ class GraphHopperHelper
                         $vrpVehicle['return_to_depot'] = true;
                         $vrpVehicle['end_address'] = $depotLocation;
                     }
-                    $vrpVehicles[] = $vrpVehicle;
                 }
                 else
                 {
-                    $vrpVehicles[] = [
+                   $vrpVehicle = [
                         'vehicle_id' => $type['type_id'] . '-' . $i,
                         'type_id' => $type['type_id'],
                         'start_address' => $depotLocation,
@@ -322,6 +321,11 @@ class GraphHopperHelper
                         'min_jobs' => 2,
                     ];
                 }
+                if ($vehicle->has_tail_lift) {
+                    $vrpVehicle['skills'] = ['tail_lift'];
+                }
+                $vrpVehicles[] = $vrpVehicle;
+
             }
         }
         return $vrpVehicles;
@@ -337,7 +341,7 @@ class GraphHopperHelper
      * @param array<int, string> $skippedAddresses
      * @param array<string, array{fresh: bool, frozen: bool}> $addressDelTypes
     */
-    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = []): array
+    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = []): array
     {
         $services = [];
         foreach ($pallets as $pallet) {
@@ -406,6 +410,22 @@ class GraphHopperHelper
 
             $customer = $customers[$pallet->customer_id] ?? null;
             $tempCategory = $pallet->normalizePlanningTemperatureCategory();
+            $allowedVehicles = [];
+            $allowedVehicleTypes = $address->allowed_vehicle_types ? explode(',', $address->allowed_vehicle_types) : [];
+            foreach ($vrpVehicles as $vehicle) {
+                $type_overview = explode('-', $vehicle['type_id']);
+                if (in_array($type_overview[0], $allowedVehicleTypes)) {
+                    $allowedVehicles[] = $vehicle['vehicle_id'];
+                }
+            }
+            $addressOpeningTime = $address->opening_time;
+            if ($addressOpeningTime == null) {
+                $addressOpeningTime = Carbon::now()->setTime(4, 0, 0);
+            }
+            $addressClosingTime = $address->closing_time;
+            if ($addressClosingTime == null) {
+                $addressClosingTime = Carbon::now()->setTime(23, 0, 0);
+            }
             $thisService =[
                 'id' => (string)$pallet->id,
                 'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
@@ -417,7 +437,17 @@ class GraphHopperHelper
                 'setup_time' => $serviceDurationSeconds,
                 'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
                 'group' => $tempCategory,
+                'allowed_vehicles' => $allowedVehicles,
+                'time_windows' => [
+                    [
+                        'earliest' => $addressOpeningTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
+                        'latest' => $addressClosingTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
+                    ],
+                ],
             ];
+            if ($address->require_tail_lift) {
+                $thisService['required_skills'] = ['tail_lift'];
+            }
             $services[] = $thisService;
             if (!array_key_exists($address->client_id . '-' . $address->address_id, $addressDelTypes)) {
                 $addressDelTypes[$address->client_id . '-' . $address->address_id] = ['fresh' => false, 'frozen' => false];

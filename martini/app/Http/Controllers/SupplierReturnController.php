@@ -30,7 +30,7 @@ class SupplierReturnController extends Controller
         $supReturnQ = SupplierReturn::selectRaw("ANY_VALUE(id) AS `id`,ANY_VALUE(supplier_id) AS `supplier_id`, MAX(`updated_at`) AS `updated_at`")->groupBy("supplier_id")->orderBy("updated_at")->orderByDesc("id");
         if ($searchTerm!="")
         {
-            $supList = Supplier::where("name","LIKE","%$searchTerm%")->where('is_hidden',false)->pluck('id')->toArray();
+            $supList = Supplier::where("name","LIKE","%$searchTerm%")->pluck('id')->toArray();
 
         }
         else

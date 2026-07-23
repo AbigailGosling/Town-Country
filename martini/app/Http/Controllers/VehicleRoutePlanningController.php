@@ -57,22 +57,41 @@ class VehicleRoutePlanningController extends Controller
         }
 
         $vehicles = $vehiclesQuery->get();
+        $rigidCount = $vehicles->where('vehicle_type_id', 2)->count();
+        $articCount = $vehicles->where('vehicle_type_id', 3)->count();
+        $vanCount = $vehicles->where('vehicle_type_id', 4)->count();
+
         $vehicles->transform(function ($vehicle) {
             return [
                 'id' => $vehicle->id,
                 'reg' => $vehicle->reg,
+                'vehicleTypeId' => (int) $vehicle->vehicle_type_id,
                 'payloadKg' => $vehicle->planningPayloadForVehicle(),
                 'palletCapacity' => $vehicle->planningCapacityForVehicle(self::PLANNING_PALLET_COLUMNS),
             ];
         });
 
-        return response()->json(['vehicleOptions' => $vehicles]);
+        return response()->json([
+            'vehicleOptions' => $vehicles,
+            'vehicleTypeCounts' => [
+                'rigids' => $rigidCount,
+                'artics' => $articCount,
+                'vans' => $vanCount,
+            ],
+        ]);
     }
 
     public function multiVehiclePlan(Request $request): JsonResponse
     {
         $dueDate = Carbon::createFromFormat('Y-m-d', trim((string) $request->input('dueDate', now()->format('Y-m-d'))));
         $depotSite = Site::find((int) $request->input('depot', 0));
+        $maxRigidsInput = $request->input('maxRigids');
+        $maxArticsInput = $request->input('maxArtics');
+        $maxVansInput = $request->input('maxVans');
+        $maxRigids = is_numeric($maxRigidsInput) ? max(0, (int) $maxRigidsInput) : null;
+        $maxArtics = is_numeric($maxArticsInput) ? max(0, (int) $maxArticsInput) : null;
+        $maxVans = is_numeric($maxVansInput) ? max(0, (int) $maxVansInput) : null;
+
         if (!$depotSite || $depotSite->disabled) {
             return response()->json(['error' => 'Invalid depot site'], 400);
         }
@@ -89,7 +108,47 @@ class VehicleRoutePlanningController extends Controller
             ->whereNotNull('reg')
             ->where('reg', '<>', '')
             ->where('site_id', $depotSite->id);
-        $vehicles = $vehicleQuery->orderBy("reg")->get();
+        $vehicles = $vehicleQuery->orderBy("has_tail_lift")->orderBy("reg")->get();
+
+        if ($maxRigids !== null || $maxArtics !== null || $maxVans !== null) {
+            $rigidCount = 0;
+            $articCount = 0;
+            $vanCount = 0;
+
+            $vehicles = $vehicles->filter(function ($vehicle) use ($maxRigids, $maxArtics, $maxVans, &$rigidCount, &$articCount, &$vanCount) {
+                $vehicleTypeId = (int) ($vehicle->vehicle_type_id ?? 0);
+
+                if ($vehicleTypeId === 2) {
+                    if ($maxRigids !== null && $rigidCount >= $maxRigids) {
+                        return false;
+                    }
+
+                    $rigidCount++;
+                    return true;
+                }
+
+                if ($vehicleTypeId === 3) {
+                    if ($maxArtics !== null && $articCount >= $maxArtics) {
+                        return false;
+                    }
+
+                    $articCount++;
+                    return true;
+                }
+
+                if ($vehicleTypeId === 4) {
+                    if ($maxVans !== null && $vanCount >= $maxVans) {
+                        return false;
+                    }
+
+                    $vanCount++;
+                    return true;
+                }
+
+                return true;
+            })->values();
+        }
+
         if ($vehicles->isEmpty()) {
             return response()->json(['error' => 'No vehicles available for planning'], 422);
         }
@@ -116,10 +175,19 @@ class VehicleRoutePlanningController extends Controller
                 return $ca->client_id . '-' . $ca->address_id;
             });
 
+        $generifiedVehicleTypes = GraphHopperHelper::generifyVehicleTypes($vehicles, self::PLANNING_PALLET_COLUMNS);
+        $vrcVehicleTypes = [];
+        $depotLocation = [
+            'location_id' => 'depot',
+            'lat' => $depotSite->lat ?? 0,
+            'lon' => $depotSite->lon ?? 0,
+        ];
+        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,20);
+
         $skipped = [];
         $skippedAddresses = [];
         $addressDelTypes = [];
-        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $skipped, $skippedAddresses, $addressDelTypes);
+        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $dueDate, $vrpVehicles, $skipped, $skippedAddresses, $addressDelTypes);
         if (empty($services)) {
             Log::error('No services could be created from outgoing pallets', [
                 'dueDate' => $dueDate->format('Y-m-d'),
@@ -157,15 +225,6 @@ class VehicleRoutePlanningController extends Controller
                 $allGroups[] = $service['group'];
             }
         }
-
-        $generifiedVehicleTypes = GraphHopperHelper::generifyVehicleTypes($vehicles, self::PLANNING_PALLET_COLUMNS);
-        $vrcVehicleTypes = [];
-        $depotLocation = [
-            'location_id' => 'depot',
-            'lat' => $depotSite->lat ?? 0,
-            'lon' => $depotSite->lon ?? 0,
-        ];
-        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate);
 
         $locClusteringPayload = [
             'customers' => array_values($locClusterFinding),
@@ -243,9 +302,6 @@ class VehicleRoutePlanningController extends Controller
             ],
         ];
         $graphResponse = GraphHopperHelper::vrp($vrpPayload);
-        Log::debug('',
-            $graphResponse
-        );
         $overnights = 2;
         while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $depotSite->id == 1 && $overnights <= 5) {
             sleep(15);
@@ -286,6 +342,9 @@ class VehicleRoutePlanningController extends Controller
             'success' => true,
             'dryRun' => true,
             'dueDate' => $dueDate,
+            'maxRigids' => $maxRigids,
+            'maxArtics' => $maxArtics,
+            'maxVans' => $maxVans,
             'vehicleCount' => count($vrpVehicles),
             'serviceCount' => count($services),
             'skipped' => $skipped,

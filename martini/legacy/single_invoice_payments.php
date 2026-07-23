@@ -387,7 +387,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                 $('#amount').val(1);
                 $('#amountContainer').hide();
             </script>
-            <table width="75%" border="0">
+            <table border="0">
                 <tr style="border-bottom:1px solid #f1f1f1;" class="product-return-header">
                     <th align="left">Intake ID</th>
                     <th align="left">Pallet ID</th>
@@ -399,6 +399,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                     <th align="left"></th>
                 </tr>
                 <tr style="border-bottom:1px solid #f1f1f1;display:none;" class="product-custom-return-header">
+                    <th align="left">Product</th>
                     <th align="left">Description</th>
                     <th align="left">Quantity</th>
                     <th align="left"></th>
@@ -407,6 +408,16 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
 
                 $payment_id = $selectedPaymentData['id'];
 
+                $weight_ids = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `pickWeightOut` WHERE `pickersheet_id`=?",'i',[$invoiceID])->fetch_assoc()['weight_ids'];
+                $products = prepareExecuteQuery("SELECT `product`.*,COUNT(`weights`.`id`) as `weight_count` FROM `product` JOIN `weights` ON `product`.`id` = `weights`.`product_id` WHERE `weights`.id IN ($weight_ids) GROUP BY `product`.id")->fetch_all(MYSQLI_ASSOC);
+                $brandsIdsToFind = array_column($products, 'brand_id');
+                $brands = prepareExecuteQuery("SELECT * FROM `brands` WHERE `id` IN (".implode(',',$brandsIdsToFind).")")->fetch_all(MYSQLI_ASSOC);
+                $cutsToFind = array_column($products, 'cut_id');
+                $cuts = prepareExecuteQuery("SELECT * FROM `cuts` WHERE `id` IN (".implode(',',$cutsToFind).")")->fetch_all(MYSQLI_ASSOC);
+                $nationalitiesToFind = array_column($products, 'nationality_id');
+                $nationalities = prepareExecuteQuery("SELECT * FROM `nationality` WHERE `id` IN (".implode(',',$nationalitiesToFind).")")->fetch_all(MYSQLI_ASSOC);
+                $coolingsToFind = array_column($products, 'cooling_id');
+                $coolings = prepareExecuteQuery("SELECT * FROM `temperature` WHERE `id` IN (".implode(',',$coolingsToFind).")")->fetch_all(MYSQLI_ASSOC);
 
                 $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
@@ -433,6 +444,27 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                         </script>
 
                         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
+                            <td align="left">
+                                <select name="product_id[]" required>
+                                    <option value="0" disabled selected>Select a product</option>
+                                    <option value="0">N/A</option>
+                                    <?php
+                                        foreach($products as $product){
+                                            if(in_array($product['id'], $productIDs)) continue;
+                                            $brand = array_filter($brands, function($b) use ($product){ return $b['id'] == $product['brand_id']; });
+                                            $cut = array_filter($cuts, function($c) use ($product){ return $c['id'] == $product['cut_id']; });
+                                            $nationality = array_filter($nationalities, function($n) use ($product){ return $n['id'] == $product['nationality_id']; });
+                                            $cooling = array_filter($coolings, function($c) use ($product){ return $c['id'] == $product['cooling_id']; });
+                                            echo '<option value="' . $product['id'] . '"> P-' .
+                                            $product['pallet_id'] . ' ' .
+                                            $nationality[0]['name'] . ' ' .
+                                            $cooling[0]['temperature'] . ' ' .
+                                            getSpeciesFromCutID($cut[0]['id']) .
+                                            ' ' . $cut[0]['name'] . ' ' . $brand[0]['name'] . '</option>';
+                                        }
+                                    ?>
+                                </select>
+                            </td>
                             <td align="left">
                                 <input type="hidden" name="product_id[]" value="0">
                                 <input type="hidden" name="credit_id[]" value="<?php echo $creditNoteDetails['id']; ?>">
@@ -467,16 +499,16 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                         <span class=""><?php echo intakeIDfromPalletID($product['pallet_id']); ?></span>
                         <input type="hidden" name="product_id[]" value="<?php echo $product['id']; ?>">
                         <input type="hidden" name="credit_id[]" value="<?php echo $creditNoteDetails['id']; ?>">
-                    </td>
-                    <td align="left"><span class=""><?php echo $product['pallet_id']; ?></span></td>
-                    <td align="left">
+                        <span class=""><?php echo $product['pallet_id']; ?></span>
                         <span class=""><?php echo getNationality($product['nationality_id']); ?></span>
                         <span class=""><?php echo getTemp($product['cooling_id']); ?></span>
                         <b class=""><?php echo getSpeciesFromCutID($product['cut_id']); ?></b>
                         <b class=""><?php echo getCut($product['cut_id']); ?></b>
                         <b class=""><?php echo getBrand($product['brand_id']); ?></b>
                     </td>
-
+                    <td align="left">
+                        <input type="text" name="description[]" value="<?php echo $creditNoteDetails['description']; ?>" required>
+                    </td>
                     <?php
                         $productID = $product['id'];
                         $howManyX = "SELECT * FROM `pickerItems` WHERE pickersheet_id=? AND product_id=?";
@@ -509,11 +541,11 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
 
                         echo $unit;
                     ?>
-                </td>
-                <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
-                    <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
-                    <td>
-                     </td>
+                    </td>
+                    <td><?php echo weightFromProductIDArray([$product['id']]); ?> kg</td>
+                        <td align="left" class="">£<input type="text" name="price[]" style="outline:none;border:0;border-bottom:1px dashed black;width:100px;margin-left:10px;" value="<?php echo number_format((double)$creditNoteDetails['price'], 2, '.', ''); ?>"></td>
+                        <td>
+                    </td>
                 </tr>
                 <?php
                     }
