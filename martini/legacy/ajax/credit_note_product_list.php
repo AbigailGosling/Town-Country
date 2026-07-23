@@ -5,15 +5,27 @@
 
     # get all returned intakes related to this invoice
     $returnIntakeResult = prepareExecuteQuery("SELECT * FROM `intake` WHERE delivery_note_number=? AND returned = 1",'i',[$invoiceID]);
-
     $countReturnedIntakes = mysqli_num_rows($returnIntakeResult);
 
     if($countReturnedIntakes == 0){ # no returned intakes for this invoice
+        $weight_ids = prepareExecuteQuery("SELECT GROUP_CONCAT(`weight_ids`) as `weight_ids` FROM `pickWeightOut` WHERE `pickersheet_id`=?",'i',[$invoiceID])->fetch_assoc()['weight_ids'];
+        $products = prepareExecuteQuery("SELECT `product`.*,COUNT(`weights`.`id`) as `weight_count` FROM `product` JOIN `weights` ON `product`.`id` = `weights`.`product_id` WHERE `weights`.id IN ($weight_ids) GROUP BY `product`.id")->fetch_all(MYSQLI_ASSOC);
+        $brandsIdsToFind = array_column($products, 'brand_id');
+        $brands = prepareExecuteQuery("SELECT * FROM `brands` WHERE `id` IN (".implode(',',$brandsIdsToFind).")")->fetch_all(MYSQLI_ASSOC);
+        $cutsToFind = array_column($products, 'cut_id');
+        $cuts = prepareExecuteQuery("SELECT * FROM `cuts` WHERE `id` IN (".implode(',',$cutsToFind).")")->fetch_all(MYSQLI_ASSOC);
+        $nationalitiesToFind = array_column($products, 'nationality_id');
+        $nationalities = prepareExecuteQuery("SELECT * FROM `nationality` WHERE `id` IN (".implode(',',$nationalitiesToFind).")")->fetch_all(MYSQLI_ASSOC);
+        $coolingsToFind = array_column($products, 'cooling_id');
+        $coolings = prepareExecuteQuery("SELECT * FROM `temperature` WHERE `id` IN (".implode(',',$coolingsToFind).")")->fetch_all(MYSQLI_ASSOC);
+
+
     ?>
     <Br>
     <h2 style="font-size:22px;padding-bottom:10px;">Create Return</h2>
     <table width="75%" border="0">
         <tr style="border-bottom:1px solid #f1f1f1;">
+            <th align="left">Product</th>
             <th align="left">Description</th>
             <th align="left">Quantity</th>
             <th align="left"></th>
@@ -24,7 +36,26 @@
         ?>
         <tr class="<?php echo $rowClass; ?>" style="height:50px;border-bottom:1px solid #f1f1f1;">
             <td align="left">
-                <input type="hidden" name="product_id[]" value="0">
+                <select name="product_id[]" required>
+                    <option value="0" disabled selected>Select a product</option>
+                    <option value="0">N/A</option>
+                    <?php
+                        foreach($products as $product){
+                            $brand = array_filter($brands, function($b) use ($product){ return $b['id'] == $product['brand_id']; });
+                            $cut = array_filter($cuts, function($c) use ($product){ return $c['id'] == $product['cut_id']; });
+                            $nationality = array_filter($nationalities, function($n) use ($product){ return $n['id'] == $product['nationality_id']; });
+                            $cooling = array_filter($coolings, function($c) use ($product){ return $c['id'] == $product['cooling_id']; });
+                            echo '<option value="' . $product['id'] . '"> P-' .
+                            $product['pallet_id'] . ' ' .
+                            $nationality[0]['name'] . ' ' .
+                            $cooling[0]['temperature'] . ' ' .
+                            getSpeciesFromCutID($cut[0]['id']) .
+                            ' ' . $cut[0]['name'] . ' ' . $brand[0]['name'] . '</option>';
+                        }
+                    ?>
+                </select>
+            </td>
+            <td align="left">
                 <input type="text" name="description[]" required>
             </td>
 
@@ -291,5 +322,4 @@
     }
 ?>
 </table>
-
 <br/>

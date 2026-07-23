@@ -162,6 +162,20 @@ use Illuminate\Support\Facades\Auth;
     foreach (request()->input('address_id') as $index => $address_id)
 	{
         $ca = ClientAddress::where('client_id', request()->input('id'))->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
+        if (!$ca &&
+            (
+                request()->input('address_1')[$index] === null ||
+                request()->input('address_1')[$index] === "" ||
+                request()->input('address_1')[$index] === "''" ||
+                request()->input('address_1')[$index] === "\'\'" ||
+                request()->input('address_1')[$index] === "\\'\\'"
+            )
+        ) {
+            continue; // Skip addresses that don't exist and don't have an address_1 value
+        }
+        if (request()->input('site_id')[$index] == "" || request()->input('site_id')[$index] == null) {
+            continue; // Skip addresses without a site_id
+        }
         if (!$ca) {
             $ca = new ClientAddress();
             $ca->client_id = request()->input('id');
@@ -175,7 +189,13 @@ use Illuminate\Support\Facades\Auth;
         $ca->postcode = request()->input('postcode')[$index] ?? null;
         $ca->address_number = request()->input('address_number')[$index] ?? null;
         $ca->site_id = request()->input('address_site_id')[$index] ?? null;
-        $ca->restrictions = request()->input('restrictions')[$index] ?? null;
+        //$ca->restrictions = request()->input('restrictions')[$index] ?? null;
+        $ca->allowed_vehicle_types = request()->input('address_allowed_vehicle_types')[$index] ?? '';
+        $ca->require_tail_lift = request()->has('address_require_tail_lift'.$address_id);
+        $ca->opening_time = request()->input('opening_time')[$index] ?? null;
+        $ca->closing_time = request()->input('closing_time')[$index] ?? null;
+        $ca->open_bank_holiday_mondays = request()->has('address_bhm'.$address_id);
+        $ca->open_bank_holiday_fridays = request()->has('address_bhf'.$address_id);
         $ca->geocoding_tried = 0;
         $ca->lat = null;
         $ca->lon = null;

@@ -78,7 +78,7 @@ class VehicleController extends Controller
         $validated['max_pallet_rows'] = isset($validated['max_pallet_rows'])
             ? (int) $validated['max_pallet_rows']
             : 5;
-
+        $validated['has_tail_lift'] = $request->has('has_tail_lift');
         $vehicle = Vehicle::create($validated);
 
         return redirect(route('vehicles.edit', ['vehicle' => $vehicle->id]))
@@ -116,6 +116,7 @@ class VehicleController extends Controller
 
         $vehicle->fill($validated);
         $vehicle->disabled = $request->has('disabled');
+        $vehicle->has_tail_lift = $request->has('has_tail_lift');
         $vehicle->save();
 
         return redirect(route('vehicles.index'))

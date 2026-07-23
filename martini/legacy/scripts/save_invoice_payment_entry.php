@@ -16,10 +16,10 @@
     }
 
     $currentUser = $_SESSION['USER'];
+    $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
+    $y = prepareExecuteQuery($x,'i',[$customerID]);
 
     if(empty($paymentID)){
-        $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
-	    $y = prepareExecuteQuery($x,'i',[$customerID]);
         if($paymentMethod == 'CREDIT_NOTE'){
             $amount = 0;
         }
@@ -36,7 +36,7 @@
                 $quantity = request()->input('quantity')[$i];
                 $description = request()->input('description')[$i];
 
-                $y = prepareExecuteQuery("INSERT into `credit_note_items` (payment_id,product_id,quantity,price,`description`) VALUES (?,?,?,?,?)"
+                $y = prepareExecuteQuery("INSERT into `credit_note_items` (`payment_id`,`product_id`,`quantity`,`price`,`description`) VALUES (?,?,?,?,?)"
             ,'issss',[$id,$product_id,$quantity,$price,$description]);
 
                 $i++;
@@ -44,8 +44,6 @@
         }
 
     }else{
-        $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
-	    $y = prepareExecuteQuery($x,'i',[$customerID]);
 
         $x = "UPDATE `invoice_payments` SET amount=?, payment_method=?, meta_data=? WHERE id =?";
 	    $y = prepareExecuteQuery($x,'sssi',[$amount,$paymentMethod,$metaData,$paymentID]);

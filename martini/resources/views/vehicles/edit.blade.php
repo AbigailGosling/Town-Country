@@ -94,11 +94,17 @@
                                   :value="old('max_pallet_rows', $vehicle->max_pallet_rows ?? 5)"/>
                     <x-input-error :messages="$errors->get('max_pallet_rows')" class="mt-2"/>
                 </div>
+                <div class="mt-4" for="has_tail_lift" style="display: flex; padding-bottom: 1em;">
+                    <input type="checkbox" id="has_tail_lift" name="has_tail_lift"
+                    @if ($vehicle->has_tail_lift) checked @endif />
+                    <div style="width: 1em;"></div>
+                    <x-input-label for="has_tail_lift" value="Has Tail Lift?"/>
+                </div>
                 <div class="mt-4" for="disabled" style="display: flex; padding-bottom: 1em;">
                     <input type="checkbox" id="disabled" name="disabled"
                     @if ($vehicle->disabled) checked @endif />
                     <div style="width: 1em;"></div>
-                    <x-input-label for="disabled" value="Disabled"/>
+                    <x-input-label for="disabled" value="Disabled?"/>
                 </div>
             </x-form-section>
 

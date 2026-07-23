@@ -55,6 +55,11 @@ use App\Models\User;
 	</div>
 
 	<div class="row">
+        <div id="invoice_search_container" name="invoice_search_container" class="col">
+			<label>Invoice (Leave blank if not applicable)</label><br/>
+			<input class="form-control" type="text" id="invoice" class="inputbox">
+			<div id="invoice_search_results" style="position:relative;z-index:99999;"></div>
+		</div>
 		<div class="col">
 			<label>Salesperson</label><br />
             <?php if($user['allow_override_salesman'] == 0){ ?>
@@ -73,11 +78,6 @@ use App\Models\User;
 				?>
 			</select>
             <?php } ?>
-		</div>
-		<div id="invoice_search_container" name="invoice_search_container" class="col" style="display:none;">
-			<label>Invoice</label><br/>
-			<input class="form-control" type="text" id="invoice" class="inputbox">
-			<div id="invoice_search_results" style="position:relative;z-index:99999;"></div>
 		</div>
 	</div>
 	<div class="row custom-warning-box" id="warning" style="width: 100%; display: none; padding-top:0px; padding-bottom:0px;  padding: left right 15px;"></div>

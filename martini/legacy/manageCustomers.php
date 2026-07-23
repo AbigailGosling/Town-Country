@@ -4,6 +4,7 @@ use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\VehicleType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 		$showDisabled = request()->input('showDisabled');
 	}
     $sites = Site::all();
+    $vehicleTypes = VehicleType::whereIn('id',[2,3,4])->get();
 ?>
 <!doctype html>
 <html class="int">
@@ -139,6 +141,7 @@ use Illuminate\Support\Facades\Log;
                             $u = 0;
                         }
                         $u = $ca->address_id ?? $u + 1;
+                        $caAllowedVehicleTypes = explode(',', $ca->allowed_vehicle_types ?? '');
 				?>
 				<tr style="vertical-align: top;">
 					<td class="label"><label>Delivery Address <?php echo $u; ?></label></td>
@@ -161,9 +164,35 @@ use Illuminate\Support\Facades\Log;
 					<td class="label"><label>Delivery Contact No.</label></td>
 					<td><input type="text" class="input" name="address_number[]" value="<?php echo $ca->address_number; ?>"></td>
 				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>require_tail_lift" style="<?php echo $style1; ?>">
+					<td class="label"><label>Require Tail Lift</label></td>
+					<td><input type="checkbox" name="address_require_tail_lift<?php echo $u; ?>" <?php echo ($ca->require_tail_lift ?? 0 == 1)?"checked":""; ?>></td>
+				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>containerRestrictions" style="<?php echo $style1; ?>">
-					<td class="label"><label>Restrictions</label></td>
-					<td><input type="text" class="input" name="restrictions[]" value="<?php echo $ca->restrictions; ?>"></td>
+					<td class="label"><label>Open Times</label></td>
+					<td><input type="time" class="input" name="opening_time[]" step="600" value="<?php echo $ca->opening_time?->format('H:i'); ?>"> to <input type="time" class="input" step="600" name="closing_time[]" value="<?php echo $ca->closing_time?->format('H:i'); ?>"></td>
+				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>bhm" style="<?php echo $style1; ?>">
+					<td class="label"><label>Open on Bank holiday Monday?</label></td>
+					<td><input type="checkbox" name="address_bhm<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_monday ?? 0 == 1)?"checked":""; ?>></td>
+				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>bhf" style="<?php echo $style1; ?>">
+					<td class="label"><label>Open on Bank holiday Friday?</label></td>
+					<td><input type="checkbox" name="address_bhf<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_friday ?? 0 == 1)?"checked":""; ?>></td>
+				</tr>
+                <tr id="address<?php echo $ca->address_id ?? $u; ?>allowed_vehicle_types" style="<?php echo $style1; ?>">
+					<td class="label"><label>Allowed Vehicle Types</label></td>
+					<td>
+                        <select class="input" name="address_allowed_vehicle_types[]">
+                            <option disabled selected value="">-- Please Select --</option>
+                            <option value="" <?php if(empty($caAllowedVehicleTypes)){ echo 'selected'; } ?>>None</option>
+                            <?php foreach ($vehicleTypes as $vehicleType){ ?>
+                                <option value="<?php echo $vehicleType->id; ?>" <?php if(in_array($vehicleType->id, $caAllowedVehicleTypes)){ echo 'selected'; } ?>><?php echo ($vehicleType->name == "TRACTOR UNIT") ? "ARTIC" : $vehicleType->name; ?></option>
+                            <?php } ?>
+                            <option value="2,3" <?php if(in_array(2, $caAllowedVehicleTypes) && in_array(3, $caAllowedVehicleTypes)){ echo 'selected'; } ?>>ARTIC and RIGID</option>
+                            <option value="2,3,4" <?php if(in_array(2, $caAllowedVehicleTypes) && in_array(3, $caAllowedVehicleTypes) && in_array(4, $caAllowedVehicleTypes)){ echo 'selected'; } ?>>All</option>
+                        </select>
+                    </td>
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>site_id" style="<?php echo $style1; ?>">
 					<td class="label"><label>Served By</label></td>
