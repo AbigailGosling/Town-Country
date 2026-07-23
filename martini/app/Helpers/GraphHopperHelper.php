@@ -46,6 +46,7 @@ class GraphHopperHelper
                 ->timeout((int) config('services.graphhopper.timeout', 20))
                 ->retry(2, 250)
                 ->get(self::baseUrl() . $endpoint, $query);
+            sleep(1);
 
             if (!$response->successful()) {
                 Log::warning('GraphHopper request failed', [
@@ -349,6 +350,7 @@ class GraphHopperHelper
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
                 continue;
             }
+            if ($address->collection) continue;
             if ($address->site_id !== $site_id) {
                 continue;
             }

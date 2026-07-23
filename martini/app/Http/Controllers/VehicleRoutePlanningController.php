@@ -247,7 +247,8 @@ class VehicleRoutePlanningController extends Controller
             $graphResponse
         );
         $overnights = 2;
-        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0) {
+        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $depotSite->id == 1 && $overnights <= 5) {
+            sleep(15);
             $vrcVehicleTypes = [];
             $overnights++;
             $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,$overnights);

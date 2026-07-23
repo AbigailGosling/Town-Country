@@ -40,9 +40,9 @@ use InternalScripts\SLabsEmailerStatus;
                 $resProdIDs = explode(",",mysqli_fetch_assoc($resResult)['ids']);
             }
         }
+        $customerIDs = array_filter(array_unique($customerIDs));
 
         $x = "SELECT * FROM `reservation` WHERE (id = ? || id LIKE ?";
-
         if(count($customerIDs) > 0){
             $customerIDs = implode(',', $customerIDs);
             if ($customerIDs != "")$x .= " || customer_id IN ($customerIDs)";

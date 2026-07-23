@@ -155,7 +155,7 @@ use Illuminate\Support\Facades\Auth;
 
     <?php
         if(request()->input('src') == 'sales'){
-            $previousSales = PickerSheet::where('customer_id', $customer_id)->orderBy('date', 'desc')->limit(14)->get();
+            $previousSales = PickerSheet::where([['customer_id', $customer_id],['is_return_to_supplier',0],['isSupplemental',0],['isSupplementalCredit',0]])->orderBy('date', 'desc')->limit(14)->get();
             ?>
             setTimeout(function() {
             var html = '<label>Previous Sales</label>';

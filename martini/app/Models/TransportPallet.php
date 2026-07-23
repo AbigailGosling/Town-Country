@@ -55,10 +55,10 @@ class TransportPallet extends Model
         $total = 0;
         foreach ($this->pickWeightOuts as $link) {
            $pickWeightOut = $link->pickWeightOut;
-            if (count($pickWeightOut->getWeights()) == 0)
+            if ($pickWeightOut == null || count($pickWeightOut->getWeights()) == 0)
             {
                 $link->delete();
-                $pickWeightOut->delete();
+                if ($pickWeightOut != null)$pickWeightOut->delete();
                 continue;
             }
             $total += $pickWeightOut->getTotalWeight();
@@ -71,10 +71,10 @@ class TransportPallet extends Model
         if ($this->_temperatureCategoryCache == '') {
             foreach ($this->pickWeightOuts as $link) {
                 $pickWeightOut = $link->pickWeightOut;
-                if (count($pickWeightOut->getWeights()) == 0)
+                if ($pickWeightOut == null || count($pickWeightOut->getWeights()) == 0)
                 {
                     $link->delete();
-                    $pickWeightOut->delete();
+                    if ($pickWeightOut != null)$pickWeightOut->delete();
                     continue;
                 }
                 if ($this->_temperatureCategoryCache == '')

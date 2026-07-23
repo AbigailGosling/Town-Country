@@ -1159,18 +1159,6 @@ function cancelSale()
 		$('.weights' + pallet_id + species_id + cut_id).toggle();
 	}
 
-	$('#submitCustomerAccount').click(function(){
-		$.ajax({
-			type: 'POST',
-			url: '/scripts/addCustomer.php',
-			data: $('#createCustomerForm').serialize(),
-			success: function () {
-				$('#createCustomerForm')[0].reset();
-				alert('Customer Added - please refresh to see changes!');
-			}
-		});
-	});
-
 	$('#customer').keyup(function(){
 		var val = $('#customer').val();
 		$('#customer_search_results').fadeIn();
