@@ -1,5 +1,6 @@
 <x-app-layout :hideLink="true">
     @php
+    $export = [];
     if (!isset($detailedView)) $detailedView = false;
         $currencyColumns = ['Total'];
         $formatCurrency = static function (float $value): string {
@@ -13,7 +14,7 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Insurance Exposure Report
+            Overdue Credit Terms Report
         </h2>
     </x-slot>
 
@@ -70,38 +71,82 @@
             </x-slot:headers>
             <slot>
                 @foreach ($data as $item)
+                    @php
+                      $row = [
+                        "Name"=>$item->customer->businessname,
+                        "Contact"=>$item->customer->accounts_contact." ".$item->customer->tel_number,
+                    ];
+                    @endphp
                     <tr>
                         <x-data-table-column>{{$item->customer->businessname}}</x-data-table-column>
                         <x-data-table-column>{{$item->customer->accounts_contact}}<br/>{{$item->customer->tel_number}}</x-data-table-column>
                         @if ($detailedView)
+                        @php
+                            $invoiceDB = [];
+                        @endphp
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->at as $invoice)
+                                    @php
+                                    $invoiceDB[]="{$invoice->id} - {$invoice->date} - {$formatCurrency($invoice->outstanding)}";
+                                    @endphp
                                     <li>{{ $invoice->id }} - {{ $invoice->date }} - {{ $formatCurrency($invoice->outstanding) }}</li>
                                 @endforeach
                             </ul>
                         </x-data-table-column>
                         <x-data-table-column :align="'center'">{{ ($item->at_total_outstanding > 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
+                        @php
+                            $row["Approaching Terms"] = implode(",",$invoiceDB);
+                            $row["Approaching Terms Subtotal"] = $formatCurrency($item->at_total_outstanding);
+                        @endphp
                         @endif
                         @if ($detailedView)
+                        @php
+                            $invoiceDB = [];
+                        @endphp
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->ot as $invoice)
+                                    @php
+                                        $invoiceDB[]="{$invoice->id} - {$invoice->date} - {$formatCurrency($invoice->outstanding)}";
+                                    @endphp
                                     <li class="text-amber-600">{{ $invoice->id }} - {{ $invoice->date }} - {{ $formatCurrency($invoice->outstanding) }}</li>
                                 @endforeach
                             </ul>
                         </x-data-table-column>
+                        @php
+                            $row["Over Terms"] = implode(",",$invoiceDB);
+                        @endphp
                         @endif
+                        @php
+                            if ($detailedView)$row["Over Terms Subtotal"] = $formatCurrency($item->ot_total_outstanding);
+                            else $row["28 - 35 Subtotal"] = $formatCurrency($item->ot_total_outstanding);
+                        @endphp
                         <x-data-table-column :align="'center'"><span class="text-amber-600">{{ ($item->ot_total_outstanding > 0) ? $formatCurrency($item->ot_total_outstanding) : '' }}</span></x-data-table-column>
                         @if ($detailedView)
+                        @php
+                            $invoiceDB = [];
+                        @endphp
                         <x-data-table-column>
                             <ul class="list-disc pl-5">
                                 @foreach ($item->gt as $invoice)
+                                    @php
+                                        $invoiceDB[]="{$invoice->id} - {$invoice->date} - {$formatCurrency($invoice->outstanding)}";
+                                    @endphp
                                     <li class="text-red-600">{{ $invoice->id }} - {{ $invoice->date }} - {{ $formatCurrency($invoice->outstanding) }}</li>
                                 @endforeach
                             </ul>
                         </x-data-table-column>
+                        @php
+                            $row["Over Grace"] = implode(",",$invoiceDB);
+                        @endphp
                         @endif
+                        @php
+                            if ($detailedView)$row["Over Grace Subtotal"] = $formatCurrency($item->gt_total_outstanding);
+                            else $row["Over 35 Subtotal"] = $formatCurrency($item->gt_total_outstanding);
+                            $row["Total"] = $formatCurrency($item->total_outstanding);
+                            $export[]=$row;
+                        @endphp
                         <x-data-table-column :align="'center'"><span class="text-red-600">{{ ($item->gt_total_outstanding > 0) ? $formatCurrency($item->gt_total_outstanding) : '' }}</span></x-data-table-column>
                         <x-data-table-column :align="'center'"><span>{{ ($item->total_outstanding > 0) ? $formatCurrency($item->total_outstanding) : '' }}</span></x-data-table-column>
                     </tr>
@@ -135,7 +180,7 @@ use Carbon\Carbon;
     {
         filename = 'insured_credit_report_{{ Carbon::now()->format('Y_m_d_His') }}.xlsx';
         wb = XLSX.utils.book_new();
-        data = {!! json_encode($data) !!};
+        data = {!! json_encode($export) !!};
         ws = XLSX.utils.json_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, "1");
         XLSX.writeFile(wb, filename);

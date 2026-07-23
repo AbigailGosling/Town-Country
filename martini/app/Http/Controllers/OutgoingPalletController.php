@@ -250,7 +250,9 @@ class OutgoingPalletController extends Controller
     public function deletePallet(int $id): JsonResponse
     {
         $pallet = TransportPallet::findOrFail($id);
+        if ($pallet->dispatched != 0 && $pallet->pod_sent != 0) return response()->json(['message' => 'Could not delete']);
         TransportPalletPickWeight::where('transport_pallet_id', $pallet->id)->delete();
+        VehicleTransportPalletAllocation::where('transport_pallet_id', $pallet->id)->delete();
         $pallet->delete();
 
         return response()->json(['message' => 'Outgoing pallet deleted successfully']);

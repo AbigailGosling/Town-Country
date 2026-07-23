@@ -81,6 +81,7 @@ if ($user->hasPermission("approve_intake") && $intake->approved == false && Inte
     $intake->save();
     $command_key = 'approve_intake_' . Str::uuid();
     InternalCache::put($command_key, $intake->id, 3600);
+    InternalCache::put($transaction_id, getmypid(), 60);
     ProcessHelper::runInBackground('run:approve_intake '.$command_key);
     sleep(1);
 }

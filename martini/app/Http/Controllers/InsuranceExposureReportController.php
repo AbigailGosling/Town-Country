@@ -132,44 +132,35 @@ class InsuranceExposureReportController extends Controller
             if (!property_exists($picksheet, 'id')) {
                 continue;
             }
-            $picksheet->credited = $picksheet->credit = (double) round($this->totalValueCreditedOnInvoiceID($creditPayments[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
-            $picksheet->price = (double) round($this->invoiceTotal($picksheet->id,$pickerItems[$picksheet->id]??[],$pickWeightOuts[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
-
             $picksheet->date = str_replace('/', '-', $picksheet->estimated_delivery_date);
             $picksheet->datetime = strtotime($picksheet->date);
             $picksheet->date = date('d/m/Y', $picksheet->datetime);
 
-            $picksheet->paid = (double) round($picksheet->paid,2,PHP_ROUND_HALF_DOWN) + $picksheet->credit;
-            $picksheet->invoicePaid = false;
-            $epsilon = 0.00001;
+            $due_threshold = Carbon::createFromFormat('d/m/Y', $picksheet->date);
+            if ($customer->due_warning != "")$due_threshold = $due_threshold->addDays(min(abs($customer->due_warning),21));
+            $due_threshold = $due_threshold->getTimestamp();
+            if ($now <= $due_threshold) continue;
+            $picksheet->due_threshold_passed = true;
 
-            if(($picksheet->price - $picksheet->paid) <= $epsilon)
-            {
-                continue;
-            }
+            $picksheet->credited = $picksheet->credit = (double) round($this->totalValueCreditedOnInvoiceID($creditPayments[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
+            $picksheet->price = (double) round($this->invoiceTotal($picksheet->id,$pickerItems[$picksheet->id]??[],$pickWeightOuts[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
+
+            $picksheet->paid = (double) round($picksheet->paid,2,PHP_ROUND_HALF_DOWN) + $picksheet->credited;
+            $picksheet->invoicePaid = false;
 
             $picksheet->outstanding = round((double) $picksheet->price - $picksheet->paid,2,PHP_ROUND_HALF_DOWN);
-            if ($picksheet->outstanding > -0.02 && $picksheet->outstanding < 0.02) continue;
+            if ($picksheet->outstanding >- -0.02 && $picksheet->outstanding <= 0.02) continue;
 
             $picksheet->creditNotes = $this->getInvoiceCreditNotes($picksheet->id,$creditPayments[$picksheet->id]??[]);
             $picksheet->hasCreditNote = (count($picksheet->creditNotes)>0);
 
-            $due_threshold = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->due_warning != "")$due_threshold = $due_threshold->addDays(abs(min($customer->due_warning,21)));
-            $due_threshold = $due_threshold->getTimestamp();
-            if ($now <= $due_threshold)
-            {
-                continue;
-            }
-            $picksheet->due_threshold_passed = true;
-
             $credit_terms = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->credit_terms != "")$credit_terms = $credit_terms->addDays(abs(min($customer->credit_terms,28)));
+            if ($customer->credit_terms != "")$credit_terms = $credit_terms->addDays(min(abs($customer->credit_terms),28));
             $credit_terms = $credit_terms->getTimestamp();
             $picksheet->terms_passed = ($now > $credit_terms);
 
             $credit_grace = Carbon::createFromFormat('d/m/Y', $picksheet->date);
-            if ($customer->credit_grace != "")$credit_grace = $credit_grace->addDays(abs(min($customer->credit_grace,35)));
+            if ($customer->credit_grace != "")$credit_grace = $credit_grace->addDays(min(abs($customer->credit_grace),35));
             $credit_grace = $credit_grace->getTimestamp();
             $picksheet->grace_passed = ($now > $credit_grace);
 

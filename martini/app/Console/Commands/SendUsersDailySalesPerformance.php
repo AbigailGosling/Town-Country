@@ -54,6 +54,7 @@ class SendUsersDailySalesPerformance extends Command
         $salesPermission = Permission::find(1);
         $targetDateEnd = Carbon::now()->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
         $targetDateStart = $targetDateEnd->copy()->subDay();
+        if ($targetDateStart->dayOfWeek == 1) $targetDateStart->subDays(2);
         $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::MONDAY);
         $diffInWeek = $targetDateEnd->diffInDays($weekDateStart, true);
         $usersSorted = [];
@@ -170,9 +171,6 @@ class SendUsersDailySalesPerformance extends Command
     private function buildEmailBody(float $saleTarget, Carbon $targetDateEnd, string $targetLabel, array $targetSummary, int $diffInWeek): string
     {
         $dailyTarget = $saleTarget / 5;
-        if ($targetDateEnd->dayOfWeek === Carbon::SUNDAY || $targetDateEnd->dayOfWeek === Carbon::SATURDAY) {
-            $dailyTarget = 0;
-        }
         $balance = $targetSummary['daily']['Actual Profit'] - $dailyTarget;
         $isNegative = $balance < 0;
         $absBalance = abs($balance);

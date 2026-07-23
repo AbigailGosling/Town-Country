@@ -443,7 +443,7 @@ use App\Models\ClientType;
 		$overriderStart = DateTime::createFromFormat('Y/m/d H:i:s',prepareExecuteQuery("SELECT * FROM `tandc_live`.`system_settings` WHERE `key_name` = 'OVERRIDER_START_DATE'")->fetch_assoc()['key_value'])->getTimestamp();
 		if ($customerRow['markup_enabled'] == 1 && $product['pallet_id'] != -1 && $date->getTimestamp() > $overriderStart) {
 			$now = time();
-			$mark = number_format(applyCustomerMarkup($customerRow['id'],$totalPrice),2);
+			$mark = number_format(applyCustomerMarkup($customerRow['id'],$totalPrice??0),2);
 			$overdue = new DateTime();
 			$overdue->setTimestamp($date->getTimestamp());
 			$overdue->modify("+ ".$customerRow['grace_period']." day");
