@@ -1450,37 +1450,20 @@ use App\Models\User;
 
 
 	function getPalletsOnThisIntake2($intake_id){
-		global $mysqli;
 
-		$xKez = "SELECT id FROM `pallet` WHERE intake_id=?";
-		$yKez = prepareExecuteQuery($xKez,'i',[$intake_id]);
+		$palletsOnIntake = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS ids FROM `pallet` WHERE `intake_id`= ?",'i',[$intake_id])->fetch_assoc()['ids'];
+        $palletsOnIntake = explode(",",$palletsOnIntake);
+        $ids = array();
+		if (count($palletsOnIntake) > 0){
+            $prodsFromPallets = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS ids FROM `product` WHERE `pallet_id` IN (".implode(",",$palletsOnIntake).")");
+            $prodsFromPallets = explode(",",$prodsFromPallets->fetch_assoc()['ids']);
+            if (count($prodsFromPallets) > 0){
+			    return prepareExecuteQuery("SELECT * FROM `pallet` WHERE id IN (".implode(",",$palletsOnIntake).")");
+            }
 
-		$counter = $yKez->num_rows;
-
-		if($counter > 0){
-			$ids = array();
-
-
-			while($allPallets = $yKez->fetch_assoc()){
-				$palletid = $allPallets['id'];
-
-				$x1Kez = "SELECT id FROM product WHERE pallet_id=?";
-				$y1Kez = prepareExecuteQuery($x1Kez,'i',[$palletid]);
-
-				$count = $y1Kez->num_rows;
-
-				if($count > 0){
-					$ids []= $palletid;
-				}
-
-			}
-
-			$x2Kez = "SELECT * FROM `pallet` WHERE id IN (".implode(",",array_fill(0,count($ids),"?")).")";
-			$y2Kez = prepareExecuteQuery($x2Kez,str_repeat("i",count($ids)),$ids);
-		}else{
-			$y2Kez = prepareExecuteQuery("SELECT * FROM `pallet` WHERE id <> id");
 		}
-		return $y2Kez;
+        return prepareExecuteQuery("SELECT * FROM `pallet` WHERE id <> id");
+
 	}
 
 
