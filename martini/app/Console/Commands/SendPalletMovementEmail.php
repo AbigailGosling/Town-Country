@@ -53,7 +53,6 @@ class SendPalletMovementEmail extends Command
             "gemma@townandcountrymeats.co.uk",
             "office@townandcountrymeats.co.uk",
             "ross.whetton@townandcountrymeats.co.uk",
-            "abigail.gosling@tang.solutions"
             ];
         SLabsEmailer::send_email(-1,"ColdStoreMovements",$u,"Pallet Movement Report",$output);
         return Command::SUCCESS;

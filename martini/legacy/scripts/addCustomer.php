@@ -153,7 +153,7 @@ use App\Models\ClientType;
 
 	foreach (request()->input('address_id') as $index => $address_id)
 	{
-        if (request()->input('site_id')[$index] == "" || request()->input('site_id')[$index] == null) {
+        if (request()->input('address_site_id')[$index] == "" || request()->input('address_site_id')[$index] == null) {
             continue; // Skip addresses without a site_id
         }
         $ca = new ClientAddress();
@@ -166,7 +166,7 @@ use App\Models\ClientType;
         $ca->address_4 = request()->input('address_4')[$index] ?? null;
         $ca->postcode = request()->input('postcode')[$index] ?? null;
         $ca->address_number = request()->input('address_number')[$index] ?? null;
-        $ca->site_id = request()->input('site_id')[$index];
+        $ca->site_id = request()->input('address_site_id')[$index];
         //$ca->restrictions = request()->input('restrictions')[$index] ?? null;
         $ca->allowed_vehicle_types = request()->input('address_allowed_vehicle_types')[$index] ?? '';
         $ca->require_tail_lift = request()->has('address_require_tail_lift'.$address_id);

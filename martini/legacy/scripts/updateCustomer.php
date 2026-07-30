@@ -6,6 +6,7 @@ use App\Models\ClientType;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 	require(__DIR__.'/../functions.php');
  $c = Customer::find(request()->input('id'));
@@ -173,7 +174,7 @@ use Illuminate\Support\Facades\Auth;
         ) {
             continue; // Skip addresses that don't exist and don't have an address_1 value
         }
-        if (request()->input('site_id')[$index] == "" || request()->input('site_id')[$index] == null) {
+        if (request()->input('address_site_id')[$index] == "" || request()->input('address_site_id')[$index] == null) {
             continue; // Skip addresses without a site_id
         }
         if (!$ca) {

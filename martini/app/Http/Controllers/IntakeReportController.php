@@ -24,6 +24,9 @@ use App\Models\Weight;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 
 class IntakeReportController extends Controller
@@ -141,12 +144,15 @@ class IntakeReportController extends Controller
 
     private function getViewData(Request $request): array
     {
-        return [
+        $x = [
             "intake_id_from" => $request->input("intake_id_from", $request->input("intake_id")),
             "intake_id_to" => $request->input("intake_id_to", $request->input("intake_id")),
             "date_from" => $request->input("date_from"),
             "date_to" => $request->input("date_to"),
         ];
+        if (filled($x["intake_id_from"]) && !filled($x["intake_id_to"])) $x["intake_id_to"] = $x["intake_id_from"];
+        if (filled($x["date_from"]) && !filled($x["date_to"])) $x["date_from"] = $x["date_to"];
+        return $x;
     }
 
     private function hasFilters(array $viewData): bool
@@ -281,9 +287,9 @@ class IntakeReportController extends Controller
             ->get();
         $creditNotes = CreditNoteItem::whereIn("payment_id", $credits->pluck("id")->all())->get();
 
-        $returnProducts = Product::where("original_intake_id", $intake->id)
-            ->orWhereIn("original_pallet_id", $pallets->pluck("id")->all())
-            ->orWhereIn("id", $creditNotes->pluck("product_id")->all())
+        $returnProducts = Product::where("original_intake_id", (string)$intake->id)
+            ->orWhereIn("original_pallet_id", array_map('strval', $pallets->pluck("id")->toArray()))
+            ->orWhereIn("id", $creditNotes->pluck("product_id")->toArray())
             ->get();
         $returnProductIds = $returnProducts->pluck("id")->all();
         $returnWeights = Weight::whereIn("product_id", $returnProductIds)->get();
