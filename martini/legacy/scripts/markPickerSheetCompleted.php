@@ -2,6 +2,7 @@
 
 use App\Helpers\InternalCache;
 use App\Helpers\ProcessHelper;
+use App\Models\PickerSheet;
 
 	require(__DIR__.'/../functions.php');
 	$id = request()->input('id');
@@ -23,6 +24,15 @@ use App\Helpers\ProcessHelper;
     ?>
         <script>
             window.location = '../viewPickSheet.php?id=<?php echo $pickersheet_id; ?>&type=<?php echo request()->input('type'); ?>';
+        </script>
+    <?php
+        exit();
+    }
+    $pickSheet = PickerSheet::find($pickersheet_id);
+    if ($pickSheet == null || $pickSheet->deleted == 1 || $pickSheet->customer_id == null || $pickSheet->addressid == null || $pickSheet->completed == 1) {
+    ?>
+        <script>
+            window.location = '../pickSheetList.php';
         </script>
     <?php
         exit();
