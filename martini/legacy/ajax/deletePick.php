@@ -9,6 +9,8 @@
 
             $delid = request()->input('id');
 
+            $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
+
             $customerResult = prepareExecuteQuery("SELECT `customer_id` FROM `pickerSheets` WHERE `id` = $delid");
             $customerID = mysqli_fetch_array($customerResult)['customer_id'];
 
@@ -33,7 +35,6 @@
             $pathToFile = 'PDF';
             PDFRenderer::generatePDFfromWeb('viewSalesRetraction.php?id='.request()->input('id'),$pathToFile,$fileName);
             SLabsEmailer::send_email($customerID,SLabsEmailerType::Retraction,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
-            $picksheetResult = prepareExecuteQuery("UPDATE `pickerSheets` SET deleted=1, deleted_by_user_id=$userid WHERE id='$delid'");
 
             $pickerItemsResult = prepareExecuteQuery("UPDATE `pickerItems` SET deleted=1 WHERE pickersheet_id='$delid'");
 

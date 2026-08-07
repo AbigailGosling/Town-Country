@@ -54,6 +54,14 @@ use Carbon\Carbon;
         exit();
     }
     $pickSheet = PickerSheet::find($pickersheet_id);
+    if ($pickSheet == null || $pickSheet->deleted == 1 || $pickSheet->customer_id == null || $pickSheet->addressid == null || $pickSheet->completed == 1) {
+    ?>
+        <script>
+            window.location = '../pickSheetList.php';
+        </script>
+    <?php
+        exit();
+    }
     if ($outgoingPalletID == -1 || $outgoingPalletID == null || $outgoingPalletID == '#') {
         $op = TransportPallet::create([
             'transport_pallet_type_id' => 1,
