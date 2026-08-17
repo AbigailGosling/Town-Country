@@ -69,9 +69,11 @@ class SupplierReturnController extends Controller
     {
         $supplierL = $this->processSupplier($supplier);
         $output = new stdClass();
-        $output->outstanding = FuncHelper::floorDec($supplierL->sum("outstanding"));
-        $output->value = FuncHelper::floorDec($supplierL->sum("value"));
-        $output->paid = FuncHelper::floorDec($supplierL->sum("paid"));
+
+        $output->outstanding = FuncHelper::floorDec($supplierL->sum("outstanding"),2);
+        if (abs($output->outstanding) < 0.02) $output->outstanding = 0;
+        $output->value = FuncHelper::floorDec($supplierL->sum("value"),2);
+        $output->paid = FuncHelper::floorDec($supplierL->sum("paid"),2);
         $output->trans= $supplierL->count();
         $output->supplier=$supplier;
         $output->items=$supplierL;
@@ -104,6 +106,7 @@ class SupplierReturnController extends Controller
                     {
                         $tear += FuncHelper::floorDec($weight->weight_tear,3);
                     }
+                    $tear = FuncHelper::floorDec($tear,3);
                     $itemCost = FuncHelper::floorDec(($returnProduct->price ?? $returnProduct->cost) * $tear,3);
                 }
                 $line->value += $itemCost;
@@ -116,8 +119,8 @@ class SupplierReturnController extends Controller
                 $line->paid += FuncHelper::floorDec($invPay->amount,3);
             }
             $line->paid = FuncHelper::floorDec($line->paid,3);
-            $line->outstanding = FuncHelper::floorDec($line->value - $line->paid,3);
-            if (abs($line->outstanding) >= 0.01)
+            $line->outstanding = FuncHelper::floorDec($line->value - $line->paid,2);
+            if (abs($line->outstanding) > 0.01)
             {
                 $returnCol->add($line);
             }

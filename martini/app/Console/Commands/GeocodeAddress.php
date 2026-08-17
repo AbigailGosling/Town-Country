@@ -30,9 +30,11 @@ class GeocodeAddress extends Command
     public function handle()
     {
         $id = $this->argument('id');
+        /** @var ClientAddress $ca */
         $ca = ClientAddress::find($id);
+        if (($ca->address_1 ?? '') == '' && ($ca->address_2 ?? '') == ''  && ($ca->postcode ?? '') == '') return Command::SUCCESS;
         $location = GraphHopperHelper::geocodeAddress(GraphHopperHelper::formatAddressForGeocoding($ca));
-        if ($location == null) $location = GraphHopperHelper::geocodeAddress($ca->postcode.", United Kingdom");
+        if ($location == null || $location["hits"]>1) $location = GraphHopperHelper::geocodeAddress($ca->postcode.", United Kingdom");
         if ($location !== null) {
             $ca->lat = $location['lat'];
             $ca->lon = $location['lon'];

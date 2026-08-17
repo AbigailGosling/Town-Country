@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
+use App\Models\DebugLogging;
 use App\Models\LoadSheet;
 use App\Models\TransportPallet;
 use App\Models\Site;
@@ -218,14 +219,20 @@ class VehicleRoutePlanningController extends Controller
             }
             $locServices[$addrId][] = $service['id'];
             $addrDetails = $addressDelTypes[$addrId] ?? ['fresh' => false, 'frozen' => false];
-            if ($addrDetails['fresh'] && $addrDetails['frozen']) {
-                $service['group'] = 'freshfrozen';
-            }
-            if (!in_array($service['group'], $allGroups, true)) {
-                $allGroups[] = $service['group'];
-            }
+            // if ($addrDetails['fresh'] && $addrDetails['frozen']) {
+            //     $service['group'] = 'freshfrozen';
+            // }
+            // if (!in_array($service['group'], $allGroups, true)) {
+            //     $allGroups[] = $service['group'];
+            // }
         }
+        $relations = [
+            // [
+            //     'type'=> 'not_in_same_route',
+            //     'groups'=> $ffgroups,
+            // ],
 
+        ];
         $locClusteringPayload = [
             'customers' => array_values($locClusterFinding),
             "configuration"=>  [
@@ -235,18 +242,11 @@ class VehicleRoutePlanningController extends Controller
                     "cost_per_second"=> 0
                 ],
                 "clustering"=>  [
-                    "num_clusters"=> count($vrpVehicles)/2
+                    "num_clusters"=> 40
                 ]
             ]
         ];
         $clusterResponse = GraphHopperHelper::clusters($locClusteringPayload)['data']["clusters"] ?? [];
-        $relations = [
-            // [
-            //     'type'=> 'not_in_same_route',
-            //     'groups'=> $ffgroups,
-            // ],
-
-        ];
         foreach ($clusterResponse as $cluster) {
             $serviceIds = [];
             foreach ($cluster['ids'] as $locId) {
@@ -264,15 +264,15 @@ class VehicleRoutePlanningController extends Controller
             ];
         }
         $allGroups2 = [];
-        if (in_array('fresh', $allGroups, true)) {
-            $allGroups2[] = 'fresh';
-        }
-        if (in_array('freshfrozen', $allGroups, true)) {
-            $allGroups2[] = 'freshfrozen';
-        }
-        if (in_array('frozen', $allGroups, true)) {
-            $allGroups2[] = 'frozen';
-        }
+        // if (in_array('fresh', $allGroups, true)) {
+        //     $allGroups2[] = 'fresh';
+        // }
+        // if (in_array('freshfrozen', $allGroups, true)) {
+        //     $allGroups2[] = 'freshfrozen';
+        // }
+        // if (in_array('frozen', $allGroups, true)) {
+        //     $allGroups2[] = 'frozen';
+        // }
 
         if (count($allGroups2) > 1) {
             $relations[] = [
@@ -285,9 +285,10 @@ class VehicleRoutePlanningController extends Controller
             'configuration' => [
                 'routing' => [
                     'calc_points' => true,
-                    'return_snapped_waypoints' => true,
+                    //'return_snapped_waypoints' => true,
                     'consider_traffic' => true,
-                    'snap_preventions' => ["motorway", "trunk", "bridge", "ford", "tunnel", "ferry"],
+                    //'snap_preventions' => ["motorway", "bridge", "ford", "tunnel", "ferry"],
+                    'network_data_provider' =>"tomtom"
                 ],
             ],
             'vehicle_types' => $vrcVehicleTypes,
@@ -303,8 +304,10 @@ class VehicleRoutePlanningController extends Controller
         ];
         $graphResponse = GraphHopperHelper::vrp($vrpPayload);
         $overnights = 2;
-        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $depotSite->id == 1 && $overnights <= 5) {
+        $lastUnassigned = PHP_INT_MAX;
+        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $graphResponse['data']['solution']['no_unassigned'] < $lastUnassigned && $depotSite->id == 1 && $overnights <= 1) {
             sleep(15);
+            $lastUnassigned = $graphResponse['data']['solution']['no_unassigned'];
             $vrcVehicleTypes = [];
             $overnights++;
             $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,$overnights);
@@ -312,9 +315,10 @@ class VehicleRoutePlanningController extends Controller
                 'configuration' => [
                     'routing' => [
                         'calc_points' => true,
-                        'return_snapped_waypoints' => true,
+                        //'return_snapped_waypoints' => true,
                         'consider_traffic' => true,
-                        'snap_preventions' => ["motorway", "trunk", "bridge", "ford", "tunnel", "ferry"],
+                        //'snap_preventions' => ["motorway", "bridge", "ford", "tunnel", "ferry"],
+                        'network_data_provider' =>"tomtom"
                     ],
                 ],
                 'vehicle_types' => $vrcVehicleTypes,
@@ -330,6 +334,13 @@ class VehicleRoutePlanningController extends Controller
             ];
             $graphResponse = GraphHopperHelper::vrp($vrpPayload);
         }
+        $d = new DebugLogging();
+            $d->page = "send_pod";
+            $d->request = json_encode($vrpPayload);
+            $d->user_id = -1;
+            $d->session_id = -1;
+            $d->body = json_encode($graphResponse);
+            $d->save();
         if (!$graphResponse['ok']) {
             return response()->json([
                 'error' => 'GraphHopper VRP request failed',
@@ -337,7 +348,6 @@ class VehicleRoutePlanningController extends Controller
                 'skipped' => $skipped,
             ], 502);
         }
-
         return response()->json([
             'success' => true,
             'dryRun' => true,

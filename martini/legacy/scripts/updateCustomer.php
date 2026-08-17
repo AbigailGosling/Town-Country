@@ -165,8 +165,6 @@ use Illuminate\Support\Facades\Log;
         $ca = ClientAddress::where('client_id', request()->input('id'))->where('address_id', $address_id)->where('client_type', ClientType::CUSTOMER->value)->first();
         if (!$ca &&
             (
-                request()->input('address_1')[$index] === null ||
-                request()->input('address_1')[$index] === "" ||
                 request()->input('address_1')[$index] === "''" ||
                 request()->input('address_1')[$index] === "\'\'" ||
                 request()->input('address_1')[$index] === "\\'\\'"
@@ -176,6 +174,11 @@ use Illuminate\Support\Facades\Log;
         }
         if (request()->input('address_site_id')[$index] == "" || request()->input('address_site_id')[$index] == null) {
             continue; // Skip addresses without a site_id
+        }
+        if ((request()->input('address_1')[$index] == "" || request()->input('address_1')[$index] == null) &&
+            (request()->input('address_2')[$index] == "" || request()->input('address_2')[$index] == null) &&
+            (request()->input('postcode')[$index] == "" || request()->input('postcode')[$index] == null)) {
+            continue; // Skip addresses without a address
         }
         if (!$ca) {
             $ca = new ClientAddress();

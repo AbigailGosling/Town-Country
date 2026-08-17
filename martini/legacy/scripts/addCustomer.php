@@ -156,6 +156,11 @@ use App\Models\ClientType;
         if (request()->input('address_site_id')[$index] == "" || request()->input('address_site_id')[$index] == null) {
             continue; // Skip addresses without a site_id
         }
+        if ((request()->input('address_1')[$index] == "" || request()->input('address_1')[$index] == null) &&
+            (request()->input('address_2')[$index] == "" || request()->input('address_2')[$index] == null) &&
+            (request()->input('postcode')[$index] == "" || request()->input('postcode')[$index] == null)) {
+            continue; // Skip addresses without a address
+        }
         $ca = new ClientAddress();
         $ca->client_id = $customer_id;
         $ca->address_id = $address_id;

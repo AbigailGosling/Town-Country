@@ -99,7 +99,7 @@ class SendUsersDailySalesPerformance extends Command
                 $targetSummary['weekly'][$key] += $value;
             }
         }
-        if (!array_key_exists('Sell Value', $targetSummary['weekly']) || $targetSummary['weekly']['Sell Value'] == 0){
+        if (!array_key_exists('Sell Value', $targetSummary['weekly'])){
             return;
         }
         $targetLabel = $targetDateEnd->format('d/m/Y');
