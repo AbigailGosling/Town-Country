@@ -27,6 +27,7 @@ use App\Models\TransportPalletPickWeight;
     foreach ($pwos as $pwo) {
         $tppws = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
         foreach ($tppws as $tppw) {
+            $tppw->transportPallet->address_id = $addressid;
             $tppw->transportPallet->checkUpdateEstimatedDeliveryDate();
         }
     }
