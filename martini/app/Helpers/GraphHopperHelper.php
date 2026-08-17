@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -129,6 +130,7 @@ class GraphHopperHelper
         return [
             'lat' => (float) $first['point']['lat'],
             'lon' => (float) $first['point']['lng'],
+            'hits'=> count($hits),
         ];
     }
 
@@ -264,7 +266,19 @@ class GraphHopperHelper
                 'vehicle' => [$vehicle],
             ];
         }
+        usort($output,"self::vicSorter");
         return $output;
+    }
+    private static function vicSorter($a,$b)
+    {
+        if ($a['capacity'][0] != $b['capacity'][0])
+        {
+            return $b['capacity'][0] - $a['capacity'][0];
+        }
+        else
+        {
+            return $b['capacity'][1] - $a['capacity'][1];
+        }
     }
     /**
      * @param array $generifiedVehicleTypes
@@ -286,9 +300,10 @@ class GraphHopperHelper
                 'capacity' => $type['capacity'],
             ];
             foreach ($type['vehicle'] as $i => $vehicle) {
-                $startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
                 if (count($vrpVehicles)>=20)break 2;
-                if (($type_overview[0] == 3 && $overnighters < $overnight_limit || $startLocation['location_id'] !== 'depot')) {
+                //$startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
+                $startLocation = $depotLocation;
+                if (($type_overview[0] == 3 && $overnighters <= $overnight_limit || $startLocation['location_id'] !== 'depot')) {
                     $overnighters++;
                     $vrpVehicle = [
                         'vehicle_id' => $type['type_id'] . '-' . $i,
@@ -436,7 +451,7 @@ class GraphHopperHelper
                 ],
                 'setup_time' => $serviceDurationSeconds,
                 'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
-                'group' => $tempCategory,
+                //'group' => $tempCategory,
                 'allowed_vehicles' => $allowedVehicles,
                 'time_windows' => [
                     [

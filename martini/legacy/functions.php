@@ -1285,7 +1285,7 @@ use App\Models\User;
         foreach ($allBeingDeleted as $product)
         {
             $weights = prepareExecuteQuery("SELECT * FROM `weights` WHERE status_id = 1 AND product_id = ?",'i',[$product['id']])->fetch_all(MYSQLI_ASSOC);
-            if (count($weights) > 0)
+            if (count($weights) == 0)
             {
                 $toDelete[] = $product['id'];
                 loggedDataChange("product_delete", $product['id'], "functions.php->deleteProductsFor");

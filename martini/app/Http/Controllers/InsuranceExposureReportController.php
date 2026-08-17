@@ -6,8 +6,10 @@ use App\Helpers\FuncHelper;
 use App\Models\CreditNoteItem;
 use App\Models\Customer;
 use App\Models\CustomerOutstandingCache;
+use App\Models\User;
 use App\Models\Weight;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class InsuranceExposureReportController extends Controller
@@ -16,7 +18,9 @@ class InsuranceExposureReportController extends Controller
     {
         ini_set("memory_limit","1G");
         $detailedView = request()->input("detailed-view",0) == 1;
+        $allowedCustomers = User::find(Auth::id())->listViewableCustomers();
         $customers = Customer::query()
+            ->whereIn("customers.id",$allowedCustomers)
             ->where('customers.credit_enabled', true)
             ->where('customers.disabled', false)
             ->whereNotIn('customers.businessname', ['', '.. search'])
@@ -142,14 +146,14 @@ class InsuranceExposureReportController extends Controller
             if ($now <= $due_threshold) continue;
             $picksheet->due_threshold_passed = true;
 
-            $picksheet->credited = $picksheet->credit = (double) round($this->totalValueCreditedOnInvoiceID($creditPayments[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
-            $picksheet->price = (double) round($this->invoiceTotal($picksheet->id,$pickerItems[$picksheet->id]??[],$pickWeightOuts[$picksheet->id]??[]),2,PHP_ROUND_HALF_DOWN);
+            $picksheet->credited = $picksheet->credit = (double) FuncHelper::floorDec($this->totalValueCreditedOnInvoiceID($creditPayments[$picksheet->id]??[]),2);
+            $picksheet->price = (double) FuncHelper::floorDec($this->invoiceTotal($picksheet->id,$pickerItems[$picksheet->id]??[],$pickWeightOuts[$picksheet->id]??[]),2);
 
-            $picksheet->paid = (double) round($picksheet->paid,2,PHP_ROUND_HALF_DOWN) + $picksheet->credited;
+            $picksheet->paid = (double) FuncHelper::floorDec($picksheet->paid,2) + $picksheet->credited;
             $picksheet->invoicePaid = false;
 
-            $picksheet->outstanding = round((double) $picksheet->price - $picksheet->paid,2,PHP_ROUND_HALF_DOWN);
-            if ($picksheet->outstanding >- -0.02 && $picksheet->outstanding <= 0.02) continue;
+            $picksheet->outstanding = FuncHelper::floorDec((double) $picksheet->price - $picksheet->paid,2);
+            if ($picksheet->outstanding < 0.02) continue;
 
             $picksheet->creditNotes = $this->getInvoiceCreditNotes($picksheet->id,$creditPayments[$picksheet->id]??[]);
             $picksheet->hasCreditNote = (count($picksheet->creditNotes)>0);

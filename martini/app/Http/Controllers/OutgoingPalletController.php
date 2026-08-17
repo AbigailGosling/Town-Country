@@ -122,9 +122,9 @@ class OutgoingPalletController extends Controller
 
         $outgoingPallets2 = collect();
         foreach ($outgoingPallets as $pallet) {
-            if (!$pallet->dispatched) {
+            //if (!$pallet->dispatched) {
                 $outgoingPallets2->push($pallet);
-            }
+            //}
             foreach ($pallet->pickWeightOuts as $pwLink) {
                 $loadedPickWeightOutIds[] = $pwLink->pickWeightOut_id;
             }

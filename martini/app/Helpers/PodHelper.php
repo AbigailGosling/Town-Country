@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\ClientAddress;
 use App\Models\Customer;
 use App\Models\Cut;
+use App\Models\DebugLogging;
 use App\Models\Intake;
 use App\Models\Location;
 use App\Models\Nationality;
@@ -28,6 +29,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use InternalScripts\PDFRenderer;
 use InternalScripts\SLabsEmailer;
 use InternalScripts\SLabsEmailerType;
@@ -186,6 +188,13 @@ class PodHelper
                     "Data"=> (object)$thisData
                 ]
             );
+            $d = new DebugLogging();
+            $d->page = "send_pod";
+            $d->request = json_encode($thisData);
+            $d->user_id = -1;
+            $d->session_id = -1;
+            $d->body = json_encode($result);
+            $d->save();
             if (!($result['success'] ?? false)) {
                 $allCallsSucceeded = false;
             }
@@ -484,7 +493,7 @@ class PodHelper
                     $attempt++;
                     continue;
                 }
-                return [
+                $output = [
                     'success' => $status >= 200 && $status < 300,
                     'status' => $status,
                     'headers' => $parsedHeaders,
@@ -492,6 +501,7 @@ class PodHelper
                     'raw_body' => $rawBody,
                     'error' => null,
                 ];
+                return $output;
             } catch (GuzzleException $e) {
                 if ($attempt < $maxAttempts) {
                     $delayMs = $baseDelayMs * (2 ** ($attempt - 1));
@@ -499,7 +509,7 @@ class PodHelper
                     $attempt++;
                     continue;
                 }
-                return [
+                $output = [
                     'success' => false,
                     'status' => null,
                     'headers' => [],
@@ -507,9 +517,10 @@ class PodHelper
                     'raw_body' => null,
                     'error' => $e->getMessage(),
                 ];
+                return $output;
             }
         }
-        return [
+        $output = [
             'success' => false,
             'status' => null,
             'headers' => [],
@@ -517,5 +528,6 @@ class PodHelper
             'raw_body' => null,
             'error' => 'Request failed after max retry attempts.',
         ];
+        return $output;
 	}
 }

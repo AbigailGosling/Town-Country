@@ -37,6 +37,7 @@ class IntakeReportController extends Controller
 
     public function show(Request $request)
     {
+        ini_set("memory_limit","1G");
         $viewData = $this->getViewData($request);
 
         if (!$this->hasFilters($viewData)) {
@@ -287,24 +288,25 @@ class IntakeReportController extends Controller
             ->get();
         $creditNotes = CreditNoteItem::whereIn("payment_id", $credits->pluck("id")->all())->get();
 
-        $returnProducts = Product::where("original_intake_id", (string)$intake->id)
+        $returnProducts = Product::where("original_intake_id", strval($intake->id))
             ->orWhereIn("original_pallet_id", array_map('strval', $pallets->pluck("id")->toArray()))
             ->orWhereIn("id", $creditNotes->pluck("product_id")->toArray())
             ->get();
         $returnProductIds = $returnProducts->pluck("id")->all();
+
         $returnWeights = Weight::whereIn("product_id", $returnProductIds)->get();
         $resalePickItems = PickerItem::whereIn("product_id", $returnProductIds)
             ->groupBy(["pickersheet_id", "product_id"])
             ->get();
         $resales = PickerSheet::whereIn("id", $resalePickItems->pluck("pickersheet_id")->all())->get();
 
-        $cuts = Cut::whereIn("id", $products->pluck("cut_id")->filter()->unique()->all())->get();
-        $returnCuts = Cut::whereIn("id", $returnProducts->pluck("cut_id")->filter()->unique()->all())->get();
+        $cuts = $this->getCuts($products->pluck("cut_id")->filter()->unique()->all());
+        $returnCuts = $this->getCuts($returnProducts->pluck("cut_id")->filter()->unique()->all());
         $allProducts = $products->merge($returnProducts);
-        $brandsById = Brand::whereIn("id", $allProducts->pluck("brand_id")->filter()->unique()->all())->get()->keyBy("id");
-        $nationalitiesById = Nationality::whereIn("id", $allProducts->pluck("nationality_id")->filter()->unique()->all())->get()->keyBy("id");
-        $temperaturesById = Temperature::whereIn("id", $allProducts->pluck("cooling_id")->filter()->unique()->all())->get()->keyBy("id");
-        $speciesById = Species::whereIn("id", $cuts->pluck("species_id")->merge($returnCuts->pluck("species_id"))->filter()->unique()->all())->get()->keyBy("id");
+        $brandsById = $this->getBrands($allProducts->pluck("brand_id")->filter()->unique()->all())->keyBy("id");
+        $nationalitiesById = $this->getNationalities($allProducts->pluck("nationality_id")->filter()->unique()->all())->keyBy("id");
+        $temperaturesById = $this->getTemperatures($allProducts->pluck("cooling_id")->filter()->unique()->all())->keyBy("id");
+        $speciesById = $this->getSpecies($cuts->pluck("species_id")->merge($returnCuts->pluck("species_id"))->filter()->unique()->all())->keyBy("id");
 
         $productsById = $products->keyBy("id");
         $returnProductsById = $returnProducts->keyBy("id");
@@ -613,9 +615,9 @@ class IntakeReportController extends Controller
         $normalizedSellRate = $this->normalizeRate($sellRate);
         $row->pallet_id = $displayProduct->pallet_id;
         $row->product_name = $this->formatCutName($cut, $displayLookups["speciesById"]);
-        $row->nationality_name = $displayLookups["nationalitiesById"]->get($displayProduct->nationality_id)?->name;
+        $row->nationality_name = $displayLookups["nationalitiesById"][$displayProduct->nationality_id]?->name;
         $row->cooling_name = $this->temperatureName($displayProduct->cooling_id, $displayLookups["temperaturesById"]);
-        $row->brand_name = $displayLookups["brandsById"]->get($displayProduct->brand_id)?->name;
+        $row->brand_name = $displayLookups["brandsById"][$displayProduct->brand_id]?->name;
         $row->supplier_name = $displayLookups["supplierName"];
         $row->qty = $qty;
         $row->unit = $this->formatUnit($pricingProduct->unit);
@@ -1023,5 +1025,49 @@ class IntakeReportController extends Controller
         $val1 *= 1000;
         $val2 *= 1000;
         return FuncHelper::floorDec(($val1 * $val2) / $i, $percision);
+    }
+    private array $cachedCuts = [];
+    private function getCuts(array $ids): Collection
+    {
+        $missingIds = array_diff($ids, array_keys($this->cachedCuts));
+        if (!empty($missingIds)) {
+            $cuts = Cut::whereIn("id", $missingIds)->get();
+            foreach ($cuts as $cut) {
+                $this->cachedCuts[$cut->id] = $cut;
+            }
+        }
+        return collect(array_map(fn($id) => (object)$this->cachedCuts[$id], $ids));
+    }
+    private array $cachedTemperatures = [];
+    private function getTemperatures(array $ids): Collection
+    {
+        if (empty($this->cachedTemperatures)) {
+            $this->cachedTemperatures = Temperature::all()->keyBy("id")->toArray();
+        }
+        return collect(array_map(fn($id) => (object)$this->cachedTemperatures[$id], $ids));
+    }
+    private array $cachedNationalities = [];
+    private function getNationalities(array $ids): Collection
+    {
+        if (empty($this->cachedNationalities)) {
+            $this->cachedNationalities = Nationality::all()->keyBy("id")->toArray();
+        }
+        return collect(array_map(fn($id) => (object)$this->cachedNationalities[$id], $ids));
+    }
+    private array $cachedBrands = [];
+    private function getBrands(array $ids): Collection
+    {
+        if (empty($this->cachedBrands)) {
+            $this->cachedBrands = Brand::all()->keyBy("id")->toArray();
+        }
+        return collect(array_map(fn($id) => (object)$this->cachedBrands[$id], $ids));
+    }
+    private array $cachedSpecies = [];
+    private function getSpecies(array $ids): Collection
+    {
+        if (empty($this->cachedSpecies)) {
+            $this->cachedSpecies = Species::all()->keyBy("id")->toArray();
+        }
+        return collect(array_map(fn($id) => (object)$this->cachedSpecies[$id], $ids));
     }
 }
