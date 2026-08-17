@@ -23,10 +23,10 @@ use App\Models\TransportPalletPickWeight;
     loggedDataChange("picksheet_orderReferenceNumber",$picksheetid,$orderReferenceNumber);
     loggedDataChange("picksheet_estimated_delivery_date",$picksheetid,$estimated_delivery_date);
 
-    $pwo = PickWeightOut::where('pickersheet_id', $picksheetid)->first();
-    if ($pwo) {
-        $tppw = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->first();
-        if ($tppw) {
+    $pwos = PickWeightOut::where('pickersheet_id', $picksheetid)->get();
+    foreach ($pwos as $pwo) {
+        $tppws = TransportPalletPickWeight::where('pickWeightOut_id', $pwo->id)->get();
+        foreach ($tppws as $tppw) {
             $tppw->transportPallet->checkUpdateEstimatedDeliveryDate();
         }
     }
