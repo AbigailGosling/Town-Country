@@ -40,8 +40,9 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
         toggleRow(classs,ele, productid);
     }
 
-    function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id,ubbb,locked,site_id){
-        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked + "&site_id=" + site_id + "&time=<?php echo $timeSensitivityStatus;?>" , function( data ) {
+    function toggleRow(classs, ele,intake_id,cut_id,nationality_id,pallet_id,ubbb,locked,site_id,location_ids){
+
+        $.get( "scripts/_searchPickerNew.php?intake_id="+intake_id+"&cut_id=" + cut_id+"&class=" + classs + "&nationality_id=" + nationality_id + "&pallet_id=" + pallet_id + "&ubbb=" + ubbb + "&locked=" + locked + "&site_id=" + site_id + "&location_ids=" + location_ids + "&time=<?php echo $timeSensitivityStatus;?>" , function( data ) {
             $(ele).parent().after(data);
             $(ele).next().fadeIn();
             $(ele).remove();
@@ -148,7 +149,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             echo "<tr><td colspan='15' style='color:red;text-align:center;'>The site associated with this location is blocked for sales. Please contact an administrator.</td></tr>";
             exit;
         }
-        $locs = $loc_id;
+        $loc_id_string = $locs = $loc_id;
     }
     elseif ($site_id != '' && $site_id != null && $site_id != 'null'){
         $s = Site::find($site_id);
@@ -158,12 +159,14 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             exit;
         }
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND `id` IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+        $loc_id_string = str_replace(",", "-", $locs);
     }
     else
     {
         $s = implode(",",Site::where([['disabled',false],['sale_blocked',false]])->get()->pluck('id')->toArray());
 
         $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `id` IS NOT NULL AND `site_id` IN (".$s.")")->fetch_all(MYSQLI_ASSOC),"id"));
+        $loc_id_string = "*";
     }
     $whereArray[] = "weights.status_id != 1";
 
@@ -507,7 +510,7 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
              &nbsp;
             </td>
             <td colspan="1"  onclick=""></td>
-           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>','<?php echo $ubbb;?>','<?php echo $lockedT; ?>','<?php echo $site_id; ?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
+           <td width="40" align="center" class="<?php echo $thisclass; ?>" onclick="toggleRow('<?php echo $class; ?>', this,'<?php echo $intake_id; ?>','<?php echo $productsRow['cut_id']; ?>','<?php echo $nationality_id;?>','<?php echo (!empty($initial_pallet_id)) ? $pallet_id : $initial_pallet_id; ?>','<?php echo $ubbb;?>','<?php echo $lockedT; ?>','<?php echo $site_id; ?>','<?php echo $loc_id_string; ?>');"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td width="40" align="center" onclick="toggleVisibleRow('<?php echo $class; ?>')" style="display:none"><?php if($products2Count > 0){ ?><i class="searchRContent__icon fa fa-chevron-down"></i><?php } ?></td>
             <td class="bold" colspan="1"><?php echo $quantityTotal; ?></td>
             <?php

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 	$nationality_id = request()->input('nationality_id');
     $ubbb = request()->input('ubbb');
     $site_id = request()->input('site_id');
+    $location_ids = request()->input('location_ids');
     $timeSensitivityStatus = (int)request()->input('time',0);
     if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
     if (request()->input('locked') == "y"){
@@ -37,11 +38,25 @@ use Illuminate\Support\Facades\Auth;
 
     $totalW = 0;
         if ($site_id != '' && $site_id != null && $site_id != 'null'){
-            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+            if ($location_ids == "*") {
+                $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IS NOT NULL",'i',[$site_id])->fetch_all(MYSQLI_ASSOC),"id"));
+            } else {
+                $location_ids = array_map('intval',explode("-",$location_ids));
+                $loc_ids_placeholder = array_fill(0, count($location_ids),"?");
+                $resultSet = prepareExecuteQuery("SELECT `id` FROM `location` WHERE `site_id` = ? AND id IN (".implode(",", $loc_ids_placeholder).")",'i'.str_repeat('i', count($location_ids)),array_merge([$site_id], $location_ids))->fetch_all(MYSQLI_ASSOC);
+                $locs = implode(",",array_column($resultSet,"id"));
+            }
         }
         else
         {
-            $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+            if ($location_ids == "*") {
+                $locs = implode(",",array_column(prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IS NOT NULL")->fetch_all(MYSQLI_ASSOC),"id"));
+            } else {
+                $location_ids = array_map('intval',explode("-",$location_ids));
+                $loc_ids_placeholder = array_fill(0, count($location_ids),"?");
+                $resultSet = prepareExecuteQuery("SELECT `id` FROM `location` WHERE id IN (".implode(",", $loc_ids_placeholder).")",'i'.str_repeat('i', count($location_ids)), $location_ids)->fetch_all(MYSQLI_ASSOC);
+                $locs = implode(",",array_column($resultSet,"id"));
+            }
         }
         ####
         $productsX2 = "SELECT * , product.id productid, product.comments as productcomments
