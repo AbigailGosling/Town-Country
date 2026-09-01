@@ -55,8 +55,8 @@
 
                 $DELETE_IDS = request()->input('delete_ids');
                 $DELETE_IDS = rtrim($DELETE_IDS, ',');
-
-                prepareExecuteQuery("DELETE FROM `credit_note_items` WHERE id IN ($DELETE_IDS)");
+                loggedDataChange("credit_note_items_deleted", $invoiceID, "Credit Note Items Deleted: ".$DELETE_IDS);
+                prepareExecuteQuery("UPDATE `credit_note_items` SET `deleted` = 1 WHERE id IN ($DELETE_IDS)");
 
             }
 

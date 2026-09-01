@@ -57,7 +57,7 @@ use Illuminate\Support\Facades\Auth;
 				$queryResults = prepareExecuteQuery("SELECT * FROM `intake` WHERE returned=1 AND supplier_id IN (".implode(",",$usermodel->listViewableCustomers()).") ORDER BY id DESC");
 				while($returnedIntake = mysqli_fetch_array($queryResults)){
 					$date_received = date('d/m/Y', strtotime($returnedIntake['date_received']));
-					$qr = prepareExecuteQuery("SELECT count(*) as `rows`,`created_at` FROM `invoice_payments` WHERE `payment_method` = 'CREDIT_NOTE' AND `invoice_id` = ?","s",[$returnedIntake['delivery_note_number']]);
+					$qr = prepareExecuteQuery("SELECT count(*) as `rows`,`created_at` FROM `invoice_payments` WHERE `payment_method` = 'CREDIT_NOTE' AND `invoice_id` = ? AND `invoice_payments`.`deleted`=0","s",[$returnedIntake['delivery_note_number']]);
 					$qr = $qr->fetch_assoc();
 					$payments = $qr['rows'];
 				?>

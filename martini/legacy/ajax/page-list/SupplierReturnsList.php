@@ -36,7 +36,7 @@
                 }
                 $supplier['balance'] += $itemCost;
             }
-            $amount = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$supplierReturn['id'])->fetch_assoc()['amount'];
+            $amount = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$supplierReturn['id']." AND `invoice_payments`.`deleted`=0")->fetch_assoc()['amount'];
             $supplier['balance'] -= $amount;
         }
         $rollingTotal += $supplier['balance'];

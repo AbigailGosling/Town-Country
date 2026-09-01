@@ -283,10 +283,10 @@ class IntakeReportController extends Controller
             ->groupBy(["pickersheet_id", "product_id"])
             ->get();
         $sales = PickerSheet::whereIn("id", $pickItems->pluck("pickersheet_id")->all())->get();
-        $credits = InvoicePayment::where("payment_method", "=", "CREDIT_NOTE")
+        $credits = InvoicePayment::where([["payment_method", "=", "CREDIT_NOTE"],["deleted", "=", 0]])
             ->whereIn("invoice_id", $pickItems->pluck("pickersheet_id")->all())
             ->get();
-        $creditNotes = CreditNoteItem::whereIn("payment_id", $credits->pluck("id")->all())->get();
+        $creditNotes = CreditNoteItem::whereIn("payment_id", $credits->pluck("id")->all())->where("deleted", 0)->get();
 
         $returnProducts = Product::where("original_intake_id", strval($intake->id))
             ->orWhereIn("original_pallet_id", array_map('strval', $pallets->pluck("id")->toArray()))

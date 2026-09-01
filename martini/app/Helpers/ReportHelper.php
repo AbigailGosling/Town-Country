@@ -347,6 +347,8 @@ class ReportHelper
             ->join("invoice_payments","pickerSheets.id","=","invoice_payments.invoice_id")
             ->join("credit_note_items","invoice_payments.id","=","credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*,invoice_payments.*,credit_note_items.*,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
+            ->where("invoice_payments.deleted","=","0")
+            ->where("credit_note_items.deleted","=","0")
             //->where("pickerSheets.is_return_to_supplier","=","0")
             ->orderBy("invoice_payments.created_at")
             ->groupBy(["pickerSheets.id","credit_note_items.product_id"]);
@@ -355,7 +357,7 @@ class ReportHelper
 		if ($customerID != NULL) $resultQB->where("pickerSheets.customer_id",$customerID);
         else if (User::find(Auth::id())->hasPermission("restrictedaccess") == true) $resultQB->whereIn("pickerSheets.customer_id",User::find(Auth::id())->listViewableCustomers());
 		if ($userID != NULL) $resultQB->where("pickerSheets.user_from_id",$userID);
-        
+
         /** @var Collection $credits */
         $credits = $resultQB->get();
         static::initialiseLookupArrays();
@@ -494,6 +496,8 @@ class ReportHelper
             ->join("credit_note_items","invoice_payments.id"    ,"=","credit_note_items.payment_id")
             ->selectRaw("pickerSheets.*, GROUP_CONCAT(credit_note_items.product_id) as product_ids, GROUP_CONCAT(credit_note_items.quantity) as quantities, GROUP_CONCAT(credit_note_items.price) as prices,STR_TO_DATE(`pickerSheets`.`estimated_delivery_date`, '%d/%m/%Y') as parsedDate")
             //->where("pickerSheets.is_return_to_supplier","=","0")
+            ->where("invoice_payments.deleted","=","0")
+            ->where("credit_note_items.deleted","=","0")
             ->groupBy(["pickerSheets.id"])
             ->orderBy("invoice_payments.created_at");
 		if ($start != NULL && $end != NULL) $resultQB->whereBetween("invoice_payments.created_at",[$start,$end]);

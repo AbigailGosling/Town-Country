@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class InvoicePayment
- * 
+ *
  * @property int $id
  * @property int $invoice_id
  * @property string $payment_method
@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $meta_data
  * @property int $payment_recorded_by
  * @property Carbon $created_at
+ * @property Carbon|null $updated_at
+ * @property bool $deleted
  *
  * @package App\Models
  */

@@ -82,6 +82,7 @@ class InsuranceExposureReportController extends Controller
             ->where('pickerSheets.completed', 1)
             ->where('pickerSheets.customer_id', $customer->id)
             ->where('pickerSheets.id', '>=', $oldest)
+            ->where("invoice_payments.deleted","=","0")
             ->select('pickerSheets.id', 'pickerSheets.customer_id', 'pickerSheets.date', 'pickerSheets.date as creation_date', 'pickerSheets.estimated_delivery_date', DB::raw('SUM(invoice_payments.amount) as paid'))
             ->groupBy('pickerSheets.id')
             ->orderByDesc('pickerSheets.id')
@@ -191,7 +192,7 @@ class InsuranceExposureReportController extends Controller
  	}
     private function creditNoteTotal(int $invoice_payment_id){
     	$price = 0;
-		$creditNoteResult = CreditNoteItem::where('payment_id', $invoice_payment_id)->get();
+		$creditNoteResult = CreditNoteItem::where([['payment_id', $invoice_payment_id], ['deleted', 0]])->get();
 
 		foreach ($creditNoteResult as $creditNoteItem) {
             $prod = ($creditNoteItem->product_id != 0) ? $this->getProducts([$creditNoteItem->product_id])[0] ?? null:null;
@@ -312,7 +313,7 @@ class InsuranceExposureReportController extends Controller
 					`product`.`weightnote` AS `product_weightnote`,
 					`product`.`product_temp` AS `product_product_temp`
 				FROM `credit_note_items`
-				LEFT JOIN `product` ON `credit_note_items`.`product_id` = `product`.`id` WHERE `credit_note_items`.`payment_id` = ".$row->id));
+				LEFT JOIN `product` ON `credit_note_items`.`product_id` = `product`.`id` WHERE `credit_note_items`.`payment_id` = ".$row->id." AND `credit_note_items`.`deleted` = 0"));
 
 				foreach ($cnq as $cnr)
 				{

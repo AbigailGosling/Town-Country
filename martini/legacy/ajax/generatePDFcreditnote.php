@@ -303,7 +303,7 @@ use InternalScripts\PDFRenderer;
 						<td class="heading" colspan="2">Sub Total</td>
 					</tr>';
 
-				$paymentsResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
+				$paymentsResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE payment_id=? AND `credit_note_items`.`deleted` = 0",'i',[$payment_id]);
 
 				$total_qty_count = 0;
 				while($payment = mysqli_fetch_array($paymentsResult)){

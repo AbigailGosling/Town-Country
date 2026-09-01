@@ -4,6 +4,29 @@ namespace App\Models;
 
 use App\Helpers\FuncHelper;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * Class Vehicle
+ *
+ * @property int $id
+ * @property string $reg
+ * @property int $vehicle_type_id
+ * @property string $make
+ * @property string $model
+ * @property float $grossWeight
+ * @property float $payload
+ * @property int $site_id
+ * @property string $driver
+ * @property int $max_pallet_rows
+ * @property int $barracuda_id
+ * @property float $lat
+ * @property float $lon
+ * @property bool $disabled
+ * @property Carbon|null $last_used
+ *
+ * @package App\Models
+ */
 
 class Vehicle extends Model
 {
@@ -26,6 +49,10 @@ class Vehicle extends Model
         'lat',
         'lon',
         'disabled',
+        'last_used',
+    ];
+    protected $casts = [
+        'last_used' => 'datetime',
     ];
 
     public function site()
