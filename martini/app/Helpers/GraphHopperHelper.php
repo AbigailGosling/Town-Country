@@ -285,9 +285,12 @@ class GraphHopperHelper
      * @param array $vrcVehicleTypes
      * @param array $depotLocation
      * @param Carbon $dueDate
+     * @param int $overnight_limit
+     * @param bool $genericMode If true, uses max_driving_time instead of specific time windows
+     * @param int $maxOperatingSeconds Maximum driving time for generic routes (default 14 hours)
      * @return array
      */
-    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, Carbon $dueDate, int $overnight_limit = 2): array
+    public static function vehiclesFromGenerifiedTypes(array $generifiedVehicleTypes, array &$vrcVehicleTypes, array $depotLocation, Carbon $dueDate, int $overnight_limit = 2, bool $genericMode = false, int $maxOperatingSeconds = 50400): array
     {
         $daytwo = $dueDate->copy()->addDay()->format('Y-m-d');
         $vrpVehicles = [];
@@ -303,39 +306,55 @@ class GraphHopperHelper
                 if (count($vrpVehicles)>=20)break 2;
                 //$startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
                 $startLocation = $depotLocation;
-                if (($type_overview[0] == 3 && $overnighters <= $overnight_limit || $startLocation['location_id'] !== 'depot')) {
-                    $overnighters++;
+                
+                if ($genericMode) {
+                    // Generic mode: no specific time windows, just max driving time
                     $vrpVehicle = [
-                        'vehicle_id' => $type['type_id'] . '-' . $i,
-                        'type_id' => $type['type_id'],
-                        'start_address' => $startLocation,
-                        'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
-                        'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 20:00:00'),
-                        'break' => [
-                            'earliest' => strtotime($dueDate->format('Y-m-d') . ' 12:00:00'),
-                            'latest' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
-                            'duration' => 3600,
-                        ],
-                        'return_to_depot' => false,
-                        'min_jobs' => 2,
-                    ];
-                    if ($startLocation['location_id'] !== 'depot') {
-                        $vrpVehicle['return_to_depot'] = true;
-                        $vrpVehicle['end_address'] = $depotLocation;
-                    }
-                }
-                else
-                {
-                   $vrpVehicle = [
                         'vehicle_id' => $type['type_id'] . '-' . $i,
                         'type_id' => $type['type_id'],
                         'start_address' => $depotLocation,
                         'end_address' => $depotLocation,
-                        'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
-                        'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
-                        'min_jobs' => 2,
+                        'max_driving_time' => $maxOperatingSeconds,
+                        'return_to_depot' => true,
+                        'min_jobs' => 1,
                     ];
+                } else {
+                    // Time-specific mode: original behavior with time windows
+                    if (($type_overview[0] == 3 && $overnighters <= $overnight_limit || $startLocation['location_id'] !== 'depot')) {
+                        $overnighters++;
+                        $vrpVehicle = [
+                            'vehicle_id' => $type['type_id'] . '-' . $i,
+                            'type_id' => $type['type_id'],
+                            'start_address' => $depotLocation,
+                            'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
+                            'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 20:00:00'),
+                            'break' => [
+                                'earliest' => strtotime($dueDate->format('Y-m-d') . ' 12:00:00'),
+                                'latest' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
+                                'duration' => 3600,
+                            ],
+                            'return_to_depot' => false,
+                            'min_jobs' => 2,
+                        ];
+                        if ($startLocation['location_id'] !== 'depot') {
+                            $vrpVehicle['return_to_depot'] = true;
+                            $vrpVehicle['end_address'] = $depotLocation;
+                        }
+                    }
+                    else
+                    {
+                       $vrpVehicle = [
+                            'vehicle_id' => $type['type_id'] . '-' . $i,
+                            'type_id' => $type['type_id'],
+                            'start_address' => $depotLocation,
+                            'end_address' => $depotLocation,
+                            'earliest_start' => strtotime($dueDate->format('Y-m-d') . ' 04:00:00'),
+                            'latest_end' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
+                            'min_jobs' => 2,
+                        ];
+                    }
                 }
+                
                 if ($vehicle->has_tail_lift) {
                     $vrpVehicle['skills'] = ['tail_lift'];
                 }
@@ -352,11 +371,14 @@ class GraphHopperHelper
      * @param Collection<Customer> $customers
      * @param Collection<ClientAddress> $customerAddresses
      * @param int $serviceDurationSeconds
+     * @param Carbon $workingDate
+     * @param array $vrpVehicles
      * @param array<int, array{outgoingPalletId: int, reason: string}> $skipped
      * @param array<int, string> $skippedAddresses
      * @param array<string, array{fresh: bool, frozen: bool}> $addressDelTypes
+     * @param bool $genericMode If true, omits time_windows from services
     */
-    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = []): array
+    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = [], bool $genericMode = false): array
     {
         $services = [];
         foreach ($pallets as $pallet) {
@@ -433,14 +455,7 @@ class GraphHopperHelper
                     $allowedVehicles[] = $vehicle['vehicle_id'];
                 }
             }
-            $addressOpeningTime = $address->opening_time;
-            if ($addressOpeningTime == null) {
-                $addressOpeningTime = Carbon::now()->setTime(4, 0, 0);
-            }
-            $addressClosingTime = $address->closing_time;
-            if ($addressClosingTime == null) {
-                $addressClosingTime = Carbon::now()->setTime(23, 0, 0);
-            }
+            
             $thisService =[
                 'id' => (string)$pallet->id,
                 'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
@@ -453,13 +468,26 @@ class GraphHopperHelper
                 'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
                 //'group' => $tempCategory,
                 'allowed_vehicles' => $allowedVehicles,
-                'time_windows' => [
+            ];
+            
+            // Add time_windows only if not in generic mode
+            if (!$genericMode) {
+                $addressOpeningTime = $address->opening_time;
+                if ($addressOpeningTime == null) {
+                    $addressOpeningTime = Carbon::now()->setTime(4, 0, 0);
+                }
+                $addressClosingTime = $address->closing_time;
+                if ($addressClosingTime == null) {
+                    $addressClosingTime = Carbon::now()->setTime(23, 0, 0);
+                }
+                $thisService['time_windows'] = [
                     [
                         'earliest' => $addressOpeningTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
                         'latest' => $addressClosingTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
                     ],
-                ],
-            ];
+                ];
+            }
+            
             if ($address->require_tail_lift) {
                 $thisService['required_skills'] = ['tail_lift'];
             }
@@ -475,5 +503,27 @@ class GraphHopperHelper
         }
         return $services;
     }
-
+    public static function payloadMaker(array $vrpVehicles, array $vrcVehicleTypes, array $services, array $relations): array
+    {
+        return [
+                'configuration' => [
+                    'routing' => [
+                        'calc_points' => true,
+                        'return_snapped_waypoints' => true,
+                        'consider_traffic' => true,
+                        'snap_preventions' => ["motorway", "trunk", "bridge", "ford", "tunnel", "ferry"],
+                    ],
+                ],
+                'vehicle_types' => $vrcVehicleTypes,
+                'vehicles' => $vrpVehicles,
+                'services' => $services,
+                'relations' => $relations,
+                'objectives' => [
+                    // [
+                    //     "type"=> "min",
+                    //     "value"=> "vehicles",
+                    // ]
+                ],
+            ];
+    }
 }

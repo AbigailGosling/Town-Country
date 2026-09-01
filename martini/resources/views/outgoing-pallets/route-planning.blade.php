@@ -121,6 +121,18 @@
             gap: 6px;
         }
 
+        .field.numeric-field,
+        .field.service-duration-field,
+        .field.max-operating-field {
+            min-width: 0;
+        }
+
+        .field.numeric-field input,
+        .field.service-duration-field input,
+        .field.max-operating-field input {
+            min-height: 42px;
+        }
+
         .field label {
             font-weight: 600;
             font-size: 0.9rem;
@@ -135,6 +147,19 @@
             font-size: 0.95rem;
             color: var(--text);
             background: #fff;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .field label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--muted);
         }
 
         .actions {
@@ -319,7 +344,8 @@
 
         .route-breakdown-vehicle {
             min-width: 220px;
-            max-width: 320px;
+            max-width: 420px;
+            width: min(100%, 420px);
             margin-left: auto;
         }
 
@@ -327,10 +353,13 @@
             display: flex;
             gap: 8px;
             align-items: center;
+            width: 100%;
+            min-width: 0;
         }
 
         .route-breakdown-vehicle select {
             width: 100%;
+            min-width: 0;
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 6px 10px;
@@ -424,7 +453,7 @@
                         <option value="">Loading depots...</option>
                     </select>
                 </div>
-                <div class="field">
+                <div class="field service-duration-field numeric-field">
                     <label for="serviceDurationSeconds">Service Duration (seconds)</label>
                     <input type="number" id="serviceDurationSeconds" name="serviceDurationSeconds" min="60" value="1800" required>
                 </div>
@@ -445,6 +474,17 @@
                     <select id="maxVans" name="maxVans">
                         <option value="">All</option>
                     </select>
+                </div>
+                <div class="field">
+                    <label for="routeMode">Plan Mode</label>
+                    <select id="routeMode" name="routeMode">
+                        <option value="generic">Generic route (no time windows)</option>
+                        <option value="stored">Stored route (exact refinement)</option>
+                    </select>
+                </div>
+                <div class="field max-operating-field numeric-field" id="maxOperatingSecondsField" style="display: flex;">
+                    <label for="maxOperatingSeconds">Max Operating Time (hours)</label>
+                    <input type="number" id="maxOperatingSeconds" name="maxOperatingSeconds" min="1" value="14" step="0.5" required>
                 </div>
             </div>
 
@@ -484,12 +524,15 @@
     const maxRigidsSelect = document.getElementById('maxRigids');
     const maxArticsSelect = document.getElementById('maxArtics');
     const maxVansSelect = document.getElementById('maxVans');
+    const maxOperatingSecondsField = document.getElementById('maxOperatingSecondsField');
+    const routeModeSelect = document.getElementById('routeMode');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
     const mapNoteEl = document.getElementById('mapNote');
     const routeLegendEl = document.getElementById('routeLegend');
     const routeBreakdownEl = document.getElementById('routeBreakdown');
+    const storedRouteStorageKey = 'route-planner-stored-routes';
 
     let routeMap = null;
     let routeLayer = null;
@@ -498,6 +541,7 @@
     let availableVehicles = [];
     let latestPlanPayload = null;
     const selectedVehicleByRoute = new Map();
+    const selectedRouteTimesByKey = new Map();
     const committingRouteKeys = new Set();
 
     function ensureMap() {
@@ -531,6 +575,171 @@
         routeBreakdownEl.innerHTML = '';
         mapNoteEl.textContent = '';
         mapNoteEl.classList.add('hidden');
+    }
+
+    function getStoredRoutes() {
+        try {
+            const raw = localStorage.getItem(storedRouteStorageKey);
+            const parsed = JSON.parse(raw || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function buildCompactStoredPayload(payload) {
+        if (!payload || typeof payload !== 'object') {
+            return null;
+        }
+
+        const request = payload?.request || {};
+        const vehicles = Array.isArray(request?.vehicles) ? request.vehicles : [];
+        const vehicleTypes = Array.isArray(request?.vehicle_types) ? request.vehicle_types : [];
+        const services = Array.isArray(request?.services) ? request.services : [];
+        const relations = Array.isArray(request?.relations) ? request.relations : [];
+
+        const compactVehicles = vehicles.map(vehicle => ({
+            vehicle_id: vehicle?.vehicle_id,
+            type_id: vehicle?.type_id,
+            start_address: vehicle?.start_address,
+            end_address: vehicle?.end_address,
+            return_to_depot: vehicle?.return_to_depot,
+            min_jobs: vehicle?.min_jobs,
+            skills: Array.isArray(vehicle?.skills) ? vehicle.skills : undefined,
+            max_driving_time: vehicle?.max_driving_time,
+            earliest_start: vehicle?.earliest_start,
+            latest_end: vehicle?.latest_end,
+        }));
+
+        const compactServices = services.map(service => ({
+            id: service?.id,
+            name: service?.name,
+            address: service?.address,
+            setup_time: service?.setup_time,
+            size: Array.isArray(service?.size) ? service.size : undefined,
+            allowed_vehicles: Array.isArray(service?.allowed_vehicles) ? service.allowed_vehicles : undefined,
+            required_skills: Array.isArray(service?.required_skills) ? service.required_skills : undefined,
+            time_windows: Array.isArray(service?.time_windows) ? service.time_windows : undefined,
+        }));
+
+        return {
+            request: {
+                vehicle_types: vehicleTypes,
+                vehicles: compactVehicles,
+                services: compactServices,
+                relations,
+            },
+        };
+    }
+
+    function buildStoredRouteForSave(route) {
+        if (!route || typeof route !== 'object') {
+            return null;
+        }
+
+        const compactPayload = buildCompactStoredPayload(route.payload);
+        if (!compactPayload) {
+            return null;
+        }
+
+        return {
+            id: String(route.id || `stored-route-${Date.now()}`),
+            label: String(route.label || ''),
+            dueDate: String(route.dueDate || ''),
+            depot: Number(route.depot || 0),
+            savedAt: route.savedAt || new Date().toISOString(),
+            payload: compactPayload,
+        };
+    }
+
+    function saveStoredRoute(route) {
+        if (!route || !route.payload) {
+            return;
+        }
+
+        const routeToSave = buildStoredRouteForSave(route);
+        if (!routeToSave) {
+            return;
+        }
+
+        const existing = getStoredRoutes().map(item => buildStoredRouteForSave(item)).filter(Boolean);
+        let next = [routeToSave, ...existing.filter(item => item.id !== routeToSave.id)].slice(0, 8);
+
+        try {
+            localStorage.setItem(storedRouteStorageKey, JSON.stringify(next));
+        } catch (error) {
+            // If quota is exceeded, keep only the most recent compact entries and retry once.
+            next = next.slice(0, 3);
+            try {
+                localStorage.setItem(storedRouteStorageKey, JSON.stringify(next));
+            } catch (innerError) {
+                setStatus('Stored route cache is full. Continuing without saving this route.', 'error');
+                return;
+            }
+        }
+
+        if (typeof storedRouteSelect !== 'undefined' && storedRouteSelect) {
+            populateStoredRouteSelect();
+        }
+    }
+
+    function populateStoredRouteSelect() {
+        if (typeof storedRouteSelect === 'undefined' || !storedRouteSelect) {
+            return;
+        }
+
+        const routes = getStoredRoutes();
+        const currentValue = storedRouteSelect.value || '';
+        storedRouteSelect.innerHTML = '<option value="">Select a stored route</option>' + routes.map(route => {
+            const label = route.label || `${route.dueDate || 'Route'} (${new Date(route.savedAt || Date.now()).toLocaleDateString()})`;
+            return `<option value="${route.id}">${label}</option>`;
+        }).join('');
+
+        if (routes.length && currentValue) {
+            const match = routes.find(route => route.id === currentValue);
+            if (match) {
+                storedRouteSelect.value = currentValue;
+            }
+        }
+
+        if (typeof routeModeSelect !== 'undefined' && routeModeSelect) {
+            const shouldShow = routeModeSelect.value === 'stored';
+            document.querySelectorAll('.stored-route-field').forEach(el => {
+                el.style.display = shouldShow ? 'flex' : 'none';
+            });
+        }
+
+        syncStoredRouteDetails();
+    }
+
+    function syncStoredRouteDetails() {
+        if (typeof storedRouteSelect === 'undefined' || !storedRouteSelect) {
+            return;
+        }
+
+        if (typeof routeVehicleSelect === 'undefined' || !routeVehicleSelect || typeof routeStartDateInput === 'undefined' || !routeStartDateInput || typeof routeEndDateInput === 'undefined' || !routeEndDateInput) {
+            return;
+        }
+
+        const routeId = storedRouteSelect.value;
+        const routes = getStoredRoutes();
+        const selectedRoute = routes.find(route => route.id === routeId);
+
+        if (!selectedRoute) {
+            routeVehicleSelect.innerHTML = '<option value="">Select vehicle</option>';
+            return;
+        }
+
+        const vehicles = selectedRoute?.payload?.request?.vehicles ?? [];
+        routeVehicleSelect.innerHTML = '<option value="">Select vehicle</option>' + vehicles.map(vehicle => {
+            const label = vehicle.vehicle_id || vehicle.type_id || 'Vehicle';
+            return `<option value="${vehicle.vehicle_id || label}">${label}</option>`;
+        }).join('');
+
+        if (selectedRoute.dueDate) {
+            routeStartDateInput.value = selectedRoute.dueDate;
+            routeEndDateInput.value = selectedRoute.dueDate;
+        }
     }
 
     function buildVehicleLimitOptions(selectEl, maxCount) {
@@ -746,6 +955,13 @@
             return Number(serviceId);
         }
 
+        // GraphHopper can return service IDs in forms like service-123, service_123, pallet_123.
+        // Extract a trailing numeric token so route-specific actions still identify pallet IDs.
+        const trailingDigits = serviceId.match(/(?:^|[-_])(\d+)$/);
+        if (trailingDigits) {
+            return Number(trailingDigits[1]);
+        }
+
         return null;
     }
 
@@ -766,6 +982,18 @@
         });
 
         return ids;
+    }
+
+    function buildRouteIdentityKey(route, index, routePalletIds) {
+        const ids = [...new Set((routePalletIds || []).map(Number).filter(value => Number.isFinite(value) && value > 0))]
+            .sort((a, b) => a - b);
+
+        if (ids.length) {
+            return `route:${ids.join('-')}`;
+        }
+
+        const fallbackVehicleId = String(route?.vehicle_id ?? '').trim();
+        return `route:${index}:${fallbackVehicleId || 'unknown'}`;
     }
 
     function renderRouteBreakdown(payload) {
@@ -950,18 +1178,18 @@
         }
 
         responseRoutes.forEach((route, index) => {
-            const vehicleId = String(route?.vehicle_id ?? `Vehicle ${index + 1}`);
-            const routeKey = `${index}:${vehicleId}`;
-            const color = routeColor(index);
             const activities = Array.isArray(route?.activities) ? route.activities : [];
             const stops = activities.filter(activity => {
                 const type = String(activity?.type ?? '').toLowerCase();
                 return type === 'service' || type === 'pickup' || type === 'delivery';
             });
+            const vehicleId = String(route?.vehicle_id ?? `Vehicle ${index + 1}`);
+            const routePalletIds = extractRoutePalletIds(stops);
+            const routeKey = buildRouteIdentityKey(route, index, routePalletIds);
+            const color = routeColor(index);
             const startActivity = getRouteTerminalActivity(activities, 'start');
             const endActivity = getRouteTerminalActivity(activities, 'end');
             const travelMetrics = computeRouteTravelMetrics(route);
-            const routePalletIds = extractRoutePalletIds(stops);
             const vehicleMeta = vehicleMetaById.get(vehicleId) ?? {
                 startAddressLabel: 'Start address',
                 endAddressLabel: 'End address',
@@ -1000,6 +1228,22 @@
             const selector = document.createElement('select');
             selector.setAttribute('aria-label', `Assign actual vehicle for ${vehicleId}`);
 
+            const storedTimes = selectedRouteTimesByKey.get(routeKey) || {};
+            const startTimeInput = document.createElement('input');
+            startTimeInput.type = 'time';
+            startTimeInput.value = String(storedTimes.startTime || '04:00');
+            startTimeInput.setAttribute('aria-label', `Start time for ${vehicleId}`);
+
+            const endTimeInput = document.createElement('input');
+            endTimeInput.type = 'time';
+            endTimeInput.value = String(storedTimes.endTime || '18:00');
+            endTimeInput.setAttribute('aria-label', `End time for ${vehicleId}`);
+
+            const refineButton = document.createElement('button');
+            refineButton.type = 'button';
+            refineButton.className = 'route-breakdown-commit';
+            refineButton.textContent = 'Refine Route';
+
             const commitButton = document.createElement('button');
             commitButton.type = 'button';
             commitButton.className = 'route-breakdown-commit';
@@ -1020,45 +1264,144 @@
                 return true;
             });
 
-            const compatibleRegs = compatibleVehicles
-                .map(vehicle => String(vehicle?.reg || '').trim())
-                .filter(Boolean);
+            const compatibleVehicleOptions = compatibleVehicles.filter(vehicle => {
+                const reg = String(vehicle?.reg || '').trim();
+                const id = String(vehicle?.id ?? '').trim();
+                return reg !== '' || id !== '';
+            });
 
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = compatibleRegs.length
+            defaultOption.textContent = compatibleVehicleOptions.length
                 ? 'Select actual vehicle...'
                 : 'No vehicles for selected depot';
             selector.appendChild(defaultOption);
 
-            compatibleRegs.forEach(reg => {
+            compatibleVehicleOptions.forEach(vehicle => {
                 const option = document.createElement('option');
-                option.value = reg;
-                option.textContent = reg;
+                option.value = String(vehicle?.id ?? '');
+                option.textContent = String(vehicle?.reg || vehicle?.id || 'Unknown vehicle');
                 selector.appendChild(option);
             });
 
-            const storedSelection = selectedVehicleByRoute.get(routeKey) || '';
-            const inferredSelection = compatibleRegs.includes(vehicleId) ? vehicleId : '';
-            selector.value = storedSelection || inferredSelection;
+            const storedSelection = String(selectedVehicleByRoute.get(routeKey) || '');
+            selector.value = storedSelection;
 
-            const syncCommitButtonState = () => {
-                const selectedReg = String(selector.value || '').trim();
+            const syncRefineButtonState = () => {
+                const selectedVehicleId = String(selector.value || '').trim();
+                const selectedVehicle = availableVehicles.find(vehicle => String(vehicle?.id ?? '') === selectedVehicleId);
+                const selectedReg = selectedVehicle ? String(selectedVehicle.reg || '').trim() : '';
                 const isBusy = committingRouteKeys.has(routeKey);
-                commitButton.disabled = isBusy || !selectedReg || !routePalletIds.length;
+                refineButton.disabled = isBusy || !selectedVehicleId || !selectedReg || !routePalletIds.length;
+                commitButton.disabled = isBusy || !selectedVehicleId || !selectedReg || !routePalletIds.length;
             };
 
             selector.addEventListener('change', event => {
                 selectedVehicleByRoute.set(routeKey, String(event.target.value || ''));
-                syncCommitButtonState();
+                syncRefineButtonState();
+            });
+
+            startTimeInput.addEventListener('change', event => {
+                const existing = selectedRouteTimesByKey.get(routeKey) || {};
+                const nextValue = String(event.target.value || '04:00');
+                selectedRouteTimesByKey.set(routeKey, { ...existing, startTime: nextValue });
+            });
+
+            endTimeInput.addEventListener('change', event => {
+                const existing = selectedRouteTimesByKey.get(routeKey) || {};
+                const nextValue = String(event.target.value || '18:00');
+                selectedRouteTimesByKey.set(routeKey, { ...existing, endTime: nextValue });
+            });
+
+            refineButton.addEventListener('click', async () => {
+                const selectedVehicleId = String(selector.value || '').trim();
+                const selectedVehicle = availableVehicles.find(vehicle => String(vehicle?.id ?? '') === selectedVehicleId);
+                const selectedReg = selectedVehicle ? String(selectedVehicle.reg || '').trim() : '';
+                const dueDate = String(document.getElementById('dueDate')?.value || '').trim();
+
+                if (!selectedVehicleId || !selectedReg) {
+                    setStatus('Select a vehicle before refining a route.', 'error');
+                    return;
+                }
+
+                if (!dueDate) {
+                    setStatus('Due date is required to refine the route.', 'error');
+                    return;
+                }
+
+                if (!routePalletIds.length) {
+                    setStatus('No outgoing pallets were found in this route.', 'error');
+                    return;
+                }
+
+                committingRouteKeys.add(routeKey);
+                refineButton.textContent = 'Refining...';
+                syncRefineButtonState();
+
+                try {
+                    setStatus(`Refining ${vehicleId} with ${selectedReg} from ${startTimeInput.value} to ${endTimeInput.value}...`, null);
+                    const response = await fetch("{{ route('route-planning.multi-vehicle') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({
+                            dueDate,
+                            depot: Number(document.getElementById('depot').value || 0),
+                            serviceDurationSeconds: Number(document.getElementById('serviceDurationSeconds').value || 1200),
+                            routeMode: 'stored',
+                            routeStartDate: dueDate,
+                            routeEndDate: dueDate,
+                            routeStartTime: startTimeInput.value || '04:00',
+                            routeEndTime: endTimeInput.value || '18:00',
+                            routeVehicleId: selectedVehicleId,
+                            routePalletIds: routePalletIds,
+                            storedRouteData: latestPlanPayload,
+                            genericMode: false,
+                            maxOperatingSeconds: Math.max(3600, Math.round((Number(document.getElementById('maxOperatingSeconds').value || 14)) * 3600)),
+                            dryRun: false,
+                            persistSuggestions: false,
+                        }),
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (error) {
+                        payload = null;
+                    }
+
+                    if (!response.ok) {
+                        const message = payload?.error || payload?.detail || payload?.message || 'Failed to refine route';
+                        throw new Error(message);
+                    }
+
+                    latestPlanPayload = payload;
+                    await renderSummary(payload);
+                    setStatus('Route refined with exact schedule limits. Review and commit if acceptable.', 'success');
+                } catch (error) {
+                    setStatus(error.message || 'Failed to refine route.', 'error');
+                } finally {
+                    refineButton.textContent = 'Refine Route';
+                    committingRouteKeys.delete(routeKey);
+                    if (latestPlanPayload) {
+                        renderRouteBreakdown(latestPlanPayload);
+                    } else {
+                        syncRefineButtonState();
+                    }
+                }
             });
 
             commitButton.addEventListener('click', async () => {
-                const selectedReg = String(selector.value || '').trim();
+                const selectedVehicleId = String(selector.value || '').trim();
+                const selectedVehicle = availableVehicles.find(vehicle => String(vehicle?.id ?? '') === selectedVehicleId);
+                const selectedReg = selectedVehicle ? String(selectedVehicle.reg || '').trim() : '';
                 const dueDate = String(document.getElementById('dueDate')?.value || '').trim();
                 const returnToOrigin = Boolean(vehicleMeta.returnToOrigin);
 
-                if (!selectedReg) {
+                if (!selectedVehicleId || !selectedReg) {
                     setStatus('Select a vehicle before committing a route.', 'error');
                     return;
                 }
@@ -1083,7 +1426,7 @@
                 committingRouteKeys.add(routeKey);
                 const previousLabel = commitButton.textContent;
                 commitButton.textContent = 'Committing...';
-                syncCommitButtonState();
+                syncRefineButtonState();
 
                 try {
                     setStatus(`Committing ${routePalletIds.length} pallets to ${selectedReg}...`, null);
@@ -1119,7 +1462,7 @@
                     const suffix = skippedCount > 0 ? ` (${skippedCount} skipped)` : '';
                     setStatus(`Committed ${committedCount} pallet(s) to ${selectedReg}${suffix}.`, 'success');
 
-                    selectedVehicleByRoute.set(routeKey, selectedReg);
+                    selectedVehicleByRoute.set(routeKey, selectedVehicleId);
                     if (latestPlanPayload) {
                         renderRouteBreakdown(latestPlanPayload);
                     }
@@ -1128,20 +1471,27 @@
                 } finally {
                     commitButton.textContent = previousLabel;
                     committingRouteKeys.delete(routeKey);
-                    syncCommitButtonState();
+                    if (latestPlanPayload) {
+                        renderRouteBreakdown(latestPlanPayload);
+                    } else {
+                        syncRefineButtonState();
+                    }
                 }
             });
 
-            if (!compatibleRegs.length) {
+            if (!compatibleVehicleOptions.length) {
                 selector.disabled = true;
             }
 
             const controls = document.createElement('div');
             controls.className = 'route-breakdown-vehicle-controls';
             controls.appendChild(selector);
+            controls.appendChild(startTimeInput);
+            controls.appendChild(endTimeInput);
+            controls.appendChild(refineButton);
             controls.appendChild(commitButton);
             vehicleControl.appendChild(controls);
-            syncCommitButtonState();
+            syncRefineButtonState();
 
             const metrics = document.createElement('div');
             metrics.className = 'route-breakdown-metrics';
@@ -1524,7 +1874,13 @@
         }
 
         try {
-            const response = await fetch(`{{ route('route-planning.vehicles') }}?depot=${encodeURIComponent(value)}`, {
+            const dueDateValue = String(document.getElementById('dueDate')?.value || '').trim();
+            const queryParts = [`depot=${encodeURIComponent(value)}`];
+            if (dueDateValue) {
+                queryParts.push(`dueDate=${encodeURIComponent(dueDateValue)}`);
+            }
+
+            const response = await fetch(`{{ route('route-planning.vehicles') }}?${queryParts.join('&')}`, {
                 headers: {
                     'Accept': 'application/json',
                 },
@@ -1546,15 +1902,16 @@
             if (Array.isArray(payload?.vehicleOptions)) {
                 availableVehicles = payload.vehicleOptions
                     .map(vehicle => ({
+                        id: String(vehicle?.id ?? '').trim(),
                         reg: String(vehicle?.reg || '').trim(),
                         payloadKg: Number(vehicle?.payloadKg),
                         palletCapacity: Number(vehicle?.palletCapacity),
                     }))
-                    .filter(vehicle => vehicle.reg !== '');
+                    .filter(vehicle => vehicle.reg !== '' || vehicle.id !== '');
             } else if (Array.isArray(payload?.vehicles)) {
                 // Backward-compatible fallback if metadata is unavailable.
                 availableVehicles = payload.vehicles
-                    .map(reg => ({ reg: String(reg || '').trim(), payloadKg: null, palletCapacity: null }))
+                    .map(reg => ({ id: '', reg: String(reg || '').trim(), payloadKg: null, palletCapacity: null }))
                     .filter(vehicle => vehicle.reg !== '');
             } else {
                 availableVehicles = [];
@@ -1589,6 +1946,14 @@
         const maxRigids = parseOptionalLimit(document.getElementById('maxRigids')?.value);
         const maxArtics = parseOptionalLimit(document.getElementById('maxArtics')?.value);
         const maxVans = parseOptionalLimit(document.getElementById('maxVans')?.value);
+        const routeMode = routeModeSelect.value;
+        const genericMode = routeMode === 'generic';
+        const maxOperatingHours = Number(document.getElementById('maxOperatingSeconds').value || 14);
+        const maxOperatingSeconds = Math.max(3600, Math.round(maxOperatingHours * 3600)); // Convert to seconds, minimum 1 hour
+        const routeStartDate = dueDate;
+        const routeEndDate = dueDate;
+        const routeVehicleId = null;
+        const storedRoute = null;
         const dryRun = false;
 
         if (!dueDate || !depot) {
@@ -1618,6 +1983,13 @@
                     maxRigids,
                     maxArtics,
                     maxVans,
+                    genericMode,
+                    maxOperatingSeconds,
+                    routeMode,
+                    routeStartDate,
+                    routeEndDate,
+                    routeVehicleId,
+                    storedRouteData: storedRoute ? storedRoute.payload : null,
                     dryRun,
                     persistSuggestions: !dryRun
                 })
@@ -1636,6 +2008,16 @@
             }
 
             latestPlanPayload = payload;
+            if (payload && payload.success && routeMode === 'generic' && genericMode) {
+                saveStoredRoute({
+                    id: `stored-route-${Date.now()}`,
+                    label: `${dueDate} • Depot ${depot}`,
+                    dueDate,
+                    depot: Number(depot),
+                    savedAt: new Date().toISOString(),
+                    payload
+                });
+            }
             await renderSummary(payload);
             setStatus('Plan complete. Results displayed below.', 'success');
         } catch (error) {
@@ -1649,6 +2031,11 @@
         await loadVehiclesForDepot(depotSelect.value);
     });
 
+    routeModeSelect.addEventListener('change', () => {
+        const isGeneric = routeModeSelect.value === 'generic';
+        maxOperatingSecondsField.style.display = isGeneric ? 'flex' : 'none';
+    });
+
     function syncLayoutOffset() {
         const routePlanningPage = document.getElementById('routePlanningPage');
         if (!routePlanningPage) return;
@@ -1659,6 +2046,9 @@
 
     syncLayoutOffset();
     window.addEventListener('resize', syncLayoutOffset);
+    if (typeof storedRouteSelect !== 'undefined' && storedRouteSelect) {
+        populateStoredRouteSelect();
+    }
     loadDepots();
 </script>
 </div>
