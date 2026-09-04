@@ -254,7 +254,7 @@ use App\Models\User;
             $date_completed = Carbon::createFromFormat('d/m/Y', $invoice['estimated_delivery_date']) ?? Carbon::createFromFormat('Y-m-d H:i:s', $invoice['date_completed']); // use estimated_delivery_date if available, otherwise fall back to date_completed
 
             // get the final payment for this invoice
-            $paymentResult = prepareExecuteQuery("SELECT `created_at`,`id` FROM `invoice_payments` WHERE `invoice_id`=? ORDER BY `created_at` DESC LIMIT 1",'i',[$invoice_id]);
+            $paymentResult = prepareExecuteQuery("SELECT `created_at`,`id` FROM `invoice_payments` WHERE `invoice_id`=? AND `invoice_payments`.`deleted`=0 ORDER BY `created_at` DESC LIMIT 1",'i',[$invoice_id]);
             $count = $paymentResult->num_rows;
 
             // check we have a payment record, old completed invoices do not have any
@@ -1127,7 +1127,7 @@ use App\Models\User;
 	function getOutstandingPicksheetTotal($picksheet_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=?) GROUP by pickerSheets.id",'i',[$picksheet_id]);
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=?) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",'i',[$picksheet_id]);
 
 		$totalOutstanding = 0.00;
 
@@ -1147,7 +1147,7 @@ use App\Models\User;
 	function getChargedPicksheetTotalList($picksheet_ids){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).")) GROUP by pickerSheets.id",
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).")) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",
 	str_repeat("i",count($picksheet_ids)),$picksheet_ids);
 
 		$this_price = 0.00;
@@ -1161,7 +1161,7 @@ use App\Models\User;
 	}
 	function getPaidPicksheetTotalList($picksheet_ids){
 		global $mysqli;
-		$picksheetsResult = prepareExecuteQuery("SELECT SUM(amount) as paid FROM `invoice_payments` WHERE invoice_id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).")",
+		$picksheetsResult = prepareExecuteQuery("SELECT SUM(amount) as paid FROM `invoice_payments` WHERE invoice_id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).") AND `invoice_payments`.`deleted`=0",
 	str_repeat("i",count($picksheet_ids)),$picksheet_ids);
 		$data = $picksheetsResult->fetch_assoc();
 
@@ -1172,7 +1172,7 @@ use App\Models\User;
 	function getTotalPaidByCustomerIDForUserID($customer_id, $user_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id= AND pickerSheets.user_from_id=?)",
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=? AND pickerSheets.user_from_id=?) AND `invoice_payments`.`deleted`=0",
 	'ii',[$customer_id,$user_id]);
 
 		$data = $customerPicksheets->fetch_assoc();
@@ -1203,7 +1203,7 @@ use App\Models\User;
 
 		$pick_ids = $picksheetData['ids'];
 
- 		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.id in ('$pick_ids')) GROUP by pickerSheets.id");
+ 		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.id in ('$pick_ids')) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id");
 
 		$data = $customerPicksheets->fetch_assoc();
 
@@ -1217,7 +1217,7 @@ use App\Models\User;
 	function getPicksheetTotalPaid($picksheet_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=? AND invoice_payments.payment_type !=  'CREDIT_NOTE') GROUP by pickerSheets.id",
+		$customerPicksheets = prepareExecuteQuery("SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=? AND invoice_payments.payment_type !=  'CREDIT_NOTE') AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",
 			'i',[$picksheet_id]);
 
 		$picksheet = $customerPicksheets->fetch_assoc();
@@ -1693,7 +1693,7 @@ use App\Models\User;
 	function getInvoiceCreditNoteTotal($invoice_id){
 		global $mysqli;
 
-		$db_result = prepareExecuteQuery("SELECT SUM(amount) as total_credit FROM `invoice_payments` WHERE invoice_id=? && payment_method='CREDIT_NOTE'",'i',[$invoice_id]);
+		$db_result = prepareExecuteQuery("SELECT SUM(amount) as total_credit FROM `invoice_payments` WHERE invoice_id=? && payment_method='CREDIT_NOTE' AND `invoice_payments`.`deleted`=0",'i',[$invoice_id]);
 		$data = $db_result->fetch_assoc();
 
 		return (double) $data['total_credit'];
@@ -1736,7 +1736,7 @@ use App\Models\User;
 		global $mysqli;
 
 		$price = 0;
-		$creditNoteResult = prepareExecuteQuery("SELECT product_id,price,quantity FROM `credit_note_items` WHERE payment_id =?",'i',[$invoice_payment_id]);
+		$creditNoteResult = prepareExecuteQuery("SELECT product_id,price,quantity FROM `credit_note_items` WHERE payment_id =? AND `credit_note_items`.`deleted` = 0",'i',[$invoice_payment_id]);
 
 		while($creditNoteItem = $creditNoteResult->fetch_assoc()){
 			if($creditNoteItem['product_id'] == 0 || weightTypeOfProduct($creditNoteItem['product_id']) == 'PPC'){ # bespoke credit note, not attached product
@@ -1804,7 +1804,7 @@ use App\Models\User;
 	function totalValueCreditedOnInvoiceID($invoice_id){
 		global $mysqli;
 		$price = 0;
-		$paymentsResult = prepareExecuteQuery("SELECT id FROM `invoice_payments` WHERE invoice_id=? AND payment_method = 'CREDIT_NOTE'",'i',[$invoice_id]);
+		$paymentsResult = prepareExecuteQuery("SELECT id FROM `invoice_payments` WHERE invoice_id=? AND payment_method = 'CREDIT_NOTE' AND `invoice_payments`.`deleted`=0",'i',[$invoice_id]);
 		while ($paymentData = $paymentsResult->fetch_assoc())
 		{
 			$price = $price + (double)creditNoteTotal($paymentData['id']);
@@ -1828,7 +1828,7 @@ use App\Models\User;
 	function doesInvoiceHaveCreditNote($invoice_id){
 		global $mysqli;
 
-		$result = prepareExecuteQuery("SELECT count(id) as count FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=?",'i',[$invoice_id]);
+		$result = prepareExecuteQuery("SELECT count(id) as count FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=? AND `invoice_payments`.`deleted`=0",'i',[$invoice_id]);
 		$data = $result->fetch_assoc();
 
 		if($data['count'] == 0){
@@ -1841,7 +1841,7 @@ use App\Models\User;
 	function getInvoiceCreditNotes($invoice_id){
 		global $mysqli;
 
-		$result = prepareExecuteQuery("SELECT * FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=?",'i',[$invoice_id]);
+		$result = prepareExecuteQuery("SELECT * FROM `invoice_payments` WHERE payment_method='CREDIT_NOTE' && invoice_id=? AND `invoice_payments`.`deleted`=0",'i',[$invoice_id]);
 		$array = array();
 		while ($row = $result->fetch_assoc())
 		{
@@ -1875,7 +1875,7 @@ use App\Models\User;
 					product.weightnote AS 'product_weightnote',
 					product.product_temp AS 'product_product_temp'
 				FROM `credit_note_items`
-				LEFT JOIN `product` ON `credit_note_items`.product_id = product.id WHERE credit_note_items.payment_id = ".$row['id']);
+				LEFT JOIN `product` ON `credit_note_items`.product_id = product.id WHERE credit_note_items.payment_id = ".$row['id']." AND `credit_note_items`.`deleted`=0");
 
 				while ($cnr = $cnq->fetch_assoc())
 				{

@@ -232,7 +232,7 @@ for ($i = 0; $i < count($supplierPicksheets);$i++) {
     $internalPaid = 0;
     $picksheet = $supplierPicksheets[$i];
     $internalValue = number_format((double)invoiceTotal($picksheet['id']), 2, '.', '');
-    $internalPaid = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$picksheet['id'])->fetch_assoc()['amount'];
+    $internalPaid = prepareExecuteQuery("SELECT SUM(`amount`) as `amount` FROM `invoice_payments` WHERE `invoice_id`= ".$picksheet['id']." AND `invoice_payments`.`deleted`=0")->fetch_assoc()['amount'];
     if ($internalPaid==null)$internalPaid=0;
     $internalOutstanding = ($internalValue - $internalPaid);
     if ((!request()->has("history") && $internalOutstanding == 0)||(request()->has("history") && $internalOutstanding > 0)) continue;

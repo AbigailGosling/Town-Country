@@ -1,25 +1,25 @@
 <?php
 require_once(__DIR__.'/../functions.php');
 
-if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="") 
+if (request()->input('start') !== null && request()->input('start')!="" && request()->input('end') !== null && request()->input('end')!="")
 {
     $start = DateTime::createFromFormat("d/m/Y",request()->input('start'))->format('Y-m-d');
     $end  = DateTime::createFromFormat("d/m/Y",request()->input('end'))->format('Y-m-d');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE (STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') BETWEEN ? AND ?) ORDER BY id ASC",'ss',[$start,$end]);
 }
-else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('end') !== null && request()->input('end')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('end') !== null && request()->input('end')!="")
 {
     $start = request()->input('startInv');
     $end  = DateTime::createFromFormat("d/m/Y",request()->input('end'))->format('Y-m-d');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE id >= ? AND STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y')< ? ORDER BY id ASC",'is',[$start,$end]);
 }
-else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv') !== null && request()->input('endInv')!="") 
+else if (request()->input('start') !== null && request()->input('start')!="" && request()->input('endInv') !== null && request()->input('endInv')!="")
 {
     $start = DateTime::createFromFormat("d/m/Y",request()->input('start'))->format('Y-m-d');
     $end  = request()->input('endInv');
     $res = prepareExecuteQuery("SELECT * FROM pickerSheets WHERE STR_TO_DATE(`estimated_delivery_date`, '%d/%c/%Y') >= ? AND `id` <= ? ORDER BY id ASC",'si',[$start,$end]);
 }
-else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv') !== null && request()->input('endInv')!="") 
+else if (request()->input('startInv') !== null && request()->input('startInv')!="" && request()->input('endInv') !== null && request()->input('endInv')!="")
 {
     $start = request()->input('startInv');
     $end  = request()->input('endInv');
@@ -42,7 +42,7 @@ $end_date = null;
 foreach ($list as $pick)
 {
     if ($pick['deleted']!=0 || $pick['customer_id']==0) continue;
-    if ($firstid == 0) 
+    if ($firstid == 0)
     {
         $firstid = $pick['id'];
         $first_date = $pick['estimated_delivery_date'];
@@ -54,14 +54,14 @@ foreach ($list as $pick)
         $aborted = $pick['id'];
         break;
     }
-    $sql = "SELECT SUM(amount) as amount FROM invoice_payments WHERE invoice_payments.payment_method != 'CREDIT_NOTE' && invoice_payments.invoice_id = ?";
+    $sql = "SELECT SUM(amount) as amount FROM invoice_payments WHERE invoice_payments.payment_method != 'CREDIT_NOTE' && invoice_payments.invoice_id = ? AND `invoice_payments`.`deleted`=0";
     $res = prepareExecuteQuery($sql,'i',[$pick['id']]) or die(mysqli_error($mysqli)." ". $sql);
-   
+
     $thisInvTotal = number_format((double)invoiceTotal($pick['id']), 2, '.', '');
     $thisPayment = mysqli_fetch_assoc($res)['amount'];
     $thisPayment = number_format((double)totalValueCreditedOnInvoiceID($pick['id']), 2, '.', '');
-    
-    $rolSaleVal += $thisInvTotal;  
+
+    $rolSaleVal += $thisInvTotal;
     $rolPayment += $thisPayment;
 }
 
@@ -87,11 +87,11 @@ else if (request()->input('previous_value') !== null && request()->input('previo
         'end_invoice_id'=>0
     );
 }
-if (array_key_exists('previous',$output) && $output['previous'] != null && array_key_exists('rolTotal',$output['previous'])) 
+if (array_key_exists('previous',$output) && $output['previous'] != null && array_key_exists('rolTotal',$output['previous']))
 {
     $output['rolTotal'] = round(($output['sales'] + $output['previous']->rolTotal) - $output['payments'],2,PHP_ROUND_HALF_DOWN);
 }
-else 
+else
 {
     $output['rolTotal'] = round($output['sales'] - $output['payments'],2,PHP_ROUND_HALF_DOWN);
 }

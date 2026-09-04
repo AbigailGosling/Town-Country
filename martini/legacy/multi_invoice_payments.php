@@ -40,14 +40,14 @@ $customer = getCustomer($customerID);
                     <label for="invoices">Select Invoices</label>
                     <select class="form-control" id="invoices" name="invoices">
                         <?php
-                        $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid, GROUP_CONCAT(invoice_payments.id) as payment_ids FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.is_return_to_supplier = 0 AND pickerSheets.customer_id=?) GROUP by pickerSheets.id",'i',[$customerID]);
+                        $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid, GROUP_CONCAT(invoice_payments.id) as payment_ids FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.is_return_to_supplier = 0 AND pickerSheets.customer_id=?)  AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",'i',[$customerID]);
                         ini_set('memory_limit',(min(3072,$customerPicksheets->num_rows*0.3))."M");
                         while ($picksheet = mysqli_fetch_assoc($customerPicksheets)) {
                             $this_price = invoiceTotal($picksheet['id']);
                             $creditVal = 0;
                             if ($picksheet['payment_ids']!="")
                             {
-                                $pickSheetCredits = prepareExecuteQuery("SELECT payment_id FROM credit_note_items WHERE payment_id IN (".$picksheet['payment_ids'].")");
+                                $pickSheetCredits = prepareExecuteQuery("SELECT payment_id FROM credit_note_items WHERE payment_id IN (".$picksheet['payment_ids'].") AND `credit_note_items`.`deleted` = 0");
                                 while ($credit = $pickSheetCredits->fetch_assoc())
                                 {
                                     $creditVal = $creditVal + creditNoteTotal($credit['payment_id']);
