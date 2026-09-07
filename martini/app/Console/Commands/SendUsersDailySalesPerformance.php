@@ -52,9 +52,9 @@ class SendUsersDailySalesPerformance extends Command
             return Command::FAILURE;
         }
         $salesPermission = Permission::find(1);
-        $targetDateEnd = Carbon::now()->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
+        $targetDateEnd = Carbon::now()->setHours(18)->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
         $targetDateStart = $targetDateEnd->copy()->subDay();
-        if ($targetDateStart->dayOfWeek == 1) $targetDateStart->subDays(2);
+        if ($targetDateEnd->dayOfWeek == 1) $targetDateStart->subDays(2);
         $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::MONDAY);
         $diffInWeek = $targetDateEnd->diffInDays($weekDateStart, true);
         $usersSorted = [];
@@ -104,7 +104,7 @@ class SendUsersDailySalesPerformance extends Command
         }
         $targetLabel = $targetDateEnd->format('d/m/Y');
         $subject = 'Daily Summary For ' . $user->name . ' - ' . $targetLabel;
-        $htmlBody = $this->buildEmailBody($saleTarget, $targetDateEnd, $targetLabel, $targetSummary, $diffInWeek);
+        $htmlBody = $this->buildEmailBody($saleTarget, $targetDateStart, $targetDateEnd, $targetSummary, $diffInWeek);
 
         $to = [
             $email
@@ -168,7 +168,7 @@ class SendUsersDailySalesPerformance extends Command
         return number_format($value, 3, '.', ',') . ' kg';
     }
 
-    private function buildEmailBody(float $saleTarget, Carbon $targetDateEnd, string $targetLabel, array $targetSummary, int $diffInWeek): string
+    private function buildEmailBody(float $saleTarget, Carbon $targetDateStart, Carbon $targetDateEnd, array $targetSummary, int $diffInWeek): string
     {
         $dailyTarget = $saleTarget / 5;
         $balance = $targetSummary['daily']['Actual Profit'] - $dailyTarget;
@@ -184,7 +184,7 @@ class SendUsersDailySalesPerformance extends Command
             . "<p>Your daily sales target is: <strong>{$this->formatMoney($dailyTarget)}</strong></p>"
             . "<table border='1' cellpadding='6' cellspacing='0' style='border-collapse:collapse;'>"
             . "<thead><tr style='background:#f2f2f2;'>"
-            . "<th>Report Date</th>"
+            . "<th>Report Period</th>"
             . "<th>Day</th>"
             . "<th>Week of Year</th>"
             . "<th>kg</th>"
@@ -197,7 +197,7 @@ class SendUsersDailySalesPerformance extends Command
             . "<th>Actual Profit %</th>"
             . "</tr></thead><tbody>"
             . "<tr>"
-            . "<td><strong>{$targetLabel}</strong></td>"
+            . "<td align='right'>From: {$targetDateStart->format('d/m/Y H:i')}<br>To: {$targetDateEnd->format('d/m/Y H:i')}</td>"
             . "<td>{$targetDateEnd->format('l')}</td>"
             . "<td>Week {$targetDateEnd->isoWeek()}</td>"
             . "<td>{$this->formatKg($targetSummary['daily']['kg'])}</td>"
