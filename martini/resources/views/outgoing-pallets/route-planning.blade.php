@@ -475,13 +475,6 @@
                         <option value="">All</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label for="routeMode">Plan Mode</label>
-                    <select id="routeMode" name="routeMode">
-                        <option value="generic">Generic route (no time windows)</option>
-                        <option value="stored">Stored route (exact refinement)</option>
-                    </select>
-                </div>
                 <div class="field max-operating-field numeric-field" id="maxOperatingSecondsField" style="display: flex;">
                     <label for="maxOperatingSeconds">Max Operating Time (hours)</label>
                     <input type="number" id="maxOperatingSeconds" name="maxOperatingSeconds" min="1" value="14" step="0.5" required>
@@ -525,7 +518,6 @@
     const maxArticsSelect = document.getElementById('maxArtics');
     const maxVansSelect = document.getElementById('maxVans');
     const maxOperatingSecondsField = document.getElementById('maxOperatingSecondsField');
-    const routeModeSelect = document.getElementById('routeMode');
     const runBtn = document.getElementById('runBtn');
     const statusEl = document.getElementById('status');
     const resultsEl = document.getElementById('results');
@@ -702,13 +694,6 @@
             }
         }
 
-        if (typeof routeModeSelect !== 'undefined' && routeModeSelect) {
-            const shouldShow = routeModeSelect.value === 'stored';
-            document.querySelectorAll('.stored-route-field').forEach(el => {
-                el.style.display = shouldShow ? 'flex' : 'none';
-            });
-        }
-
         syncStoredRouteDetails();
     }
 
@@ -826,15 +811,21 @@
                 return;
             }
 
+            const activities = Array.isArray(route?.activities) ? route.activities : [];
+            const startActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'start') ?? null;
+            const endActivity = [...activities].reverse().find(activity => String(activity?.type ?? '').toLowerCase() === 'end') ?? null;
+            const startTimeLabel = formatUnixTimestamp(startActivity?.arr_time ?? startActivity?.start_time ?? startActivity?.end_time);
+            const endTimeLabel = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
+
             const points = [];
             points.push({
                 kind: 'start',
                 id: String(requestVehicle.start_address.location_id ?? vehicleId + '-start'),
                 lat: Number(requestVehicle.start_address.lat),
                 lon: Number(requestVehicle.start_address.lon),
+                timeLabel: startTimeLabel,
             });
 
-            const activities = Array.isArray(route?.activities) ? route.activities : [];
             activities.forEach(activity => {
                 const type = String(activity?.type ?? '').toLowerCase();
                 if (type !== 'service' && type !== 'pickup' && type !== 'delivery') {
@@ -862,6 +853,7 @@
                     id: String(requestVehicle.end_address?.location_id ?? vehicleId + '-end'),
                     lat: Number(requestVehicle.end_address?.lat),
                     lon: Number(requestVehicle.end_address?.lon),
+                    timeLabel: endTimeLabel,
                 });
             }
 
@@ -940,6 +932,19 @@
         return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
+    function formatRoutePointLabel(point, route) {
+        if (!point) {
+            return 'Unknown point';
+        }
+
+        const baseLabel = point.kind === 'service'
+            ? String(point.name ?? point.id ?? 'Unknown stop').split(' - ').join('<br/>')
+            : `${point.kind.toUpperCase()} (${route.vehicleId})`;
+        const timeLabel = String(point.timeLabel || '').trim();
+
+        return timeLabel ? `${baseLabel}<br/><small>${timeLabel}</small>` : baseLabel;
+    }
+
     function parseRoutePalletId(activity) {
         const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? '').trim();
         if (!serviceId) {
@@ -996,19 +1001,109 @@
         return `route:${index}:${fallbackVehicleId || 'unknown'}`;
     }
 
+    function renderGenericUnassignedSection(payload, serviceMeta, requestServices, responseRoutes) {
+        const solution = payload?.response?.solution ?? {};
+        const explicitUnassigned = Array.isArray(solution?.unassigned) ? solution.unassigned : [];
+
+        const assignedServiceIds = new Set();
+        (Array.isArray(responseRoutes) ? responseRoutes : []).forEach(route => {
+            const activities = Array.isArray(route?.activities) ? route.activities : [];
+            activities.forEach(activity => {
+                const type = String(activity?.type ?? '').toLowerCase();
+                if (type !== 'service' && type !== 'pickup' && type !== 'delivery') {
+                    return;
+                }
+
+                const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? '').trim();
+                if (serviceId) {
+                    assignedServiceIds.add(serviceId);
+                }
+            });
+        });
+
+        const derivedUnassigned = (Array.isArray(requestServices) ? requestServices : [])
+            .filter(service => {
+                const serviceId = String(service?.id ?? '').trim();
+                return serviceId !== '' && !assignedServiceIds.has(serviceId);
+            })
+            .map(service => ({
+                id: String(service?.id ?? ''),
+                name: String(service?.name ?? service?.id ?? 'Unknown delivery'),
+            }));
+
+        const rawUnassigned = explicitUnassigned.length ? explicitUnassigned : derivedUnassigned;
+
+        if (!rawUnassigned.length) {
+            return null;
+        }
+
+        const groupedUnassigned = new Map();
+        rawUnassigned.forEach(item => {
+            const value = item && typeof item === 'object' ? item : { id: String(item ?? '') };
+            const serviceId = String(value?.id ?? value?.service_id ?? value?.serviceId ?? value?.location_id ?? '').trim();
+            const meta = serviceMeta.get(serviceId);
+            const label = String(meta?.name ?? value?.name ?? serviceId ?? 'Unknown delivery').trim() || 'Unknown delivery';
+            const current = groupedUnassigned.get(label) ?? { label, count: 0 };
+            current.count += Math.max(1, Number(value?.count ?? 1) || 1);
+            groupedUnassigned.set(label, current);
+        });
+
+        const card = document.createElement('article');
+        card.className = 'route-breakdown-card';
+
+        const title = document.createElement('div');
+        title.className = 'route-breakdown-title';
+        title.textContent = `Unassigned Deliveries (${rawUnassigned.length})`;
+
+        const list = document.createElement('ol');
+        list.className = 'route-breakdown-stops';
+
+        groupedUnassigned.forEach(entry => {
+            const li = document.createElement('li');
+            li.textContent = `${entry.label} - ${entry.count} ${entry.count === 1 ? 'Delivery' : 'Deliveries'}`;
+            list.appendChild(li);
+        });
+
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(title);
+        wrapper.appendChild(list);
+        card.appendChild(wrapper);
+        return card;
+    }
+
     function renderRouteBreakdown(payload) {
         routeBreakdownEl.innerHTML = '';
 
         const responseRoutes = payload?.response?.solution?.routes ?? payload?.response?.routes ?? [];
         const requestServices = payload?.request?.services ?? [];
         const requestVehicles = payload?.request?.vehicles ?? [];
+        const serviceMeta = new Map();
+
+        requestServices.forEach(service => {
+            const id = String(service?.id ?? '');
+            if (!id) {
+                return;
+            }
+
+            serviceMeta.set(id, {
+                name: String(service?.name ?? id),
+                group: String(service?.group ?? '').trim(),
+                weightKg: Number(service?.size?.[1] ?? 0),
+            });
+        });
+
+        const unassignedSection = renderGenericUnassignedSection(payload, serviceMeta, requestServices, responseRoutes);
+        if (unassignedSection) {
+            routeBreakdownEl.appendChild(unassignedSection);
+        }
 
         if (!Array.isArray(responseRoutes) || !responseRoutes.length) {
-            routeBreakdownEl.innerHTML = '<p class="route-breakdown-empty">No routes available for breakdown.</p>';
+            if (!unassignedSection) {
+                routeBreakdownEl.innerHTML = '<p class="route-breakdown-empty">No routes available for breakdown.</p>';
+            }
             return;
         }
 
-        const serviceMeta = new Map();
         const serviceWeightByServiceId = new Map();
         const vehicleMetaById = new Map();
 
@@ -1072,60 +1167,29 @@
         });
 
         function computeRouteTravelMetrics(route) {
-            const fallbackDistanceMeters = Number(route?.distance ?? 0);
-            const fallbackDriveSeconds = Number(route?.transport_time ?? 0);
-            const activities = Array.isArray(route?.activities) ? route.activities : [];
+            const distanceMeters = Number(route?.distance ?? 0);
+            const transportSeconds = Number(route?.transport_time ?? 0);
+            const serviceSeconds = Number(route?.service_duration ?? 0);
+            const waitingSeconds = Number(route?.waiting_time ?? 0);
 
-            const hasStart = activities.some(activity => String(activity?.type ?? '').toLowerCase() === 'start');
-            const hasEnd = activities.some(activity => String(activity?.type ?? '').toLowerCase() === 'end');
-            const hasTerminalActivities = hasStart && hasEnd;
+            const safeDistanceMeters = Number.isFinite(distanceMeters) && distanceMeters > 0 ? distanceMeters : 0;
+            const safeTransportSeconds = Number.isFinite(transportSeconds) && transportSeconds > 0 ? transportSeconds : 0;
+            const safeServiceSeconds = Number.isFinite(serviceSeconds) && serviceSeconds > 0 ? serviceSeconds : 0;
+            const safeWaitingSeconds = Number.isFinite(waitingSeconds) && waitingSeconds > 0 ? waitingSeconds : 0;
 
-            if (activities.length < 2 || !hasTerminalActivities) {
-                return {
-                    distanceMeters: Number.isFinite(fallbackDistanceMeters) ? fallbackDistanceMeters : 0,
-                    driveSeconds: Number.isFinite(fallbackDriveSeconds) ? fallbackDriveSeconds : 0,
-                };
-            }
+            // GraphHopper's transport time can already include the service time for the vehicle stops,
+            // so the actual driving portion is transport - service, and the route total should be
+            // drive + service + waiting with service counted exactly once.
+            const driveSeconds = Math.max(0, safeTransportSeconds - safeServiceSeconds);
+            const totalSeconds = driveSeconds + safeServiceSeconds + safeWaitingSeconds;
 
-            let driveSeconds = 0;
-            let distanceMeters = 0;
-            let usedTimeDeltas = false;
-            let usedDistanceDeltas = false;
-
-            for (let i = 0; i < activities.length - 1; i++) {
-                const current = activities[i] ?? {};
-                const next = activities[i + 1] ?? {};
-
-                const currentEnd = Number(current?.end_time ?? current?.arr_time);
-                const nextArrival = Number(next?.arr_time ?? next?.end_time);
-                if (Number.isFinite(currentEnd) && Number.isFinite(nextArrival)) {
-                    const deltaSeconds = nextArrival - currentEnd;
-                    if (deltaSeconds >= 0) {
-                        driveSeconds += deltaSeconds;
-                        usedTimeDeltas = true;
-                    }
-                }
-
-                const currentDistance = Number(current?.distance);
-                const nextDistance = Number(next?.distance);
-                if (Number.isFinite(currentDistance) && Number.isFinite(nextDistance)) {
-                    const deltaMeters = nextDistance - currentDistance;
-                    if (deltaMeters >= 0) {
-                        distanceMeters += deltaMeters;
-                        usedDistanceDeltas = true;
-                    }
-                }
-            }
-
-            if (!usedTimeDeltas) {
-                driveSeconds = Number.isFinite(fallbackDriveSeconds) ? fallbackDriveSeconds : 0;
-            }
-
-            if (!usedDistanceDeltas) {
-                distanceMeters = Number.isFinite(fallbackDistanceMeters) ? fallbackDistanceMeters : 0;
-            }
-
-            return { distanceMeters, driveSeconds };
+            return {
+                distanceMeters: safeDistanceMeters,
+                driveSeconds,
+                serviceSeconds: safeServiceSeconds,
+                waitingSeconds: safeWaitingSeconds,
+                completionSeconds: totalSeconds,
+            };
         }
 
         function getRouteTerminalActivity(activities, terminal) {
@@ -1234,11 +1298,6 @@
             startTimeInput.value = String(storedTimes.startTime || '04:00');
             startTimeInput.setAttribute('aria-label', `Start time for ${vehicleId}`);
 
-            const endTimeInput = document.createElement('input');
-            endTimeInput.type = 'time';
-            endTimeInput.value = String(storedTimes.endTime || '18:00');
-            endTimeInput.setAttribute('aria-label', `End time for ${vehicleId}`);
-
             const refineButton = document.createElement('button');
             refineButton.type = 'button';
             refineButton.className = 'route-breakdown-commit';
@@ -1307,12 +1366,6 @@
                 selectedRouteTimesByKey.set(routeKey, { ...existing, startTime: nextValue });
             });
 
-            endTimeInput.addEventListener('change', event => {
-                const existing = selectedRouteTimesByKey.get(routeKey) || {};
-                const nextValue = String(event.target.value || '18:00');
-                selectedRouteTimesByKey.set(routeKey, { ...existing, endTime: nextValue });
-            });
-
             refineButton.addEventListener('click', async () => {
                 const selectedVehicleId = String(selector.value || '').trim();
                 const selectedVehicle = availableVehicles.find(vehicle => String(vehicle?.id ?? '') === selectedVehicleId);
@@ -1339,7 +1392,7 @@
                 syncRefineButtonState();
 
                 try {
-                    setStatus(`Refining ${vehicleId} with ${selectedReg} from ${startTimeInput.value} to ${endTimeInput.value}...`, null);
+                    setStatus(`Refining ${vehicleId} with ${selectedReg} from ${startTimeInput.value}...`, null);
                     const response = await fetch("{{ route('route-planning.multi-vehicle') }}", {
                         method: 'POST',
                         headers: {
@@ -1355,7 +1408,6 @@
                             routeStartDate: dueDate,
                             routeEndDate: dueDate,
                             routeStartTime: startTimeInput.value || '04:00',
-                            routeEndTime: endTimeInput.value || '18:00',
                             routeVehicleId: selectedVehicleId,
                             routePalletIds: routePalletIds,
                             storedRouteData: latestPlanPayload,
@@ -1487,7 +1539,6 @@
             controls.className = 'route-breakdown-vehicle-controls';
             controls.appendChild(selector);
             controls.appendChild(startTimeInput);
-            controls.appendChild(endTimeInput);
             controls.appendChild(refineButton);
             controls.appendChild(commitButton);
             vehicleControl.appendChild(controls);
@@ -1500,7 +1551,8 @@
                 `<span class="route-breakdown-badge">Weight: ${Math.round(requiredPayloadKg)} kg</span>`,
                 `<span class="route-breakdown-badge">Distance: ${formatMeters(travelMetrics.distanceMeters)}</span>`,
                 `<span class="route-breakdown-badge">Drive: ${formatSeconds(travelMetrics.driveSeconds)}</span>`,
-                `<span class="route-breakdown-badge">Total: ${formatSeconds(route?.completion_time ?? route?.time)}</span>`,
+                `<span class="route-breakdown-badge">Service: ${formatSeconds(travelMetrics.serviceSeconds)}</span>`,
+                `<span class="route-breakdown-badge">Total: ${formatSeconds(travelMetrics.completionSeconds)}</span>`,
             ].join('');
 
             head.appendChild(title);
@@ -1526,15 +1578,29 @@
             departureLi.textContent = `Departure: ${formatRouteTerminalLabel(startActivity, vehicleMeta.startAddressLabel)}${departureTimePart}`;
             list.appendChild(departureLi);
 
+            const groupedStops = new Map();
             stops.forEach(activity => {
                 const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? 'Unknown');
                 const meta = serviceMeta.get(serviceId);
                 const when = formatUnixTimestamp(activity?.arr_time ?? activity?.end_time ?? activity?.start_time);
-                const group = meta?.group ? ` - ${meta.group}` : '';
-                const timePart = when ? ` (${when})` : '';
+                const label = String(meta?.name ?? serviceId).trim() || serviceId;
+                const key = label;
+                const current = groupedStops.get(key) ?? { label, count: 0, firstWhen: null };
+
+                current.count += 1;
+                if (when && (!current.firstWhen || current.firstWhen > when)) {
+                    current.firstWhen = when;
+                }
+
+                groupedStops.set(key, current);
+            });
+
+            Array.from(groupedStops.values()).forEach(entry => {
+                const countLabel = entry.count > 1 ? ` ${entry.count} Deliveries` : '';
+                const timePart = entry.firstWhen ? ` (${entry.firstWhen})` : '';
 
                 const li = document.createElement('li');
-                li.textContent = `${meta?.name ?? serviceId}${group}${timePart}`;
+                li.textContent = `${entry.label}${countLabel}${timePart}`;
                 list.appendChild(li);
             });
 
@@ -1718,11 +1784,6 @@
             const color = routeColor(index);
 
             route.points.forEach((point, pointIndex) => {
-                const label = point.kind === 'service'
-                    ? String(point.name ?? point.id ?? 'Unknown stop')
-                        .split(' - ')
-                        .join('<br/>')
-                    : `${point.kind.toUpperCase()} (${route.vehicleId})`;
                 L.circleMarker([point.lat, point.lon], {
                     radius: point.kind === 'service' ? 4 : 6,
                     color,
@@ -1730,7 +1791,7 @@
                     fillColor: '#ffffff',
                     fillOpacity: 0.9,
                 })
-                    .bindPopup(label)
+                    .bindPopup(formatRoutePointLabel(point, route))
                     .addTo(markerLayer);
             });
 
@@ -1946,8 +2007,7 @@
         const maxRigids = parseOptionalLimit(document.getElementById('maxRigids')?.value);
         const maxArtics = parseOptionalLimit(document.getElementById('maxArtics')?.value);
         const maxVans = parseOptionalLimit(document.getElementById('maxVans')?.value);
-        const routeMode = routeModeSelect.value;
-        const genericMode = routeMode === 'generic';
+        const genericMode = true;
         const maxOperatingHours = Number(document.getElementById('maxOperatingSeconds').value || 14);
         const maxOperatingSeconds = Math.max(3600, Math.round(maxOperatingHours * 3600)); // Convert to seconds, minimum 1 hour
         const routeStartDate = dueDate;
@@ -1985,7 +2045,7 @@
                     maxVans,
                     genericMode,
                     maxOperatingSeconds,
-                    routeMode,
+                    routeMode: 'generic',
                     routeStartDate,
                     routeEndDate,
                     routeVehicleId,
@@ -2008,7 +2068,7 @@
             }
 
             latestPlanPayload = payload;
-            if (payload && payload.success && routeMode === 'generic' && genericMode) {
+            if (payload && payload.success && genericMode) {
                 saveStoredRoute({
                     id: `stored-route-${Date.now()}`,
                     label: `${dueDate} • Depot ${depot}`,
@@ -2029,11 +2089,6 @@
 
     depotSelect.addEventListener('change', async () => {
         await loadVehiclesForDepot(depotSelect.value);
-    });
-
-    routeModeSelect.addEventListener('change', () => {
-        const isGeneric = routeModeSelect.value === 'generic';
-        maxOperatingSecondsField.style.display = isGeneric ? 'flex' : 'none';
     });
 
     function syncLayoutOffset() {

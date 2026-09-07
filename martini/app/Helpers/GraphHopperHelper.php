@@ -166,6 +166,7 @@ class GraphHopperHelper
             if (!is_array($data)) {
                 $data = ['raw' => $response->body()];
             }
+            Log::error("payload", [$payload]);
             return [
                 'ok' => true,
                 'data' => $data,
@@ -306,18 +307,29 @@ class GraphHopperHelper
                 if (count($vrpVehicles)>=20)break 2;
                 //$startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
                 $startLocation = $depotLocation;
-                
+
                 if ($genericMode) {
-                    // Generic mode: no specific time windows, just max driving time
+                    // Generic mode should still allow the depot 1 overnight split used by the original planner.
+                    // For open-ended overnight runs, GraphHopper requires the end location to be null when
+                    // return_to_depot is false.
+                    $isOvernightGenericVehicle = $type_overview[0] == 3 && $overnighters < max(0, (int) $overnight_limit);
+                    if ($isOvernightGenericVehicle) {
+                        $overnighters++;
+                    }
+
                     $vrpVehicle = [
                         'vehicle_id' => $type['type_id'] . '-' . $i,
                         'type_id' => $type['type_id'],
                         'start_address' => $depotLocation,
-                        'end_address' => $depotLocation,
                         'max_driving_time' => $maxOperatingSeconds,
-                        'return_to_depot' => true,
-                        'min_jobs' => 1,
+                        'return_to_depot' => !$isOvernightGenericVehicle,
                     ];
+
+                    if ($vrpVehicle['return_to_depot']) {
+                        $vrpVehicle['end_address'] = $depotLocation;
+                    } else {
+                        $vrpVehicle['end_address'] = null;
+                    }
                 } else {
                     // Time-specific mode: original behavior with time windows
                     if (($type_overview[0] == 3 && $overnighters <= $overnight_limit || $startLocation['location_id'] !== 'depot')) {
@@ -334,7 +346,6 @@ class GraphHopperHelper
                                 'duration' => 3600,
                             ],
                             'return_to_depot' => false,
-                            'min_jobs' => 2,
                         ];
                         if ($startLocation['location_id'] !== 'depot') {
                             $vrpVehicle['return_to_depot'] = true;
@@ -354,7 +365,7 @@ class GraphHopperHelper
                         ];
                     }
                 }
-                
+
                 if ($vehicle->has_tail_lift) {
                     $vrpVehicle['skills'] = ['tail_lift'];
                 }
@@ -455,7 +466,7 @@ class GraphHopperHelper
                     $allowedVehicles[] = $vehicle['vehicle_id'];
                 }
             }
-            
+
             $thisService =[
                 'id' => (string)$pallet->id,
                 'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
@@ -469,7 +480,7 @@ class GraphHopperHelper
                 //'group' => $tempCategory,
                 'allowed_vehicles' => $allowedVehicles,
             ];
-            
+
             // Add time_windows only if not in generic mode
             if (!$genericMode) {
                 $addressOpeningTime = $address->opening_time;
@@ -487,7 +498,7 @@ class GraphHopperHelper
                     ],
                 ];
             }
-            
+
             if ($address->require_tail_lift) {
                 $thisService['required_skills'] = ['tail_lift'];
             }

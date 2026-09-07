@@ -30,6 +30,81 @@ class VehicleRoutePlanningController extends Controller
         return $rows > 0 ? $rows : self::DEFAULT_MAX_PALLET_ROWS;
     }
 
+    private static function filterStoredVehiclesForSelectedVehicle(array $storedVehicles, string $selectedVehicleId, ?Vehicle $selectedVehicle = null): array
+    {
+        $selectedVehicleId = trim((string) $selectedVehicleId);
+
+        if ($selectedVehicleId !== '') {
+            $matchedById = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedVehicleId) {
+                $vehicleId = trim((string) (($vehicle['vehicle_id'] ?? $vehicle['id'] ?? '')));
+                return $vehicleId !== '' && $vehicleId === $selectedVehicleId;
+            }));
+
+            if (!empty($matchedById)) {
+                return $matchedById;
+            }
+        }
+
+        if ($selectedVehicle !== null) {
+            $selectedTypeId = trim((string) ($selectedVehicle->vehicle_type_id ?? ''));
+            if ($selectedTypeId !== '') {
+                $matchedByType = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedTypeId) {
+                    $typeId = trim((string) ($vehicle['type_id'] ?? ''));
+                    return $typeId !== '' && str_starts_with($typeId, $selectedTypeId . '-');
+                }));
+
+                if (!empty($matchedByType)) {
+                    return array_slice($matchedByType, 0, 1);
+                }
+            }
+        }
+
+        if ($selectedVehicleId !== '') {
+            $matchedByReg = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedVehicleId) {
+                $reg = trim((string) ($vehicle['reg'] ?? ''));
+                return $reg !== '' && $reg === $selectedVehicleId;
+            }));
+
+            if (!empty($matchedByReg)) {
+                return $matchedByReg;
+            }
+        }
+
+        return $storedVehicles;
+    }
+
+    public static function buildStoredVehicleScheduleWindow(Carbon $dueDate, string $routeStartTimeInput, string $routeEndTimeInput, int $maxOperatingSeconds): array
+    {
+        $startTimestamp = strtotime($dueDate->format('Y-m-d') . ' ' . ($routeStartTimeInput !== '' ? $routeStartTimeInput : '04:00'));
+        $maxDrivingSeconds = max(3600, $maxOperatingSeconds);
+        $maxEndTimestamp = $startTimestamp + $maxDrivingSeconds;
+        $latestEndTimestamp = $maxEndTimestamp;
+
+        if ($routeEndTimeInput !== '') {
+            $endTimestamp = strtotime($dueDate->format('Y-m-d') . ' ' . $routeEndTimeInput);
+            if (is_int($endTimestamp) && $endTimestamp > 0) {
+                $latestEndTimestamp = min($endTimestamp, $maxEndTimestamp);
+            }
+        }
+
+        return [
+            'earliest_start' => $startTimestamp,
+            'latest_end' => $latestEndTimestamp,
+            'max_driving_time' => $maxDrivingSeconds,
+        ];
+    }
+
+    public static function storedServicesUseTimeWindows(array $storedServices): bool
+    {
+        foreach ($storedServices as $storedService) {
+            if (is_array($storedService['time_windows'] ?? null) && !empty($storedService['time_windows'])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function view()
     {
         return view('outgoing-pallets.route-planning');
@@ -55,7 +130,7 @@ class VehicleRoutePlanningController extends Controller
             });
 
         if ($depotSiteId > 0) {
-            $vehiclesQuery->where('site_id', $depotSiteId);
+            $vehiclesQuery->where([['site_id', $depotSiteId],['disabled', false]]);
         }
 
         $vehicles = $vehiclesQuery->get();
@@ -89,7 +164,7 @@ class VehicleRoutePlanningController extends Controller
         $routeStartDateInput = trim((string) $request->input('routeStartDate', ''));
         $routeEndDateInput = trim((string) $request->input('routeEndDate', ''));
         $routeStartTimeInput = trim((string) $request->input('routeStartTime', '04:00'));
-        $routeEndTimeInput = trim((string) $request->input('routeEndTime', '18:00'));
+        $routeEndTimeInput = trim((string) $request->input('routeEndTime', ''));
         $selectedVehicleId = trim((string) $request->input('routeVehicleId', ''));
         $routePalletIds = array_values(array_filter(array_map(function ($id) {
             $parsed = (int) $id;
@@ -207,7 +282,7 @@ class VehicleRoutePlanningController extends Controller
             $storedVehicles = is_array($storedRequest['vehicles'] ?? null) ? $storedRequest['vehicles'] : [];
             $storedVehicleTypes = is_array($storedRequest['vehicle_types'] ?? null) ? $storedRequest['vehicle_types'] : [];
             $storedRelations = is_array($storedRequest['relations'] ?? null) ? $storedRequest['relations'] : [];
-            $selectedVehicleTypeId = $selectedVehicle ? (string) ($selectedVehicle->vehicle_type_id ?? '') : null;
+            $storedUsesTimeWindows = self::storedServicesUseTimeWindows($storedServices);
 
             if (!empty($routePalletIds)) {
                 $routePalletIdSet = array_fill_keys(array_map('strval', $routePalletIds), true);
@@ -230,64 +305,55 @@ class VehicleRoutePlanningController extends Controller
             }
 
             if ($selectedVehicleId !== '') {
-                $storedVehicles = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedVehicleId, $selectedVehicleTypeId) {
-                    $vehicleId = (string) ($vehicle['vehicle_id'] ?? '');
-                    $typeId = (string) ($vehicle['type_id'] ?? '');
+                $storedVehicles = self::filterStoredVehiclesForSelectedVehicle($storedVehicles, $selectedVehicleId, $selectedVehicle);
+            }
 
-                    if ($selectedVehicleTypeId !== null && $typeId !== '' && str_starts_with($typeId, $selectedVehicleTypeId . '-')) {
-                        return true;
-                    }
-
-                    return $vehicleId !== '' && $vehicleId === $selectedVehicleId;
-                }));
+            if (!empty($storedVehicles)) {
+                $schedule = self::buildStoredVehicleScheduleWindow($dueDate, $routeStartTimeInput, $routeEndTimeInput, $maxOperatingSeconds);
+                $storedVehicles[0]['earliest_start'] = $schedule['earliest_start'];
+                $storedVehicles[0]['latest_end'] = $schedule['latest_end'];
+                $storedVehicles[0]['max_driving_time'] = $schedule['max_driving_time'];
             }
 
             foreach ($storedVehicles as &$storedVehicle) {
-                $storedVehicleId = (string) ($storedVehicle['vehicle_id'] ?? '');
-                $storedVehicleTypeId = (string) ($storedVehicle['type_id'] ?? '');
-                $matchesSelectedVehicle = $selectedVehicleId !== '' && $storedVehicleId === $selectedVehicleId;
-                $matchesSelectedVehicleType = $selectedVehicle !== null
-                    && $selectedVehicleTypeId !== null
-                    && $storedVehicleTypeId !== ''
-                    && str_starts_with($storedVehicleTypeId, $selectedVehicleTypeId . '-');
-
-                if ($matchesSelectedVehicle || $matchesSelectedVehicleType) {
-                    $storedVehicle['earliest_start'] = strtotime($dueDate->format('Y-m-d') . ' ' . ($routeStartTimeInput !== '' ? $routeStartTimeInput : '04:00'));
-                    $storedVehicle['latest_end'] = strtotime($dueDate->format('Y-m-d') . ' ' . ($routeEndTimeInput !== '' ? $routeEndTimeInput : '18:00'));
-                }
+                $storedVehicle['earliest_start'] = $storedVehicles[0]['earliest_start'];
+                $storedVehicle['latest_end'] = $storedVehicles[0]['latest_end'];
+                $storedVehicle['max_driving_time'] = $storedVehicles[0]['max_driving_time'];
             }
             unset($storedVehicle);
 
-            foreach ($storedServices as &$service) {
-                $address = null;
-                $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
-                if ($locationId !== '') {
-                    [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
-                    if ($clientId !== null && $addressId !== null) {
-                        $address = ClientAddress::query()
-                            ->where('client_type', ClientType::CUSTOMER->value)
-                            ->where('client_id', (int) $clientId)
-                            ->where('address_id', (int) $addressId)
-                            ->first();
+            if ($storedUsesTimeWindows) {
+                foreach ($storedServices as &$service) {
+                    $address = null;
+                    $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
+                    if ($locationId !== '') {
+                        [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
+                        if ($clientId !== null && $addressId !== null) {
+                            $address = ClientAddress::query()
+                                ->where('client_type', ClientType::CUSTOMER->value)
+                                ->where('client_id', (int) $clientId)
+                                ->where('address_id', (int) $addressId)
+                                ->first();
+                        }
+                    }
+
+                    if ($address) {
+                        $openingTime = $address->opening_time ?: Carbon::createFromTime(4, 0, 0);
+                        $closingTime = $address->closing_time ?: Carbon::createFromTime(23, 0, 0);
+                        $service['time_windows'] = [[
+                            'earliest' => $openingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
+                            'latest' => $closingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
+                        ]];
                     }
                 }
-
-                if ($address) {
-                    $openingTime = $address->opening_time ?: Carbon::createFromTime(4, 0, 0);
-                    $closingTime = $address->closing_time ?: Carbon::createFromTime(23, 0, 0);
-                    $service['time_windows'] = [[
-                        'earliest' => $openingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
-                        'latest' => $closingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
-                    ]];
-                }
+                unset($service);
             }
-            unset($service);
 
             $refinedPayload = [
                 'configuration' => [
                     'routing' => [
                         'calc_points' => true,
-                        'consider_traffic' => true,
+                        'consider_traffic' => $storedUsesTimeWindows,
                         'network_data_provider' => 'tomtom',
                     ],
                 ],
@@ -312,7 +378,7 @@ class VehicleRoutePlanningController extends Controller
                 'success' => true,
                 'dryRun' => true,
                 'routeMode' => $routeMode,
-                'genericMode' => false,
+                'genericMode' => !$storedUsesTimeWindows,
                 'dueDate' => $dueDate,
                 'routeStartDate' => $routeStartDateInput !== '' ? $routeStartDateInput : $dueDate->format('Y-m-d'),
                 'routeEndDate' => $routeEndDateInput !== '' ? $routeEndDateInput : $dueDate->format('Y-m-d'),
@@ -363,7 +429,8 @@ class VehicleRoutePlanningController extends Controller
             'lat' => $depotSite->lat ?? 0,
             'lon' => $depotSite->lon ?? 0,
         ];
-        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, 20, $genericMode, $maxOperatingSeconds);
+        $overnightVehicleLimit = $depotSite->id === 1 ? 2 : 0;
+        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, $overnightVehicleLimit, $genericMode, $maxOperatingSeconds);
 
         $skipped = [];
         $skippedAddresses = [];
@@ -484,21 +551,21 @@ class VehicleRoutePlanningController extends Controller
         ];
         $graphResponse = GraphHopperHelper::vrp($vrpPayload);
 
-        // Only attempt overnight optimization for time-specific planning at depot 1
-        $overnights = 2;
+        // Restore the depot 1 overnight retries for both time-specific and generic routing.
+        $overnights = 0;
         $lastUnassigned = PHP_INT_MAX;
-        while (!$genericMode && $graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $graphResponse['data']['solution']['no_unassigned'] < $lastUnassigned && $depotSite->id == 1 && $overnights <= 1) {
+        while ($graphResponse && isset($graphResponse['data']['solution']['no_unassigned']) && $graphResponse['data']['solution']['no_unassigned'] > 0 && $graphResponse['data']['solution']['no_unassigned'] < $lastUnassigned && $depotSite->id == 1 && $overnights < 2) {
             sleep(15);
             $lastUnassigned = $graphResponse['data']['solution']['no_unassigned'];
             $vrcVehicleTypes = [];
             $overnights++;
-            $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, $overnights, $genericMode, $maxOperatingSeconds);
+            $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, $overnights + 2, $genericMode, $maxOperatingSeconds);
             $vrpPayload = [
                 'configuration' => [
                     'routing' => [
                         'calc_points' => true,
                         //'return_snapped_waypoints' => true,
-                        'consider_traffic' => true,
+                        'consider_traffic' => !$genericMode,
                         //'snap_preventions' => ["motorway", "bridge", "ford", "tunnel", "ferry"],
                         'network_data_provider' =>"tomtom"
                     ],

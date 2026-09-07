@@ -1127,7 +1127,7 @@ use App\Models\User;
 	function getOutstandingPicksheetTotal($picksheet_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=?) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",'i',[$picksheet_id]);
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=?) AND (`invoice_payments`.`deleted`=0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id",'i',[$picksheet_id]);
 
 		$totalOutstanding = 0.00;
 
@@ -1147,7 +1147,7 @@ use App\Models\User;
 	function getChargedPicksheetTotalList($picksheet_ids){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).")) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id IN (".implode(",",array_fill(0,count($picksheet_ids),"?")).")) AND (`invoice_payments`.`deleted`=0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id",
 	str_repeat("i",count($picksheet_ids)),$picksheet_ids);
 
 		$this_price = 0.00;
@@ -1172,7 +1172,7 @@ use App\Models\User;
 	function getTotalPaidByCustomerIDForUserID($customer_id, $user_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=? AND pickerSheets.user_from_id=?) AND `invoice_payments`.`deleted`=0",
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.*, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.customer_id=? AND pickerSheets.user_from_id=?) AND (`invoice_payments`.`deleted`=0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id",
 	'ii',[$customer_id,$user_id]);
 
 		$data = $customerPicksheets->fetch_assoc();
@@ -1203,7 +1203,7 @@ use App\Models\User;
 
 		$pick_ids = $picksheetData['ids'];
 
- 		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.id in ('$pick_ids')) AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id");
+		$customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.id in ('$pick_ids')) AND (`invoice_payments`.`deleted`=0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id");
 
 		$data = $customerPicksheets->fetch_assoc();
 
@@ -1217,7 +1217,7 @@ use App\Models\User;
 	function getPicksheetTotalPaid($picksheet_id){
 		global $mysqli;
 
-		$customerPicksheets = prepareExecuteQuery("SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=? AND invoice_payments.payment_type !=  'CREDIT_NOTE') AND `invoice_payments`.`deleted`=0 GROUP by pickerSheets.id",
+		$customerPicksheets = prepareExecuteQuery("SELECT SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.completed = 1 AND pickerSheets.id=? AND invoice_payments.payment_type !=  'CREDIT_NOTE') AND (`invoice_payments`.`deleted`=0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id",
 			'i',[$picksheet_id]);
 
 		$picksheet = $customerPicksheets->fetch_assoc();
