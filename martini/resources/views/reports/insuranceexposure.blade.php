@@ -59,15 +59,15 @@
                 <x-data-table-header :width="'16%'">Over Terms</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
                 @else
-                <x-data-table-header :width="'16%'">28 - 35 Subtotal</x-data-table-header>
+                <x-data-table-header :width="'16%'">28 - 35 Subtotal<br>{{$formatCurrency(array_sum(array_column($data->toArray(), 'ot_total_outstanding')))}}</x-data-table-header>
                 @endif
                 @if ($detailedView)
                 <x-data-table-header :width="'16%'">Over Grace</x-data-table-header>
                 <x-data-table-header :width="'5%'">Subtotal</x-data-table-header>
                 @else
-                <x-data-table-header :width="'16%'">Over 35 Subtotal</x-data-table-header>
+                <x-data-table-header :width="'16%'">Over 35 Subtotal<br>{{$formatCurrency(array_sum(array_column($data->toArray(), 'gt_total_outstanding')))}}</x-data-table-header>
                 @endif
-                <x-data-table-header :width="'5%'">Total</x-data-table-header>
+                <x-data-table-header :width="'5%'">Total<br>{{$formatCurrency(array_sum(array_column($data->toArray(), 'total_outstanding')))}}</x-data-table-header>
             </x-slot:headers>
             <slot>
                 @foreach ($data as $item)
@@ -94,7 +94,7 @@
                                 @endforeach
                             </ul>
                         </x-data-table-column>
-                        <x-data-table-column :align="'center'">{{ ($item->at_total_outstanding > 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
+                        <x-data-table-column :align="'center'">{{ ($item->at_total_outstanding != 0) ? $formatCurrency($item->at_total_outstanding) : '' }}</x-data-table-column>
                         @php
                             $row["Approaching Terms"] = implode(",",$invoiceDB);
                             $row["Approaching Terms Subtotal"] = $formatCurrency($item->at_total_outstanding);
@@ -122,7 +122,7 @@
                             if ($detailedView)$row["Over Terms Subtotal"] = $formatCurrency($item->ot_total_outstanding);
                             else $row["28 - 35 Subtotal"] = $formatCurrency($item->ot_total_outstanding);
                         @endphp
-                        <x-data-table-column :align="'center'"><span class="text-amber-600">{{ ($item->ot_total_outstanding > 0) ? $formatCurrency($item->ot_total_outstanding) : '' }}</span></x-data-table-column>
+                        <x-data-table-column :align="'center'"><span class="text-amber-600">{{ ($item->ot_total_outstanding != 0) ? $formatCurrency($item->ot_total_outstanding) : '' }}</span></x-data-table-column>
                         @if ($detailedView)
                         @php
                             $invoiceDB = [];
@@ -147,8 +147,8 @@
                             $row["Total"] = $formatCurrency($item->total_outstanding);
                             $export[]=$row;
                         @endphp
-                        <x-data-table-column :align="'center'"><span class="text-red-600">{{ ($item->gt_total_outstanding > 0) ? $formatCurrency($item->gt_total_outstanding) : '' }}</span></x-data-table-column>
-                        <x-data-table-column :align="'center'"><span>{{ ($item->total_outstanding > 0) ? $formatCurrency($item->total_outstanding) : '' }}</span></x-data-table-column>
+                        <x-data-table-column :align="'center'"><span class="text-red-600">{{ ($item->gt_total_outstanding != 0) ? $formatCurrency($item->gt_total_outstanding) : '' }}</span></x-data-table-column>
+                        <x-data-table-column :align="'center'"><span>{{ ($item->total_outstanding  != 0) ? $formatCurrency($item->total_outstanding) : '' }}</span></x-data-table-column>
                     </tr>
                 @endforeach
             </slot>

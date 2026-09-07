@@ -95,6 +95,9 @@ use App\Models\ClientType;
     $colNames[] = "`is_petfood_customer`";
 	$colValue[] = (request()->input('is_petfood_customer')!=null && request()->input('is_petfood_customer') != "")?request()->input('is_petfood_customer'):"0";
 
+    $colNames[] = "`notify_credit_review`";
+	$colValue[] = (request()->input('notify_credit_review')!=null && request()->input('notify_credit_review') != "")?request()->input('notify_credit_review'):"0";
+
     $colNames[] = "`credit_enabled`";
 	$colValue[] = request()->input('credit_enabled_hidden',0);
 

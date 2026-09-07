@@ -154,7 +154,7 @@ class InsuranceExposureReportController extends Controller
             $picksheet->invoicePaid = false;
 
             $picksheet->outstanding = FuncHelper::floorDec((double) $picksheet->price - $picksheet->paid,2);
-            if ($picksheet->outstanding < 0.02) continue;
+            if ($picksheet->outstanding < 0.02 && $picksheet->outstanding > -0.02) continue;
 
             $picksheet->creditNotes = $this->getInvoiceCreditNotes($picksheet->id,$creditPayments[$picksheet->id]??[]);
             $picksheet->hasCreditNote = (count($picksheet->creditNotes)>0);

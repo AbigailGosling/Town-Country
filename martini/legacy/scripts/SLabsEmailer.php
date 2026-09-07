@@ -151,6 +151,7 @@ abstract class SLabsEmailerType
     const Statment  = 'STATEMENT';
     const Sales     = 'SALES_CONFIRMATION';
     const CrdtAlert = 'CREDIT_ALERT';
+    const CreditCheckNotification = 'CREDIT_CHECK_NOTIFICATION';
     const Retraction= 'RETRACTION';
     const SuppReturn= 'SUPPLIER_RETURN';
     const ShortStock= 'SHORT_STOCK_NOTICE';
