@@ -712,6 +712,7 @@
               <button class="bypass-btn" id="bypassLockBtn" type="button">Override Print: Off</button>
             @endif
             <button class="print-load-btn" id="printLoadBtn" type="button">Print Load</button>
+            <button class="print-load-btn" id="printContentsBtn" type="button">Print Contents</button>
             <button class="load-complete-btn" id="loadCompleteBtn" type="button">Load Complete</button>
           </div>
         </div>
@@ -753,36 +754,38 @@
     </div>
   </div>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script>
     let orders = [];
 
-    const ordersContainer = document.getElementById("orders");
-    const palletGrid = document.getElementById("palletGrid");
-    const rowWeightsEl = document.getElementById("rowWeights");
-    const totalWeightEl = document.getElementById("totalWeight");
-    const payloadBadge = document.getElementById("payloadBadge");
-    const printLoadBtn = document.getElementById("printLoadBtn");
-    const sortBySelect = document.getElementById("sortBy");
-    const toggleAllocatedBtn = document.getElementById("toggleAllocatedBtn");
-    const depotSelect = document.getElementById("depotSelect");
-    const vehicleSelect = document.getElementById("vehicleSelect");
-    const loadSheetSelect = document.getElementById("loadSheetSelect");
-    const vehicleHint = document.getElementById("vehicleHint");
-    const vehiclePlate = document.getElementById("vehiclePlate");
-    const vehicleModal = document.getElementById("vehicleModal");
-    const vehicleModalClose = document.getElementById("vehicleModalClose");
-    const vehicleModalBody = document.getElementById("vehicleModalBody");
-    const mapModal = document.getElementById("mapModal");
-    const mapModalClose = document.getElementById("mapModalClose");
-    const mapFrame = document.getElementById("mapFrame");
-    const mapModalTitle = document.getElementById("mapModalTitle");
-    const contentsModal = document.getElementById("contentsModal");
-    const contentsModalClose = document.getElementById("contentsModalClose");
-    const contentsModalTitle = document.getElementById("contentsModalTitle");
-    const contentsModalBody = document.getElementById("contentsModalBody");
-    const bypassLockBtn = document.getElementById("bypassLockBtn");
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
-    const palletLoaderPage = document.getElementById("palletLoaderPage");
+    const ordersContainer = $("#orders")[0];
+    const palletGrid = $("#palletGrid")[0];
+    const rowWeightsEl = $("#rowWeights")[0];
+    const totalWeightEl = $("#totalWeight")[0];
+    const payloadBadge = $("#payloadBadge")[0];
+    const printLoadBtn = $("#printLoadBtn")[0];
+    const sortBySelect = $("#sortBy")[0];
+    const toggleAllocatedBtn = $("#toggleAllocatedBtn")[0];
+    const depotSelect = $("#depotSelect")[0];
+    const vehicleSelect = $("#vehicleSelect")[0];
+    const loadSheetSelect = $("#loadSheetSelect")[0];
+    const vehicleHint = $("#vehicleHint")[0];
+    const vehiclePlate = $("#vehiclePlate")[0];
+    const vehicleModal = $("#vehicleModal")[0];
+    const vehicleModalClose = $("#vehicleModalClose")[0];
+    const vehicleModalBody = $("#vehicleModalBody")[0];
+    const mapModal = $("#mapModal")[0];
+    const mapModalClose = $("#mapModalClose")[0];
+    const mapFrame = $("#mapFrame")[0];
+    const mapModalTitle = $("#mapModalTitle")[0];
+    const contentsModal = $("#contentsModal")[0];
+    const contentsModalClose = $("#contentsModalClose")[0];
+    const contentsModalTitle = $("#contentsModalTitle")[0];
+    const contentsModalBody = $("#contentsModalBody")[0];
+    const bypassLockBtn = $("#bypassLockBtn")[0];
+    const csrfToken = $('meta[name="csrf-token"]').attr("content") || "";
+    const palletLoaderPage = $("#palletLoaderPage")[0];
+    const loadCompleteBtn = $("#loadCompleteBtn")[0];
     const canBypassPrintAndLoadLock = @json(auth()->user() && (auth()->user()->hasPermission('manageCustomers.php')));
     let activeDragOrderId = null;
     let hideAllocated = false;
@@ -803,7 +806,7 @@
       if (!palletLoaderPage) {
         return;
       }
-      const nav = document.querySelector("nav");
+      const nav = $("nav")[0];
       const navHeight = nav ? nav.getBoundingClientRect().height : 0;
       palletLoaderPage.style.setProperty("--layout-offset", `${Math.max(0, Math.round(navHeight))}px`);
     }
@@ -908,7 +911,6 @@
       const isLocked = hasBlockedLoaded && !isLoadLockBypassed();
       printLoadBtn.disabled = isLocked;
       printLoadBtn.classList.toggle("lock-warning", hasBlockedLoaded);
-      const loadCompleteBtn = document.getElementById("loadCompleteBtn");
       if (loadCompleteBtn) {
         loadCompleteBtn.disabled = isLocked;
         loadCompleteBtn.classList.toggle("lock-warning", hasBlockedLoaded);
@@ -943,7 +945,7 @@
         return;
       }
       try {
-        const dueDate = document.getElementById("deliveryDate")?.value || "";
+        const dueDate = $("#deliveryDate").val() || "";
         const response = await fetch("{{ route('outgoing-pallets-loading.update-allocation') }}", {
           method: "POST",
           headers: jsonHeaders(),
@@ -1064,7 +1066,7 @@
         return [];
       }
       try {
-        const dueDate = document.getElementById("deliveryDate").value || "";
+        const dueDate = $("#deliveryDate").val() || "";
         const response = await fetch(`{{ route('outgoing-pallets-loading.vehicle-allocations') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&loadSheetId=${encodeURIComponent(selectedLoadSheetId)}`);
         if (!response.ok) {
           throw new Error("Vehicle allocations unavailable");
@@ -1085,7 +1087,7 @@
       });
 
       const allocations = await loadVehicleAllocations(reg);
-      const selectedDueDate = document.getElementById("deliveryDate").value;
+      const selectedDueDate = $("#deliveryDate").val();
       const dateMatchedAllocations = allocations.filter(alloc => {
         if (!selectedDueDate) {
           return true;
@@ -1214,7 +1216,7 @@
     }
 
     async function loadLoadSheets(reg, preferredLoadSheetId = "") {
-      const dueDate = document.getElementById("deliveryDate").value || "";
+      const dueDate = $("#deliveryDate").val() || "";
       const desiredLoadSheetId = String(preferredLoadSheetId || "").trim();
       selectedLoadSheetId = desiredLoadSheetId;
       loadSheetSelect.innerHTML = "";
@@ -1289,7 +1291,7 @@
 
     async function loadOrders() {
       try {
-        const dueDate = document.getElementById("deliveryDate").value;
+        const dueDate = $("#deliveryDate").val();
         const depot = depotSelect.value || "";
         const reg = vehicleSelect.value || vehiclePlate.textContent || "";
         const response = await fetch(`{{ route('outgoing-pallets-loading.pallet-selection') }}?dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&reg=${encodeURIComponent(reg)}&loadSheetId=${encodeURIComponent(selectedLoadSheetId)}`);
@@ -1421,7 +1423,7 @@
         return false;
       }
 
-      const slot = slotElement || palletGrid.querySelector(`[data-slot-id="slot-${slotIndex}"]`);
+      const slot = slotElement || $(palletGrid).find(`[data-slot-id="slot-${slotIndex}"]`)[0];
       if (slot?.classList.contains("occupied")) {
         return false;
       }
@@ -1511,7 +1513,7 @@
         return pane;
       }
 
-      const panes = Array.from(document.querySelectorAll('.pane'));
+      const panes = $(".pane").toArray();
       return panes.find((candidate) => {
         const rect = candidate.getBoundingClientRect();
         return clientX >= rect.left && clientX <= rect.right;
@@ -1709,8 +1711,9 @@
         elements.push(container);
       }
 
-      if (container?.querySelectorAll) {
-        container.querySelectorAll('.pallet[data-order-id][draggable="true"]').forEach((el) => {
+      const scopedContainer = container ? $(container) : null;
+      if (scopedContainer?.find) {
+        scopedContainer.find('.pallet[data-order-id][draggable="true"]').toArray().forEach((el) => {
           elements.push(el);
         });
       }
@@ -2029,10 +2032,10 @@
       });
 
       requestAnimationFrame(() => {
-        const weightCells = rowWeightsEl.querySelectorAll(".row-weight");
+        const weightCells = $(rowWeightsEl).find(".row-weight").toArray();
         weightCells.forEach((cell, index) => {
           const slotIndex = index * PALLET_COLUMNS + 1;
-          const slot = palletGrid.querySelector(`[data-slot-id="slot-${slotIndex}"]`);
+          const slot = $(palletGrid).find(`[data-slot-id="slot-${slotIndex}"]`)[0];
           if (slot) {
             cell.style.height = `${slot.offsetHeight}px`;
           }
@@ -2080,7 +2083,7 @@
       await loadOrders();
     });
 
-    const deliveryDateInput = document.getElementById("deliveryDate");
+    const deliveryDateInput = $("#deliveryDate")[0];
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     deliveryDateInput.value = tomorrow.toISOString().split("T")[0];
@@ -2107,7 +2110,7 @@
 
     updateBypassButtonState();
 
-    document.getElementById("loadCompleteBtn").addEventListener("click", async () => {
+    loadCompleteBtn.addEventListener("click", async () => {
       if (hasBlockedAllocatedPallet() && !isLoadLockBypassed()) {
         window.alert("Cannot complete load while a loaded pallet is marked as not loadable.");
         return;
@@ -2119,7 +2122,7 @@
       }
 
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-      const dueDate = document.getElementById("deliveryDate").value || "";
+      const dueDate = $("#deliveryDate").val() || "";
 
       if (!dueDate) {
         window.alert("Select a delivery date before completing the load.");
@@ -2193,7 +2196,7 @@
       }
 
       const reg = vehicleSelect.value || vehiclePlate.textContent || "";
-      const dueDate = document.getElementById("deliveryDate").value || "";
+      const dueDate = $("#deliveryDate").val() || "";
       const depot = depotSelect.value || "";
 
       if (!reg || !depot) {

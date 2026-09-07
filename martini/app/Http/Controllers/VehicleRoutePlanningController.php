@@ -30,12 +30,79 @@ class VehicleRoutePlanningController extends Controller
         return $rows > 0 ? $rows : self::DEFAULT_MAX_PALLET_ROWS;
     }
 
-    private function isWithinVehicleCapacity(int $row, int $column, int $maxRows): bool
+    private static function filterStoredVehiclesForSelectedVehicle(array $storedVehicles, string $selectedVehicleId, ?Vehicle $selectedVehicle = null): array
     {
-        return $row >= 1
-            && $row <= $maxRows
-            && $column >= 1
-            && $column <= self::PLANNING_PALLET_COLUMNS;
+        $selectedVehicleId = trim((string) $selectedVehicleId);
+
+        if ($selectedVehicleId !== '') {
+            $matchedById = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedVehicleId) {
+                $vehicleId = trim((string) (($vehicle['vehicle_id'] ?? $vehicle['id'] ?? '')));
+                return $vehicleId !== '' && $vehicleId === $selectedVehicleId;
+            }));
+
+            if (!empty($matchedById)) {
+                return $matchedById;
+            }
+        }
+
+        if ($selectedVehicle !== null) {
+            $selectedTypeId = trim((string) ($selectedVehicle->vehicle_type_id ?? ''));
+            if ($selectedTypeId !== '') {
+                $matchedByType = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedTypeId) {
+                    $typeId = trim((string) ($vehicle['type_id'] ?? ''));
+                    return $typeId !== '' && str_starts_with($typeId, $selectedTypeId . '-');
+                }));
+
+                if (!empty($matchedByType)) {
+                    return array_slice($matchedByType, 0, 1);
+                }
+            }
+        }
+
+        if ($selectedVehicleId !== '') {
+            $matchedByReg = array_values(array_filter($storedVehicles, function ($vehicle) use ($selectedVehicleId) {
+                $reg = trim((string) ($vehicle['reg'] ?? ''));
+                return $reg !== '' && $reg === $selectedVehicleId;
+            }));
+
+            if (!empty($matchedByReg)) {
+                return $matchedByReg;
+            }
+        }
+
+        return $storedVehicles;
+    }
+
+    public static function buildStoredVehicleScheduleWindow(Carbon $dueDate, string $routeStartTimeInput, string $routeEndTimeInput, int $maxOperatingSeconds): array
+    {
+        $startTimestamp = strtotime($dueDate->format('Y-m-d') . ' ' . ($routeStartTimeInput !== '' ? $routeStartTimeInput : '04:00'));
+        $maxDrivingSeconds = max(3600, $maxOperatingSeconds);
+        $maxEndTimestamp = $startTimestamp + $maxDrivingSeconds;
+        $latestEndTimestamp = $maxEndTimestamp;
+
+        if ($routeEndTimeInput !== '') {
+            $endTimestamp = strtotime($dueDate->format('Y-m-d') . ' ' . $routeEndTimeInput);
+            if (is_int($endTimestamp) && $endTimestamp > 0) {
+                $latestEndTimestamp = min($endTimestamp, $maxEndTimestamp);
+            }
+        }
+
+        return [
+            'earliest_start' => $startTimestamp,
+            'latest_end' => $latestEndTimestamp,
+            'max_driving_time' => $maxDrivingSeconds,
+        ];
+    }
+
+    public static function storedServicesUseTimeWindows(array $storedServices): bool
+    {
+        foreach ($storedServices as $storedService) {
+            if (is_array($storedService['time_windows'] ?? null) && !empty($storedService['time_windows'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function view()
@@ -46,15 +113,24 @@ class VehicleRoutePlanningController extends Controller
     public function vehicle(Request $request):JsonResponse
     {
         $depotSiteId = (int) $request->input('depot', 0);
+        $dueDateInput = trim((string) $request->input('dueDate', now()->format('Y-m-d')));
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dueDateInput)) {
+            $dueDateInput = now()->format('Y-m-d');
+        }
 
         // Return all vehicle registrations as JSON using Eloquent
         $vehiclesQuery = Vehicle::orderBy('reg', 'asc')
             ->whereNotNull('reg')
             ->where('reg', '<>', '')
-            ->whereNotIn('vehicle_type_id', [1, 5]);
+            ->whereNotIn('vehicle_type_id', [1, 5])
+            ->where(function ($query) use ($dueDateInput) {
+                $query->whereNull('last_used')
+                    ->orWhereDate('last_used', '!=', $dueDateInput);
+            });
 
         if ($depotSiteId > 0) {
-            $vehiclesQuery->where('site_id', $depotSiteId);
+            $vehiclesQuery->where([['site_id', $depotSiteId],['disabled', false]]);
         }
 
         $vehicles = $vehiclesQuery->get();
@@ -84,7 +160,34 @@ class VehicleRoutePlanningController extends Controller
 
     public function multiVehiclePlan(Request $request): JsonResponse
     {
-        $dueDate = Carbon::createFromFormat('Y-m-d', trim((string) $request->input('dueDate', now()->format('Y-m-d'))));
+        $routeMode = strtolower((string) $request->input('routeMode', 'generic'));
+        $routeStartDateInput = trim((string) $request->input('routeStartDate', ''));
+        $routeEndDateInput = trim((string) $request->input('routeEndDate', ''));
+        $routeStartTimeInput = trim((string) $request->input('routeStartTime', '04:00'));
+        $routeEndTimeInput = trim((string) $request->input('routeEndTime', ''));
+        $selectedVehicleId = trim((string) $request->input('routeVehicleId', ''));
+        $routePalletIds = array_values(array_filter(array_map(function ($id) {
+            $parsed = (int) $id;
+            return $parsed > 0 ? $parsed : null;
+        }, (array) $request->input('routePalletIds', []))));
+        $storedRouteData = $request->input('storedRouteData');
+
+        if ($selectedVehicleId !== '') {
+            $selectedVehicle = Vehicle::where('id', (int) $selectedVehicleId)->first();
+            if (!$selectedVehicle) {
+                $selectedVehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$selectedVehicleId])->first();
+            }
+            if ($selectedVehicle) {
+                $selectedVehicleId = (string) $selectedVehicle->id;
+            }
+        }
+
+        if ($routeMode === 'stored' && $routeStartDateInput !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $routeStartDateInput)) {
+            $dueDate = Carbon::createFromFormat('Y-m-d', $routeStartDateInput);
+        } else {
+            $dueDate = Carbon::createFromFormat('Y-m-d', trim((string) $request->input('dueDate', now()->format('Y-m-d'))));
+        }
+
         $depotSite = Site::find((int) $request->input('depot', 0));
         $maxRigidsInput = $request->input('maxRigids');
         $maxArticsInput = $request->input('maxArtics');
@@ -92,6 +195,11 @@ class VehicleRoutePlanningController extends Controller
         $maxRigids = is_numeric($maxRigidsInput) ? max(0, (int) $maxRigidsInput) : null;
         $maxArtics = is_numeric($maxArticsInput) ? max(0, (int) $maxArticsInput) : null;
         $maxVans = is_numeric($maxVansInput) ? max(0, (int) $maxVansInput) : null;
+        $genericMode = filter_var($request->input('genericMode', ($routeMode === 'generic')), FILTER_VALIDATE_BOOLEAN);
+        if ($routeMode === 'stored') {
+            $genericMode = false;
+        }
+        $maxOperatingSeconds = max(3600, (int) $request->input('maxOperatingSeconds', 50400)); // Default 14 hours
 
         if (!$depotSite || $depotSite->disabled) {
             return response()->json(['error' => 'Invalid depot site'], 400);
@@ -108,7 +216,11 @@ class VehicleRoutePlanningController extends Controller
         $vehicleQuery = Vehicle::whereNotIn("vehicle_type_id", [1,5])
             ->whereNotNull('reg')
             ->where('reg', '<>', '')
-            ->where('site_id', $depotSite->id);
+            ->where('site_id', $depotSite->id)
+            ->where(function ($query) use ($dueDate) {
+                $query->whereNull('last_used')
+                    ->orWhereDate('last_used', '!=', $dueDate->format('Y-m-d'));
+            });
         $vehicles = $vehicleQuery->orderBy("has_tail_lift")->orderBy("reg")->get();
 
         if ($maxRigids !== null || $maxArtics !== null || $maxVans !== null) {
@@ -150,6 +262,140 @@ class VehicleRoutePlanningController extends Controller
             })->values();
         }
 
+        $selectedVehicle = null;
+        if ($selectedVehicleId !== '') {
+            $selectedVehicle = Vehicle::where('id', (int) $selectedVehicleId)->first();
+            if (!$selectedVehicle) {
+                $selectedVehicle = Vehicle::whereRaw('TRIM(reg) = ?', [$selectedVehicleId])->first();
+            }
+        }
+
+        if ($routeMode === 'stored' && $selectedVehicleId !== '') {
+            $vehicles = $vehicles->filter(function ($vehicle) use ($selectedVehicleId) {
+                return (string) ($vehicle->id ?? '') === (string) $selectedVehicleId;
+            })->values();
+        }
+
+        if ($routeMode === 'stored' && is_array($storedRouteData) && !empty($storedRouteData)) {
+            $storedRequest = $storedRouteData['request'] ?? [];
+            $storedServices = is_array($storedRequest['services'] ?? null) ? $storedRequest['services'] : [];
+            $storedVehicles = is_array($storedRequest['vehicles'] ?? null) ? $storedRequest['vehicles'] : [];
+            $storedVehicleTypes = is_array($storedRequest['vehicle_types'] ?? null) ? $storedRequest['vehicle_types'] : [];
+            $storedRelations = is_array($storedRequest['relations'] ?? null) ? $storedRequest['relations'] : [];
+            $storedUsesTimeWindows = self::storedServicesUseTimeWindows($storedServices);
+
+            if (!empty($routePalletIds)) {
+                $routePalletIdSet = array_fill_keys(array_map('strval', $routePalletIds), true);
+                $storedServices = array_values(array_filter($storedServices, function ($service) use ($routePalletIdSet) {
+                    $serviceId = (string) ($service['id'] ?? '');
+                    return $serviceId !== '' && isset($routePalletIdSet[$serviceId]);
+                }));
+
+                $storedRelations = array_values(array_filter($storedRelations, function ($relation) use ($routePalletIdSet) {
+                    if (!is_array($relation['ids'] ?? null)) {
+                        return false;
+                    }
+
+                    $filteredIds = array_values(array_filter(array_map('strval', $relation['ids']), function ($id) use ($routePalletIdSet) {
+                        return isset($routePalletIdSet[$id]);
+                    }));
+
+                    return !empty($filteredIds);
+                }));
+            }
+
+            if ($selectedVehicleId !== '') {
+                $storedVehicles = self::filterStoredVehiclesForSelectedVehicle($storedVehicles, $selectedVehicleId, $selectedVehicle);
+            }
+
+            if (!empty($storedVehicles)) {
+                $schedule = self::buildStoredVehicleScheduleWindow($dueDate, $routeStartTimeInput, $routeEndTimeInput, $maxOperatingSeconds);
+                $storedVehicles[0]['earliest_start'] = $schedule['earliest_start'];
+                $storedVehicles[0]['latest_end'] = $schedule['latest_end'];
+                $storedVehicles[0]['max_driving_time'] = $schedule['max_driving_time'];
+            }
+
+            foreach ($storedVehicles as &$storedVehicle) {
+                $storedVehicle['earliest_start'] = $storedVehicles[0]['earliest_start'];
+                $storedVehicle['latest_end'] = $storedVehicles[0]['latest_end'];
+                $storedVehicle['max_driving_time'] = $storedVehicles[0]['max_driving_time'];
+            }
+            unset($storedVehicle);
+
+            if ($storedUsesTimeWindows) {
+                foreach ($storedServices as &$service) {
+                    $address = null;
+                    $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
+                    if ($locationId !== '') {
+                        [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
+                        if ($clientId !== null && $addressId !== null) {
+                            $address = ClientAddress::query()
+                                ->where('client_type', ClientType::CUSTOMER->value)
+                                ->where('client_id', (int) $clientId)
+                                ->where('address_id', (int) $addressId)
+                                ->first();
+                        }
+                    }
+
+                    if ($address) {
+                        $openingTime = $address->opening_time ?: Carbon::createFromTime(4, 0, 0);
+                        $closingTime = $address->closing_time ?: Carbon::createFromTime(23, 0, 0);
+                        $service['time_windows'] = [[
+                            'earliest' => $openingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
+                            'latest' => $closingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
+                        ]];
+                    }
+                }
+                unset($service);
+            }
+
+            $refinedPayload = [
+                'configuration' => [
+                    'routing' => [
+                        'calc_points' => true,
+                        'consider_traffic' => $storedUsesTimeWindows,
+                        'network_data_provider' => 'tomtom',
+                    ],
+                ],
+                'vehicle_types' => $storedVehicleTypes,
+                'vehicles' => $storedVehicles,
+                'services' => $storedServices,
+                'relations' => $storedRelations,
+                'objectives' => [],
+            ];
+
+            $graphResponse = GraphHopperHelper::vrp($refinedPayload);
+
+            if (!$graphResponse['ok']) {
+                return response()->json([
+                    'error' => 'GraphHopper VRP request failed for recovered route',
+                    'detail' => $graphResponse['error'],
+                    'skipped' => [],
+                ], 502);
+            }
+
+            return response()->json([
+                'success' => true,
+                'dryRun' => true,
+                'routeMode' => $routeMode,
+                'genericMode' => !$storedUsesTimeWindows,
+                'dueDate' => $dueDate,
+                'routeStartDate' => $routeStartDateInput !== '' ? $routeStartDateInput : $dueDate->format('Y-m-d'),
+                'routeEndDate' => $routeEndDateInput !== '' ? $routeEndDateInput : $dueDate->format('Y-m-d'),
+                'selectedVehicleId' => $selectedVehicleId,
+                'maxRigids' => $maxRigids,
+                'maxArtics' => $maxArtics,
+                'maxVans' => $maxVans,
+                'maxOperatingSeconds' => $maxOperatingSeconds,
+                'vehicleCount' => count($storedVehicles),
+                'serviceCount' => count($storedServices),
+                'skipped' => [],
+                'persistence' => false,
+                'request' => $refinedPayload,
+                'response' => $graphResponse['data'],
+            ]);
+        }
+
         if ($vehicles->isEmpty()) {
             return response()->json(['error' => 'No vehicles available for planning'], 422);
         }
@@ -157,7 +403,7 @@ class VehicleRoutePlanningController extends Controller
         $pallets = TransportPallet::with(['transportPalletType'])
             ->whereDate('estimated_delivery_date', $dueDate->format('Y-m-d'))
             ->where(function ($query) {
-                //$query->whereNull('dispatched')->orWhere('dispatched', 0);
+                $query->whereNull('dispatched')->orWhere('dispatched', 0);
             })
             ->get();
         if ($pallets->isEmpty()) {
@@ -183,12 +429,13 @@ class VehicleRoutePlanningController extends Controller
             'lat' => $depotSite->lat ?? 0,
             'lon' => $depotSite->lon ?? 0,
         ];
-        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,20);
+        $overnightVehicleLimit = $depotSite->id === 1 ? 2 : 0;
+        $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, $overnightVehicleLimit, $genericMode, $maxOperatingSeconds);
 
         $skipped = [];
         $skippedAddresses = [];
         $addressDelTypes = [];
-        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $dueDate, $vrpVehicles, $skipped, $skippedAddresses, $addressDelTypes);
+        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $dueDate, $vrpVehicles, $skipped, $skippedAddresses, $addressDelTypes, $genericMode);
         if (empty($services)) {
             Log::error('No services could be created from outgoing pallets', [
                 'dueDate' => $dueDate->format('Y-m-d'),
@@ -286,7 +533,7 @@ class VehicleRoutePlanningController extends Controller
                 'routing' => [
                     'calc_points' => true,
                     //'return_snapped_waypoints' => true,
-                    'consider_traffic' => true,
+                    'consider_traffic' => !$genericMode, // Don't consider traffic for generic routes
                     //'snap_preventions' => ["motorway", "bridge", "ford", "tunnel", "ferry"],
                     'network_data_provider' =>"tomtom"
                 ],
@@ -303,20 +550,22 @@ class VehicleRoutePlanningController extends Controller
             ],
         ];
         $graphResponse = GraphHopperHelper::vrp($vrpPayload);
-        $overnights = 2;
+
+        // Restore the depot 1 overnight retries for both time-specific and generic routing.
+        $overnights = 0;
         $lastUnassigned = PHP_INT_MAX;
-        while ($graphResponse && $graphResponse['data']['solution']['no_unassigned'] > 0 && $graphResponse['data']['solution']['no_unassigned'] < $lastUnassigned && $depotSite->id == 1 && $overnights <= 1) {
+        while ($graphResponse && isset($graphResponse['data']['solution']['no_unassigned']) && $graphResponse['data']['solution']['no_unassigned'] > 0 && $graphResponse['data']['solution']['no_unassigned'] < $lastUnassigned && $depotSite->id == 1 && $overnights < 2) {
             sleep(15);
             $lastUnassigned = $graphResponse['data']['solution']['no_unassigned'];
             $vrcVehicleTypes = [];
             $overnights++;
-            $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate,$overnights);
+            $vrpVehicles = GraphHopperHelper::vehiclesFromGenerifiedTypes($generifiedVehicleTypes, $vrcVehicleTypes, $depotLocation, $dueDate, $overnights + 2, $genericMode, $maxOperatingSeconds);
             $vrpPayload = [
                 'configuration' => [
                     'routing' => [
                         'calc_points' => true,
                         //'return_snapped_waypoints' => true,
-                        'consider_traffic' => true,
+                        'consider_traffic' => !$genericMode,
                         //'snap_preventions' => ["motorway", "bridge", "ford", "tunnel", "ferry"],
                         'network_data_provider' =>"tomtom"
                     ],
@@ -351,14 +600,21 @@ class VehicleRoutePlanningController extends Controller
         return response()->json([
             'success' => true,
             'dryRun' => true,
+            'routeMode' => $routeMode,
+            'genericMode' => $genericMode,
             'dueDate' => $dueDate,
+            'routeStartDate' => $routeStartDateInput !== '' ? $routeStartDateInput : $dueDate->format('Y-m-d'),
+            'routeEndDate' => $routeEndDateInput !== '' ? $routeEndDateInput : $dueDate->format('Y-m-d'),
+            'selectedVehicleId' => $selectedVehicleId,
             'maxRigids' => $maxRigids,
             'maxArtics' => $maxArtics,
             'maxVans' => $maxVans,
+            'maxOperatingSeconds' => $maxOperatingSeconds,
             'vehicleCount' => count($vrpVehicles),
             'serviceCount' => count($services),
             'skipped' => $skipped,
             'persistence' => false,
+            'storedRouteData' => $storedRouteData,
             'request' => $vrpPayload,
             'response' => $graphResponse['data'],
         ]);
@@ -535,11 +791,14 @@ class VehicleRoutePlanningController extends Controller
                 }
             }
 
+            $vehicle->last_used = $committedAt;
+
             if ($terminalLat !== null && $terminalLon !== null) {
                 $vehicle->lat = $terminalLat;
                 $vehicle->lon = $terminalLon;
-                $vehicle->save();
             }
+
+            $vehicle->save();
         });
 
         $committedCount = count($placements);
