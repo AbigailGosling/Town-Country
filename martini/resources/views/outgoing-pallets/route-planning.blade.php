@@ -1171,17 +1171,20 @@
             const transportSeconds = Number(route?.transport_time ?? 0);
             const serviceSeconds = Number(route?.service_duration ?? 0);
             const waitingSeconds = Number(route?.waiting_time ?? 0);
+            const completionSeconds = Number(route?.completion_time ?? 0);
 
             const safeDistanceMeters = Number.isFinite(distanceMeters) && distanceMeters > 0 ? distanceMeters : 0;
             const safeTransportSeconds = Number.isFinite(transportSeconds) && transportSeconds > 0 ? transportSeconds : 0;
             const safeServiceSeconds = Number.isFinite(serviceSeconds) && serviceSeconds > 0 ? serviceSeconds : 0;
             const safeWaitingSeconds = Number.isFinite(waitingSeconds) && waitingSeconds > 0 ? waitingSeconds : 0;
+            const safeCompletionSeconds = Number.isFinite(completionSeconds) && completionSeconds > 0 ? completionSeconds : 0;
 
-            // GraphHopper's transport time can already include the service time for the vehicle stops,
-            // so the actual driving portion is transport - service, and the route total should be
-            // drive + service + waiting with service counted exactly once.
-            const driveSeconds = Math.max(0, safeTransportSeconds - safeServiceSeconds);
-            const totalSeconds = driveSeconds + safeServiceSeconds + safeWaitingSeconds;
+            // GraphHopper reports transport_time as the drive portion, service_duration separately,
+            // and completion_time as the route total when available.
+            const driveSeconds = safeTransportSeconds;
+            const totalSeconds = safeCompletionSeconds > 0
+                ? safeCompletionSeconds
+                : driveSeconds + safeServiceSeconds + safeWaitingSeconds;
 
             return {
                 distanceMeters: safeDistanceMeters,
