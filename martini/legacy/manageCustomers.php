@@ -174,11 +174,11 @@ use Illuminate\Support\Facades\Log;
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>bhm" style="<?php echo $style1; ?>">
 					<td class="label"><label>Open on Bank holiday Monday?</label></td>
-					<td><input type="checkbox" name="address_bhm<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_monday ?? 0 == 1)?"checked":""; ?>></td>
+					<td><input type="checkbox" name="address_bhm<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_mondays ?? 0 == 1)?"checked":""; ?>></td>
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>bhf" style="<?php echo $style1; ?>">
 					<td class="label"><label>Open on Bank holiday Friday?</label></td>
-					<td><input type="checkbox" name="address_bhf<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_friday ?? 0 == 1)?"checked":""; ?>></td>
+					<td><input type="checkbox" name="address_bhf<?php echo $u; ?>" <?php echo ($ca->open_bank_holiday_fridays ?? 0 == 1)?"checked":""; ?>></td>
 				</tr>
                 <tr id="address<?php echo $ca->address_id ?? $u; ?>allowed_vehicle_types" style="<?php echo $style1; ?>">
 					<td class="label"><label>Allowed Vehicle Types</label></td>
