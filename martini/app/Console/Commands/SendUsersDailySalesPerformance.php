@@ -55,8 +55,8 @@ class SendUsersDailySalesPerformance extends Command
         $targetDateEnd = Carbon::now()->setHours(18)->setMinutes(0)->setSeconds(0)->setMillis(0)->setMicros(0);
         $targetDateStart = $targetDateEnd->copy()->subDay();
         if ($targetDateEnd->dayOfWeek == 1) $targetDateStart->subDays(2);
-        $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::MONDAY);
-        $diffInWeek = $targetDateEnd->diffInDays($weekDateStart, true);
+        $weekDateStart = $targetDateEnd->copy()->startOfWeek(Carbon::SATURDAY);
+        $diffInWeek = $targetDateEnd->diffInDays($weekDateStart->copy()->addDays(2), true);
         $usersSorted = [];
         $saleTargets = [];
         foreach (User::where([["disabled", false],["is_hidden", false]])->get() as $user){
