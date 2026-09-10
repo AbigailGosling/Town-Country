@@ -161,6 +161,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::post('/outgoing-pallets-loading/update-pallet-type', [OutgoingPalletsLoadingController::class, 'updatePalletType'])->name('outgoing-pallets-loading.update-pallet-type');
     Route::post('/outgoing-pallets-loading/commit-allocations', [OutgoingPalletsLoadingController::class, 'commitAllocations'])->name('outgoing-pallets-loading.commit-allocations');
     Route::get('/outgoing-pallets-loading/print-truck-load', [OutgoingPalletsLoadingController::class, 'printTruckLoad'])->name('outgoing-pallets-loading.print-truck-load');
+    Route::get('/outgoing-pallets-loading/print-truck-contents', [OutgoingPalletsLoadingController::class, 'printTruckContents'])->name('outgoing-pallets-loading.print-truck-contents');
     Route::get('/outgoing-pallets-loading/pallet-selection', [OutgoingPalletsLoadingController::class, 'palletSelection'])->name('outgoing-pallets-loading.pallet-selection');
     Route::get('/outgoing-pallets-loading/pallet-overview', [OutgoingPalletsLoadingController::class, 'palletOverview'])->name('outgoing-pallets-loading.pallet-overview');
     Route::get('/outgoing-pallets-loading/orders', [OutgoingPalletsLoadingController::class, 'orders'])->name('outgoing-pallets-loading.orders');
@@ -176,6 +177,7 @@ Route::middleware(['auth', 'verified', 'permission', 'twofactor'])->group(functi
     Route::resource('containers', 'App\Http\Controllers\InboundContainerController');
     Route::get('/containers/{container}/predelete', [InboundContainerController::class, 'preDelete'])->name('containers.predelete');
     Route::delete('/containers/{container}/delete', [InboundContainerController::class, 'confirmDelete'])->name('containers.delete');
+    Route::match(['get', 'post'], '/containers/reservations/report', [InboundContainerController::class, 'reservationsReport'])->name('containers.reservations-report');
 
     Route::get('/containers/{container}/product/create', [InboundContainerController::class, 'createProduct'])->name('container-product.create');
     Route::post('/containers/{container}/product/store', [InboundContainerController::class, 'storeProduct'])->name('container-product.store');
