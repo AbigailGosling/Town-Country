@@ -28,6 +28,7 @@ use Illuminate\Support\Str;
         $receiverAddress1 = $ca->address_1 . '<br/>';
         $receiverAddress2 = $ca->address_2 . '<br/>';
         $receiverAddress3 = $ca->address_3 . '<br/>';
+        $receiverAddress4 = $ca->address_4 . '<br/>';
         $receiverPostCode = $ca->postcode . '<br/>';
     }
     else
@@ -40,6 +41,7 @@ use Illuminate\Support\Str;
         $receiverAddress1 = $customer['address_1'] . '<br/>';
         $receiverAddress2 = $customer['address_2'] . '<br/>';
         $receiverAddress3 = $customer['address_3'] . '<br/>';
+        $receiverAddress4 = $customer['address_4'] . '<br/>';
         $receiverPostCode = $customer['postcode'] . '<br/>';
     }
 
@@ -168,6 +170,7 @@ use Illuminate\Support\Str;
 						echo $receiverAddress1 . '<br/>';
 						echo $receiverAddress2 . '<br/>';
 						echo $receiverAddress3 . '<br/>';
+						echo $receiverAddress4 . '<br/>';
 						echo $receiverPostCode . '<br/>';
 					?>
 

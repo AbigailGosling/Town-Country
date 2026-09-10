@@ -764,6 +764,7 @@
     const totalWeightEl = $("#totalWeight")[0];
     const payloadBadge = $("#payloadBadge")[0];
     const printLoadBtn = $("#printLoadBtn")[0];
+    const printContentsBtn = $("#printContentsBtn")[0];
     const sortBySelect = $("#sortBy")[0];
     const toggleAllocatedBtn = $("#toggleAllocatedBtn")[0];
     const depotSelect = $("#depotSelect")[0];
@@ -2208,6 +2209,28 @@
       const url = `{{ route('outgoing-pallets-loading.print-truck-load') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&loadSheetId=${encodeURIComponent(loadSheetId)}`;
       window.open(url, "_blank", "noopener");
     });
+
+    if (printContentsBtn) {
+      printContentsBtn.addEventListener("click", () => {
+        if (hasBlockedAllocatedPallet() && !isLoadLockBypassed()) {
+          window.alert("Cannot print contents while a loaded pallet is marked as not loadable.");
+          return;
+        }
+
+        const reg = vehicleSelect.value || vehiclePlate.textContent || "";
+        const dueDate = $("#deliveryDate").val() || "";
+        const depot = depotSelect.value || "";
+
+        if (!reg || !depot) {
+          window.alert("Select a depot and vehicle before printing.");
+          return;
+        }
+
+        const loadSheetId = selectedLoadSheetId || "";
+        const url = `{{ route('outgoing-pallets-loading.print-truck-contents') }}?reg=${encodeURIComponent(reg)}&dueDate=${encodeURIComponent(dueDate)}&depot=${encodeURIComponent(depot)}&loadSheetId=${encodeURIComponent(loadSheetId)}`;
+        window.open(url, "_blank", "noopener");
+      });
+    }
 
     let resizeTimer;
     window.addEventListener("resize", () => {

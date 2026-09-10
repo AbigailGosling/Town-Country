@@ -993,4 +993,178 @@ class OutgoingPalletsLoadingController extends Controller
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
     }
+
+    public function printTruckContents(Request $request)
+    {
+        $reg = trim((string) $request->input('reg', ''));
+        $dueDate = trim((string) $request->input('dueDate', ''));
+        $depotSiteId = (int) $request->input('depot', 0);
+        $loadSheetId = (int) $request->input('loadSheetId', 0);
+
+        if ($reg === '' || $depotSiteId <= 0) {
+            return response('Missing reg or depot parameter', 400);
+        }
+
+        $vehicle = Vehicle::with('site')->whereRaw('TRIM(reg) = ?', [$reg])->first();
+        if (!$vehicle) {
+            return response('Vehicle not found', 404);
+        }
+
+        $maxRows = $this->normalizeMaxPalletRows($vehicle->max_pallet_rows ?? null);
+        $depot = Site::find($depotSiteId);
+
+        $query = VehicleTransportPalletAllocation::with([
+            'transportPallet.pickWeightOuts.pickWeightOut',
+            'transportPallet.customer',
+            'transportPallet.transportPalletType',
+        ])->where('vehicle_id', $vehicle->id);
+
+        if ($loadSheetId > 0) {
+            $query->where('load_sheet_id', $loadSheetId);
+        } elseif ($dueDate !== '') {
+            $query->whereHas('transportPallet', function ($q) use ($dueDate) {
+                $q->where('estimated_delivery_date', $dueDate);
+            });
+        }
+
+        $allocations = $query->get();
+        $contentRows = [];
+        $totalWeight = 0.0;
+
+        foreach ($allocations as $allocation) {
+            $pallet = $allocation->transportPallet;
+            if (!$pallet) {
+                continue;
+            }
+
+            $pallet->dispatched = true;
+            $pallet->save();
+
+            $ca = ClientAddress::where('client_id', $pallet->customer_id)
+                ->where('address_id', $pallet->address_id)
+                ->where('client_type', ClientType::CUSTOMER->value)
+                ->first();
+
+            if (!$ca || (int) ($ca->site_id ?? 0) !== $depotSiteId) {
+                continue;
+            }
+
+            $row = (int) ($allocation->row ?? 0);
+            $column = (int) ($allocation->column ?? 0);
+            if (!$this->isWithinVehicleCapacity($row, $column, $maxRows)) {
+                continue;
+            }
+
+            $weightKg = round((float) ($pallet->getTotalWeight() ?? 0), 3);
+            $deliveryNoteNumber = implode('-', $this->getPicksheetIdsForPallet($pallet));
+            $fullContents = implode("\n", $this->getPicksheetCutSummaryLines($pallet, PHP_INT_MAX));
+            $pallet->loadMissing('pickWeightOuts.pickWeightOut');
+
+            $picksheetBuckets = [];
+            foreach ($pallet->pickWeightOuts as $link) {
+                $pickWeightOut = $link->pickWeightOut;
+                if (!$pickWeightOut) {
+                    continue;
+                }
+
+                $picksheetId = trim((string) ($pickWeightOut->pickersheet_id ?? ''));
+                if ($picksheetId === '') {
+                    $picksheetId = 'Unknown';
+                }
+
+                if (!array_key_exists($picksheetId, $picksheetBuckets)) {
+                    $picksheetBuckets[$picksheetId] = [
+                        'lines' => [],
+                        'weightKg' => 0.0,
+                    ];
+                }
+
+                foreach ($pickWeightOut->getCutQuantities() as $cutLine) {
+                    $cutName = trim((string) ($cutLine['cut_name'] ?? 'Unknown'));
+                    $quantity = (int) ($cutLine['quantity'] ?? 0);
+                    $cutWeight = (float) ($cutLine['total_weight'] ?? 0);
+                    if ($cutName === '' || $quantity <= 0) {
+                        continue;
+                    }
+
+                    $picksheetBuckets[$picksheetId]['lines'][] = $cutName . ': ' . $quantity;
+                    if ($cutWeight > 0) {
+                        $picksheetBuckets[$picksheetId]['weightKg'] += $cutWeight;
+                    }
+                }
+            }
+
+            $picksheetBreakdown = [];
+            ksort($picksheetBuckets, SORT_NATURAL);
+            foreach ($picksheetBuckets as $picksheetId => $bucket) {
+                $uniqueLines = array_values(array_unique($bucket['lines']));
+                $picksheetBreakdown[] = [
+                    'picksheetId' => $picksheetId,
+                    'contents' => implode("\n", $uniqueLines),
+                    'weightKg' => round((float) ($bucket['weightKg'] ?? 0), 3),
+                ];
+            }
+
+            if (empty($picksheetBreakdown)) {
+                $picksheetBreakdown[] = [
+                    'picksheetId' => '',
+                    'contents' => $fullContents,
+                    'weightKg' => $weightKg,
+                ];
+            }
+
+            $contentRows[] = [
+                'row' => $row,
+                'column' => $column,
+                'palletId' => (int) $pallet->id,
+                'deliveryNoteNumber' => $deliveryNoteNumber,
+                'customerName' => $pallet->customer->businessname ?? '',
+                'address' => $ca->address_1 ?? '',
+                'postcode' => $ca->postcode ?? '',
+                'palletType' => $pallet->transportPalletType->name ?? 'Euro',
+                'freshFrozen' => $pallet->getTemperatureCategory() ?? '',
+                'contentsFull' => $fullContents,
+                'picksheetBreakdown' => $picksheetBreakdown,
+                'weightKg' => $weightKg,
+            ];
+
+            $totalWeight += $weightKg;
+        }
+
+        usort($contentRows, function ($a, $b) {
+            if ($a['row'] === $b['row']) {
+                return $a['column'] <=> $b['column'];
+            }
+            return $a['row'] <=> $b['row'];
+        });
+        $contentRows = array_reverse($contentRows);
+
+        $html = view('outgoing-pallets.truck-load-contents-pdf', [
+            'generatedAt' => now(),
+            'dueDate' => $dueDate,
+            'vehicle' => $vehicle,
+            'depotName' => $depot ? $depot->name : '',
+            'rows' => $contentRows,
+            'totalWeight' => $totalWeight,
+            'loadSheetId' => $loadSheetId > 0 ? $loadSheetId : null,
+        ])->render();
+
+        $mpdf = new Mpdf([
+            'format' => 'A4',
+            'margin_top' => 10,
+            'margin_bottom' => 10,
+            'margin_left' => 10,
+            'margin_right' => 10,
+        ]);
+        $mpdf->WriteHTML($html);
+
+        $filenameDate = $dueDate !== '' ? $dueDate : now()->format('Y-m-d');
+        $filename = 'truck-load-contents-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $reg) . '-' . $filenameDate . '.pdf';
+        $pdfBinary = $mpdf->Output($filename, \Mpdf\Output\Destination::STRING_RETURN);
+
+        return response($pdfBinary, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
+    }
 }

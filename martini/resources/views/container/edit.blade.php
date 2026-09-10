@@ -95,6 +95,7 @@ $isDelete ??= false;
                     <x-form-button title="Confirm Delete" background="red" iconClass="fa-trash" :submit="true" />
                     @else
                     <x-form-button title="Update Container" background="green" iconClass="fa-ship" :submit="true" />
+                        <x-form-button title="Container Reservation Summary" background="orange" iconClass="fa-file-lines" route="containers.reservations-report"/>
                         @if ($container->admin_approved == true)
                             <x-form-button title="Admin Approved" background="green" iconClass="fa-check" route="inbound-approvals.create" :params="$container->id"/>
                         @else

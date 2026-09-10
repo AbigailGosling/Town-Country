@@ -114,7 +114,7 @@ class SupplierReturnController extends Controller
             }
             $line->value = FuncHelper::floorDec($line->value,3);
             $line->paid = 0;
-            foreach (InvoicePayment::where("invoice_id",$pick->id)->get() as $invPay)
+            foreach (InvoicePayment::where([["invoice_id",$pick->id],["deleted",0]])->get() as $invPay)
             {
                 $line->paid += FuncHelper::floorDec($invPay->amount,3);
             }

@@ -19,7 +19,7 @@ if (empty($invoiceID)) {
 $invoiceAmount = number_format((double)invoiceTotal($invoiceID), 2, '.', '');
 
 if (!empty($paymentID)) {
-    $selectedInvoicePayment = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ?",'ii',[$paymentID,$invoiceID]);
+    $selectedInvoicePayment = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.meta_data, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_payments.id = ? AND invoice_payments.invoice_id = ? AND `invoice_payments`.`deleted`=0",'ii',[$paymentID,$invoiceID]);
     $selectedPaymentData = mysqli_fetch_assoc($selectedInvoicePayment);
     //print_r($selectedPaymentData);
 }
@@ -67,7 +67,7 @@ if (!empty($paymentID)) {
         <tbody>
         <?php
 
-        $invoicePayments = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ?",'i',[$invoiceID]);
+        $invoicePayments = prepareExecuteQuery("SELECT invoice_payments.id, invoice_payments.invoice_id, invoice_payments.payment_method, invoice_payments.created_at,invoice_payments.amount, invoice_payments.payment_recorded_by,users.name FROM `invoice_payments` left join users on invoice_payments.payment_recorded_by = users.id WHERE invoice_id = ? AND `invoice_payments`.`deleted`=0",'i',[$invoiceID]);
 
         $runningBalance = $invoiceAmount;
         $i = 0;
@@ -419,7 +419,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                 $coolingsToFind = array_column($products, 'cooling_id');
                 $coolings = prepareExecuteQuery("SELECT * FROM `temperature` WHERE `id` IN (".implode(',',$coolingsToFind).")")->fetch_all(MYSQLI_ASSOC);
 
-                $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=?",'i',[$payment_id]);
+                $creditNoteResult = prepareExecuteQuery("SELECT GROUP_CONCAT(product_id) as product_ids FROM `credit_note_items` WHERE payment_id=? AND `credit_note_items`.`deleted` = 0",'i',[$payment_id]);
                 $creditNoteData = mysqli_fetch_array($creditNoteResult);
                 $productIDs = $creditNoteData['product_ids'];
 
@@ -428,7 +428,7 @@ $supplierReturn = SupplierReturn::with("attachments","attachments.file","attachm
                 foreach($productIDs as $productID){
                     $i++;
 
-                    $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? && payment_id=?",'ii',[$productID,$payment_id]);
+                    $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? AND payment_id=? AND `credit_note_items`.`deleted` = 0",'ii',[$productID,$payment_id]);
 
 
                     if($productID == 0){

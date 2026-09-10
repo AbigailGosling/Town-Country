@@ -10,13 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class CreditNoteItem
- * 
+ *
  * @property int $id
  * @property int|null $payment_id
  * @property int|null $product_id
  * @property int|null $quantity
  * @property string|null $price
  * @property string|null $description
+ * @property bool|null $deleted
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
  *
  * @package App\Models
  */

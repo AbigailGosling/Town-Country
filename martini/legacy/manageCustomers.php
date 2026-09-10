@@ -233,6 +233,10 @@ use Illuminate\Support\Facades\Log;
 					<td class="label"><label>Petfood Customer</label></td>
 					<td><input type="checkbox" name="is_petfood_customer" value="1" <?php echo ($data['is_petfood_customer'] == 1)?"checked":""; ?>></td>
 				</tr>
+                <tr>
+					<td class="label"><label>Notify Credit Review</label></td>
+					<td><input type="checkbox" name="notify_credit_review" value="1" <?php echo ($data['notify_credit_review'] == 1)?"checked":""; ?>></td>
+				</tr>
 				<tr>
 					<td class="label"><label>Disable Customer</label></td>
 					<td><input type="checkbox" name="disabled" value="1" <?php echo ($data['disabled'] == 1)?"checked":""; ?>></td>

@@ -66,6 +66,9 @@ use App\Models\User;
                     if ($page['file'] == '../outgoing-pallets-loading/') {
                         ?><a style="height:55px" href="../route-planning">Route Planning</a><?php
                     }
+                    if ($page['file'] == '../containers/') {
+                        ?><a style="height:55px" href="../containers/reservations/report"><span class="small">Container</span> Reservations Report</a><?php
+                    }
 				}
 
 				?>

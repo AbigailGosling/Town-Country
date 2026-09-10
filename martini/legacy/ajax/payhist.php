@@ -18,7 +18,7 @@
         $customers[$customer['id']] = $customer;
     }
 
-    $sql = "SELECT invoice_payments.*,pickerSheets.customer_id FROM invoice_payments INNER JOIN pickerSheets ON invoice_payments.invoice_id = pickerSheets.id WHERE invoice_payments.created_at > NOW() - INTERVAL 6 MONTH AND pickerSheets.is_return_to_supplier = 0 ORDER BY invoice_payments.id DESC";
+    $sql = "SELECT invoice_payments.*,pickerSheets.customer_id FROM invoice_payments INNER JOIN pickerSheets ON invoice_payments.invoice_id = pickerSheets.id WHERE invoice_payments.created_at > NOW() - INTERVAL 6 MONTH AND pickerSheets.is_return_to_supplier = 0 AND `invoice_payments`.`deleted`=0 ORDER BY invoice_payments.id DESC";
     $invoice_payments = mysqli_fetch_all(prepareExecuteQuery($sql),MYSQLI_ASSOC);
 
     foreach($invoice_payments as $payment)

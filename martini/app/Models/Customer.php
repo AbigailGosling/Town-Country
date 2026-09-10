@@ -105,6 +105,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $delivery_day_override
  * @property int $delivery_days
  * @property string|null $sage_no
+ * @property bool $notify_credit_review
  *
  * @package App\Models
  */
@@ -129,6 +130,7 @@ class Customer extends Model
 		'delivery_day_checking' => 'bool',
 		'delivery_day_override' => 'bool',
 		'delivery_days' => 'int',
+		'notify_credit_review' => 'bool',
         'override_cost_check' => 'bool',
         'cost_check_enabled' => 'bool',
         'ignore_next_day_cutoff' => 'bool',

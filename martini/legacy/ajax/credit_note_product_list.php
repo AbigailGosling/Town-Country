@@ -238,7 +238,7 @@
             $productQuantityToDeduct = 0;
 
             # Check for credit notes with this product_id
-            $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=?",'i',[$productID]);
+            $creditNoteResult = prepareExecuteQuery("SELECT * FROM `credit_note_items` WHERE product_id=? AND `credit_note_items`.`deleted` = 0",'i',[$productID]);
 
             # If this product has a credit note
             if(mysqli_num_rows($creditNoteResult) > 0){
