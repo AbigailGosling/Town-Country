@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\InternalCache;
 use App\Helpers\ProcessHelper;
+use App\Models\DebugLogging;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,15 @@ class PodDispatchController extends Controller
             return response()->json(['error' => 'Missing Data parameter'], 400);
         }
         $cacheKey = 'pods_receive_' . Str::uuid();
+
+        $d = new DebugLogging();
+        $d->page = "receive_pod";
+        $d->request = json_encode($cacheKey);
+        $d->user_id = -1;
+        $d->session_id = -1;
+        $d->body = json_encode($input);
+        $d->save();
+
         InternalCache::put($cacheKey, [
             'request' => $input['Data'],
         ], Carbon::now()->addDays(100));
