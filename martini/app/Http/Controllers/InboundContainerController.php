@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\ContainerProduct;
 use App\Models\Cut;
+use App\Models\Customer;
 use App\Models\InboundContainer;
 use App\Models\Nationality;
 use App\Models\Product;
@@ -91,6 +92,110 @@ class InboundContainerController extends Controller
     public function show(InboundContainer $container)
     {
         return view("container.edit",['container'=>$container,'containerProducts'=>ContainerProduct::where([['container_id',$container->id],['deleted',false]])->get(),'temperatures'=>Temperature::whereIn('id',[1,2])->get(),'isNew'=>false,'brands'=>Brand::where('deleted',false)->get()->keyBy('id'),'sites'=>Site::all()->keyBy('id')]);
+    }
+
+    public function reservationsReport(Request $request)
+    {
+        $internalNumber = trim((string) $request->input('internal_number', ''));
+        $container = null;
+        $error = null;
+
+        if ($internalNumber !== '') {
+            $container = InboundContainer::whereRaw('LOWER(internal_number) = ?', [mb_strtolower($internalNumber)])
+                ->orWhere('internal_number', 'LIKE', '%' . $internalNumber . '%')
+                ->first();
+
+            if (!$container) {
+                $error = 'No container found for internal number: ' . $internalNumber;
+            }
+        }
+
+        $containerProducts = collect();
+        $reservations = collect();
+        if ($container) {
+            $containerProducts = ContainerProduct::where('container_id', $container->id)
+                ->where(function ($query) {
+                    $query->whereNull('deleted')->orWhere('deleted', false)->orWhere('deleted', 0);
+                })
+                ->get();
+
+            $productIds = $containerProducts->pluck('product_id')->filter()->unique()->values()->all();
+
+            if (!empty($productIds)) {
+                $reservationProducts = ReservationProduct::whereIn('product_id', $productIds)
+                    ->where(function ($query) {
+                        $query->whereNull('deleted')->orWhere('deleted', false)->orWhere('deleted', 0);
+                    })
+                    ->get();
+
+                $reservationLookup = [];
+                foreach ($reservationProducts as $reservationProduct) {
+                    $reservation = $reservationProduct->reservation()->first();
+                    if (!$reservation) {
+                        continue;
+                    }
+
+                    $reservationId = $reservation->id;
+                    $customer = Customer::find($reservation->customer_id);
+                    if (!isset($reservationLookup[$reservationId])) {
+                        $reservationLookup[$reservationId] = [
+                            'reservation_id' => $reservationId,
+                            'customer' => $customer?->businessname ?? 'Unknown customer',
+                            'eta' => $reservation->eta ? $reservation->eta->format('d/m/Y') : 'N/A',
+                            'total_cases' => 0,
+                            'total_value' => 0,
+                            'items' => collect(),
+                        ];
+                    }
+
+                    $product = $reservationProduct->product()->first();
+                    $itemCases = (int) ($reservationProduct->target_count ?? 0);
+                    $price = (float) ($reservationProduct->price ?? 0);
+                    $lineTotal = $itemCases * $price;
+
+                    $reservationLookup[$reservationId]['total_cases'] += $itemCases;
+                    $reservationLookup[$reservationId]['total_value'] += $lineTotal;
+                    $reservationLookup[$reservationId]['items']->push([
+                        'product_id' => $reservationProduct->product_id,
+                        'product' => $product?->getCut()?->name ?? 'Unknown product',
+                        'brand' => $product?->getBrand()?->name ?? 'Unknown brand',
+                        'cases' => $itemCases,
+                        'price' => $price,
+                        'line_total' => $lineTotal,
+                    ]);
+                }
+
+                $reservations = collect(array_values($reservationLookup))
+                    ->sortByDesc('reservation_id');
+            }
+        }
+
+        $containerBreakdown = $containerProducts->map(function ($containerProduct) {
+            $product = $containerProduct->product()->first();
+            $cases = (int) ($product?->quantity ?? 0);
+            $kg = ($product?->akg !== null && $product?->akg !== '') ? (float) $product->akg * $cases : 0;
+
+            return [
+                'product_id' => $containerProduct->product_id,
+                'product' => $product?->getCut()?->name ?? 'Unknown product',
+                'brand' => $product?->getBrand()?->name ?? 'Unknown brand',
+                'cases' => $cases,
+                'kg' => $kg,
+                'rrp' => (float) ($containerProduct->rrp ?? 0),
+                'cost' => (float) ($containerProduct->cost ?? 0),
+            ];
+        });
+
+        return view('reports.container-reservations', [
+            'container' => $container,
+            'internal_number' => $internalNumber,
+            'error' => $error,
+            'containerBreakdown' => $containerBreakdown,
+            'reservations' => $reservations,
+            'totalReservationCount' => $reservations->count(),
+            'totalReservationCases' => $reservations->sum(fn ($reservation) => (int) ($reservation['total_cases'] ?? 0)),
+            'totalReservationValue' => $reservations->sum(fn ($reservation) => (float) ($reservation['total_value'] ?? 0)),
+        ]);
     }
 
     /**
