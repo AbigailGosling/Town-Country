@@ -388,7 +388,7 @@ class PodHelper
             $fileName = 'DeliveryNote_'.$pickerSheet->id.'.pdf';
             $pathToFile = 'PDF';
             PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheet->id,$pathToFile,$fileName);
-            SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName);
+            SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$pickerSheet->id,false,["lewis.bradley@townandcountrymeats.co.uk"]);
         }
         Auth::logout();
         return true;

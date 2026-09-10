@@ -59,9 +59,7 @@ use App\Models\User;
 				while($page = mysqli_fetch_array($resultsColumn2)){
 					?><a style="height:55px" href="<?php echo $page['file']; ?>"><?php echo $page['name']; ?></a><?php
                     if($page['file'] == 'newDelivery.php'){
-                        ?><a style="height:55px" href="../intake-scanner">Intake Scanning</a><?php
-                        ?><a style="height:55px" href="../intake-scanner-monitor">Intake Monitoring</a><?php
-                        ?><a style="height:55px" href="../intake-scanner-review">Intake Review</a><?php
+
                     }
                     if ($page['file'] == '../outgoing-pallets-loading/') {
                         ?><a style="height:55px" href="../route-planning">Route Planning</a><?php
