@@ -722,6 +722,7 @@ use Illuminate\Support\Str;
 					<input type="text" name="productid[]" value="<?php echo implode(",",$productIDs); ?>" style="display:none;">
 					</td>
 					<?php if ($intake['approved']==1) {
+                        $priceRequired = (!empty($row['cost']) || !empty($row['rrp1']) || !empty($row['rrp2']) || !empty($row['rrp3']));
                         $rrp1Change = ($species_id != "5" && $pRow['grosspallet'] == 0 && ($userCanChangeRRP || $row['rrp1']==null || $row['rrp1']==''))?"":"readonly";
                         $rrp2Change = ($species_id != "5" && $pRow['grosspallet'] == 0 && ($userCanChangeRRP || $row['rrp2']==null || $row['rrp2']==''))?"":"readonly";
                         $rrp3Change = ($species_id != "5" && ($userCanChangeRRP || $row['rrp3']==null || $row['rrp3']==''))?"":"readonly";
@@ -730,32 +731,32 @@ use Illuminate\Support\Str;
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>Prod ID: ".implode(", ",$productIDs)."</div>"; ?>
 						<?php } ?>
-						<input type="text" style="width: 65px;" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>">
+						<input type="text" style="width: 65px;" id="cost_<?php echo $row['id']; ?>" name="cost[]" value="<?php if(empty($row['cost'])) echo ''; else echo number_format((double)$row['cost'], 3, '.', ''); ?>" <?php if ($userViewCosts) echo "onChange='priceChanged(".$row['id'].")'"; ?>>
 					</td>
 					<?php if ($userViewCosts) { ?>
 					<td style="width: 1px;">
 						<?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-						<input style="width: 65px;" type="text" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
+						<input <?php echo $priceRequired ? 'required' : ''; ?> style="width: 65px;" type="text" id="price_<?php echo $row['id']; ?>" name="price[]" value="<?php if(empty($row['price'])) echo ''; else echo number_format((double)$row['price'], 3, '.', ''); ?>">
 					</td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 65px;" type="text" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" id="rrp1_<?php echo $row['id']; ?>" name="rrp1[]" <?php echo $rrp1Change; ?> value="<?php if(empty($row['rrp1'])) echo ''; else echo number_format((double)$row['rrp1'], 3, '.', ''); ?>" <?php if ($userViewCosts) echo "onChange='priceChanged(".$row['id'].")'"; ?>>
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 65px;" type="text" name="rrp2[]" <?php echo $rrp2Change; ?> value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" id="rrp2_<?php echo $row['id']; ?>" name="rrp2[]" <?php echo $rrp2Change; ?> value="<?php if(empty($row['rrp2'])) echo ''; else echo number_format((double)$row['rrp2'], 3, '.', ''); ?>" <?php if ($userViewCosts) echo "onChange='priceChanged(".$row['id'].")'"; ?>>
                     </td>
                     <td>
                         <?php if (User::find(Auth::id())->hasPermission("view_product_id_on_intake")) { ?>
 							<?php echo "<div style='color:lightgray;font-size:8px;'>&nbsp</div>"; ?>
 						<?php } ?>
-                        <input style="width: 65px;" type="text" name="rrp3[]" <?php echo $rrp3Change; ?> value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>">
+                        <input style="width: 65px;" type="text" id="rrp3_<?php echo $row['id']; ?>" name="rrp3[]" <?php echo $rrp3Change; ?> value="<?php if(empty($row['rrp3'])) echo ''; else echo number_format((double)$row['rrp3'], 3, '.', ''); ?>" <?php if ($userViewCosts) echo "onChange='priceChanged(".$row['id'].")'"; ?>>
                     </td>
 					<?php } ?>
 					<?php } ?>
@@ -1266,6 +1267,15 @@ use Illuminate\Support\Str;
         $('form#approveIntake').submit();
     }
 <?php }?>
+    function priceChanged(id){
+        if ($('#cost_' + id).val() == '' && $('#rrp1_' + id).val() == '' && $('#rrp2_' + id).val() == '' && $('#rrp3_' + id).val() == '') {
+            $('#price_' + id).attr('required',null);
+        }
+        else{
+            $('#price_' + id).attr('required','');
+        }
+    }
+
     function qc_hold(pallet_id){
         var c = ($('#qc_hold'+pallet_id).is(":checked"))?1:0;
         $.post( "ajax/toggleQCHold.php",{pallet_id:pallet_id,set_to:c});

@@ -218,7 +218,10 @@ class PodHelper
 
         $pickerSheetIDs = explode(", ", $payload["PARENT_TASK"]["UserData"]["TC_DNOTE"]);
         $pickerSheets = PickerSheet::whereIn('id', $pickerSheetIDs)->get();
-
+        $driverName = '';
+        if (isset($payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"]) && !empty($payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"])) {
+            $driverName = $payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"];
+        }
         if ($payload["PARENT_TASK"]["UserData"]["STATUS"] == "CANNOT_DELIVER") {
             foreach ($pickerSheets as $pickerSheet) {
 
@@ -263,6 +266,7 @@ class PodHelper
                     $rejected_reason[$weightId] = $payload["PARENT_TASK"]["UserData"]["ALL_FAIL_REASON"] . ' - ' . $payload["PARENT_TASK"]["UserData"]["ALL_FAIL_NOTES"];
                 }
             }
+            $driverName = $payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"];
         }
         //Partial failure - some items rejected, some accepted
         foreach ($payload["SUB_TASKS"] as $line) {
@@ -272,6 +276,7 @@ class PodHelper
                     $rejected_weight_ids[] = (int) $rej;
                     $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
                 }
+                $driverName = $line["UserData"]["DRIVER_NAME"];
             }
         }
 
@@ -319,7 +324,7 @@ class PodHelper
                 $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
                 $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
                 $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
-                $returnIntake->notes = 'Auto-created return intake for rejected items. Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
+                $returnIntake->notes = 'Auto-created return intake for rejected items. Driver Name: ' . $driverName . PHP_EOL . 'Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
                 $returnIntake->save();
 
                 $site_id = null;
@@ -368,6 +373,10 @@ class PodHelper
             $psd->type = 'DELIVERY_NOTE';
             $psd->pod = true;
             $psd->file_id = $pickerSheet->signature_file_id;
+            if (!empty($driverName)) {
+                $psd->driver_name = $driverName;
+            }
+            $psd->device_timestamp = Carbon::createFromTimestampMs($payload["PARENT_TASK"]["UserData"]["SIGNED_TIMESTAMP"]) ?? null;
             $psd->save();
 
             $customer = Customer::find($pickerSheet->customer_id);

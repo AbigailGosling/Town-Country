@@ -257,7 +257,7 @@ use App\Models\Species;
 		<label>Location</label>
 		<select name="storage_location" id="storage_location">
 				<option selected="true" disabled></option>
-				<?php echo Site::generateOldHTMLList($selectedStorageLocation);?>
+				<?php echo Site::generateOldHTMLList();?>
 		</select>
 
 		<label>comments</label>
