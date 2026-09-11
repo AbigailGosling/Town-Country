@@ -333,6 +333,7 @@ $s = (int)(microtime(true));
 			<tr class="productsHeading">
 				<th align="left">Message</th>
 				<th align="left">User</th>
+                <th align="left">Date/Time</th>
                 <th align="right">POD?</th>
 				<th align="right">Action</th>
 			</tr>
@@ -355,7 +356,18 @@ $s = (int)(microtime(true));
 						?>
 					</td>
                     <td><?php echo getUsername($internalDoc['user_id']); ?></td>
+                    <?php
+                        $dateToShow = "";
+                        if ($internalDoc['device_timestamp']) {
+                            $dateToShow = date('d/m/Y H:i:s', strtotime($internalDoc['device_timestamp']));
+                        }
+                        else if ($internalDoc['updated_at']) {
+                            $dateToShow = date('d/m/Y H:i:s', strtotime($internalDoc['updated_at']));
+                        }
+                    ?>
+                    <td><?php echo $dateToShow; ?></td>
                     <td><?php echo ($internalDoc['pod'])?"YES":""; ?></td>
+
 					<td align="right">
 						<a href="?id=<?php echo $pickersheet_id; ?>&deleteInternalDocument=<?php echo $internalDoc['id']; ?>">Delete</a>
 					</td>

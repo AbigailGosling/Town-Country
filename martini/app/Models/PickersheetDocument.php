@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 /**
  * Class PickersheetDocument
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $dfile
  * @property string|null $type
  * @property int|null $file_id
+ * @property string|null $driver_name
+ * @property Carbon|null $device_timestamp
  *
  * @package App\Models
  */
@@ -28,7 +31,8 @@ protected $connection = 'tandc_live';
 	public $timestamps = false;
 
 	protected $casts = [
-		'user_id' => 'int'
+		'user_id' => 'int',
+		'device_timestamp' => 'datetime'
 	];
 
 	protected $fillable = [
@@ -37,6 +41,8 @@ protected $connection = 'tandc_live';
 		'message',
 		'dfile',
 		'type',
-		'file_id'
+		'file_id',
+		'driver_name',
+		'device_timestamp'
 	];
 }
