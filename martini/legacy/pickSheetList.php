@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Location;
 use App\Models\Site;
 use App\Models\User;
@@ -139,7 +141,7 @@ use Illuminate\Support\Facades\Auth;
                     rowprinter(true,$row,$row2,$date,explode(",",$location_frozen),$isSupplierReturn);
                 }
 			}
-            function rowprinter($isFrozen,$row,$row2,$date,$locs,$isSupplierReturn)
+            function rowprinter($isFrozen,$pick,$customer,$date,$locs,$isSupplierReturn)
             {
                 $t = "FRESH";
                 if ($isFrozen == true) $t = "FROZEN";
@@ -149,16 +151,22 @@ use Illuminate\Support\Facades\Auth;
                 if (count($locs) > 2) $loc = $locs[0] . "<br/>" . $locs[1] . "<br/>+ More...";
                 else if (count($locs) > 1) $loc = implode("<br/>",$locs);
                 else $loc = $locs[0];
+                if ($isSupplierReturn) $servedBy = "";
+                else {
+                    $ca = ClientAddress::where([["address_id",$pick['addressid']],["client_id",$pick['customer_id']],["client_type",ClientType::CUSTOMER]])->first();
+                    $servedBy = $ca ? Site::find($ca->site_id)->name : "";
+                }
             ?>
               <div class="menuItem">
                     <div>
                         <table style="width:95%;height:52px;">
                             <tr style="height:52px;">
-                                <td align="left" style="width:85px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';" ><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
-                                <td align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';">Ord: <?php echo $row['id']; ?></td>
-                                <td align="left" style="width:460px;height:52px;font-size:18px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $row['id']; ?>';"><?php echo ($isSupplierReturn==false)?$row2['businessname']:$row2['name'];?></td>
+                                <td align="left" style="width:85px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $pick['id']; ?>';" ><div class="tag <?php echo strtolower($t);?>"><?php echo $t;?></div>
+                                <td align="left" style="height:52px;font-size:12px;width:53px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $pick['id']; ?>';">Ord: <?php echo $pick['id']; ?></td>
+                                <td align="left" style="width:460px;height:52px;font-size:18px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $pick['id']; ?>';"><?php echo ($isSupplierReturn==false)?$customer['businessname']:$customer['name'];?></td>
+                                <td align="left" style="width:52px;height:100%;line-height:100%;font-size:12px;white-space: nowrap;" onclick="location.href='viewPickSheet.php?type=<?php echo strtolower($t);?>&id=<?php echo $pick['id']; ?>';">Served by:<br><?php echo $servedBy;?></td>
                                 <td align="left" style="height:52px;font-size:8px;width:50px;white-space: nowrap;">(Created <?php echo $date;?>)</td>
-                                <td align="left" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $row['estimated_delivery_date'];?>)</td>
+                                <td align="left" style="width:14%;height:52px;font-size:18px;white-space: nowrap;">(Delv <?php echo $pick['estimated_delivery_date'];?>)</td>
                                 <td align="right" style="height:52px;font-size:12px;width:70px;white-space: nowrap;line-height:1"><?php echo $loc;?></td>
                             </tr>
                         </table>
@@ -168,7 +176,7 @@ use Illuminate\Support\Facades\Auth;
                         if ($currentUser->hasPermission("deletePick")){
                     ?>
                      <div class="actions">
-                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $row['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
+                        <a href="javascript:;" onclick="if(confirm('Are you sure you want to delete this?')){ doDelete(<?php echo $pick['id']; ?>); }" class="icon"><i class="fa fa-close" style="padding-right:4px;" aria-hidden="true"></i></a>
                     </div>
                     <?php
                         }
