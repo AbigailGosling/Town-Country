@@ -1,16 +1,19 @@
 <?php
 
+use App\Models\CreditNoteItem;
+use App\Models\InvoicePayment;
+
 	require(__DIR__.'/../functions.php');
+
     $customerID = request()->input('customer_id');
     $paymentID = request()->input('payment_id');
     $invoiceID = request()->input('invoice_id');
     $amount = floatval(request()->input('amount'));
     $metaData = request()->input('meta_data');
     $paymentMethod = request()->input('payment_method');
-
+    $input = request()->all();
 
     if(empty($customerID) || empty($invoiceID) || ($amount == '' && $paymentMethod != 'CREDIT_NOTE') || (!in_array($paymentMethod, PAYMENT_METHODS) && !in_array($paymentMethod, SUPPLIER_PAYMENT_METHODS)) || !$_SESSION['USER']){
-
         header('Location: ../single_invoice_payments.php?customer_id=' .$customerID . '&invoice_id=' . $invoiceID);
         die();
     }
@@ -19,63 +22,51 @@
     $x = "DELETE FROM customer_outstanding_cache WHERE customer_id = ?";
     $y = prepareExecuteQuery($x,'i',[$customerID]);
 
-    if(empty($paymentID)){
+    /** @var InvoicePayment $invoicePayment */
+    $invoicePayment = new InvoicePayment();
+    $newPayment = true;
+    if (!empty($paymentID)){
+        $newPayment = false;
+        $invoicePayment = InvoicePayment::find($paymentID);
+    }
+    else {
         if($paymentMethod == 'CREDIT_NOTE'){
             $amount = 0;
         }
-        $x = "INSERT into invoice_payments (invoice_id,payment_method,amount,meta_data,payment_recorded_by)
-		VALUES (?,?,?,?,?)";
-		$id = prepareExecuteQuery($x,'issss',[$invoiceID,$paymentMethod,$amount,$metaData,$currentUser],true);
+    }
+    $invoicePayment->invoice_id = $invoiceID;
+    $invoicePayment->payment_method = $paymentMethod;
+    $invoicePayment->amount = $amount;
+    $invoicePayment->meta_data = $metaData;
+    $invoicePayment->payment_recorded_by = $currentUser;
+    $invoicePayment->save();
 
-        if($paymentMethod == 'CREDIT_NOTE'){
-            //credit_note_items
-            $i = 0;
-            foreach(request()->input('product_id') as $product_id){
-
-                $price = request()->input('price')[$i];
-                $quantity = request()->input('quantity')[$i];
-                $description = request()->input('description')[$i];
-
-                $y = prepareExecuteQuery("INSERT into `credit_note_items` (`payment_id`,`product_id`,`quantity`,`price`,`description`) VALUES (?,?,?,?,?)"
-            ,'issss',[$id,$product_id,$quantity,$price,$description]);
-
-                $i++;
-            }
+    foreach($input['price'] as $i=>$price){
+        /** @var CreditNoteItem $creditNoteItem */
+        $creditNoteItem = new CreditNoteItem();
+        if (!$newPayment){
+            $creditNoteItem = CreditNoteItem::find($input['credit_id'][$i]);
         }
+        $creditNoteItem->payment_id = $invoicePayment->id;
+        $creditNoteItem->product_id = $input['product_id'][$i];
+        $creditNoteItem->quantity = $input['quantity'][$i];
+        $creditNoteItem->price = $input['price'][$i];
+        $creditNoteItem->description = $input['description'][$i];
+        $creditNoteItem->save();
+    }
+    if(request()->input('delete_ids') != null){
 
-    }else{
-
-        $x = "UPDATE `invoice_payments` SET amount=?, payment_method=?, meta_data=? WHERE id =?";
-	    $y = prepareExecuteQuery($x,'sssi',[$amount,$paymentMethod,$metaData,$paymentID]);
-
-        if($paymentMethod == 'CREDIT_NOTE'){
-            $i = 0;
-
-            if(request()->input('delete_ids') != null){
-
-                $DELETE_IDS = request()->input('delete_ids');
-                $DELETE_IDS = rtrim($DELETE_IDS, ',');
-                loggedDataChange("credit_note_items_deleted", $invoiceID, "Credit Note Items Deleted: ".$DELETE_IDS);
-                prepareExecuteQuery("UPDATE `credit_note_items` SET `deleted` = 1 WHERE id IN ($DELETE_IDS)");
-
-            }
-
-            foreach(request()->input('product_id') as $product_id){
-                $credit_id = request()->input('credit_id')[$i];
-                $price = request()->input('price')[$i];
-                $quantity = request()->input('quantity')[$i];
-                $description = request()->input('description')[$i];
-
-                $y = prepareExecuteQuery("UPDATE `credit_note_items` SET quantity=?, price=?, `description`=? WHERE id=?",
-            'sssi',[$quantity,$price,$description,$credit_id]);
-
-                $i++;
-            }
-
+        $DELETE_IDS = request()->input('delete_ids');
+        $DELETE_IDS = rtrim($DELETE_IDS, ',');
+        $creditsToDelete = explode(',', $DELETE_IDS);
+        $creditsToDelete = CreditNoteItem::whereIn('id', $creditsToDelete)->get();
+        loggedDataChange("credit_note_items_deleted", $invoiceID, "Credit Note Items Deleted: ".$DELETE_IDS);
+        foreach($creditsToDelete as $credit){
+            $credit->deleted = 1;
+            $credit->save();
         }
 
     }
-
     header('Location: ../single_invoice_payments.php?customer_id=' .$customerID . '&invoice_id=' . $invoiceID);
 
 ?>
