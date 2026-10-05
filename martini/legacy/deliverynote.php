@@ -19,6 +19,7 @@ $s = (int)(microtime(true));
 	use InternalScripts\SLabsEmailer;
 	use InternalScripts\SLabsEmailerType;
 	$pickersheet_id = request()->input('id');
+    $noWarning = request()->has('nw');
 
     $minRows = 14;
     $returnIntake = Intake::where('delivery_note_number', $pickersheet_id)->orderBy('created_at', 'desc')->first();
@@ -38,6 +39,7 @@ $s = (int)(microtime(true));
         $name = $customerRow['businessname'];
         $ta = 't/a'. $customerRow['tradingas'];
         if($pickSheetRow['addressid'] == ''){ $pickSheetRow['addressid'] = 1; }
+        /** @var ClientAddress $ca */
         $ca = ClientAddress::where('client_id', $customer_id)->where('address_id', $pickSheetRow['addressid'])->where('client_type', ClientType::CUSTOMER->value)->first();
         $address1 = $ca->address_1;
         $address2 = $ca->address_2;
@@ -50,6 +52,7 @@ $s = (int)(microtime(true));
         $accountaddress_3 = $customerRow['accounts_address_3'];
         $accountaddress_4 = $customerRow['accounts_address_4'];
         $accountPhone = ($customerRow['contactnumber'] != null && $customerRow['contactnumber'] != "")?$customerRow['contactnumber']:$customerRow['tel_number'];
+        $openTime = "Opening Time: " . ($ca->opening_time ? $ca->opening_time->format('H:i') : "") . " - " . ($ca->closing_time ? $ca->closing_time->format('H:i') : "");
     }
     else
     {
@@ -65,6 +68,7 @@ $s = (int)(microtime(true));
         $address4 = $customerRow['address_4'];
         $accountaddress_4 = $postcode = $customerRow['postcode'];
         $accountPhone = $delPhone = $customerRow['contact_number'];
+        $openTime = "";
     }
 
 
@@ -90,7 +94,7 @@ $s = (int)(microtime(true));
 	<a href="logout" id="logout">LOGOUT</a>
 </div>
 <?php
-	if (($creditCheck['overcredit'] || $creditCheck['printblock']) && !$customerRow['allowPrint']) {
+	if (($creditCheck['overcredit'] || $creditCheck['printblock']) && !$customerRow['allowPrint'] && !$noWarning) {
 		$admin_email = prepareExecuteQuery("SELECT * FROM `mail_tracking` WHERE document_id = ? AND `type` = ?",'is',[$pickersheet_id,SLabsEmailerType::CrdtAlert]);
 		if ($admin_email->num_rows == 0)
 		{
@@ -243,6 +247,7 @@ $s = (int)(microtime(true));
                         echo $address4. '<br/>';
 						echo $postcode . '<br/>';
                         echo $delPhone . '<br/>';
+                        echo $openTime;
 					?>
 				</p>
 				<span><?php echo $pickSheetRow['comments']; ?></span>
