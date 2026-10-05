@@ -10,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -307,6 +306,8 @@ class GraphHopperHelper
                 if (count($vrpVehicles)>=20)break 2;
                 //$startLocation = ($vehicle->lat && $vehicle->lon) ? ['location_id' => $vehicle->reg, 'lat' => (float)$vehicle->lat, 'lon' => (float)$vehicle->lon] : $depotLocation;
                 $startLocation = $depotLocation;
+                $genericEarliestStart = strtotime($dueDate->format('Y-m-d') . ' 00:00:00');
+                $genericLatestEnd = $genericEarliestStart + max(3600, (int) $maxOperatingSeconds);
 
                 if ($genericMode) {
                     // Generic mode should still allow the depot 1 overnight split used by the original planner.
@@ -321,6 +322,8 @@ class GraphHopperHelper
                         'vehicle_id' => $type['type_id'] . '-' . $i,
                         'type_id' => $type['type_id'],
                         'start_address' => $depotLocation,
+                        'earliest_start' => $genericEarliestStart,
+                        'latest_end' => $genericLatestEnd,
                         'max_driving_time' => $maxOperatingSeconds,
                         'return_to_depot' => !$isOvernightGenericVehicle,
                     ];
@@ -343,7 +346,7 @@ class GraphHopperHelper
                             'break' => [
                                 'earliest' => strtotime($dueDate->format('Y-m-d') . ' 12:00:00'),
                                 'latest' => strtotime($dueDate->format('Y-m-d') . ' 14:00:00'),
-                                'duration' => 3600,
+                                'duration' => 4800,
                             ],
                             'return_to_depot' => false,
                         ];
@@ -387,7 +390,7 @@ class GraphHopperHelper
      * @param array<int, array{outgoingPalletId: int, reason: string}> $skipped
      * @param array<int, string> $skippedAddresses
      * @param array<string, array{fresh: bool, frozen: bool}> $addressDelTypes
-     * @param bool $genericMode If true, omits time_windows from services
+    * @param bool $genericMode Retained for compatibility with caller signatures
     */
     public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = [], bool $genericMode = false): array
     {
@@ -402,8 +405,12 @@ class GraphHopperHelper
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
                 continue;
             }
-            if ($address->collection) continue;
+            if ($address->collection) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Address is marked as collection',];
+                continue;
+            }
             if ($address->site_id !== $site_id) {
+                $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Address does not belong to the current site',];
                 continue;
             }
             if (in_array($pallet->customer_id.'-'.$pallet->address_id, $skippedAddresses, true) || ($address->geocoding_tried && (!$address->lat || !$address->lon))) {
@@ -476,28 +483,29 @@ class GraphHopperHelper
                     'lon' => $location['lon'],
                 ],
                 'setup_time' => $serviceDurationSeconds,
-                'size' => [($pallet->type_id == 1 ? 1.5 : 1),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
+                'size' => [($pallet->transport_pallet_type_id == 1 ? 3 : 2),(int)FuncHelper::ceilDec($pallet->getTotalWeight(), 0) ?? 0],
                 //'group' => $tempCategory,
                 'allowed_vehicles' => $allowedVehicles,
             ];
 
-            // Add time_windows only if not in generic mode
-            if (!$genericMode) {
-                $addressOpeningTime = $address->opening_time;
-                if ($addressOpeningTime == null) {
-                    $addressOpeningTime = Carbon::now()->setTime(4, 0, 0);
-                }
-                $addressClosingTime = $address->closing_time;
-                if ($addressClosingTime == null) {
-                    $addressClosingTime = Carbon::now()->setTime(23, 0, 0);
-                }
-                $thisService['time_windows'] = [
-                    [
-                        'earliest' => $addressOpeningTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
-                        'latest' => $addressClosingTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp,
-                    ],
-                ];
+            // Always enforce customer opening/closing windows from ClientAddress.
+            $addressOpeningTime = $address->opening_time;
+            if ($addressOpeningTime == null) {
+                $addressOpeningTime = Carbon::now()->setTime(4, 0, 0);
             }
+            $addressClosingTime = $address->closing_time;
+            if ($addressClosingTime == null) {
+                $addressClosingTime = Carbon::now()->setTime(23, 0, 0);
+            }
+            $windowEarliest = $addressOpeningTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp;
+            $windowLatest = $addressClosingTime->copy()->setDate($workingDate->year, $workingDate->month, $workingDate->day)->timestamp;
+            $windowLatestForServiceStart = $windowLatest - max(0, (int) $serviceDurationSeconds);
+            $thisService['time_windows'] = [
+                [
+                    'earliest' => $windowEarliest,
+                    'latest' => $windowLatestForServiceStart,
+                ],
+            ];
 
             if ($address->require_tail_lift) {
                 $thisService['required_skills'] = ['tail_lift'];

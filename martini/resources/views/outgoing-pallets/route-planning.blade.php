@@ -814,8 +814,8 @@
             const activities = Array.isArray(route?.activities) ? route.activities : [];
             const startActivity = activities.find(activity => String(activity?.type ?? '').toLowerCase() === 'start') ?? null;
             const endActivity = [...activities].reverse().find(activity => String(activity?.type ?? '').toLowerCase() === 'end') ?? null;
-            const startTimeLabel = formatUnixTimestamp(startActivity?.arr_time ?? startActivity?.start_time ?? startActivity?.end_time);
-            const endTimeLabel = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
+            const startTimeLabel = formatUnixTimestamp(resolveAbsoluteActivityTimestamp(startActivity));
+            const endTimeLabel = formatUnixTimestamp(resolveAbsoluteActivityTimestamp(endActivity));
 
             const points = [];
             points.push({
@@ -930,6 +930,23 @@
         }
 
         return dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function resolveAbsoluteActivityTimestamp(activity) {
+        const candidates = [
+            activity?.end_time,
+            activity?.start_time,
+            activity?.arr_time,
+        ];
+
+        for (const candidate of candidates) {
+            const value = Number(candidate ?? 0);
+            if (Number.isFinite(value) && value >= 1000000000) {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     function formatRoutePointLabel(point, route) {
@@ -1575,7 +1592,7 @@
             const list = document.createElement('ol');
             list.className = 'route-breakdown-stops';
 
-            const departureWhen = formatUnixTimestamp(startActivity?.arr_time ?? startActivity?.end_time ?? startActivity?.start_time);
+            const departureWhen = formatUnixTimestamp(resolveAbsoluteActivityTimestamp(startActivity));
             const departureTimePart = departureWhen ? ` (${departureWhen})` : '';
             const departureLi = document.createElement('li');
             departureLi.textContent = `Departure: ${formatRouteTerminalLabel(startActivity, vehicleMeta.startAddressLabel)}${departureTimePart}`;
@@ -1585,7 +1602,7 @@
             stops.forEach(activity => {
                 const serviceId = String(activity?.id ?? activity?.service_id ?? activity?.address?.location_id ?? 'Unknown');
                 const meta = serviceMeta.get(serviceId);
-                const when = formatUnixTimestamp(activity?.arr_time ?? activity?.end_time ?? activity?.start_time);
+                const when = formatUnixTimestamp(resolveAbsoluteActivityTimestamp(activity));
                 const label = String(meta?.name ?? serviceId).trim() || serviceId;
                 const key = label;
                 const current = groupedStops.get(key) ?? { label, count: 0, firstWhen: null };
@@ -1609,7 +1626,7 @@
 
             const arrivalLabel = formatRouteTerminalLabel(endActivity, vehicleMeta.endAddressLabel);
             if (arrivalLabel && arrivalLabel !== 'Unknown address') {
-                const arrivalWhen = formatUnixTimestamp(endActivity?.arr_time ?? endActivity?.end_time ?? endActivity?.start_time);
+                const arrivalWhen = formatUnixTimestamp(resolveAbsoluteActivityTimestamp(endActivity));
                 const arrivalTimePart = arrivalWhen ? ` (${arrivalWhen})` : '';
                 const arrivalLi = document.createElement('li');
                 arrivalLi.textContent = `Arrival: ${arrivalLabel}${arrivalTimePart}`;

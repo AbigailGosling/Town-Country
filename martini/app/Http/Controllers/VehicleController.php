@@ -64,14 +64,14 @@ class VehicleController extends Controller
     {
         $validated = $request->validate([
             'reg' => ['required', 'string', 'max:50', Rule::unique('tandc_live.vehicle', 'reg')],
-            'vehicle_type_id' => ['nullable', 'integer', 'exists:tandc_live.vehicle_type,id'],
+            'vehicle_type_id' => ['required', 'integer', 'exists:tandc_live.vehicle_type,id'],
             'make' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
-            'grossWeight' => ['nullable', 'string', 'max:255'],
-            'payload' => ['nullable', 'string', 'max:255'],
-            'site_id' => ['nullable', 'integer', 'exists:tandc_live.site,id'],
+            'grossWeight' => ['required', 'string', 'max:255'],
+            'payload' => ['required', 'string', 'max:255'],
+            'site_id' => ['required', 'integer', 'exists:tandc_live.site,id'],
             'driver' => ['nullable', 'string', 'max:255'],
-            'max_pallet_rows' => ['nullable', 'integer', 'min:1', 'max:40'],
+            'max_pallet_rows' => ['required', 'integer', 'min:1', 'max:40'],
         ]);
 
         $validated['reg'] = trim((string) $validated['reg']);
@@ -99,14 +99,14 @@ class VehicleController extends Controller
     {
         $validated = $request->validate([
             'reg' => ['required', 'string', 'max:50', Rule::unique('tandc_live.vehicle', 'reg')->ignore($vehicle->id)],
-            'vehicle_type_id' => ['nullable', 'integer', 'exists:tandc_live.vehicle_type,id'],
+            'vehicle_type_id' => ['required', 'integer', 'exists:tandc_live.vehicle_type,id'],
             'make' => ['nullable', 'string', 'max:255'],
             'model' => ['nullable', 'string', 'max:255'],
-            'grossWeight' => ['nullable', 'string', 'max:255'],
-            'payload' => ['nullable', 'string', 'max:255'],
-            'site_id' => ['nullable', 'integer', 'exists:tandc_live.site,id'],
+            'grossWeight' => ['required', 'string', 'max:255'],
+            'payload' => ['required', 'string', 'max:255'],
+            'site_id' => ['required', 'integer', 'exists:tandc_live.site,id'],
             'driver' => ['nullable', 'string', 'max:255'],
-            'max_pallet_rows' => ['nullable', 'integer', 'min:1', 'max:40'],
+            'max_pallet_rows' => ['required', 'integer', 'min:1', 'max:40'],
         ]);
 
         $validated['reg'] = trim((string) $validated['reg']);

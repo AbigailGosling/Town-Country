@@ -76,6 +76,6 @@ class Vehicle extends Model
     public function planningCapacityForVehicle(int $planningPalletColumns): int
     {
         $maxRows = $this->max_pallet_rows ?? 5;
-        return max($planningPalletColumns, $maxRows * $planningPalletColumns);
+        return max($planningPalletColumns, $maxRows * $planningPalletColumns)*2;
     }
 }
