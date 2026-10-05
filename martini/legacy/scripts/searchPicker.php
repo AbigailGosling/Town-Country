@@ -283,6 +283,8 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
             $ubtext = 'UB';
         }else if($ubbb == 1){
             $ubtext = 'BB';
+        }else if($ubbb == 3){
+            $ubtext = 'PB';
         }else{
             $ubtext = 'N/A';
         }
@@ -558,9 +560,10 @@ if ($timeSensitivityStatus == null) $timeSensitivityStatus = 0;
 
             <?php
                 if($ubbb != 2){
-
-                    if($earliestStartDate != "" && $latestEndDate != "") echo '<td>'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate2.'</td>';
-                    else echo '<td>--</td>';
+                    $ubColour = "";
+                    if ($ubbb == 3) $ubColour = "background:#a47dab;color:#fff;padding:5px;";
+                    if($earliestStartDate != "" && $latestEndDate != "") echo '<td style="'.$ubColour.'">'.$ubtext . ' ' . $earliestStartDate.' - '.$latestEndDate2.'</td>';
+                    else echo '<td style="'.$ubColour.'">--</td>';
                 }else{
                     echo '<td>'.$ubtext.'</td>';
                 }

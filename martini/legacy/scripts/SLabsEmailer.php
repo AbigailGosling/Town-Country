@@ -165,6 +165,7 @@ abstract class SLabsEmailerType
     const IndividualDailySummary = 'INDIVIDUAL_DAILY_SUMMARY';
     const IndividualWeeklySummary = 'INDIVIDUAL_WEEKLY_SUMMARY';
     const DeliveryNote = 'DELIVERY_NOTE';
+    const ItemsReturned = 'ITEMS_RETURNED';
 }
 abstract class SLabsEmailerStatus
 {

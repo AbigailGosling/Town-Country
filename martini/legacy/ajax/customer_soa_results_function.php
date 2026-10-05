@@ -10,11 +10,12 @@ function get_customer_soa_results($customer_id,$adv)
     $customer = prepareExecuteQuery("SELECT * FROM `customers` WHERE id = ?",'i',[$customer_id]);
     $customer = $customer->fetch_assoc();
 
-    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date, SUM(invoice_payments.amount) as paid FROM `pickerSheets` left join invoice_payments on invoice_payments.payment_method != 'CREDIT_NOTE' && pickerSheets.id = invoice_payments.invoice_id WHERE (pickerSheets.is_return_to_supplier = 0 AND pickerSheets.completed = 1 AND pickerSheets.customer_id=?) AND (`invoice_payments`.`deleted` = 0 OR `invoice_payments`.`deleted` IS NULL) GROUP by pickerSheets.id ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
+    $customerPicksheets = prepareExecuteQuery("SELECT pickerSheets.id, pickerSheets.customer_id, pickerSheets.date, pickerSheets.date as `creation_date`, pickerSheets.estimated_delivery_date FROM `pickerSheets` WHERE (pickerSheets.is_return_to_supplier = 0 AND pickerSheets.completed = 1 AND pickerSheets.customer_id=?) ORDER BY pickerSheets.id DESC",'i',[$customer_id]);
     $pickSheets1 = mysqli_fetch_all($customerPicksheets,MYSQLI_ASSOC);
     $knownPickIDs = [];
     $pickSheets = [];
     foreach($pickSheets1 as $picksheet){
+        $picksheet['paid'] = prepareExecuteQuery("SELECT SUM(`amount`) as `paid` FROM `invoice_payments` WHERE `payment_method` != 'CREDIT_NOTE' AND `invoice_id` = ? AND `deleted` <> 1",'i',[$picksheet['id']])->fetch_assoc()['paid'];
         $picksheet['hasReturns'] = false;
         $pickSheets[$picksheet['id']] = $picksheet;
         $knownPickIDs[] = $picksheet['id'];

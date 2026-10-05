@@ -322,7 +322,18 @@ class PodHelper
                 $returnIntake->security_id = 3; // TODO: Determine appropriate security_id
 
                 $returnIntake->vehicle_reg = $vehicle->reg ?? 'UNKNOWN';
-                $returnIntake->user_id = $vehicle->driver ?? 'UNKNOWN';
+                if (!empty($vehicle->driver))
+                {
+                    $returnIntake->user_id = $vehicle->driver;
+                }
+                else if (!empty($driverName))
+                {
+                    $returnIntake->user_id = User::where('name', $driverName)->first()?->id ?? null;
+                }
+                else
+                {
+                    $returnIntake->user_id = "UNKNOWN";
+                }
                 $returnIntake->date_received = Carbon::now()->format('Y-m-d H:i:s');
                 $returnIntake->notes = 'Auto-created return intake for rejected items. Driver Name: ' . $driverName . PHP_EOL . 'Rejection Reason(s):' . PHP_EOL . implode(PHP_EOL, array_unique($rejected_reason));
                 $returnIntake->save();
@@ -360,6 +371,9 @@ class PodHelper
                 }
                 $returnIntake->site_id = $site_id ?? 1;
                 $returnIntake->save();
+                $subject = "Items Returned - Invoice: ".$pickerSheet->id." - from ".$customer->businessname;
+                $htmlBody = "<html>Items have been returned from Invoice No: ".$pickerSheet->id." for ".$customer->businessname.".<br>See intake: ".$returnIntake->id."</html>";
+                SLabsEmailer::send_email($customer->id,SLabsEmailerType::ItemsReturned,["gemma@townandcountrymeats.co.uk"],$subject,$htmlBody,"","",$pickerSheet->id,false);
             }
 
             $pickerSheet->receiver_name = $payload["PARENT_TASK"]["UserData"]["SIGN_NAME"]. " ".$payload["PARENT_TASK"]["UserData"]["SIGN_SURNAME"];
@@ -396,7 +410,7 @@ class PodHelper
             $htmlBody = "<html>Please find attached a delivery note from Town and Country Meats Group for ".$customer->businessname." Invoice No: ".$pickerSheet->id.".</html>";
             $fileName = 'DeliveryNote_'.$pickerSheet->id.'.pdf';
             $pathToFile = 'PDF';
-            PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheet->id,$pathToFile,$fileName);
+            PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheet->id."&nw=y",$pathToFile,$fileName);
             SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$pickerSheet->id,false,["lewis.bradley@townandcountrymeats.co.uk"]);
         }
         Auth::logout();

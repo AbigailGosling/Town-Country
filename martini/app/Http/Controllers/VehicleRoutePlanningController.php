@@ -282,8 +282,6 @@ class VehicleRoutePlanningController extends Controller
             $storedVehicles = is_array($storedRequest['vehicles'] ?? null) ? $storedRequest['vehicles'] : [];
             $storedVehicleTypes = is_array($storedRequest['vehicle_types'] ?? null) ? $storedRequest['vehicle_types'] : [];
             $storedRelations = is_array($storedRequest['relations'] ?? null) ? $storedRequest['relations'] : [];
-            $storedUsesTimeWindows = self::storedServicesUseTimeWindows($storedServices);
-
             if (!empty($routePalletIds)) {
                 $routePalletIdSet = array_fill_keys(array_map('strval', $routePalletIds), true);
                 $storedServices = array_values(array_filter($storedServices, function ($service) use ($routePalletIdSet) {
@@ -322,38 +320,40 @@ class VehicleRoutePlanningController extends Controller
             }
             unset($storedVehicle);
 
-            if ($storedUsesTimeWindows) {
-                foreach ($storedServices as &$service) {
-                    $address = null;
-                    $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
-                    if ($locationId !== '') {
-                        [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
-                        if ($clientId !== null && $addressId !== null) {
-                            $address = ClientAddress::query()
-                                ->where('client_type', ClientType::CUSTOMER->value)
-                                ->where('client_id', (int) $clientId)
-                                ->where('address_id', (int) $addressId)
-                                ->first();
-                        }
-                    }
-
-                    if ($address) {
-                        $openingTime = $address->opening_time ?: Carbon::createFromTime(4, 0, 0);
-                        $closingTime = $address->closing_time ?: Carbon::createFromTime(23, 0, 0);
-                        $service['time_windows'] = [[
-                            'earliest' => $openingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
-                            'latest' => $closingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp,
-                        ]];
+            foreach ($storedServices as &$service) {
+                $address = null;
+                $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
+                if ($locationId !== '') {
+                    [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
+                    if ($clientId !== null && $addressId !== null) {
+                        $address = ClientAddress::query()
+                            ->where('client_type', ClientType::CUSTOMER->value)
+                            ->where('client_id', (int) $clientId)
+                            ->where('address_id', (int) $addressId)
+                            ->first();
                     }
                 }
-                unset($service);
+
+                if ($address) {
+                    $openingTime = $address->opening_time ?: Carbon::createFromTime(4, 0, 0);
+                    $closingTime = $address->closing_time ?: Carbon::createFromTime(23, 0, 0);
+                    $windowEarliest = $openingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp;
+                    $windowLatest = $closingTime->copy()->setDate($dueDate->year, $dueDate->month, $dueDate->day)->timestamp;
+                    $serviceSetupSeconds = max(0, (int) ($service['setup_time'] ?? 0));
+                    $windowLatestForServiceStart = $windowLatest - $serviceSetupSeconds;
+                    $service['time_windows'] = [[
+                        'earliest' => $windowEarliest,
+                        'latest' => $windowLatestForServiceStart,
+                    ]];
+                }
             }
+            unset($service);
 
             $refinedPayload = [
                 'configuration' => [
                     'routing' => [
                         'calc_points' => true,
-                        'consider_traffic' => $storedUsesTimeWindows,
+                        'consider_traffic' => true,
                         'network_data_provider' => 'tomtom',
                     ],
                 ],
@@ -378,7 +378,7 @@ class VehicleRoutePlanningController extends Controller
                 'success' => true,
                 'dryRun' => true,
                 'routeMode' => $routeMode,
-                'genericMode' => !$storedUsesTimeWindows,
+                'genericMode' => false,
                 'dueDate' => $dueDate,
                 'routeStartDate' => $routeStartDateInput !== '' ? $routeStartDateInput : $dueDate->format('Y-m-d'),
                 'routeEndDate' => $routeEndDateInput !== '' ? $routeEndDateInput : $dueDate->format('Y-m-d'),
@@ -417,11 +417,20 @@ class VehicleRoutePlanningController extends Controller
         $customerAddresses = ClientAddress::whereIn('client_id', $pallets->pluck('customer_id')->unique())
             ->whereIn('address_id', $pallets->pluck('address_id')->unique())
             ->where('client_type', ClientType::CUSTOMER->value)
+            ->where('site_id', $depotSite->id)
             ->get()
             ->keyBy(function ($ca) {
                 return $ca->client_id . '-' . $ca->address_id;
             });
-
+        $pallets = $pallets->filter(function ($pallet) use ($customerAddresses) {
+            return $customerAddresses->has($pallet->customer_id . '-' . $pallet->address_id);
+        });
+        if ($pallets->isEmpty()) {
+            return response()->json([
+                'error' => 'No outgoing pallets found for this site on selected date',
+                'dueDate' => $dueDate->format('Y-m-d'),
+            ], 404);
+        }
         $generifiedVehicleTypes = GraphHopperHelper::generifyVehicleTypes($vehicles, self::PLANNING_PALLET_COLUMNS);
         $vrcVehicleTypes = [];
         $depotLocation = [
