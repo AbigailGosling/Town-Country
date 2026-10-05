@@ -26,7 +26,7 @@ class OutgoingPalletController extends Controller
     public function index(): View
     {
 
-        $startDate = Carbon::today()->addDays(0);
+        $startDate = Carbon::today()->addDays(-1);
         $endDate = Carbon::today()->addDays(3);
 
         $pickSheets = PickerSheet::query()

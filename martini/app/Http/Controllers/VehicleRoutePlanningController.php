@@ -593,7 +593,7 @@ class VehicleRoutePlanningController extends Controller
             $graphResponse = GraphHopperHelper::vrp($vrpPayload);
         }
         $d = new DebugLogging();
-            $d->page = "send_pod";
+            $d->page = "routing";
             $d->request = json_encode($vrpPayload);
             $d->user_id = -1;
             $d->session_id = -1;
