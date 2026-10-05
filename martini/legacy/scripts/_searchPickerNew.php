@@ -109,6 +109,8 @@ use Illuminate\Support\Facades\Auth;
                     $ubtext = 'UB';
                 }else if($ubbb == 1){
                     $ubtext = 'BB';
+                }else if($ubbb == 3){
+                    $ubtext = 'PB';
                 }else{
                     $ubtext = 'N/A';
                 }
@@ -222,15 +224,16 @@ use Illuminate\Support\Facades\Auth;
                     <td><?php echo getBrand($productsRow2['brand_id']); ?></td>
                     <?php
                     if($ubbb != 2 && $temp_id == 1){
+
                         $toDate = DateTime::createFromFormat('d/m/Y',$smallestDate)->getTimestamp();
                         $toDate2 = DateTime::createFromFormat('d/m/Y',$largestDate)->getTimestamp();
                         if ($toDate2 < $toDate) $toDate = $toDate2;
                         $cutQuery = mysqli_query($mysqli,"SELECT * FROM `cuts` WHERE id = ".$cut_id);
                         $cutResult= mysqli_fetch_assoc($cutQuery);
                         $bgCol = "";
+                        if ($ubbb == 3) $bgCol = 'style="background-color:#a47dab;color:#fff;"';
                         if ((isset($cutResult['warning']) && $cutResult['warning'] != "")||(isset($cutResult['danger']) && $cutResult['danger'] != ""))
                         {
-                            $bgCol = '';
                             $now = time();
                             $alreadyFlagged = false;
                             if (isset($cutResult['warning']) && $cutResult['warning'] != "")
