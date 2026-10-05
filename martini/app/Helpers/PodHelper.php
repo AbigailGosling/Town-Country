@@ -371,6 +371,9 @@ class PodHelper
                 }
                 $returnIntake->site_id = $site_id ?? 1;
                 $returnIntake->save();
+                $subject = "Items Returned - Invoice: ".$pickerSheet->id." - from ".$customer->businessname;
+                $htmlBody = "<html>Items have been returned from Invoice No: ".$pickerSheet->id." for ".$customer->businessname.".<br>See intake: ".$returnIntake->id."</html>";
+                SLabsEmailer::send_email($customer->id,SLabsEmailerType::ItemsReturned,["gemma@townandcountrymeats.co.uk"],$subject,$htmlBody,"","",$pickerSheet->id,false);
             }
 
             $pickerSheet->receiver_name = $payload["PARENT_TASK"]["UserData"]["SIGN_NAME"]. " ".$payload["PARENT_TASK"]["UserData"]["SIGN_SURNAME"];
