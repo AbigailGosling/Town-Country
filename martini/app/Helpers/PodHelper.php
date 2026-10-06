@@ -300,6 +300,7 @@ class PodHelper
         /** @var PickerSheet $pickerSheet */
         foreach ($pickerSheets as $pickerSheet) {
             $thisPickWeights = [];
+            $customer = Customer::find($pickerSheet->customer_id);
             foreach ($pickerSheet->pickWeightOuts as $pwo) {
                 $thisPickWeights = array_merge($thisPickWeights, explode(',', $pwo->weight_ids));
             }
@@ -393,7 +394,6 @@ class PodHelper
             $psd->device_timestamp = Carbon::createFromTimestampMs($payload["PARENT_TASK"]["UserData"]["SIGNED_TIMESTAMP"]) ?? null;
             $psd->save();
 
-            $customer = Customer::find($pickerSheet->customer_id);
             if ($customer->customer_email != null && $customer->customer_email != "")
             {
                 $customer_emails = explode(";",$customer->customer_email);
