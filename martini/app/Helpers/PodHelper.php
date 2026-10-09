@@ -276,7 +276,7 @@ class PodHelper
                     $rejected_weight_ids[] = (int) $rej;
                     $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
                 }
-                $driverName = $line["UserData"]["DRIVER_NAME"];
+                if (!empty($line["UserData"]["DRIVER_NAME"]))$driverName = $line["UserData"]["DRIVER_NAME"];
             }
         }
 
