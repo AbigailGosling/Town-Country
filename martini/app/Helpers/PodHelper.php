@@ -67,144 +67,309 @@ class PodHelper
                 /** @var ClientAddress $clientAddress */
                 $clientAddress = $pickSheet_->getAddress();
                 if (!isset($picksByAddress[(string)$clientAddress->id])) {
-                    $picksByAddress[(string)$clientAddress->id] = ["address" => $clientAddress, "pickSheets" => [], "outgoingPallets" => []];
+                    $picksByAddress[(string)$clientAddress->id] = ["address" => $clientAddress, "pickSheets" => [], "outgoingPallets" => [], "incomingPallets" => []];
                 }
-                $picksByAddress[(string)$clientAddress->id]["pickSheets"][] = $pickSheet_;
                 if (!isset($picksByAddress[(string)$clientAddress->id]["customer"])) {
                     $picksByAddress[(string)$clientAddress->id]["customer"] = $pickSheet_->customer;
                 }
-            }
-            if (isset($clientAddress))$picksByAddress[(string)$clientAddress->id]["outgoingPallets"][] = $outgoingPallet_;
-        }
-        foreach ($picksByAddress as $addressID => $addressData) {
 
-            // if ((bool) $transportPallet->pod_sent) {
-            //     continue;
-            // }
-            $ticking->addMinute();
-            $allCallsSucceeded = true;
-            $transportPallet = $addressData["outgoingPallets"][0];
-            $thisData = (object)[
-                "TASK_INFO" => (object)[
-                    "TASK_START_DATE" => $transportPallet->estimated_delivery_date->format('d/m/Y'),
-                    "TASK_START_TIME" => $ticking->format('H:i'),
-                    "TASK_MOBILE_USER" => trim(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
-                    //"TASK_MOBILE_USER_ID" => 13,
-                    "TASK_MOBILE_USER_PROF_ID" => "",
-                    "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
-                ],
-                "TASK_DATA" => (object)[
-                    "TC_VEHICLE_ID"=> $vehicle->id,
-                    "TC_DNOTE" => implode(", ", array_column($addressData["pickSheets"], 'id')),
-                    "TC_PO_NUMBER"=> implode(", ", array_column($addressData["pickSheets"], 'orderReferenceNumber')),
-                    "BUSINESS_NAME"=> $addressData["customer"]->businessname,
-                    "TRADING_NAME"=> $addressData["customer"]->tradingas,
-                    "ADDR_1"=> $addressData["address"]->address_1,
-                    "ADDR_2"=> $addressData["address"]->address_2,
-                    "ADDR_3"=> $addressData["address"]->address_3,
-                    "ADDR_4"=> $addressData["address"]->address_4,
-                    "POSTCODE"=> $addressData["address"]->postcode,
-                    "TELEPHONE"=> $addressData["address"]->address_number,
-                    "INVOICE_BUSINESS_NAME"=> $addressData["customer"]->businessname,
-                    "INVOICE_TRADING_NAME"=> $addressData["customer"]->tradingas,
-                    "INVOICE_ADDR_1"=> $addressData["customer"]->accounts_address_1,
-                    "INVOICE_ADDR_2"=> $addressData["customer"]->accounts_address_2,
-                    "INVOICE_ADDR_3"=> $addressData["customer"]->accounts_address_3,
-                    "INVOICE_ADDR_4"=> $addressData["customer"]->accounts_address_4,
-                    "INVOICE_POSTCODE"=> $addressData["customer"]->accounts_postcode,
-                    "INVOICE_TELEPHONE"=> ($addressData["customer"]->contactnumber != null && $addressData["customer"]->contactnumber != "")?$addressData["customer"]->contactnumber:$addressData["customer"]->tel_number,
-                    "CUSTOMER_ID"=> $addressData["customer"]->id,
-                    "SERVED_BY"=> $sites[$addressData["customer"]->site_id]->name,
-                    "PICKED_AT"=> "",
-                    "RESTRICTIONS"=> $addressData["address"]->restrictions,
-                    "ASSEMBLED"=> $addressData["pickSheets"][0]->date_completed?->format('d/m/Y'),
-                    "DELIVERY_DATE"=> $addressData["pickSheets"][0]->estimated_delivery_date,
-                    "SUB_TASKS"=> [],
-                ],
-            ];
-            $pickedAt = [];
-            /** @var PickerSheet $pickSheet */
-            foreach ($addressData["pickSheets"] as $pickSheet) {
-                foreach($pickSheet->pickWeightOuts as $pwo) {
-                    $productIDArray = Weight::whereIn('id', $pwo->getWeights())->pluck('product_id')->unique()->toArray();
-                    foreach($productIDArray as $productID){
-                        $product = Product::find($productID);
-
-                        $theseWeights = Weight::where('product_id', $productID)->whereIn('id', $pwo->getWeights())->get();
-                        $count = $theseWeights->count();
-                        $k = 0;
-                        $weightInfo = [];
-                        foreach($theseWeights as $weight){
-                            $tw = $weight->getNetWeight();
-                            $k = $k + $tw;
-                            $weightInfo[] = $weight->id."|".$tw;
-                        }
-                        $smallestDate = ($product->range_extension!= null && $product->range_extension!= '')?"EXTENSION":$product->range_from;
-                        $largestDate = ($product->range_extension!= null && $product->range_extension!= '')?$product->range_extension:$product->range_to;
-                        $ext = ' kg';
-                        if($product->unit == 'PPC'){
-                            $unit = 'Per Case';
-                        }else if($product->unit == 'P'){
-                            $unit = 'Pallet';
-                        }else if($product->unit == 'KG'){
-                            $unit = 'Kilo';
-                        }else{
-                            $ext = $unit = 'Cases';
-                        }
-                        $cut = Cut::find($product->cut_id);
-                        $pallet = Pallet::find($product->pallet_id);
-                        $pickedAt[] = $sites[$locations[$pallet->storage_location]->site_id]->name;
-                        $thisData->TASK_DATA->SUB_TASKS[] = (object)[
-                            "PROJECT_GUID"=> "BB2E3D63-DEE9-EC74-9906-DB5FD2522D76",
-                            "TASK_DATA"=> (object)[
-                                "INTAKE"=> $pallet->intake_id,
-                                "PALLET"=> $pallet->id,
-                                "UNIT"=> $unit,
-                                "WEIGHT"=> ($product->unit == 'PPC') ? $count." ".$ext : $k.$ext,
-                                "QUANTITY"=> $count,
-                                "PRODUCT_ID"=> $product->id,
-                                "PRODUCT"=> implode(" ", [
-                                    $nationalities[$product->nationality_id]->name,
-                                    $temperatures[$product->cooling_id]->tempurature,
-                                    $species[$cut->species_id]->name,
-                                    $cut->name,
-                                    $brands[$product->brand_id]->name,
-                                    $smallestDate.' - '.$largestDate,
-                                ]),
-                                "PRODUCT_WEIGHT_INFO"=> implode(",", $weightInfo)
-                            ],
-                        ];
+                if (isset($clientAddress))
+                {
+                    if ($outgoingPallet_->inbound === false) {
+                        $picksByAddress[(string)$clientAddress->id]["pickSheets"][] = $pickSheet_;
+                        $picksByAddress[(string)$clientAddress->id]["outgoingPallets"][] = $outgoingPallet_;
+                    }
+                    else {
+                        $picksByAddress[(string)$clientAddress->id]["incomingPallets"][] = $outgoingPallet_;
                     }
                 }
             }
-            $thisData->TASK_DATA->PICKED_AT = implode(", ", array_filter(array_unique($pickedAt)));
-            $result = static::callExternalApi(
-                url: env('POD_API_URL'),
-                method: 'POST',
-                headers: [],
-                payload: [
-                    "Key"=> env('POD_API_KEY'),
-                    "Method"=> "createTask",
-                    "Data"=> (object)$thisData
-                ]
-            );
-            $d = new DebugLogging();
-            $d->page = "send_pod";
-            $d->request = json_encode($thisData);
-            $d->user_id = -1;
-            $d->session_id = -1;
-            $d->body = json_encode($result);
-            $d->save();
-            if (!($result['success'] ?? false)) {
-                $allCallsSucceeded = false;
+        }
+        foreach ($picksByAddress as $addressID => $addressData) {
+            $allCallsSucceeded = true;
+            if (count($addressData["outgoingPallets"]) > 0) {
+                $ticking->addMinute();
+                if (!static::sendOutgoingPod($addressData,$ticking,$vehicle,$sites,$locations,$nationalities,$temperatures,$species,$brands) && $allCallsSucceeded) {
+                    $allCallsSucceeded = false;
+                }
             }
-            if ($allCallsSucceeded) {
-                foreach ($addressData["outgoingPallets"] as $transportPallet) {
-                    $transportPallet->pod_sent = true;
-                    $transportPallet->save();
+            if (count($addressData["incomingPallets"]) > 0) {
+                $ticking->addMinute();
+                if (!static::sendIncomingCollection($addressData,$ticking,$vehicle,$sites,$locations,$nationalities,$temperatures,$species,$brands) && $allCallsSucceeded) {
+                    $allCallsSucceeded = false;
                 }
             }
         }
+    }
+    /**
+     * Send an outgoing POD (Proof of Delivery) for the given address data.
+     *
+     * @param array $addressData
+     * @param Carbon $ticking
+     * @param Vehicle $vehicle
+     * @param Collection<string|int, \App\Models\Site> $sites
+     * @param Collection<string|int, \App\Models\Location> $locations
+     * @param Collection<string|int, \App\Models\Nationality> $nationalities
+     * @param Collection<string|int, \App\Models\Temperature> $temperatures
+     * @param Collection<string|int, \App\Models\Species> $species
+     * @param  Collection<string|int, \App\Models\Brand> $brands
+     * @return bool
+     */
+    private static function sendOutgoingPod(array $addressData, Carbon &$ticking, Vehicle $vehicle, Collection $sites, Collection $locations, Collection $nationalities, Collection $temperatures, Collection $species, Collection $brands): bool
+    {
+        $transportPallet = $addressData["outgoingPallets"][0];
+        $thisData = (object)[
+            "TASK_INFO" => (object)[
+                "TASK_START_DATE" => $transportPallet->estimated_delivery_date->format('d/m/Y'),
+                "TASK_START_TIME" => $ticking->format('H:i'),
+                "TASK_MOBILE_USER" => trim(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
+                //"TASK_MOBILE_USER_ID" => 13,
+                "TASK_MOBILE_USER_PROF_ID" => "",
+                "PROJECT_GUID" => "AB58CF2A-2D37-99B0-4A2F-D5E94144EBAD"
+            ],
+            "TASK_DATA" => (object)[
+                "TC_VEHICLE_ID"=> $vehicle->id,
+                "TC_DNOTE" => implode(", ", array_column($addressData["pickSheets"], 'id')),
+                "TC_PO_NUMBER"=> implode(", ", array_column($addressData["pickSheets"], 'orderReferenceNumber')),
+                "BUSINESS_NAME"=> $addressData["customer"]->businessname,
+                "TRADING_NAME"=> $addressData["customer"]->tradingas,
+                "ADDR_1"=> $addressData["address"]->address_1,
+                "ADDR_2"=> $addressData["address"]->address_2,
+                "ADDR_3"=> $addressData["address"]->address_3,
+                "ADDR_4"=> $addressData["address"]->address_4,
+                "POSTCODE"=> $addressData["address"]->postcode,
+                "TELEPHONE"=> $addressData["address"]->address_number,
+                "INVOICE_BUSINESS_NAME"=> $addressData["customer"]->businessname,
+                "INVOICE_TRADING_NAME"=> $addressData["customer"]->tradingas,
+                "INVOICE_ADDR_1"=> $addressData["customer"]->accounts_address_1,
+                "INVOICE_ADDR_2"=> $addressData["customer"]->accounts_address_2,
+                "INVOICE_ADDR_3"=> $addressData["customer"]->accounts_address_3,
+                "INVOICE_ADDR_4"=> $addressData["customer"]->accounts_address_4,
+                "INVOICE_POSTCODE"=> $addressData["customer"]->accounts_postcode,
+                "INVOICE_TELEPHONE"=> ($addressData["customer"]->contactnumber != null && $addressData["customer"]->contactnumber != "")?$addressData["customer"]->contactnumber:$addressData["customer"]->tel_number,
+                "CUSTOMER_ID"=> $addressData["customer"]->id,
+                "SERVED_BY"=> $sites[$addressData["customer"]->site_id]->name,
+                "PICKED_AT"=> "",
+                "RESTRICTIONS"=> $addressData["address"]->restrictions,
+                "ASSEMBLED"=> $addressData["pickSheets"][0]->date_completed?->format('d/m/Y'),
+                "DELIVERY_DATE"=> $addressData["pickSheets"][0]->estimated_delivery_date,
+                "SUB_TASKS"=> [],
+            ],
+        ];
+        $pickedAt = [];
+        /** @var PickerSheet $pickSheet */
+        foreach ($addressData["pickSheets"] as $pickSheet) {
+            foreach($pickSheet->pickWeightOuts as $pwo) {
+                $productIDArray = Weight::whereIn('id', $pwo->getWeights())->pluck('product_id')->unique()->toArray();
+                foreach($productIDArray as $productID){
+                    $product = Product::find($productID);
+
+                    $theseWeights = Weight::where('product_id', $productID)->whereIn('id', $pwo->getWeights())->get();
+                    $count = $theseWeights->count();
+                    $k = 0;
+                    $weightInfo = [];
+                    foreach($theseWeights as $weight){
+                        $tw = $weight->getNetWeight();
+                        $k = $k + $tw;
+                        $weightInfo[] = $weight->id."|".$tw;
+                    }
+                    $smallestDate = ($product->range_extension!= null && $product->range_extension!= '')?"EXTENSION":$product->range_from;
+                    $largestDate = ($product->range_extension!= null && $product->range_extension!= '')?$product->range_extension:$product->range_to;
+                    $ext = ' kg';
+                    if($product->unit == 'PPC'){
+                        $unit = 'Per Case';
+                    }else if($product->unit == 'P'){
+                        $unit = 'Pallet';
+                    }else if($product->unit == 'KG'){
+                        $unit = 'Kilo';
+                    }else{
+                        $ext = $unit = 'Cases';
+                    }
+                    $cut = Cut::find($product->cut_id);
+                    $pallet = Pallet::find($product->pallet_id);
+                    $pickedAt[] = $sites[$locations[$pallet->storage_location]->site_id]->name;
+                    $thisData->TASK_DATA->SUB_TASKS[] = (object)[
+                        "PROJECT_GUID"=> "BB2E3D63-DEE9-EC74-9906-DB5FD2522D76",
+                        "TASK_DATA"=> (object)[
+                            "INTAKE"=> $pallet->intake_id,
+                            "PALLET"=> $pallet->id,
+                            "UNIT"=> $unit,
+                            "WEIGHT"=> ($product->unit == 'PPC') ? $count." ".$ext : $k.$ext,
+                            "QUANTITY"=> $count,
+                            "PRODUCT_ID"=> $product->id,
+                            "PRODUCT"=> implode(" ", [
+                                $nationalities[$product->nationality_id]->name,
+                                $temperatures[$product->cooling_id]->tempurature,
+                                $species[$cut->species_id]->name,
+                                $cut->name,
+                                $brands[$product->brand_id]->name,
+                                $smallestDate.' - '.$largestDate,
+                            ]),
+                            "PRODUCT_WEIGHT_INFO"=> implode(",", $weightInfo)
+                        ],
+                    ];
+                }
+            }
+        }
+        $thisData->TASK_DATA->PICKED_AT = implode(", ", array_filter(array_unique($pickedAt)));
+        $result = static::callExternalApi(
+            url: env('POD_API_URL'),
+            method: 'POST',
+            headers: [],
+            payload: [
+                "Key"=> env('POD_API_KEY'),
+                "Method"=> "createTask",
+                "Data"=> (object)$thisData
+            ]
+        );
+        $d = new DebugLogging();
+        $d->page = "send_pod";
+        $d->request = json_encode($thisData);
+        $d->user_id = -1;
+        $d->session_id = -1;
+        $d->body = json_encode($result);
+        $d->save();
+        if (!($result['success'] ?? false)) {
+            return false;
+        }
+        $transportPallet->pod_sent = true;
+        $transportPallet->save();
+        return true;
+    }
+    /**
+     * Send an incoming collection for the given address data.
+     *
+     * @param array $addressData
+     * @param Carbon $ticking
+     * @param Vehicle $vehicle
+     * @param Collection<string|int, \App\Models\Site> $sites
+     * @param Collection<string|int, \App\Models\Location> $locations
+     * @param Collection<string|int, \App\Models\Nationality> $nationalities
+     * @param Collection<string|int, \App\Models\Temperature> $temperatures
+     * @param Collection<string|int, \App\Models\Species> $species
+     * @param  Collection<string|int, \App\Models\Brand> $brands
+     * @return bool
+     */
+    private static function sendIncomingCollection(array $addressData, Carbon &$ticking, Vehicle $vehicle, Collection $sites, Collection $locations, Collection $nationalities, Collection $temperatures, Collection $species, Collection $brands): bool
+    {
+        $transportPallet = $addressData["incomingPallets"][0];
+        $thisData = (object)[
+            "TASK_INFO" => (object)[
+                "TASK_START_DATE" => $transportPallet->estimated_delivery_date->format('d/m/Y'),
+                "TASK_START_TIME" => $ticking->format('H:i'),
+                "TASK_MOBILE_USER" => trim(strtoupper(implode('', explode(' ', $vehicle->reg)))).'@tc.co.uk',
+                //"TASK_MOBILE_USER_ID" => 13,
+                "TASK_MOBILE_USER_PROF_ID" => "",
+                "PROJECT_GUID" => "4B7C7448-3DA9-B715-374B-36E78297F536"
+            ],
+            "TASK_DATA" => (object)[
+                "TC_VEHICLE_ID"=> $vehicle->id,
+                "TC_DNOTE" => implode(", ", array_column($addressData["pickSheets"], 'id')),
+                "TC_PO_NUMBER"=> implode(", ", array_column($addressData["pickSheets"], 'orderReferenceNumber')),
+                "BUSINESS_NAME"=> $addressData["customer"]->businessname,
+                "TRADING_NAME"=> $addressData["customer"]->tradingas,
+                "ADDR_1"=> $addressData["address"]->address_1,
+                "ADDR_2"=> $addressData["address"]->address_2,
+                "ADDR_3"=> $addressData["address"]->address_3,
+                "ADDR_4"=> $addressData["address"]->address_4,
+                "POSTCODE"=> $addressData["address"]->postcode,
+                "TELEPHONE"=> $addressData["address"]->address_number,
+                "INVOICE_BUSINESS_NAME"=> $addressData["customer"]->businessname,
+                "INVOICE_TRADING_NAME"=> $addressData["customer"]->tradingas,
+                "INVOICE_ADDR_1"=> $addressData["customer"]->accounts_address_1,
+                "INVOICE_ADDR_2"=> $addressData["customer"]->accounts_address_2,
+                "INVOICE_ADDR_3"=> $addressData["customer"]->accounts_address_3,
+                "INVOICE_ADDR_4"=> $addressData["customer"]->accounts_address_4,
+                "INVOICE_POSTCODE"=> $addressData["customer"]->accounts_postcode,
+                "INVOICE_TELEPHONE"=> ($addressData["customer"]->contactnumber != null && $addressData["customer"]->contactnumber != "")?$addressData["customer"]->contactnumber:$addressData["customer"]->tel_number,
+                "CUSTOMER_ID"=> $addressData["customer"]->id,
+                "SERVED_BY"=> $sites[$addressData["customer"]->site_id]->name,
+                "PICKED_AT"=> "",
+                "RESTRICTIONS"=> $addressData["address"]->restrictions,
+                "ASSEMBLED"=> $addressData["pickSheets"][0]->date_completed?->format('d/m/Y'),
+                "DELIVERY_DATE"=> $addressData["pickSheets"][0]->estimated_delivery_date,
+                "SUB_TASKS"=> [],
+            ],
+        ];
+        $pickedAt = [];
+        /** @var PickerSheet $pickSheet */
+        foreach ($addressData["pickSheets"] as $pickSheet) {
+            foreach($pickSheet->pickWeightOuts as $pwo) {
+                $productIDArray = Weight::whereIn('id', $pwo->getWeights())->pluck('product_id')->unique()->toArray();
+                foreach($productIDArray as $productID){
+                    $product = Product::find($productID);
+
+                    $theseWeights = Weight::where('product_id', $productID)->whereIn('id', $pwo->getWeights())->get();
+                    $count = $theseWeights->count();
+                    $k = 0;
+                    $weightInfo = [];
+                    foreach($theseWeights as $weight){
+                        $tw = $weight->getNetWeight();
+                        $k = $k + $tw;
+                        $weightInfo[] = $weight->id."|".$tw;
+                    }
+                    $smallestDate = ($product->range_extension!= null && $product->range_extension!= '')?"EXTENSION":$product->range_from;
+                    $largestDate = ($product->range_extension!= null && $product->range_extension!= '')?$product->range_extension:$product->range_to;
+                    $ext = ' kg';
+                    if($product->unit == 'PPC'){
+                        $unit = 'Per Case';
+                    }else if($product->unit == 'P'){
+                        $unit = 'Pallet';
+                    }else if($product->unit == 'KG'){
+                        $unit = 'Kilo';
+                    }else{
+                        $ext = $unit = 'Cases';
+                    }
+                    $cut = Cut::find($product->cut_id);
+                    $pallet = Pallet::find($product->pallet_id);
+                    $pickedAt[] = $sites[$locations[$pallet->storage_location]->site_id]->name;
+                    $thisData->TASK_DATA->SUB_TASKS[] = (object)[
+                        "PROJECT_GUID"=> "213C506F-72F5-8298-C476-36E9040D752F",
+                        "TASK_DATA"=> (object)[
+                            "INTAKE"=> $pallet->intake_id,
+                            "PALLET"=> $pallet->id,
+                            "UNIT"=> $unit,
+                            "WEIGHT"=> ($product->unit == 'PPC') ? $count." ".$ext : $k.$ext,
+                            "QUANTITY"=> $count,
+                            "PRODUCT_ID"=> $product->id,
+                            "PRODUCT"=> implode(" ", [
+                                $nationalities[$product->nationality_id]->name,
+                                $temperatures[$product->cooling_id]->tempurature,
+                                $species[$cut->species_id]->name,
+                                $cut->name,
+                                $brands[$product->brand_id]->name,
+                                $smallestDate.' - '.$largestDate,
+                            ]),
+                            "PRODUCT_WEIGHT_INFO"=> implode(",", $weightInfo)
+                        ],
+                    ];
+                }
+            }
+        }
+        $thisData->TASK_DATA->PICKED_AT = implode(", ", array_filter(array_unique($pickedAt)));
+        $result = static::callExternalApi(
+            url: env('POD_API_URL'),
+            method: 'POST',
+            headers: [],
+            payload: [
+                "Key"=> env('POD_API_KEY'),
+                "Method"=> "createTask",
+                "Data"=> (object)$thisData
+            ]
+        );
+        $d = new DebugLogging();
+        $d->page = "send_pod";
+        $d->request = json_encode($thisData);
+        $d->user_id = -1;
+        $d->session_id = -1;
+        $d->body = json_encode($result);
+        $d->save();
+        if (!($result['success'] ?? false)) {
+            return false;
+        }
+        $transportPallet->pod_sent = true;
+        $transportPallet->save();
+        return true;
     }
     /**
     * Process received POD data from an external system or service.
