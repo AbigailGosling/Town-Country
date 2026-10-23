@@ -26,7 +26,7 @@ class SLabsEmailer {
             mt_rand( 0, 0xff4B )
         );
     }
-    public static function send_email(int $customerID, string $type, array $toEmails, string $subject, string $htmlBody, string $pathToFile = '', string $fileName = '', $document_id = null, bool $isAbsolPath = false, array $cc = []) {
+    public static function send_email(int $customerID, string $type, array $toEmails, string $subject, string $htmlBody, string $pathToFile = '', string $fileName = '', $document_id = null, bool $isAbsolPath = false, array $cc = [], bool $includeTermConditions = false) {
         global $mysqli;
         if (env("APP_DEBUG",true)==true) $toEmails = [env("MAIL_TEST_ADDRESS")];
         if ($document_id == null) $document_id = "NULL";
@@ -48,8 +48,9 @@ class SLabsEmailer {
             $message->charset = "utf-8";
             $message->from = new EmailAddress(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'). " Group");
 
+
             $fullExplainedPath = "NULL";
-            if ($pathToFile != '' && $fileName !='')
+            if ($pathToFile != '' && $fileName != '')
             {
                 $fullExplainedPath = "$pathToFile/$fileName";
                 try {
@@ -66,6 +67,22 @@ class SLabsEmailer {
                     return "error";
                 }
             }
+            if ($includeTermConditions)
+            {
+                try {
+                    $attachment = Attachment::createFromPath(
+                        join(DIRECTORY_SEPARATOR,array(__DIR__,'..','..','storage','terms_and_conditions.pdf')),
+                        'Terms and Conditions.pdf',
+                        "APPLICATION/PDF"
+                    );
+                    $message->attachments[] = $attachment;
+                }
+                catch (\Exception $exc){
+                    Log::error($exc,[$customerID,$type,$toEmails,$subject,$htmlBody,$pathToFile,$fileName,$document_id]);
+                    return "error";
+                }
+            }
+
             //Generate a Unique Identifier for this Email
             $mid = self::generate_uuid();
             $message->mailingId = $message->messageId = $mid;
