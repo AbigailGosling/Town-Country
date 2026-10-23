@@ -441,7 +441,7 @@ class PodHelper
                     $rejected_weight_ids[] = (int) $rej;
                     $rejected_reason[$rej] = $line["UserData"]["ITEM_FAIL_REASON"] . ' - ' . $line["UserData"]["ITEM_FAIL_NOTES"];
                 }
-                $driverName = $line["UserData"]["DRIVER_NAME"];
+                if (!empty($line["UserData"]["DRIVER_NAME"]))$driverName = $line["UserData"]["DRIVER_NAME"];
             }
         }
 
@@ -576,7 +576,7 @@ class PodHelper
             $fileName = 'DeliveryNote_'.$pickerSheet->id.'.pdf';
             $pathToFile = 'PDF';
             PDFRenderer::generatePDFfromWeb('deliverynote.php?id='.$pickerSheet->id."&nw=y",$pathToFile,$fileName);
-            SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$pickerSheet->id,false,["lewis.bradley@townandcountrymeats.co.uk"]);
+            SLabsEmailer::send_email($customer->id,SLabsEmailerType::DeliveryNote,$customer_emails,$subject,$htmlBody,$pathToFile,$fileName,$pickerSheet->id,false,["lewis.bradley@townandcountrymeats.co.uk"],true);
         }
         Auth::logout();
         return true;
