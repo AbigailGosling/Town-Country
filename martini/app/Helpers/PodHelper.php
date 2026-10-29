@@ -383,6 +383,20 @@ class PodHelper
 
         $pickerSheetIDs = explode(", ", $payload["PARENT_TASK"]["UserData"]["TC_DNOTE"]);
         $pickerSheets = PickerSheet::whereIn('id', $pickerSheetIDs)->get();
+        $pickerSheets2 = collect();
+        $taskID = intval($payload["PARENT_TASK"]["TASK_ID"]);
+        /** @var PickerSheet $pickerSheet */
+        foreach ($pickerSheets as $pickerSheet)
+        {
+            if ($pickerSheet->barracuda_task_id != $taskID)
+            {
+                $pickerSheets2->add($pickerSheet);
+                $pickerSheet->barracuda_task_id = $taskID;
+                $pickerSheet->save();
+            }
+        }
+        if (count($pickerSheets2) == 0) return true;
+        $pickerSheets = $pickerSheets2;
         $driverName = '';
         if (isset($payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"]) && !empty($payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"])) {
             $driverName = $payload["PARENT_TASK"]["UserData"]["DRIVER_NAME"];

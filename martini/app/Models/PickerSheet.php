@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $goods_out_notes
  * @property string|null $receiver_name
  * @property int|null $signature_file_id
+ * @property int|null $barracuda_task_id
  *
  * @package App\Models
  */
@@ -68,6 +69,7 @@ protected $connection = 'tandc_live';
 		'goods_out_notes' => 'string',
         'signature_file_id' => 'int',
         'receiver_name' => 'string',
+        'barracuda_task_id' => 'int',
 	];
 
 	protected $dates = [
@@ -104,6 +106,7 @@ protected $connection = 'tandc_live';
 		'goods_out_notes',
         'receiver_name',
         'signature_file_id',
+        'barracuda_task_id',
 	];
     public function pickWeightOuts():HasMany
     {
