@@ -106,6 +106,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $delivery_days
  * @property string|null $sage_no
  * @property bool $notify_credit_review
+ * @property \Illuminate\Support\Carbon|null $next_credit_review
+ * @property int|null $credit_review_frequency
  *
  * @package App\Models
  */
@@ -131,9 +133,11 @@ class Customer extends Model
 		'delivery_day_override' => 'bool',
 		'delivery_days' => 'int',
 		'notify_credit_review' => 'bool',
+		'next_credit_review' => 'datetime',
         'override_cost_check' => 'bool',
         'cost_check_enabled' => 'bool',
         'ignore_next_day_cutoff' => 'bool',
+        'credit_review_frequency' => 'int',
 	];
 
 	protected $fillable = [
@@ -230,6 +234,8 @@ class Customer extends Model
         'override_cost_check',
         'cost_check_enabled',
         'ignore_next_day_cutoff',
+        'next_credit_review',
+        'credit_review_frequency',
 	];
 
     public function user():BelongsTo{

@@ -5,6 +5,7 @@ use App\Models\ClientType;
 use App\Models\Site;
 use App\Models\User;
 use App\Models\VehicleType;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -236,6 +237,14 @@ use Illuminate\Support\Facades\Log;
                 <tr>
 					<td class="label"><label>Notify Credit Review</label></td>
 					<td><input type="checkbox" name="notify_credit_review" value="1" <?php echo ($data['notify_credit_review'] == 1)?"checked":""; ?>></td>
+				</tr>
+                <tr>
+					<td class="label"><label>Next Credit Review</label></td>
+					<td><input type="date" class="input" name="next_credit_review" value="<?php echo ($data['notify_credit_review'] == 1)?Carbon::parse($data['next_credit_review'])->format('Y-m-d'):''; ?>" style="background:#fff;" <?php echo ($data['notify_credit_review'] == 1)?"":"disabled"; ?>></td>
+				</tr>
+                <tr>
+					<td class="label"><label>Credit Review Frequency</label></td>
+					<td><input type="number" step="1" class="input" name="credit_review_frequency" value="<?php echo ($data['notify_credit_review'] == 1)?$data['credit_review_frequency']:''; ?>" style="background:#fff;" <?php echo ($data['notify_credit_review'] == 1)?"":"disabled"; ?>></td>
 				</tr>
 				<tr>
 					<td class="label"><label>Disable Customer</label></td>
@@ -671,7 +680,11 @@ function mainForm2(){
 				return false;
 			}
 		});
-		});
+		$('[name="notify_credit_review"]').on('change', function() {
+			var notifyCreditReviewEnabled = $(this).is(':checked');
+			$('[name="next_credit_review"], [name="credit_review_frequency"]').prop('disabled', !notifyCreditReviewEnabled);
+		}).trigger('change');
+	});
 	for (var u=2;u<10;u++){
 		$('#address'+u.toString()).click(function(){
 			var v = $(this).attr('id').toString().replace('address','').toString().substring(0, 1);

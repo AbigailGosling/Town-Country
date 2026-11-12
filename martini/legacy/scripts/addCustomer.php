@@ -3,6 +3,7 @@
 use App\Helpers\ProcessHelper;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use Carbon\Carbon;
 
 	require(__DIR__.'/../functions.php');
 	$colNames = array();
@@ -97,6 +98,18 @@ use App\Models\ClientType;
 
     $colNames[] = "`notify_credit_review`";
 	$colValue[] = (request()->input('notify_credit_review')!=null && request()->input('notify_credit_review') != "")?request()->input('notify_credit_review'):"0";
+
+    if ((request()->input('notify_credit_review')!=null && request()->input('notify_credit_review') != ""))
+    {
+        $default_review_frequency = (request()->input('credit_review_frequency')!=null && request()->input('credit_review_frequency') != "")?request()->input('credit_review_frequency'):28;
+        $default_next_credit_review = Carbon::now()->addDays($default_review_frequency)->format('Y-m-d');
+
+        $colNames[] = "`next_credit_review`";
+        $colValue[] = (request()->input('next_credit_review')!=null && request()->input('next_credit_review') != "")?request()->input('next_credit_review'):$default_next_credit_review;
+
+        $colNames[] = "`credit_review_frequency`";
+	    $colValue[] = (request()->input('credit_review_frequency')!=null && request()->input('credit_review_frequency') != "")?request()->input('credit_review_frequency'):"28";
+    }
 
     $colNames[] = "`credit_enabled`";
 	$colValue[] = request()->input('credit_enabled_hidden',0);

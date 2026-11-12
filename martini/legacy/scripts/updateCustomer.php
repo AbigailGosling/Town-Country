@@ -5,6 +5,7 @@ use App\Models\ClientAddress;
 use App\Models\ClientType;
 use App\Models\Customer;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -107,6 +108,23 @@ use Illuminate\Support\Facades\Log;
 
     $colNames[] = "`notify_credit_review`=?";
 	$colValue[] = (request()->input('notify_credit_review')!=null && request()->input('notify_credit_review') != "")?request()->input('notify_credit_review'):"0";
+
+    if (request()->input('notify_credit_review')==null || request()->input('notify_credit_review') == "")
+    {
+        prepareExecuteQuery("UPDATE `customers` SET `next_credit_review`= NULL, `credit_review_frequency`= NULL WHERE `id`=?",'i', [$c->id]);
+    }
+    else
+    {
+
+        $default_review_frequency = (request()->input('credit_review_frequency')!=null && request()->input('credit_review_frequency') != "")?request()->input('credit_review_frequency'):28;
+        $default_next_credit_review = Carbon::now()->addDays($default_review_frequency)->format('Y-m-d');
+
+        $colNames[] = "`next_credit_review`=?";
+        $colValue[] = (request()->input('next_credit_review')!=null && request()->input('next_credit_review') != "")?request()->input('next_credit_review'):$default_next_credit_review;
+
+        $colNames[] = "`credit_review_frequency`=?";
+        $colValue[] = (request()->input('credit_review_frequency')!=null && request()->input('credit_review_frequency') != "")?request()->input('credit_review_frequency'):"28";
+    }
 
     $colNames[] = "`override`=?";
 	$colValue[] = request()->input('override_hidden',$c->override);
