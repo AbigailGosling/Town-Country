@@ -344,15 +344,29 @@ class IntakeReportController extends Controller
                 ->unique()
                 ->all()
         )->get()->keyBy("id");
-        $userIds = $sales->map(function ($sale) use ($customersById) {
+        $salesUserIds = $sales->map(function ($sale) use ($customersById) {
             if ($sale->is_return_to_supplier == false) {
-                return $customersById->get($sale->customer_id)?->default_salesman_id;
+                $customerId = $sale->customer_id;
+                $customer = $customersById->get($customerId);
+
+                return $customer?->default_salesman_id;
             }
 
             return $sale->user_from_id;
-        })->merge(
-            $resales->map(fn ($resale) => $customersById->get($resale->customer_id)?->default_salesman_id)
-        )->filter()->unique()->all();
+        });
+
+        $resaleUserIds = $resales->map(function ($resale) use ($customersById) {
+            $customerId = $resale->customer_id;
+            $customer = $customersById->get($customerId);
+
+            return $customer?->default_salesman_id;
+        });
+
+        $mergedUserIds = ($salesUserIds->isNotEmpty()) ? $salesUserIds->merge($resaleUserIds) : $resaleUserIds;
+        $filteredUserIds = $mergedUserIds->filter();
+        $uniqueUserIds = $filteredUserIds->unique();
+        $userIds = $uniqueUserIds->all();
+
         $usersById = User::whereIn("id", $userIds)->get()->keyBy("id");
         $originalProductsById = Product::whereIn("id", $returnProducts->pluck("original_product_id")->filter()->unique()->all())
             ->get()
