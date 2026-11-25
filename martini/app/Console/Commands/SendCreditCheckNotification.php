@@ -37,9 +37,11 @@ class SendCreditCheckNotification extends Command
             $htmlBody .= '<h1>Monthly Credit Review</h1>';
             $htmlBody .= '<p>The following customers are due for a credit review:</p>';
             $htmlBody .= '<ul>';
+            $itemsToSend = false;
             foreach ($customers as $customer) {
                 if ($customer->next_credit_review === null || $customer->next_credit_review->diffInDays(now()) <= 0)
                 {
+                    $itemsToSend = true;
                     $htmlBody .= "<li>ID: {$customer->id}, Name: {$customer->businessname}</li>";
                     $customer->next_credit_review = now()->addDays($customer->credit_review_frequency ?? 28);
                     $customer->save();
@@ -47,7 +49,7 @@ class SendCreditCheckNotification extends Command
             }
             $htmlBody .= '</ul>';
             $htmlBody .= '</body></html>';
-            SLabsEmailer::send_email(-1, SLabsEmailerType::CreditCheckNotification, ["gemma@townandcountry.co.uk"], "Monthly Credit Review", $htmlBody,"","",null,false,["abigail.gosling@tang.solutions"],false);
+            if ($itemsToSend == true) SLabsEmailer::send_email(-1, SLabsEmailerType::CreditCheckNotification, ["gemma@townandcountry.co.uk"], "Monthly Credit Review", $htmlBody);
         }
 
         return Command::SUCCESS;
