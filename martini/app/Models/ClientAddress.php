@@ -99,8 +99,3 @@ class ClientAddress extends Model
         return $this->belongsTo(Site::class, 'site_id', 'id');
     }
 }
-enum ClientType: string
-{
-    case CUSTOMER = 'customer';
-    case SUPPLIER = 'supplier';
-}

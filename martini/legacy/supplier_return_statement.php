@@ -1,4 +1,7 @@
 <?php
+use App\Models\ClientAddress;
+use App\Models\ClientType;
+
 include_once('includes/frontHeader.php');
 include_once('ajax/customer_soa_results_function.php');
 $serverRoot = request()->server("SERVER_NAME");
@@ -144,6 +147,15 @@ $serverRoot = request()->server("SERVER_NAME");
     if (request()->input('id') != '') {
 
         $supplier = prepareExecuteQuery("SELECT * FROM `supplier` WHERE `id` = ?",'i',[request()->input('id')])->fetch_assoc();
+        $supplierAddress = ClientAddress::where('client_id', $supplier['id'])
+            ->where('address_id', 1)
+            ->where('client_type', ClientType::SUPPLIER->value)
+            ->first();
+        $address1 = $supplierAddress ? $supplierAddress->address_1 : $supplier['address_1'];
+        $address2 = $supplierAddress ? $supplierAddress->address_2 : $supplier['address_2'];
+        $address3 = $supplierAddress ? $supplierAddress->address_3 : $supplier['address_3'];
+        $address4 = $supplierAddress ? $supplierAddress->address_4 : $supplier['address_4'];
+        $postcode = $supplierAddress ? $supplierAddress->postcode : $supplier['postcode'];
     ?>
     <div class="topheading">
 
@@ -165,11 +177,11 @@ $serverRoot = request()->server("SERVER_NAME");
 			<div class="invoicebox">
 				<p>
 					<?php echo $supplier['name']; ?><br/>
-					<?php echo $supplier['address_1']; ?><br/>
-					<?php echo $supplier['address_2']; ?><br/>
-					<?php echo $supplier['address_3']; ?><br/>
-                    <?php echo $supplier['address_4']; ?><br/>
-                    <?php echo $supplier['postcode']; ?><br/>
+					<?php echo $address1; ?><br/>
+					<?php echo $address2; ?><br/>
+					<?php echo $address3; ?><br/>
+                    <?php echo $address4; ?><br/>
+                    <?php echo $postcode; ?><br/>
                     Supplier ID: <?php echo str_pad($supplier['id'], 4, '0', STR_PAD_LEFT); ?><br/>
                     <?php echo $supplier['email']; ?><br/>
                     <?php echo $supplier['contact_name']; ?> : <?php echo $supplier['contact_number']; ?><br/>

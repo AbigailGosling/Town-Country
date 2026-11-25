@@ -287,6 +287,24 @@
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
+    .flow-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .flow-badge.inbound {
+      background: rgba(14, 165, 233, 0.12);
+      color: #0369a1;
+    }
+    .flow-badge.outbound {
+      background: rgba(245, 158, 11, 0.16);
+      color: #92400e;
+    }
     .order-card.selected {
       border-color: #2563eb;
       box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
@@ -430,6 +448,20 @@
     }
     .pallet:active {
       cursor: grabbing;
+    }
+    .pallet-flow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      padding: 0.08rem 0.3rem;
+      border-radius: 999px;
+      font-size: 0.55rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      background: rgba(17, 24, 39, 0.15);
+      color: #111827;
     }
     .grid {
       display: grid;
@@ -877,6 +909,22 @@
       return trimmed.startsWith("s") ? "Standard" : "Euro";
     }
 
+    function normalizeInbound(value) {
+      if (typeof value === "boolean") {
+        return value;
+      }
+      const normalized = String(value ?? "").trim().toLowerCase();
+      return normalized === "1" || normalized === "true" || normalized === "yes";
+    }
+
+    function getFlowLabel(inbound) {
+      return inbound ? "Inbound" : "Outbound";
+    }
+
+    function getFlowShortLabel(inbound) {
+      return inbound ? "In" : "Out";
+    }
+
     function normalizeReg(value) {
       return String(value || "").trim().toUpperCase();
     }
@@ -1132,6 +1180,7 @@
           order = {
             id: `alloc-${deliveryNoteNumber || index + 1}`,
             outgoingPalletId,
+            inbound: normalizeInbound(alloc.inbound),
             title: `Order ${deliveryNoteNumber}`,
             subtext,
             contentsPreview: "",
@@ -1149,6 +1198,7 @@
           orderMap.set(outgoingPalletId, order);
         } else {
           order.palletType = normalizePalletType(alloc.palletType || order.palletType);
+          order.inbound = normalizeInbound(alloc.inbound ?? order.inbound);
           order.weightKg = Number(alloc.palletWeight) || order.weightKg;
           order.freshFrozen = alloc.freshFrozen ?? order.freshFrozen;
           order.allocatedReg = reg;
@@ -1312,6 +1362,7 @@
           return {
           id: order.id || `order-${index + 1}`,
           outgoingPalletId: Number(order.outgoingPalletId) || null,
+          inbound: normalizeInbound(order.inbound),
           title: order.title || `Order ${order.deliveryNoteNumber || index + 1}`,
           subtext: order.subtext || "",
           contentsPreview: order.contentsPreview || "",
@@ -1760,6 +1811,10 @@
         const title = document.createElement("h3");
         title.className = "order-title";
         title.textContent = order.title;
+        const flowBadge = document.createElement("span");
+        flowBadge.className = `flow-badge ${order.inbound ? "inbound" : "outbound"}`;
+        flowBadge.textContent = getFlowLabel(order.inbound);
+        title.append(flowBadge);
         if (isFrozen) {
           const frozenBadge = document.createElement("span");
           frozenBadge.className = "frozen-badge";
@@ -1897,7 +1952,7 @@
         if (order.canBeLoaded === false) {
           pallet.classList.add("load-blocked");
         }
-        pallet.textContent = order.palletType === "Standard" ? "STD" : "EU";
+        pallet.innerHTML = `<div>${order.palletType === "Standard" ? "STD" : "EU"}</div><div class="pallet-flow">${getFlowShortLabel(order.inbound)}</div>`;
         pallet.draggable = !order.isAllocatedAnywhere;
         pallet.dataset.orderId = order.id;
         pallet.addEventListener("dragstart", () => {
@@ -1965,7 +2020,7 @@
           if (assignedOrder.canBeLoaded === false) {
             pallet.classList.add("load-blocked");
           }
-          pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div>`;
+          pallet.innerHTML = `<div>${assignedOrder.weightKg}kg</div><div>${assignedOrder.palletType === "Standard" ? "STD" : "EU"}</div><div class="pallet-flow">${getFlowShortLabel(assignedOrder.inbound)}</div>`;
           pallet.draggable = !!assignedOrder.allocated;
           pallet.dataset.orderId = assignedOrder.id;
           pallet.addEventListener("dragstart", () => {

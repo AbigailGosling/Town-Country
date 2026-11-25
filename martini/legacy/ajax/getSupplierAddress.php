@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,6 +14,20 @@ use Illuminate\Support\Facades\Auth;
 	$y = prepareExecuteQuery($x,'i',[$supplier_id]);
 
 	$row = mysqli_fetch_array($y);
+    $supplierAddresses = ClientAddress::where('client_id', $supplier_id)
+        ->where('client_type', ClientType::SUPPLIER->value)
+        ->orderBy('address_id')
+        ->get();
+    $selectedAddress = ClientAddress::where('client_id', $supplier_id)
+        ->where('address_id', $address_id)
+        ->where('client_type', ClientType::SUPPLIER->value)
+        ->first();
+    if (!$selectedAddress) {
+        $selectedAddress = ClientAddress::where('client_id', $supplier_id)
+            ->where('address_id', 1)
+            ->where('client_type', ClientType::SUPPLIER->value)
+            ->first();
+    }
 
 // <script type="text/javascript">
 // 	transactionAllowed 	= <?php echo ($creditCheck['saleAllowed'])?"true":"false"; ;
@@ -42,11 +58,12 @@ use Illuminate\Support\Facades\Auth;
 
 <?php
 
-$addressNumber = $row['contact_number'];
-$addressline1 = $row['address_1'];
-$addressline2 = $row['address_2'];
-$addressline3 = $row['address_3'];
-$addresspostcode = $row['postcode'];
+$addressNumber = $selectedAddress ? $selectedAddress->address_number : $row['contact_number'];
+$addressline1 = $selectedAddress ? $selectedAddress->address_1 : $row['address_1'];
+$addressline2 = $selectedAddress ? $selectedAddress->address_2 : $row['address_2'];
+$addressline3 = $selectedAddress ? $selectedAddress->address_3 : $row['address_3'];
+$addressline4 = $selectedAddress ? $selectedAddress->address_4 : $row['address_4'];
+$addresspostcode = $selectedAddress ? $selectedAddress->postcode : $row['postcode'];
 
 ?>
 
@@ -127,34 +144,38 @@ $addresspostcode = $row['postcode'];
 <div class="col"></div>
 </div>
 <div id="changeAddress" class="row lity-hide">
-	<h2 style="width: 100%;text-align: center;"><?php echo $row['businessname']; ?>'s Address List</h2>
+	<h2 style="width: 100%;text-align: center;"><?php echo $row['name']; ?>'s Address List</h2>
 	<div class="addresses">
 		<?php
-			for ($u = 1;$u < 10;$u++)
-			{
-				if($row['address'.$u.'_1'] == '' && $row['postcode_'.$u] == ''){
-					$addressOneEmpty = true;
-				}else{
-					$addressOneEmpty = false;
-				}
+            if ($supplierAddresses->count() > 0) {
+                foreach ($supplierAddresses as $supplierAddress) {
+                    $addressSummary = trim(($supplierAddress->address_1 ?? '').' '.($supplierAddress->postcode ?? ''));
+                    if ($addressSummary === '') {
+                        $addressSummary = 'Empty';
+                    }
 		?>
-		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?php echo ($u>0)?$u:'1'; ?>)">
-			<span><?php
-				if($addressOneEmpty){
-					echo 'Empty';
-				}else{
-					echo $row['address'.$u.'_1'] . ' ' . $row['postcode_'.$u];
-				}
-			?></span>
+		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', <?php echo $supplierAddress->address_id; ?>)">
+			<span><?php echo $addressSummary; ?></span>
 		</div>
 		<?php
-			}
+                }
+            } else {
+                $addressSummary = trim(($row['address_1'] ?? '').' '.($row['postcode'] ?? ''));
+                if ($addressSummary === '') {
+                    $addressSummary = 'Empty';
+                }
+		?>
+		<div class="row flex v-center space-between" onclick="changeAddress('<?php echo $row['id']; ?>', 1)">
+			<span><?php echo $addressSummary; ?></span>
+		</div>
+		<?php
+            }
 		?>
 	</div>
 
 
 	<?php
-		if($row['default_salesman_id'] != null){
+		if(isset($row['default_salesman_id']) && $row['default_salesman_id'] != null){
 		?>
 		<script> $('#sales_person').val(<?php echo $row['default_salesman_id']; ?>); </script>
 		<?php
@@ -168,4 +189,3 @@ $addresspostcode = $row['postcode'];
 	</style>
 </div>
 </div>
-

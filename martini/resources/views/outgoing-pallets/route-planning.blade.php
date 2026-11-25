@@ -476,8 +476,8 @@
                     </select>
                 </div>
                 <div class="field max-operating-field numeric-field" id="maxOperatingSecondsField" style="display: flex;">
-                    <label for="maxOperatingSeconds">Max Operating Time (hours)</label>
-                    <input type="number" id="maxOperatingSeconds" name="maxOperatingSeconds" min="1" value="14" step="0.5" required>
+                    <label for="maxOperatingSeconds">Max Driving Time (hours)</label>
+                    <input type="number" id="maxOperatingSeconds" name="maxOperatingSeconds" min="1" value="10" step="0.5" required>
                 </div>
             </div>
 

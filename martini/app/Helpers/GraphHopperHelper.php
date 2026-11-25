@@ -3,7 +3,9 @@
 namespace App\Helpers;
 
 use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\Customer;
+use App\Models\Supplier;
 use App\Models\TransportPallet;
 use App\Models\Vehicle;
 use Carbon\Carbon;
@@ -382,8 +384,8 @@ class GraphHopperHelper
     /**
      * @param int $site_id
      * @param Collection<TransportPallet> $pallets
-     * @param Collection<Customer> $customers
-     * @param Collection<ClientAddress> $customerAddresses
+     * @param Collection<int|string, Customer|Supplier> $clients
+     * @param Collection<ClientAddress> $clientAddresses
      * @param int $serviceDurationSeconds
      * @param Carbon $workingDate
      * @param array $vrpVehicles
@@ -392,7 +394,7 @@ class GraphHopperHelper
      * @param array<string, array{fresh: bool, frozen: bool}> $addressDelTypes
     * @param bool $genericMode Retained for compatibility with caller signatures
     */
-    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $customers, Collection $customerAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = [], bool $genericMode = false): array
+    public static function servicesFromPallets(int $site_id, Collection $pallets, Collection $clients, Collection $clientAddresses, int $serviceDurationSeconds, Carbon $workingDate, array $vrpVehicles, array &$skipped = [], array &$skippedAddresses = [], array &$addressDelTypes = [], bool $genericMode = false): array
     {
         $services = [];
         foreach ($pallets as $pallet) {
@@ -400,12 +402,23 @@ class GraphHopperHelper
             //     $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Service limit reached, skipping remaining pallets',];
             //     continue;
             // }
-            $address = $customerAddresses[$pallet->customer_id . '-' . $pallet->address_id] ?? null;
+            $clientType = strtolower(trim((string) ($pallet->planning_client_type ?? $pallet->client_type ?? ClientType::CUSTOMER->value)));
+            if (!in_array($clientType, [ClientType::CUSTOMER->value, ClientType::SUPPLIER->value], true)) {
+                $clientType = ClientType::CUSTOMER->value;
+            }
+
+            $clientId = (int) ($pallet->planning_client_id ?? $pallet->customer_id ?? 0);
+            $addressId = (int) ($pallet->planning_address_id ?? $pallet->address_id ?? 0);
+            $addressLookupKey = $clientType . '-' . $clientId . '-' . $addressId;
+
+            $address = $clientAddresses[$addressLookupKey] ?? null;
             if (!$address) {
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Client address missing',];
                 continue;
             }
-            if ($address->collection) {
+
+            $isInbound = (bool) ($pallet->planning_is_inbound ?? $pallet->inbound ?? false);
+            if (!$isInbound && $address->collection) {
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Address is marked as collection',];
                 continue;
             }
@@ -413,12 +426,12 @@ class GraphHopperHelper
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Address does not belong to the current site',];
                 continue;
             }
-            if (in_array($pallet->customer_id.'-'.$pallet->address_id, $skippedAddresses, true) || ($address->geocoding_tried && (!$address->lat || !$address->lon))) {
-                $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
+            if (in_array($addressLookupKey, $skippedAddresses, true) || ($address->geocoding_tried && (!$address->lat || !$address->lon))) {
+                $skippedAddresses[] = $addressLookupKey;
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Previously skipped due to geocoding failure for this address',];
                 continue;
             }
-            if (strpos(trim(strtolower((string) $address->address_1)), 'collect') === 0) {
+            if (!$isInbound && strpos(trim(strtolower((string) $address->address_1)), 'collect') === 0) {
                 $skipped[] = ['outgoingPalletId' => (int) $pallet->id, 'reason' => 'Ignore Collections',];
                 continue;
             }
@@ -436,7 +449,7 @@ class GraphHopperHelper
             }
             if ($location == null) {
                 if ($address->geocoding_tried) {
-                    $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
+                    $skippedAddresses[] = $addressLookupKey;
                     $skipped[] = ['outgoingPalletId' => (int) $pallet->id,'reason' => 'Previously tried geocoding and failed',];
                     continue;
                 }
@@ -449,7 +462,7 @@ class GraphHopperHelper
                 $location = GraphHopperHelper::geocodeAddress($queryAddress);
                 if ($location === null) $location = GraphHopperHelper::geocodeAddress($address->postcode);
                 if ($location === null) {
-                    $skippedAddresses[] = $pallet->customer_id.'-'.$pallet->address_id;
+                    $skippedAddresses[] = $addressLookupKey;
                     $skipped[] = [
                         'outgoingPalletId' => (int) $pallet->id,
                         'reason' => 'Failed to geocode address',
@@ -463,7 +476,8 @@ class GraphHopperHelper
                 $address->save();
             }
 
-            $customer = $customers[$pallet->customer_id] ?? null;
+            $client = $clients[$clientType . '-' . $clientId] ?? null;
+            $clientDisplayName = trim((string) (($client->businessname ?? $client->name ?? 'Unknown client')));
             $tempCategory = $pallet->normalizePlanningTemperatureCategory();
             $allowedVehicles = [];
             $allowedVehicleTypes = $address->allowed_vehicle_types ? explode(',', $address->allowed_vehicle_types) : [];
@@ -476,9 +490,10 @@ class GraphHopperHelper
 
             $thisService =[
                 'id' => (string)$pallet->id,
-                'name' => $customer->businessname . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
+                'type' => $isInbound ? 'pickup' : 'delivery',
+                'name' => $clientDisplayName . ' - ' . ($address->address_1 ?? '') . ' - ' . ($address->postcode ?? ''),
                 'address' => [
-                    'location_id' => (string)$address->client_id . '-' . $address->address_id,
+                    'location_id' => $clientType . '-' . (string) $address->client_id . '-' . (string) $address->address_id,
                     'lat' => $location['lat'],
                     'lon' => $location['lon'],
                 ],
@@ -511,13 +526,14 @@ class GraphHopperHelper
                 $thisService['required_skills'] = ['tail_lift'];
             }
             $services[] = $thisService;
-            if (!array_key_exists($address->client_id . '-' . $address->address_id, $addressDelTypes)) {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id] = ['fresh' => false, 'frozen' => false];
+            $locationId = $clientType . '-' . $address->client_id . '-' . $address->address_id;
+            if (!array_key_exists($locationId, $addressDelTypes)) {
+                $addressDelTypes[$locationId] = ['fresh' => false, 'frozen' => false];
             }
             if ($tempCategory === 'fresh') {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id]['fresh'] = true;
+                $addressDelTypes[$locationId]['fresh'] = true;
             } elseif ($tempCategory === 'frozen') {
-                $addressDelTypes[$address->client_id . '-' . $address->address_id]['frozen'] = true;
+                $addressDelTypes[$locationId]['frozen'] = true;
             }
         }
         return $services;
