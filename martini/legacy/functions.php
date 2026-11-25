@@ -1454,10 +1454,10 @@ use App\Models\User;
 		$palletsOnIntake = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS ids FROM `pallet` WHERE `intake_id`= ?",'i',[$intake_id])->fetch_assoc()['ids'];
         $palletsOnIntake = explode(",",$palletsOnIntake);
         $ids = array();
-		if (count($palletsOnIntake) > 0){
+		if (count($palletsOnIntake) > 0 && $palletsOnIntake[0] != ""){
             $prodsFromPallets = prepareExecuteQuery("SELECT GROUP_CONCAT(`id`) AS ids FROM `product` WHERE `pallet_id` IN (".implode(",",$palletsOnIntake).")");
             $prodsFromPallets = explode(",",$prodsFromPallets->fetch_assoc()['ids']);
-            if (count($prodsFromPallets) > 0){
+            if (count($prodsFromPallets) > 0 && $prodsFromPallets != ""){
 			    return prepareExecuteQuery("SELECT * FROM `pallet` WHERE id IN (".implode(",",$palletsOnIntake).")");
             }
 

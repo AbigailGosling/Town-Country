@@ -433,7 +433,8 @@ class ReportHelper
                 $col2 = "product.cut_id";
                 $col3 = "product.brand_id";
                 $col4 = "product.nationality_id";
-                $item = static::$conn->table("product")->select("product.*")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]])->first();
+                $qb = static::$conn->table("product")->select("product.*")->selectRaw("GROUP_CONCAT(product.id) as `ids`")->where([["product.pallet_id",$result->$col1],[$col2,$result->$col2],[$col3,$result->$col3],[$col4,$result->$col4]]);
+                $item = $qb->first();
                 if ($item===null) continue;
                 static::row_merge($result,$item,"original_product.");
 
@@ -453,10 +454,12 @@ class ReportHelper
                 if ($item===null) continue;
                 static::row_merge($result,$item,"original_supplier.");
 
-                $co  = "original_product.id";
+                $co  = "original_product.ids";
                 $col = "product.id";
                 $col2 = "pickerSheets.id";
-                $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",[$result->$co,$result->$col])->where([["pickerItems.pickersheet_id",$result->$col2]]);
+                $colhelper01 = explode(",",$result->$co);
+                $colhelper01[] = $result->$col;
+                $qb = static::$conn->table("pickerItems")->select("pickerItems.*")->whereIn("pickerItems.product_id",$colhelper01)->where([["pickerItems.pickersheet_id",$result->$col2]]);
                 $item =$qb->first();
                 if ($item===null) continue;
                 static::row_merge($result,$item,"pickerItems.");
