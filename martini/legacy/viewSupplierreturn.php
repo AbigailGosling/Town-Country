@@ -1,4 +1,6 @@
 <?php
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 	$adv = request()->has("adv");
@@ -15,13 +17,21 @@ use Illuminate\Support\Facades\Auth;
 	$x1 = "SELECT * FROM `supplier` WHERE id=?";
 	$y1 = prepareExecuteQuery($x1,'i',[$supplier_id]);
 	$supplier = mysqli_fetch_array($y1);
-    $address = $supplier['address_1'];
-	if($supplier['address_2']){ $address .= ',&#13;'; }
-	$address .= $supplier['address_2'];
-	if($supplier['address_3']){ $address .= ',&#13;'; }
-	$address .= $supplier['address_3'];
-	if($supplier['address_4']){ $address .= ',&#13;'; }
-	$address .= $supplier['address_4'];
+    $supplierAddress = ClientAddress::where('client_id', $supplier_id)
+        ->where('address_id', 1)
+        ->where('client_type', ClientType::SUPPLIER->value)
+        ->first();
+    $address1 = $supplierAddress ? $supplierAddress->address_1 : $supplier['address_1'];
+    $address2 = $supplierAddress ? $supplierAddress->address_2 : $supplier['address_2'];
+    $address3 = $supplierAddress ? $supplierAddress->address_3 : $supplier['address_3'];
+    $address4 = $supplierAddress ? $supplierAddress->address_4 : $supplier['address_4'];
+    $address = $address1;
+	if($address2){ $address .= ',&#13;'; }
+	$address .= $address2;
+	if($address3){ $address .= ',&#13;'; }
+	$address .= $address3;
+	if($address4){ $address .= ',&#13;'; }
+	$address .= $address4;
 	if ($adv == false)
 	{
 ?>

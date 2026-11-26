@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class OutgoingPalletController extends Controller
 {
@@ -164,6 +165,7 @@ class OutgoingPalletController extends Controller
         $validated = $request->validate([
             'customer_id' => 'required|integer|exists:tandc_live.customers,id',
             'address_id' => 'required|integer',//|exists:address,id
+            'client_type' => ['sometimes', 'string', Rule::in([ClientType::CUSTOMER->value, ClientType::SUPPLIER->value])],
         ]);
         $validated['estimated_delivery_date'] = Carbon::today()->format('Y-m-d');
         $pallet = TransportPallet::create($validated);
@@ -206,6 +208,7 @@ class OutgoingPalletController extends Controller
         $validated = $request->validate([
             'customer_id' => 'sometimes|required|integer|exists:tandc_live.customers,id',
             'address_id' => 'sometimes|required|integer',//|exists:address,id',
+            'client_type' => ['sometimes', 'string', Rule::in([ClientType::CUSTOMER->value, ClientType::SUPPLIER->value])],
         ]);
 
         $pallet->update($validated);

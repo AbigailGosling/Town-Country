@@ -5,11 +5,13 @@ use App\Helpers\GraphHopperHelper;
 use App\Http\Controllers\Controller;
 use App\Models\ClientAddress;
 use App\Models\ClientType;
+use App\Models\CollectionReturnMetadata;
 use App\Models\Customer;
 use App\Models\DebugLogging;
 use App\Models\LoadSheet;
 use App\Models\TransportPallet;
 use App\Models\Site;
+use App\Models\Supplier;
 use App\Models\Vehicle;
 use App\Models\VehicleTransportPalletAllocation;
 use Carbon\Carbon;
@@ -324,10 +326,18 @@ class VehicleRoutePlanningController extends Controller
                 $address = null;
                 $locationId = (string) (($service['address']['location_id'] ?? '') ?? '');
                 if ($locationId !== '') {
-                    [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
+                    $locationParts = explode('-', $locationId);
+                    if (count($locationParts) >= 3) {
+                        $clientType = (string) ($locationParts[0] ?? ClientType::CUSTOMER->value);
+                        $clientId = $locationParts[1] ?? null;
+                        $addressId = $locationParts[2] ?? null;
+                    } else {
+                        $clientType = ClientType::CUSTOMER->value;
+                        [$clientId, $addressId] = array_pad(explode('-', $locationId, 2), 2, null);
+                    }
                     if ($clientId !== null && $addressId !== null) {
                         $address = ClientAddress::query()
-                            ->where('client_type', ClientType::CUSTOMER->value)
+                            ->where('client_type', $clientType)
                             ->where('client_id', (int) $clientId)
                             ->where('address_id', (int) $addressId)
                             ->first();
@@ -408,26 +418,106 @@ class VehicleRoutePlanningController extends Controller
             ->get();
         if ($pallets->isEmpty()) {
             return response()->json([
-                'error' => 'No outgoing pallets found for date',
+                'error' => 'No transport pallets found for date',
                 'dueDate' => $dueDate->format('Y-m-d'),
             ], 404);
         }
 
-        $customers = Customer::whereIn('id', $pallets->pluck('customer_id')->unique())->get()->keyBy('id');
-        $customerAddresses = ClientAddress::whereIn('client_id', $pallets->pluck('customer_id')->unique())
-            ->whereIn('address_id', $pallets->pluck('address_id')->unique())
-            ->where('client_type', ClientType::CUSTOMER->value)
-            ->where('site_id', $depotSite->id)
-            ->get()
-            ->keyBy(function ($ca) {
-                return $ca->client_id . '-' . $ca->address_id;
-            });
-        $pallets = $pallets->filter(function ($pallet) use ($customerAddresses) {
-            return $customerAddresses->has($pallet->customer_id . '-' . $pallet->address_id);
+        $metadataByPalletId = CollectionReturnMetadata::query()
+            ->whereIn('transport_pallet_id', $pallets->pluck('id')->all())
+            ->get(['transport_pallet_id', 'client_id', 'address_id', 'is_supplier', 'type_selector'])
+            ->keyBy('transport_pallet_id');
+
+        $customerIds = [];
+        $supplierIds = [];
+        $addressIds = [];
+
+        $pallets = $pallets->map(function ($pallet) use ($metadataByPalletId, &$customerIds, &$supplierIds, &$addressIds) {
+            $metadata = $metadataByPalletId->get((int) $pallet->id);
+
+            $clientType = strtolower(trim((string) $pallet->client_type));
+            if (!in_array($clientType, [ClientType::CUSTOMER->value, ClientType::SUPPLIER->value], true)) {
+                if ($metadata) {
+                    $isSupplier = (bool) ($metadata->is_supplier ?? false) || strtolower((string) ($metadata->type_selector ?? '')) === 'collection';
+                    $clientType = $isSupplier ? ClientType::SUPPLIER->value : ClientType::CUSTOMER->value;
+                } else {
+                    $clientType = ClientType::CUSTOMER->value;
+                }
+            }
+
+            $clientId = (int) ($pallet->customer_id ?: ($metadata->client_id ?? 0));
+            $addressId = (int) ($pallet->address_id ?: ($metadata->address_id ?? 0));
+
+            $pallet->planning_client_type = $clientType;
+            $pallet->planning_client_id = $clientId;
+            $pallet->planning_address_id = $addressId;
+            $pallet->planning_is_inbound = (bool) $pallet->inbound;
+
+            if ($clientId > 0) {
+                if ($clientType === ClientType::SUPPLIER->value) {
+                    $supplierIds[$clientId] = $clientId;
+                } else {
+                    $customerIds[$clientId] = $clientId;
+                }
+            }
+            if ($addressId > 0) {
+                $addressIds[$addressId] = $addressId;
+            }
+
+            return $pallet;
+        });
+
+        $clients = collect();
+        if (!empty($customerIds)) {
+            foreach (Customer::whereIn('id', array_values($customerIds))->get() as $customer) {
+                $clients->put(ClientType::CUSTOMER->value . '-' . (int) $customer->id, $customer);
+            }
+        }
+        if (!empty($supplierIds)) {
+            foreach (Supplier::whereIn('id', array_values($supplierIds))->get() as $supplier) {
+                $clients->put(ClientType::SUPPLIER->value . '-' . (int) $supplier->id, $supplier);
+            }
+        }
+
+        $clientAddresses = collect();
+        if (!empty($addressIds) && (!empty($customerIds) || !empty($supplierIds))) {
+            $clientAddresses = ClientAddress::query()
+                ->where('site_id', $depotSite->id)
+                ->whereIn('address_id', array_values($addressIds))
+                ->where(function ($query) use ($customerIds, $supplierIds) {
+                    $hasConstraint = false;
+                    if (!empty($customerIds)) {
+                        $method = $hasConstraint ? 'orWhere' : 'where';
+                        $query->{$method}(function ($customerQuery) use ($customerIds) {
+                            $customerQuery->where('client_type', ClientType::CUSTOMER->value)
+                                ->whereIn('client_id', array_values($customerIds));
+                        });
+                        $hasConstraint = true;
+                    }
+                    if (!empty($supplierIds)) {
+                        $method = $hasConstraint ? 'orWhere' : 'where';
+                        $query->{$method}(function ($supplierQuery) use ($supplierIds) {
+                            $supplierQuery->where('client_type', ClientType::SUPPLIER->value)
+                                ->whereIn('client_id', array_values($supplierIds));
+                        });
+                    }
+                })
+                ->get()
+                ->keyBy(function ($ca) {
+                    return $ca->client_type . '-' . $ca->client_id . '-' . $ca->address_id;
+                });
+        }
+
+        $pallets = $pallets->filter(function ($pallet) use ($clientAddresses) {
+            $clientType = (string) ($pallet->planning_client_type ?? '');
+            $clientId = (int) ($pallet->planning_client_id ?? 0);
+            $addressId = (int) ($pallet->planning_address_id ?? 0);
+            return $clientType !== '' && $clientId > 0 && $addressId > 0
+                && $clientAddresses->has($clientType . '-' . $clientId . '-' . $addressId);
         });
         if ($pallets->isEmpty()) {
             return response()->json([
-                'error' => 'No outgoing pallets found for this site on selected date',
+                'error' => 'No transport pallets found for this site on selected date',
                 'dueDate' => $dueDate->format('Y-m-d'),
             ], 404);
         }
@@ -444,7 +534,7 @@ class VehicleRoutePlanningController extends Controller
         $skipped = [];
         $skippedAddresses = [];
         $addressDelTypes = [];
-        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $customers, $customerAddresses, $serviceDurationSeconds, $dueDate, $vrpVehicles, $skipped, $skippedAddresses, $addressDelTypes, $genericMode);
+        $services = GraphHopperHelper::servicesFromPallets($depotSite->id, $pallets, $clients, $clientAddresses, $serviceDurationSeconds, $dueDate, $vrpVehicles, $skipped, $skippedAddresses, $addressDelTypes, $genericMode);
         if (empty($services)) {
             Log::error('No services could be created from outgoing pallets', [
                 'dueDate' => $dueDate->format('Y-m-d'),
@@ -679,13 +769,30 @@ class VehicleRoutePlanningController extends Controller
             if ($lastDeliveryPalletId !== false) {
                 $lastDeliveryPallet = TransportPallet::query()
                     ->where('id', (int) $lastDeliveryPalletId)
-                    ->first(['customer_id', 'address_id']);
+                    ->first(['id', 'customer_id', 'address_id', 'client_type']);
 
                 if ($lastDeliveryPallet) {
+                    $metadata = CollectionReturnMetadata::query()
+                        ->where('transport_pallet_id', (int) $lastDeliveryPalletId)
+                        ->orderByDesc('id')
+                        ->first(['client_id', 'address_id', 'is_supplier', 'type_selector']);
+
+                    $clientType = strtolower(trim((string) ($lastDeliveryPallet->client_type ?? '')));
+                    if (!in_array($clientType, [ClientType::CUSTOMER->value, ClientType::SUPPLIER->value], true)) {
+                        if ($metadata) {
+                            $isSupplier = (bool) ($metadata->is_supplier ?? false) || strtolower((string) ($metadata->type_selector ?? '')) === 'collection';
+                            $clientType = $isSupplier ? ClientType::SUPPLIER->value : ClientType::CUSTOMER->value;
+                        } else {
+                            $clientType = ClientType::CUSTOMER->value;
+                        }
+                    }
+                    $clientId = (int) ($lastDeliveryPallet->customer_id ?: ($metadata->client_id ?? 0));
+                    $addressId = (int) ($lastDeliveryPallet->address_id ?: ($metadata->address_id ?? 0));
+
                     $lastDeliveryAddress = ClientAddress::query()
-                        ->where('client_type', ClientType::CUSTOMER->value)
-                        ->where('client_id', (int) $lastDeliveryPallet->customer_id)
-                        ->where('address_id', (int) $lastDeliveryPallet->address_id)
+                        ->where('client_type', $clientType)
+                        ->where('client_id', $clientId)
+                        ->where('address_id', $addressId)
                         ->first(['lat', 'lon']);
 
                     if ($lastDeliveryAddress && is_numeric($lastDeliveryAddress->lat) && is_numeric($lastDeliveryAddress->lon)) {

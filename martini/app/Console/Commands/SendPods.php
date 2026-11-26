@@ -48,7 +48,7 @@ class SendPods extends Command
             return self::FAILURE;
         }
 
-        $outgoingPallets = TransportPallet::whereIn('id', $outgoingPalletIds)->get();
+        $outgoingPallets = TransportPallet::whereIn('id', $outgoingPalletIds)->where(['inbound' => false])->get();
         $vehicle = Vehicle::find((int) $vehicleId);
 
         if ($outgoingPallets->isEmpty()) {

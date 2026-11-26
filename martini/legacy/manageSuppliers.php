@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ClientAddress;
+use App\Models\ClientType;
 use App\Models\User;
 
 	include('functions.php');
@@ -33,12 +35,23 @@ use App\Models\User;
 <main>
 	<div id="intakelist">
 		<?php
+            $address = null;
 			if(request()->input('id') != ''){
 				$id = request()->input('id');
 				$x2 = "SELECT * FROM supplier WHERE id = ?";
 				$yy2 = prepareExecuteQuery($x2,'i',[$id]);
 				$data = mysqli_fetch_array($yy2);
+                $address = ClientAddress::where('client_id', $id)
+                    ->where('address_id', 1)
+                    ->where('client_type', ClientType::SUPPLIER->value)
+                    ->first();
 			}
+
+            $address1 = $address ? $address->address_1 : ($data['address_1'] ?? '');
+            $address2 = $address ? $address->address_2 : ($data['address_2'] ?? '');
+            $address3 = $address ? $address->address_3 : ($data['address_3'] ?? '');
+            $address4 = $address ? $address->address_4 : ($data['address_4'] ?? '');
+            $postcode = $address ? $address->postcode : ($data['postcode'] ?? '');
 		?>
 		<form id="mainForm" method="POST" action="<?php if(request()->input('id') != ''){ echo 'scripts/updateSupplier.php'; } else { echo 'scripts/addSupplier.php'; } ?>">
 		<table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -56,31 +69,31 @@ use App\Models\User;
             <tr>
                 <td style="width:49%">
                     <label>Address 1</label>
-                    <input type="text" id="supname" name="address_1" value="<?php echo $data['address_1']; ?>" required>
+                    <input type="text" id="supname" name="address_1" value="<?php echo $address1; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 2</label>
-                    <input type="text" id="supname" name="address_2" value="<?php echo $data['address_2']; ?>" required>
+                    <input type="text" id="supname" name="address_2" value="<?php echo $address2; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 3</label>
-                    <input type="text" id="supname" name="address_3" value="<?php echo $data['address_3']; ?>" required>
+                    <input type="text" id="supname" name="address_3" value="<?php echo $address3; ?>" required>
                 </td>
             </tr>
             <tr>
                 <td style="width:49%">
                     <label>Address 4</label>
-                    <input type="text" id="supname" name="address_4" value="<?php echo $data['address_4']; ?>" required>
+                    <input type="text" id="supname" name="address_4" value="<?php echo $address4; ?>" required>
                 </td>
             </tr>
 			<tr>
 				<td>
 					<label>Postcode</label>
-					<textarea style="height:200px;width:98%;" name="postcode"><?php echo $data['postcode']; ?></textarea>
+					<textarea style="height:200px;width:98%;" name="postcode"><?php echo $postcode; ?></textarea>
 				</td>
 			</tr>
 			<tr>

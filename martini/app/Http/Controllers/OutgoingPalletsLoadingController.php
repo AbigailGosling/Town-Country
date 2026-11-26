@@ -250,6 +250,7 @@ class OutgoingPalletsLoadingController extends Controller
 
                 return [
                     'outgoingPalletId' => (int) $pallet->id,
+                    'inbound' => (bool) ($pallet->inbound ?? false),
                     'deliveryNoteNumber' => $deliveryNoteNumber,
                     'customerName' => $pallet->customer->businessname ?? '',
                     'customerDeliveryPostcode' => $ca->postcode ?? '',
@@ -573,6 +574,7 @@ class OutgoingPalletsLoadingController extends Controller
             $orders[] = [
                     'id' => 'order-' . $pallet->id,
                     'outgoingPalletId' => (int) $pallet->id,
+                    'inbound' => (bool) ($pallet->inbound ?? false),
                     'deliveryNoteNumber' => $delNoteNum ?? '',
                     'title' => 'Pallet ' . ($pallet->id ?? ''),
                     'subtext' => trim(($pallet->customer->businessname ?? '') . ' • ' . ($ca->address_1 ?? '') . ' • ' . ($ca->postcode ?? '')),
@@ -622,6 +624,7 @@ class OutgoingPalletsLoadingController extends Controller
                 'customerDeliveryPostcode',
                 'freshFrozen',
                 'regAllocatedTo',
+                'inbound',
             ]);
 
         $orders = [];
@@ -639,6 +642,7 @@ class OutgoingPalletsLoadingController extends Controller
             $orders[] = [
                 'id' => 'order-' . $idx,
                 'title' => 'Order ' . ($row->deliveryNoteNumber ?? ''),
+                'inbound' => (bool) ($row->inbound ?? false),
                 'subtext' => trim(($row->customerName ?? '') . ' • ' . ($row->customerDeliveryPostcode ?? '')),
                 'customerName' => $row->customerName ?? '',
                 'customerDeliveryPostcode' => $row->customerDeliveryPostcode ?? '',

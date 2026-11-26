@@ -7,6 +7,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Class Supplier
@@ -53,4 +55,17 @@ class Supplier extends Model
 		'internal_number',
 		'disabled'
 	];
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(ClientAddress::class, 'client_id', 'id')
+            ->where('client_type', ClientType::SUPPLIER->value);
+    }
+
+    public function primaryAddress(): HasOne
+    {
+        return $this->hasOne(ClientAddress::class, 'client_id', 'id')
+            ->where('client_type', ClientType::SUPPLIER->value)
+            ->where('address_id', 1);
+    }
 }

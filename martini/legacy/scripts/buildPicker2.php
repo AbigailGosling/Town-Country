@@ -17,7 +17,7 @@ $user_from_id = request()->input('user');
 $addressid = request()->input('addressid',1);
 $transaction_id = request()->input('transaction_id');
 $isCredit = (request()->input('sup_type') == "credit");
-$isSupplier = request()->has('is_supplier');
+$isSupplier = request()->input('is_supplier', 0) == 1 || request()->input('is_supplier', 0) === '1';
 $invoice_id = request()->input('invoice');
 
 if ($transaction_id != null && $transaction_id != "")

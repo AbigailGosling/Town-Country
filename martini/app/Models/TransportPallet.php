@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Models\ClientType;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,19 +18,23 @@ class TransportPallet extends Model
     protected $fillable = [
         'transport_pallet_type_id',
         'customer_id',
+        'client_type',
         'address_id',
         'estimated_delivery_date',
         'dispatched',
         'pod_sent',
+        'inbound'
     ];
 
     protected $casts = [
         'customer_id' => 'integer',
         'address_id' => 'integer',
         'transport_pallet_type_id' => 'integer',
+        'client_type' => 'string',
         'estimated_delivery_date' => 'date',
         'dispatched' => 'boolean',
         'pod_sent' => 'boolean',
+        'inbound' => 'boolean',
     ];
 
     public function customer()
@@ -119,7 +124,12 @@ class TransportPallet extends Model
 
     public function address()
     {
-        return $this->belongsTo(ClientAddress::class, 'address_id', 'address_id')->where([['client_type', ClientType::CUSTOMER->value],['client_id', $this->customer_id]]);
+        $clientType = $this->client_type ?? ClientType::CUSTOMER->value;
+
+        return $this->belongsTo(ClientAddress::class, 'address_id', 'address_id')->where([
+            ['client_type', $clientType],
+            ['client_id', $this->customer_id],
+        ]);
     }
 
     public function checkUpdateEstimatedDeliveryDate()
