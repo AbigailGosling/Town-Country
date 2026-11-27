@@ -112,7 +112,8 @@ use App\Models\InboundContainer;
     <td id="rowPrice" name="rowPrice"><?php echo $price ?></td>
 	<td>
 	</td>
-	<td id=temp_id style="display:none;"><?php echo $temp_id; ?></td>
+	<td id="temp_id" style="display:none;"><?php echo $temp_id; ?></td>
+    <td id="ub_type_id" style="display:none;"><?php echo $rowProduct['ubbb']; ?></td>
 	<td style="display:none;">
 		<?php $val = $product_id . "-" . $q . "-" . $cut_id . "-" . $rowProduct['weightnote']; ?>
 		<input type="text" value="<?php echo $comment; ?>" name="commentsRow[]">

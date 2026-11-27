@@ -47,7 +47,7 @@ use App\Models\User;
 				}
 
 				?>
-                <a style="height:55px" href="collectionReturns.php">Create Collection/Return</a></div>
+                </div>
                 <?php
 			}
 
@@ -71,7 +71,6 @@ use App\Models\User;
 				}
 
 				?>
-                <a style="height:55px" href="collectionReturnsList.php">Manage Collection/Return</a>
                 </div><?php
 			}
 

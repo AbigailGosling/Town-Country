@@ -831,19 +831,24 @@ function cancelSale()
         var dateText = $('#estimated_delivery_date').val()
         var ubs = $('#basketTable #ubDate');
         var temps = $('#basketTable #temp_id');
+        var ubTypes = $('#basketTable #ub_type_id');
         if (ubs.length == 0 || dateText == null || dateText == "") return true;
         var date = parseDMY(dateText).getTime();
         var beyondBB = false;
+        console.log("test");
         for(var x = 0; x < ubs.length; x++){
+            console.log("Checking UB for row " + x);
             var ub = ubs[x];
             var temp = temps[x];
+            var ubType = ubTypes[x];
             if (customerID == "420") break;
             if ((ub.innerHTML=="" || temp.innerHTML.trim() != 1))
             {
                 continue;
             }
             var ubd = parseDMY(ub.innerHTML).getTime();
-            if (ubd < date)
+            console.log(ubType.innerHTML.trim());
+            if (ubd < date && ubType.innerHTML.trim() != "3")
             {
                 $(ub).css('background', "#ff6666");
                 beyondBB = true;
@@ -957,7 +962,6 @@ function cancelSale()
                 break;
             }
         }
-        console.log(customerIgnoreNextDayCutoff);
         if (targetCutoff == undefined || customerIgnoreNextDayCutoff) return true;
         var deldate = $('#estimated_delivery_date').datepicker('getDate');
         var now = new Date();
